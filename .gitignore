@@ -1,2 +1,4 @@
 .appledoc-cache/
 __pycache__/
+node_modules/
+scripts/pdf/out/
