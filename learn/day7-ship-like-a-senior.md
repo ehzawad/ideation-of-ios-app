@@ -43,7 +43,7 @@ flowchart TB
 
 **Where logic lives.** Business rules live in plain types and `@Observable` models, because those are what tests can reach. The "no massive view" rule of thumb: if a `body` or a button action contains a `do`/`catch`, a call to a service, or data shaping beyond formatting, move it into the model.
 
-**MVVM, TCA and friends.** An `@Observable` model *is* a view model by another name. You don't need a protocol per view model or a coordinator per screen. Third-party architectures such as The Composable Architecture add a single state tree, reducers and exhaustive state tests. That helps large teams who want every change to flow one way. It costs a dependency, a learning curve, and some lag when Apple ships new APIs. Both styles work. Mixing three styles in one codebase doesn't.
+**MVVM, TCA and friends.** An `@Observable` model *is* a view model by another name; you don't need a protocol per view model. Third-party architectures such as The Composable Architecture add a single state tree, reducers and exhaustive state tests. That helps large teams who want every change to flow one way, at the cost of a dependency and a learning curve. Either works. Three styles in one codebase don't.
 
 **Senior tell:** they can point to every place the app touches the outside world, and each one has a protocol and a fake.
 
@@ -58,32 +58,48 @@ flowchart TB
 | Can a person complete the flow? | XCTest + XCUIAutomation | Seconds per test | Simulator or device |
 | Does it look right in every state? | `#Preview` | Instant | Canvas |
 
-**Swift Testing** is the default for new tests. A test is any function marked `@Test`. `#expect` records a failure and keeps going. `#require` stops the test by throwing, and it also unwraps optionals. `@Test(arguments:)` turns one function into one test case per input, and each case passes or fails on its own. *Traits* attach behavior: tags, time limits, conditions, serial execution, bug links. A suite is just a type. Each instance-method test gets a **fresh instance**, so `init` is your setup.
+**Swift Testing** is the default for new tests. `#expect` records a failure and keeps going. `#require` stops the test by throwing, and also unwraps optionals. `@Test(arguments:)` makes one test case per input. *Traits* add tags, time limits, conditions and serial execution. A suite is just a type, and each test gets a **fresh instance**, so `init` is your setup.
 
-**Model output is not deterministic**, so don't assert exact text in unit tests. Put the model behind a seam, test your code with a stub, and measure the real model with the new **Evaluations** framework. An evaluation runs a dataset through your feature, scores each response, and aggregates the scores. It runs as a Swift Testing test through a trait, and the report shows up in Xcode's Report navigator ([Evaluating language model responses](https://developer.apple.com/documentation/evaluations/evaluating-language-model-responses)).
+**Tests run in parallel, in one process, by default** ([parallelization](https://developer.apple.com/documentation/testing/parallelization)). Two tests that share a singleton, a `UserDefaults` key or a file can pass alone and fail together. Inject the dependency so each test gets its own. `.serialized` only orders tests inside one suite. For async code, mark the test `async` and `await` the work. For events you can't await, such as callbacks, use `confirmation`: its count is checked **when its closure returns**, so the event must happen before then. `expectedCount: 0` proves something *didn't* happen. **Exit tests** (`#expect(processExitsWith:)`) check that a `precondition` stops the process, but they [don't run on iOS](https://developer.apple.com/documentation/testing/exit-testing), only on macOS, Linux, FreeBSD, OpenBSD and Windows. That's one more reason to keep core logic in a package that builds for macOS.
 
-**UI tests still use XCTest**, driving the app through XCUIAutomation from a separate process ([XCUIAutomation](https://developer.apple.com/documentation/xcuiautomation)). They're slow and brittle, so keep a few for the flows that make money or keep people safe. Find elements by accessibility identifier, not by position.
+**Model output is not deterministic**, so don't assert exact text. Test your code with a stub, and measure the real model with the new **Evaluations** framework. An evaluation runs a dataset through your feature, scores each response and aggregates the scores. It runs as a Swift Testing test, and its report appears in the Report navigator ([Evaluating language model responses](https://developer.apple.com/documentation/evaluations/evaluating-language-model-responses)).
 
-**Previews are a design tool, not a test.** With stub dependencies, every state is one line away: empty, loading, error, 50 items, the largest text size. Xcode 27 adds `#Preview(arguments:)`, which shows a grid of previews, one per argument. The canvas can also switch localization, contrast and control borders.
+**UI tests still use XCTest**, driving the app from a separate process through [XCUIAutomation](https://developer.apple.com/documentation/xcuiautomation). They're slow and brittle, so keep a few for the flows that matter most, and find elements by accessibility identifier.
 
-**Senior tell:** their app has a stub-mode launch argument, so UI tests, previews and demos run without the network or the model.
+**Previews are a design tool.** With stub dependencies, every state is one line away: empty, error, 50 items, the largest text size. Xcode 27 adds `#Preview(arguments:)` grids and canvas switches for localization, contrast and control borders.
 
-### 3. A concurrency test waits for the thing itself. Sleeping is guessing.
+**Senior tell:** their app has a stub-mode launch argument, and their test target contains no `sleep`.
 
-**Flaky tests are usually concurrency bugs in the test, not in the app.**
+### 3. Debug by narrowing: stop at the right moment, ask precise questions, let tools catch whole classes of bugs.
 
-Swift Testing runs tests **in parallel, in one process, by default** ([Running tests serially or in parallel](https://developer.apple.com/documentation/testing/parallelization)). Two tests that touch the same singleton, `UserDefaults` key or file can pass alone and fail together. The fix is design: inject the dependency so each test gets its own. The `.serialized` trait only orders tests *inside* one suite or one parameterized test. It isn't a global lock.
+**A `print` statement answers one question per build. The debugger answers any question, now.**
 
-For async code, mark the test `async` and `await` the call. For events you can't await (a callback, a delegate method, an event handler), use `confirmation`. Its closure receives a `Confirmation`, you call it when the event happens, and the count is checked **when the closure returns**. So the event must happen before then. `expectedCount: 0` proves something *didn't* happen, which is exactly how you test an approval gate. Mark a test or suite `@MainActor` to call main-actor APIs directly.
+**Breakpoints** can do more than pause. Give one a condition (`request.isEmpty`) or an action that logs a value and continues, so you trace without rebuilding. Symbolic breakpoints stop in code you don't own. The Swift error and exception breakpoints stop where a failure starts, not where it lands ([Setting breakpoints](https://developer.apple.com/documentation/xcode/setting-breakpoints-to-pause-your-running-app)).
 
-Other tools for this layer:
+**Three LLDB commands** cover most sessions ([Stepping through code](https://developer.apple.com/documentation/xcode/stepping-through-code-and-inspecting-variables-to-isolate-bugs)):
 
-- `.timeLimit(.minutes(1))` catches deadlocks. The granularity is one minute, so it isn't a speed check.
-- **Exit tests** (`#expect(processExitsWith:)`) check that a `precondition` really stops the process. They run on macOS, Linux, FreeBSD, OpenBSD and Windows, [not in the iOS Simulator](https://developer.apple.com/documentation/testing/exit-testing). That's one more reason to keep core logic in a package that also builds for macOS.
-- **Thread Sanitizer** finds data races in code the compiler can't check, such as C, Objective-C and `unsafe` Swift. It runs in the Simulator and on macOS, not on iOS devices.
-- In LLDB, Xcode 27 adds `language swift task tree` to print every Swift task the debugger knows about.
+| Command | What it does | Use it when |
+|---|---|---|
+| `v` (`frame variable`) | Reads values straight from memory. Runs no code. | First choice. Fast and safe, but no computed properties or calls. |
+| `p` (`expression`) | Compiles and runs an expression. | You need a computed property or a function call. |
+| `po` | Runs an expression and prints its object description. | You want the type's own `debugDescription`. |
 
-**Senior tell:** they search the test target for `sleep` and treat every hit as a flaky test waiting to happen.
+If `p` or `po` fails on a value typed as a protocol, fall back to `v`. The `@DebugDescription` macro turns a type's description into a summary that `v` and Xcode's variables view can show without running code. Xcode 27 adds `language swift task tree`, which prints every Swift task the debugger knows about.
+
+**The view debugger** (Debug View Hierarchy) explodes the screen into 3D layers, so you can see which view is covering or clipping another. **The memory graph** (Debug Memory Graph) shows who holds a reference to what. A retain cycle shows up as objects pointing at each other with nothing else pointing at them.
+
+**Sanitizers** catch bug classes at runtime. Turn them on in the scheme's Diagnostics section or in a test plan ([Diagnosing memory, thread, and crash issues early](https://developer.apple.com/documentation/xcode/diagnosing-memory-thread-and-crash-issues-early)):
+
+| Tool | Finds | Cost and limits |
+|---|---|---|
+| Address Sanitizer | Memory corruption: out-of-bounds access, use after free | 2–3× memory, 2–5× slower. Doesn't find leaks. |
+| Thread Sanitizer | Data races, including in C, Objective-C and `unsafe` code | 5–10× memory, 2–20× slower. Simulator and macOS only, not iOS devices. |
+| Main Thread Checker | Main-thread-only APIs called from other threads | About 1–2% CPU. On by default in development schemes. |
+| Undefined Behavior Sanitizer | Undefined behavior in C-family code | C languages only. |
+
+Swift 6's strict concurrency catches most races in Swift code at compile time. Thread Sanitizer still earns its place for C, Objective-C, `unsafe` code and third-party binaries.
+
+**Senior tell:** before adding a `print`, they add a breakpoint that logs and continues.
 
 ### 4. Performance is a set of budgets: a tap, a frame, a memory ceiling.
 
@@ -106,11 +122,11 @@ Apple's numbers ([Understanding user interface responsiveness](https://developer
 - A **hitch** is motion that stutters because a frame wasn't ready for its screen refresh. The budget is one refresh interval, generally 8 to 16 ms.
 - **Fix hangs first.** They're easier to understand, and fixing them removes many hitches too.
 
-**Launch.** A *launch* starts a process. A *resume* wakes one that's still in memory and is much faster. Cold launches, after the system evicted your app and its frameworks, are the slow end. If launch takes too long, the watchdog terminates the app ([Reducing your app's launch time](https://developer.apple.com/documentation/xcode/reducing-your-app-s-launch-time)). Do the minimum before the first frame and defer everything else.
+**Launch.** A *resume* wakes a process that's still in memory. A *launch* starts one, and a cold launch after eviction is the slowest. If launch takes too long, the watchdog terminates the app ([Reducing your app's launch time](https://developer.apple.com/documentation/xcode/reducing-your-app-s-launch-time)). Do the minimum before the first frame.
 
-**Memory.** iOS counts memory in pages, typically 16 KB. Memory you allocate starts counting once you write to it and it becomes *dirty*. Exceed the device's limit in the foreground and the system terminates your app. Under memory pressure it also terminates apps, most often ones in the background. That's a **jetsam** event. Its report is JSON, lists every process's memory, and has **no backtrace** ([jetsam event reports](https://developer.apple.com/documentation/xcode/identifying-high-memory-use-with-jetsam-event-reports)). Lower memory at suspension means you get killed less often in the background.
+**Memory.** iOS counts memory in pages, typically 16 KB, and memory counts once you write to it (*dirty* memory). Exceed the device's limit and the system terminates your app. Under memory pressure it also terminates apps, most often ones in the background. That's a **jetsam** event, and its report has **no backtrace** ([jetsam event reports](https://developer.apple.com/documentation/xcode/identifying-high-memory-use-with-jetsam-event-reports)). Lower memory at suspension means fewer background kills.
 
-**The Instruments loop:** reproduce on a device, choose Product > Profile, pick a template, narrow the time range to the bad moment, read the call tree, change one thing, record again and compare. Xcode 27 adds three CPU views (Call Tree, Flame Graph, Top Functions) and **Run Comparison** for before and after.
+**The Instruments loop:** reproduce on a device, choose Product > Profile, pick a template, narrow the time range to the bad moment, read the call tree, change one thing, record again. Xcode 27 adds Call Tree, Flame Graph and Top Functions views, and **Run Comparison** for before and after.
 
 | Question | Instrument or template |
 |---|---|
@@ -129,15 +145,15 @@ Apple's numbers ([Understanding user interface responsiveness](https://developer
 
 **You can't attach a debugger to a user's phone. Logs, signposts, MetricKit and the Organizer are your eyes.**
 
-**`Logger`** writes to the unified logging system with a *subsystem* (usually your bundle ID) and a *category* (a feature). The level decides which messages stay in memory and which reach disk. Interpolated values are **redacted by default**. You opt in to showing a value with `privacy: .public`. That default protects your users. Keep it for anything they typed.
+**`Logger`** writes to the unified logging system with a *subsystem* (usually your bundle ID) and a *category* (a feature). Interpolated values are **redacted by default**, and you opt in per value with `privacy: .public`. Keep the default for anything a user typed.
 
-**Signposts** mark intervals ("planning took 1.8 s") that Instruments draws on its timeline. In iOS 27, a signposter built on `MetricManager.logHandle(category:)` also feeds MetricKit, which then aggregates those intervals from real devices.
+**Signposts** mark intervals ("planning took 1.8 s") that Instruments draws on its timeline. In iOS 27, a signposter built on `MetricManager.logHandle(category:)` also feeds MetricKit, which aggregates those intervals from real devices.
 
-**MetricKit** in iOS 27 is new: `MetricManager` delivers daily `MetricReport`s and per-event `DiagnosticReport`s (crash, hang, CPU exception, disk-write exception, launch, memory exception) as async sequences. Both types are `Codable`, so uploading is one `JSONEncoder` call. With the new StateReporting framework, you can attribute metrics to app states such as "planning" or "idle" ([Monitoring app performance with MetricKit](https://developer.apple.com/documentation/metrickit/monitoring-app-performance-with-metrickit)). During development, choose Debug > MetricKit > Simulate MetricKit Payloads.
+**MetricKit** is new in iOS 27: `MetricManager` delivers daily `MetricReport`s and per-event `DiagnosticReport`s (crash, hang, CPU exception, disk-write exception, launch, memory exception) as async sequences. Both are `Codable`, so uploading is one `JSONEncoder` call. The new StateReporting framework attributes metrics to app states such as "planning" ([Monitoring app performance with MetricKit](https://developer.apple.com/documentation/metrickit/monitoring-app-performance-with-metrickit)). During development, choose Debug > MetricKit > Simulate MetricKit Payloads.
 
-**Xcode Organizer** shows anonymized, aggregated data from participating users' devices. In Xcode 27 it gains an Insights overview of regressions, a Hitches metric for all animations (it replaces the Scrolling metric), storage metrics, goals based on similar apps, and a **Generate Recommendations** button that opens a hang, crash, launch, battery or disk-write report in the coding assistant.
+**Xcode Organizer** shows anonymized data from participating users' devices. Xcode 27 adds an Insights overview of regressions, a Hitches metric that replaces Scrolling, storage metrics, and **Generate Recommendations**, which opens a hang, crash, launch, battery or disk-write report in the coding assistant.
 
-**Crash reports** arrive as hexadecimal addresses. *Symbolication* turns them into function names and line numbers. If you upload symbols with your build, the Organizer does it for you ([Adding identifiable symbol names to a crash report](https://developer.apple.com/documentation/xcode/adding-identifiable-symbol-names-to-a-crash-report)).
+**Crash reports** arrive as hexadecimal addresses. *Symbolication* turns them into function names and line numbers. Upload symbols with your build and the Organizer does it for you ([Adding identifiable symbol names](https://developer.apple.com/documentation/xcode/adding-identifiable-symbol-names-to-a-crash-report)).
 
 **Senior tell:** every log line answers "what would I need at 3 a.m.?", and no log line shows a user's words in public.
 
@@ -582,37 +598,28 @@ final class DiagnosticsReporter: Sendable {
 
 **Xcode 27 itself**
 - Xcode 27 includes Swift 6.4 and the iOS 27 SDK. It runs only on Apple silicon Macs with macOS Tahoe 26.6 or later, and debugs devices running iOS 17 or later.
-- **Coding intelligence moved into the editor area.** Conversations have transcript and artifact panes. **Plan mode** produces editable Markdown plans you review, annotate and approve before the agent changes code. Agents can boot simulators, install and launch apps, send touches and take screenshots. They can also use new debugger, scheme, build-setting, entitlement and `Info.plist` tools through Xcode's MCP server. Plug-ins can bundle skills, MCP servers and Agent Client Protocol configurations. An optional security layer controls what files agents and their child processes can reach.
-- Xcode 26.3 added agentic coding tools from OpenAI and Anthropic. Xcode 27 adds Google Gemini and Google Antigravity, plus Apple-built specialists for localization, UIKit resizing and accessibility.
-- **Localization by agent:** ask an agent to translate the app, and Xcode adds languages, String Catalogs and translations. The String Catalog editor gains a Generate Translations button. A code comment of "do not translate" marks a string Don't Translate.
-- **Device Hub** runs your app on simulated and physical devices, mirrors physical screens on your Mac, and pairs iOS 27 devices over the network without a cable.
-- **Previews:** `#Preview(arguments:)` grids, a Resizable Canvas, previews in another localization, and contrast and control-border overrides. Code inside `#Preview` now runs on the main actor. `PreviewProvider` is deprecated.
-- The `#Playground` macro (Xcode 26) runs snippets inline in the canvas. In Xcode 27, each `#Preview` and `#Playground` tab can be pinned.
-- Apple's documentation describes a JSON project file (`.xcproj`) that replaces `.pbxproj` as the default in **Xcode 27.2, marked beta** at the time of writing. It's meant to produce smaller diffs, fewer merge conflicts and easier edits by agents.
+- **Projects and workspaces:** faster templates for common projects, a customizable toolbar, Appearance themes per project, and a visual Markdown editor. Apple's docs also describe a JSON project file (`.xcproj`) replacing `.pbxproj` as the default in Xcode 27.2, marked beta at the time of writing, for smaller diffs and fewer merge conflicts.
+- **Coding intelligence moved into the editor area**, with transcript and artifact panes. **Plan mode** produces editable Markdown plans you review and approve before the agent changes code. Agents can boot simulators, launch apps, send touches, take screenshots, and use new debugger, build-setting and entitlement tools through Xcode's MCP server. Plug-ins bundle skills, MCP servers and Agent Client Protocol configurations. An optional security layer limits which files agents can reach. Xcode 26.3 added agentic tools from OpenAI and Anthropic; Xcode 27 adds Google Gemini and Antigravity.
+- **Localization by agent:** ask an agent to translate the app, and Xcode adds languages, String Catalogs and translations. A "do not translate" code comment marks a string Don't Translate.
+- **Device Hub** runs your app on simulated and physical devices, mirrors physical screens, and pairs iOS 27 devices over the network.
+- **Previews and playgrounds:** `#Preview(arguments:)` grids, a Resizable Canvas, and overrides for localization, contrast and control borders. `#Preview` code now runs on the main actor. `PreviewProvider` is deprecated. The `#Playground` macro (Xcode 26) runs snippets inline in the canvas.
+- **Build system:** explicitly built modules (Xcode 16) improve build parallelism, error messages and debugger speed. In Xcode 27, LLDB imports them directly in projects with bridging headers, which speeds up the first `po`. Swift 6.4 makes Swift Build the default build system in SwiftPM. The old `ld64` linker is gone.
 
-**Testing**
-- New **Evaluations** framework for measuring intelligence features, run through Swift Testing.
-- New `XCUIVoiceOverService` drives VoiceOver in UI tests.
-- Test plans can set how app crashes during UI tests are treated (off, warning, failure or fatal failure). A new launch-test template runs across every orientation, localization and appearance combination.
-- Swift 6.4 makes XCTest and Swift Testing assertions work in each other's tests. How a failing cross-framework assertion is reported depends on the interoperability mode.
-- The Test Repetition Mode setting now repeats individual Swift Testing cases, not the whole plan. `swift test` gains `--maximum-repetitions` and `--repeat-until pass|fail`.
-
-**Performance and observability**
-- Instruments adds the **Foundation Models** instrument (instructions, prompts, responses, tool calls, token use, latency) and a **Swift Executors** instrument. It also adds Swift Task Collections, three CPU profile views, Run Comparison, os_log overlays on thread tracks, and StateReporting states in Points of Interest.
-- LLDB gains `language swift task tree` and ships its own MCP server, `lldb-mcp`.
-- MetricKit's `MetricManager` replaces `MXMetricManager` and its subscriber protocol. Reports are `Codable` and `Sendable`. The docs mark `MXMetricManager` deprecated as of iOS 27.2.
-- Organizer adds an Insights overview, the Hitches metric, storage metrics, more metric goals, and Generate Recommendations.
+**Testing, performance and observability**
+- New: the **Evaluations** framework, `XCUIVoiceOverService`, a test-plan setting for how app crashes during UI tests count, and a launch-test template that runs across orientations, localizations and appearances.
+- Swift 6.4 lets XCTest and Swift Testing assertions work in each other's tests. `swift test` gains `--maximum-repetitions` and `--repeat-until`.
+- Instruments adds the **Foundation Models** and **Swift Executors** instruments, three CPU profile views, Run Comparison, and StateReporting states in Points of Interest. LLDB gains `language swift task tree` and its own MCP server, `lldb-mcp`.
+- MetricKit's `MetricManager` replaces `MXMetricManager` and its subscriber protocol (the docs mark `MXMetricManager` deprecated as of iOS 27.2). Organizer adds Insights, Hitches, storage metrics and Generate Recommendations.
 
 **Distribution and policy**
-- Per Apple's June 2026 notes, Xcode Cloud can build and test without Developer Program membership. Adding a TestFlight workflow is easier, and webhooks and extra repositories are supported. TestFlight and the App Store still need membership.
-- The classic `ld64` linker and `-ld_classic` are gone. On Demand Resources and `NSBundleResourceRequest` are deprecated. Use Background Assets.
+- Per Apple's June 2026 notes, Xcode Cloud can build and test without a Developer Program membership, and TestFlight workflows are easier to add. TestFlight and the App Store still need membership.
+- On Demand Resources is deprecated in favor of Background Assets.
 - The App Review Guidelines were last updated June 8, 2026. Rule 5.1.2(i) names third-party AI explicitly.
 
 **What old tutorials get wrong**
 - "Wait on `XCTestExpectation` with a timeout." For new tests, use `async` tests and `confirmation`.
-- "Swift Testing replaces XCTest." Not for UI tests or `measure` performance tests. Those still use XCTest.
-- "Turn on Thread Sanitizer on your iPhone." It runs only in the Simulator and on macOS.
-- "Subscribe with `MXMetricManagerSubscriber`." In iOS 27, iterate `MetricManager`'s async sequences.
+- "Swift Testing replaces XCTest." Not for UI tests or `measure` performance tests.
+- "Run Thread Sanitizer on your iPhone." It works only in the Simulator and on macOS.
 - "Unit test the LLM's answer." Test your code with a stub, and measure the model with an evaluation.
 
 ## Pitfalls you only learn by shipping
@@ -653,7 +660,7 @@ final class DiagnosticsReporter: Sendable {
 *Done when:* the Hangs track shows nothing over 250 ms for that tap, and the comparison shows the main thread's time falling.
 
 **3. Wire up field observability (30 min).** Add `InstrumentedPlanner` and `DiagnosticsReporter` from pattern 7. Run from Xcode, then choose Debug > MetricKit > Simulate MetricKit Payloads. In Console, filter by subsystem `com.example.errand`. In Instruments, find the `plan` signposts.
-*Done when:* you can see a simulated diagnostic in your log, a `plan` interval in Instruments, and your errand text shown as `<private>` in logs from a Release build.
+*Done when:* you see a simulated diagnostic in your log and a `plan` interval in Instruments, and no log line marks the errand text `.public`.
 
 **4. Rehearse App Review (30 min).** Write Errand's Notes for Review, privacy label answers, and consent copy. Go through the eight rules in the table above and write one line per rule on how Errand complies.
 *Done when:* a friend who has never seen the app could review it from your notes, including what happens on a device without Apple Intelligence.
@@ -700,10 +707,10 @@ final class DiagnosticsReporter: Sendable {
 
 ## Check yourself
 
-**1. When do you use `#require` instead of `#expect`?**
+**1. You're paused at a breakpoint. When do you type `v`, `p` or `po`?**
 <details><summary>Answer</summary>
 
-When the rest of the test is meaningless if the check fails, for example unwrapping an optional you're about to use. `#require` throws and stops the test. `#expect` records the failure and keeps going, so you see every failed check in one run.
+Start with `v`: it reads values from memory without running code, so it's fast and has no side effects, but it can't evaluate computed properties or calls. Use `p` when you need a computed property or a function call, because it compiles and runs the expression. Use `po` when you want the object's own description. If `p` or `po` fails on a value typed as a protocol, go back to `v`.
 </details>
 
 **2. Your approval-gate test uses `confirmation(expectedCount: 0)`. What exactly does it prove, and what makes it pass wrongly?**

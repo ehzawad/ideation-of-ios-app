@@ -23,7 +23,7 @@ Swift 6.4 · Xcode 27 · iOS 27. Lowercase function names such as `refresh()` or
 | `nonisolated func f() async` with approachable concurrency, or `nonisolated(nonsending)` | Caller's | On the caller's actor |
 | `@concurrent func f() async` | None | On the global concurrent pool |
 | `Task { }` | Inherits the enclosing actor | Same actor. Inherits priority and task-locals. |
-| `Task.detached { }` | None | Global pool. Inherits nothing. |
+| `Task.detached { }` | None | Global pool. No actor, no task-locals, not cancelled with its creator. |
 | `async let`, `group.addTask { }` | Child task | Concurrently. Cancelled with the parent. |
 
 ## Syntax
@@ -184,7 +184,7 @@ try await Trace.$id.withValue("req-42") { try await refresh() }  // children see
 | `explicit use of 'self' is required when 'self' is optional, to make control flow explicit` | You captured `[weak self]` | `guard let self else { return }` |
 | `Unstructured throwing task created by 'init(priority:operation:)' is unused` (warning, 6.4) | The task's error would be dropped | Store the task and await `.value`, or catch inside |
 
-Diagnostics end with a group name in brackets, such as `[#NoUseUnstructuredThrowingTask]`. Pass that name to `@diagnose(Group, as: …)` (Swift 6.4) or SwiftPM's `.treatWarning(_:as:)` to change its severity.
+Many diagnostics end with a group name in brackets, such as `[#NoUseUnstructuredThrowingTask]`. Pass that name to `@diagnose(Group, as: …)` (Swift 6.4) or SwiftPM's `.treatWarning(_:as:)` to change its severity.
 
 ## Swift Testing in one block
 

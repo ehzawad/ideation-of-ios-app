@@ -225,7 +225,7 @@ flowchart TB
 - **`async let`** starts a fixed number of children in parallel. The parent awaits them by name.
 - **Task groups** (`withTaskGroup`, `withThrowingTaskGroup`) handle a dynamic number of children. **Discarding task groups** are for side effects only: finished children are thrown away, so memory doesn't grow in long-running loops. A throwing discarding group cancels itself on the first error and rethrows it.
 - **Cancellation is cooperative.** `cancel()` only sets a flag. Your code checks `Task.isCancelled` or calls `try Task.checkCancellation()`. Many async APIs, including `Task.sleep`, throw `CancellationError` when cancelled. `withTaskCancellationHandler` reacts immediately. New in Swift 6.4, `withTaskCancellationShield` protects cleanup that must finish.
-- **Unstructured tasks.** `Task { }` inherits the current actor, priority and task-local values. `Task.detached` inherits none of them. Dropping the handle does *not* cancel the task, and a thrown error stays inside until someone awaits `.value`. `Task.immediate` (iOS 26) starts running right away in the caller's context, when the isolation matches, instead of waiting to be scheduled.
+- **Unstructured tasks.** `Task { }` inherits the current actor, priority and task-local values. `Task.detached` inherits neither the actor nor task-local values. Dropping the handle does *not* cancel the task, and a thrown error stays inside until someone awaits `.value`. `Task.immediate` (iOS 26) starts running right away in the caller's context, when the isolation matches, instead of waiting to be scheduled.
 - **Values over time** are `AsyncSequence`s, consumed with `for await`. `AsyncStream` bridges callback-based code. `Observations` (iOS 26) turns reads of `@Observable` properties into a stream of changes:
 
 ```swift
@@ -521,9 +521,9 @@ nonisolated enum Summarizer {
 - **`#Preview` code now explicitly runs on the main actor**, so previews can call main-actor APIs without warnings.
 - **What old tutorials get wrong:**
   - "Nonisolated async functions always run on a background thread." Not with approachable concurrency: they run on the caller's actor unless marked `@concurrent`.
-  - "Use `Task.detached` to get off the main thread." Prefer a `@concurrent` function. Detached tasks drop priority, task-locals and cancellation.
+  - "Use `Task.detached` to get off the main thread." Prefer a `@concurrent` function. Detached tasks lose the actor context and task-local values, and nothing cancels them for you.
   - "Always write `[weak self]` in `Task`." Only for tasks that can outlive their owner.
-  - `DispatchQueue.main.async` inside async code, `ObservableObject`, XCTest for new tests, and `Task.sleep(nanoseconds:)` are all pre-2024 patterns.
+  - `DispatchQueue.main.async` inside async code, `ObservableObject`, XCTest for new tests, and `Task.sleep(nanoseconds:)` are all older patterns.
 
 ## Pitfalls you only learn by shipping
 

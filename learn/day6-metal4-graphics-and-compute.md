@@ -91,7 +91,7 @@ Three practical rules fall out of this:
 
 A render pipeline state bundles a vertex function, a fragment function, the pixel format of each output, blending and more. The GPU driver compiles all of that into one executable. That's expensive, and Apple's compilation guide warns it can take an unpredictable amount of time. It's why "the first time this screen appears, it hitches" is a classic Metal bug. Changing a baked-in property (like the output pixel format) means a different pipeline.
 
-Metal 4 gives compilation its own object, `MTL4Compiler`, so you decide *when* and *at what priority* compilation runs. Apple's compilation guide recommends asynchronous compilation for anything non-trivial, and describes three ways to compile less: *unspecialized* pipelines you specialize later without recompiling the shader body, *color attachment mapping* so one pipeline works with differently laid-out render passes, and *harvesting* compiled pipelines into archives you ship with the app. Function constants (`MTLFunctionConstantValues`) still let one shader source produce specialized variants.
+Metal 4 gives compilation its own object, `MTL4Compiler`, so you decide *when* and *at what priority* compilation runs. Apple's compilation guide suggests synchronous calls for prototypes and asynchronous ones for larger apps, and describes three ways to compile less: *unspecialized* pipelines you specialize later without recompiling the shader body, *color attachment mapping* so one pipeline works with differently laid-out render passes, and *harvesting* compiled pipelines into archives you ship with the app. Function constants (`MTLFunctionConstantValues`) still let one shader source produce specialized variants.
 
 **Senior tell:** there is no pipeline creation anywhere in their draw loop, and they can say which pipelines are compiled at launch and which are compiled lazily.
 
@@ -116,7 +116,7 @@ The reward is lower CPU overhead and more predictable frames. The price is that 
 
 **In Metal 4, a model can run between your compute pass and your render pass without the CPU in the middle.**
 
-Before Metal 4, using a Core ML model inside a rendering loop meant: GPU renders, CPU waits, CPU runs the model, CPU hands the result back, GPU continues. Every round trip cost at least a frame. Metal 4 adds a *machine learning pass*. You convert a Core ML model into a Metal package with the `metal-package-builder` tool in Xcode, compile it into an `MTL4MachineLearningPipelineState`, and encode it with an `MTL4MachineLearningCommandEncoder` in the same command buffer as your other work. Inputs and outputs are `MTLTensor`s, a new resource type for multidimensional arrays. The system chooses whether each model runs on the GPU or the Neural Engine. When it picks the Neural Engine, the GPU is free to run other work at the same time.
+Before Metal 4, using a Core ML model inside a rendering loop usually meant: GPU renders, CPU waits, CPU runs the model, CPU hands the result back, GPU continues. Each round trip could easily cost a frame. Metal 4 adds a *machine learning pass*. You convert a Core ML model into a Metal package with the `metal-package-builder` tool in Xcode, compile it into an `MTL4MachineLearningPipelineState`, and encode it with an `MTL4MachineLearningCommandEncoder` in the same command buffer as your other work. Inputs and outputs are `MTLTensor`s, a new resource type for multidimensional arrays. The system chooses whether each model runs on the GPU or the Neural Engine. When it picks the Neural Engine, the GPU is free to run other work at the same time.
 
 Metal Shading Language (MSL) 4 also has tensor types and operations (matrix multiply, convolution, reduction) you can call inline from any shader stage. On iOS 27, the new Core AI framework can also encode inference onto a Metal command queue you provide, through `ComputeStream(commandQueue:)`. Day 5 covers Core AI itself.
 
@@ -129,7 +129,7 @@ Metal Shading Language (MSL) 4 also has tensor types and operations (matrix mult
 | You need | Use | Why |
 |---|---|---|
 | A per-pixel effect on a SwiftUI view: tint, ripple, wave, custom fill | SwiftUI shaders (`[[stitchable]]` + `colorEffect`, `layerEffect`, `distortionEffect`, or `Shader` as a `ShapeStyle`) | SwiftUI owns the render loop, layout, animation and accessibility. You write one MSL function |
-| Filters on photos or video frames, chained | Core Image | Hundreds of built-in filters, automatic tiling and color management |
+| Filters on photos or video frames, chained | Core Image | Many built-in filters you chain, plus custom kernels |
 | 3D content, AR, physics, spatial scenes | RealityKit | Scene graph, materials, lighting, and anchoring are done for you |
 | Your own geometry, several passes, compute, full control of the frame | Metal in an `MTKView` or `CAMetalLayer` | You own the frame loop |
 | Standard GPU math (image kernels, matrix ops) without writing it | Metal Performance Shaders, MPS Graph | Tuned per GPU family |

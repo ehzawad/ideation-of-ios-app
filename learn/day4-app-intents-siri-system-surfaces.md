@@ -90,7 +90,7 @@ Apple's migration advice follows from this. When a new schema-based intent would
 
 **3. `perform()` runs in someone else's context: any process, any time, maybe more than once, often with no screen.**
 
-The system decides where your code runs. Your intent can run in the app in the foreground, the app in the background, an App Intents extension (always background), or a widget extension (widget buttons and controls). You state a preference with `supportedModes`, an `IntentModes` value such as `.background` or `[.background, .foreground(.dynamic)]`. It's a suggestion. Inside `perform()`, `systemContext.currentMode` tells you what actually happened, and `continueInForeground(_:alwaysConfirm:)` asks to bring the app forward. New in iOS 27, `allowedExecutionTargets` pins an intent or query to `.main`, `.appIntentsExtension` or `.widgetKitExtension` when the same code is linked into several targets.
+The system decides where your code runs. Your intent can run in the app in the foreground, the app in the background, an App Intents extension (always background), or a widget extension (widget buttons and controls). You state a preference with `supportedModes`, an `IntentModes` value such as `.background` or `[.background, .foreground(.dynamic)]`. It's a suggestion. Inside `perform()`, `systemContext.currentMode` tells you what actually happened, `continueInForeground(_:alwaysConfirm:)` asks to bring the app forward, and `systemContext.isVoiceOnly` (new in iOS 27) tells you there's no screen at all. New in iOS 27, `allowedExecutionTargets` pins an intent or query to `.main`, `.appIntentsExtension` or `.widgetKitExtension` when the same code is linked into several targets.
 
 Time is limited too. On iOS, a background intent gets 30 seconds unless it adopts `LongRunningIntent` (iOS 27) and wraps its work in `performBackgroundTask(options:operation:)`. That method extends the time only while you keep updating `progress`. The system shows that progress to the person as a Live Activity, using your `localizedDescription` as the title and a progress bar from `completedUnitCount` and `totalUnitCount`. Add `CancellableIntent` and your cleanup code learns *why* it was cancelled: `.userCancelled` or `.timeout`.
 
@@ -518,8 +518,9 @@ From Apple's June 2026 update notes (plus Core Spotlight's July 2026 note), chec
 - **`allowedExecutionTargets`** with **`IntentExecutionTargets`** picks which process runs an intent or query.
 - **`EntityCollection`** stores only IDs, so a parameter with hundreds of entities doesn't load each one during resolution. **`AppUnionValue`** gives `@UnionValue` parameters a proper picker. **`IndexedEntityQuery`** handles Spotlight's reindex requests.
 - **`AppIntentError(description:)`** gives failures a localized message.
+- **`IntentSystemContext.isVoiceOnly`** (iOS 27.0 in the reference, not in the notes) tells `perform()` when the request is voice-only, so free-form output (a generated summary, say) can be made speakable instead of relying on visuals.
 - **App Intents Testing**, a new framework in the iOS 27 SDK, runs intents, entities and queries from a UI test target through the same path Siri and Shortcuts use.
-- **Core Spotlight** adds `SpotlightSearchTool`, so a Foundation Models session can search your index, plus `CSSearchableIndexDescription` for reindexing.
+- **Core Spotlight** adds `SpotlightSearchTool`, so a Foundation Models session can search your index, plus `CSSearchableIndexDescription` for reindexing. Apple's July 2026 sample, Searching indexed content with natural language, shows the whole loop.
 - **Visual Intelligence** adds `SemanticContentDescriptor` support for macOS apps. On iPhone, the pattern from iOS 26 stays: one `IntentValueQuery` that takes a `SemanticContentDescriptor` and returns your entities.
 - **WidgetKit and ActivityKit** have no iOS 27 entries in the update notes. The latest (June 2025) added scheduled Live Activities, Live Activities in the Mac menu bar and CarPlay, `WidgetPushHandler`, and Liquid Glass support through `WidgetAccentedRenderingMode`.
 - **SiriKit.** The SiriKit page says: "SiriKit, Intents, and IntentsUI frameworks continue to provide legacy support for Shortcuts actions, widget configuration, and most existing Siri interactions. To implement modern support for these features and integrate your app with Apple Intelligence and Siri AI, use the App Intents framework." SiriKit's own update page has had no new entry since June 2024, which said standard and custom SiriKit intents are automatically available to Siri's Apple Intelligence action capabilities.
@@ -730,6 +731,7 @@ Define App Shortcuts with an `AppShortcutsProvider`. Every phrase must include y
 - IntentModes — iOS 26.0
 - IntentModes.Current — iOS 26.0
 - IntentSystemContext.currentMode — iOS 26.0
+- IntentSystemContext.isVoiceOnly — iOS 27.0
 - IntentExecutionTargets — iOS 27.0
 - IntentAuthenticationPolicy — iOS 16.0
 - ConfirmationConditions — iOS 18.0

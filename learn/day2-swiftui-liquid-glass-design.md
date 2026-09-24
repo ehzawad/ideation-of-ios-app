@@ -320,9 +320,9 @@ struct ErrandListView: View {
 }
 ```
 
-- `Errand.ID` is a `UUID`, which is `Hashable` and `Codable`, so it works with `NavigationLink(value:label:)` and can be saved for state restoration.
+- If `Errand.ID` is a `UUID`, it's `Hashable` and `Codable`, so it works with `NavigationLink(value:label:)` and the path can be saved for state restoration.
 - Opening an errand from a notification or an App Intent is `path = [id]`. No view needs to be "active."
-- `.task` runs when the list appears and is cancelled if it goes away, so a slow load never updates a screen that's gone.
+- `.task` is tied to the list's lifetime: it starts before the list appears, and SwiftUI can cancel it when the list goes away. Cancellation is cooperative (Day 1), so long loops should check for it.
 
 **3. A toolbar that adopts Liquid Glass.** Standard items become glass automatically; you decide grouping and priority.
 
@@ -498,7 +498,7 @@ struct SketchPad: UIViewRepresentable {
 ## What's new in iOS 27 (and what old tutorials get wrong)
 
 - **`@State` is a macro when you build with Xcode 27.** A class stored in `@State` is created and stored once. Advice to defer model creation into `.task` to avoid repeated allocation is out of date.
-- **One builder for everything.** `@ContentBuilder` (a type alias for `ViewBuilder`) replaces type-specific builders like `ToolbarContentBuilder` and `CommandsBuilder`. You'll see it in every signature in the docs.
+- **One builder for everything.** `@ContentBuilder` (a type alias for `ViewBuilder`) replaces type-specific builders like `ToolbarContentBuilder` and `CommandsBuilder`. You'll see it throughout the SwiftUI signatures in the docs.
 - **Toolbars got smarter about space.** `visibilityPriority(_:)`, `ToolbarOverflowMenu`, the `topBarPinnedTrailing` placement, and `toolbarMinimizationBehavior(_:for:)`. Stop hand-building "More" menus to decide what overflows.
 - **Tabs:** the `.prominent` role places one tab in a separate trailing spot. If no tab is prominent, a `.search` tab may get that treatment.
 - **Reordering and swipe actions leave `List`.** `reorderable()` with `reorderContainer(for:isEnabled:move:)`, and `swipeActions(edge:allowsFullSwipe:content:onPresentationChanged:)` with `swipeActionsContainer()`, work in stacks, grids, scroll views, and custom layouts.
@@ -780,8 +780,8 @@ Versions are the iOS "introduced" versions that `appledoc.py` reported. Some Swi
 - UIHostingController, init(rootView:) — iOS 13.0
 - PKCanvasView, drawing, delegate — iOS 13.0; drawingPolicy — iOS 14.0; PKDrawing — iOS 13.0
 - PKCanvasViewDelegate.canvasViewDrawingDidChange(_:) — iOS 13.0
-- asyncImageURLSession(_:) — iOS 27.0
-- alert(error:actions:) — reported iOS 15.0 (listed in the June 2026 notes)
+- asyncImageURLSession(_:) — iOS 27.0; AsyncImage init(request:scale:) — iOS 27.0
+- alert(error:actions:), alert(_:item:actions:) — reported iOS 15.0 (listed in the June 2026 notes)
 - UIDesignRequiresCompatibility — iOS 26.0, ignored when building for iOS 27
 - XCUIApplication.performAccessibilityAudit(for:_:) — iOS 17.0
 - XCUIVoiceOverService, enable(), disable(), moveForward(), Output.utterance — iOS 27.0; XCUIDevice.voiceOverService — iOS 27.0

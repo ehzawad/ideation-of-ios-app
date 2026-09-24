@@ -42,7 +42,7 @@ flowchart TD
 | Per-scene UI restoration | `@SceneStorage("key")` | Tab, scroll target, draft. |
 | Keyboard focus | `@FocusState` + `.focused(_:equals:)` | |
 | Values during a gesture | `@GestureState` + `.updating(_:body:)` | Resets when the gesture ends. |
-| Sizes that scale with text | `@ScaledMetric(relativeTo: .body) var size = 24` | For padding, icon frames. |
+| Sizes that scale with text | `@ScaledMetric(relativeTo: .body) var size: CGFloat = 24` | For padding, icon frames. |
 | Matched animations and glass morphs | `@Namespace private var ns` | Share one namespace between source and destination. |
 
 **Async work in views**
@@ -138,14 +138,14 @@ TabView(selection: $tab) {
 | Search | `.searchable(text:placement:prompt:)`; empty results: `ContentUnavailableView.search` |
 | Empty state | `ContentUnavailableView(_:systemImage:description:)` |
 | Context menu | `.contextMenu { … }` (match its top actions to your swipe actions) |
-| Scroll position | `@State var pos = ScrollPosition()` + `.scrollPosition($pos)` |
+| Scroll position | `@State var pos = ScrollPosition(idType: Errand.ID.self)` + `.scrollPosition($pos)`; then `pos.scrollTo(id:anchor:)`, `pos.scrollTo(edge: .bottom)`, or read `pos.viewID` |
 | Paging and snapping | `.scrollTargetBehavior(.paging)` or `.viewAligned` + `.scrollTargetLayout()` |
 | React to scrolling | `.onScrollGeometryChange(for:of:action:)`, `.onScrollVisibilityChange(threshold:_:)`, `.onScrollPhaseChange(_:)` |
 | Scroll effects | `.scrollTransition(_:axis:transition:)` |
 | Legibility under bars | `.scrollEdgeEffectStyle(.soft or .hard, for: .top)` |
 | Forms | `Form { … }.formStyle(.grouped)`, `LabeledContent`, `Toggle`, `Picker`, `DatePicker`, `Stepper`, `Slider` (tick marks when you pass `step`), `TextField(_:text:axis:)` |
 | Keyboard | `@FocusState`, `.focused(_:equals:)`, `.onSubmit(of:_:)`, `.submitLabel(_:)`, `.scrollDismissesKeyboard(_:)` |
-| Images from the web (iOS 27 caching) | `AsyncImage`, `.asyncImageURLSession(_:)` |
+| Images from the web (iOS 27 caching) | `AsyncImage(request:scale:)`, `.asyncImageURLSession(_:)` |
 
 ## Animation, gestures, shaders
 
@@ -387,10 +387,10 @@ Versions are the iOS "introduced" versions that `appledoc.py` reported. Some mac
 - reorderable(), reorderContainer(for:isEnabled:move:) — iOS 27.0
 - searchable(text:placement:prompt:) — iOS 16.0; ContentUnavailableView, search — iOS 17.0
 - contextMenu(menuItems:) — iOS 13.0
-- ScrollPosition, scrollPosition(_:anchor:) — iOS 18.0; scrollTargetBehavior(_:), scrollTargetLayout(isEnabled:), paging, viewAligned — iOS 17.0
+- ScrollPosition, init(idType:), viewID, scrollTo(id:anchor:), scrollTo(edge:), scrollPosition(_:anchor:) — iOS 18.0; scrollTargetBehavior(_:), scrollTargetLayout(isEnabled:), paging, viewAligned — iOS 17.0
 - onScrollGeometryChange(for:of:action:), onScrollVisibilityChange(threshold:_:), onScrollPhaseChange(_:) — iOS 18.0; scrollTransition(_:axis:transition:) — iOS 17.0
 - scrollDismissesKeyboard(_:) — iOS 16.0; onSubmit(of:_:), submitLabel(_:) — iOS 15.0
-- AsyncImage — iOS 15.0; asyncImageURLSession(_:) — iOS 27.0
+- AsyncImage — iOS 15.0; asyncImageURLSession(_:), AsyncImage init(request:scale:) — iOS 27.0
 - withAnimation(_:_:), animation(_:value:) — iOS 13.0; spring(duration:bounce:blendDuration:), smooth, snappy, bouncy — iOS 13.0 (back-deployed)
 - transition(_:), Transition.opacity — iOS 17.0; contentTransition(_:) — iOS 16.0; numericText(value:) — iOS 17.0; ContentTransition.symbolEffect(_:options:) — iOS 17.0
 - phaseAnimator(_:trigger:content:animation:), keyframeAnimator(initialValue:trigger:content:keyframes:), LinearKeyframe, SpringKeyframe — iOS 17.0
