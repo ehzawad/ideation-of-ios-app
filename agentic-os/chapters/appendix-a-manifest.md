@@ -50,7 +50,7 @@ A **capability pack** is what an app becomes: a signed bundle of capabilities, c
 | `implements` | standard verb | no | The verb this capability provides (`order.place`). Sets a minimum class and required companion verbs. | `AppIntent(schema:)` ([Apple](https://developer.apple.com/documentation/appintents/app-schema-domains)) | no |
 | `title` | localized string | yes | Short name for people. | MCP `title`; intent title | `title` |
 | `describe.person` | localized string | yes | Shown in "what can you do?" and in the capability list. | none | `description` (one field for both) |
-| `describe.planner` | string, at most about 300 characters | yes | What the planner reads. Reviewed and linted for text aimed at the model. Can't affect the Gate. | MCP `description`; AppFunctions KDoc | `description` |
+| `describe.planner` | string, at most about 300 characters | yes, unless `implements` is set | What the planner reads. Reviewed and linted for text aimed at the model. Can't affect the Gate. For a standard verb the platform supplies it, and the pack may add only `describe.plannerNotes` about its own optional parameters ([Chapter 12](12-developers.md)). | MCP `description`; AppFunctions KDoc | `description` |
 | `examples` | list of requests | no | Used by discovery and by retrieval. | Apple schema example phrases | no; phrasing lives in `planner.js` rules |
 
 ### Schemas
@@ -139,7 +139,7 @@ A **capability pack** is what an app becomes: a signed bundle of capabilities, c
 | Class | Meaning | Examples | Undo kinds allowed | Locked phone, by default | Can a grant lift the ask? |
 |---|---|---|---|---|---|
 | read | No change | `calendar.list`, `device.status`, `weather.today` | none needed | allowed for non-private state; unlock for personal data | not needed |
-| reversible | A change with an exact undo | `audio.setVolume`, `focus.set`, `alarms.create`, reconnecting paired AirPods | `exact` | allowed for device settings | not needed in Auto or Autopilot |
+| reversible | A change with an exact undo | `audio.setVolume`, `focus.set`, `alarms.create`, reconnecting paired AirPods | `exact` | allowed for device settings | no; grants cover consequential calls only. In Ask me, a per-domain mode does this instead |
 | consequential | Reaches other people or the outside world; can't be fully taken back | `messages.send`, `phone.call`, pairing a new device, `booking.change` | `window`, `compensable`, `exact` on the phone's side | unlock | yes, except on the floor |
 | irreversible | Money, deletion, legal commitment | `wallet.pay`, `order.place`, permanent deletion, accepting terms | `compensable` or `none` | Face ID | never |
 
@@ -152,7 +152,7 @@ A **capability pack** is what an app becomes: a signed bundle of capabilities, c
 | `write-remote` | Changes state on a service | consequential, or reversible with a reviewed exact inverse | never by itself |
 | `communicate` | Reaches a person: message, call, email, invite | consequential | the recipient has never been contacted |
 | `share` | Gives a person or device standing access: pairing, sharing location, adding a payee | consequential | the recipient is new, or the data is location or health |
-| `physical` | Acts on the physical world: a lock, a car, an appliance | consequential | the device is not yours |
+| `physical` | Acts on the physical world: a lock, a car, an appliance | consequential | never by itself |
 | `spend` | Moves money or commits to pay | irreversible | always |
 | `delete` | Removes data with no recovery (moving to a recoverable trash is `write-local`) | irreversible | always |
 | `legal` | Accepts terms, signs, consents | irreversible | always |
@@ -260,7 +260,7 @@ Corner Pizza, a fictional local restaurant, ships a pack with six capabilities. 
 }
 ```
 
-Because the pack implements `order.place`, the registry requires `order.status` and `order.cancel` too. The `order.place` manifest:
+Because the pack implements `order.place`, the registry requires the rest of the verb group: `order.quote` (here, `cart.build`), `order.status` and `order.cancel`. The `order.place` manifest:
 
 ```json
 {
@@ -271,7 +271,7 @@ Because the pack implements `order.place`, the registry requires `order.status` 
   "title": "Place an order",
   "describe": {
     "person": "Orders from Corner Pizza for delivery or pickup.",
-    "planner": "Place an order for a cart built with cart.build. Needs the cart id and the total the person saw."
+    "plannerNotes": "The cart id comes from cart.build."
   },
   "examples": ["order my usual from Corner Pizza"],
   "input": {
@@ -391,9 +391,10 @@ The `automation` block lets an app say whether the agent may operate its screens
 | `default` | `allow` or `deny` | What happens on screens not listed. With no policy at all, the OS allows supervised reading and navigation only. |
 | `allow` | list of `{screens, actions}` | Screens by the app's own labels; actions from `read`, `tap`, `type`, `scroll` |
 | `never` | list of screen labels | Off-limits, whatever `allow` says. Login, payment and one-time-code screens are always off, even if unlisted. |
-| `identify` | boolean | The session tells the app it is an agent acting for its user. The OS sets this to true whatever the app declares. |
 | `noticeDays` | integer | How long a policy change waits before it takes effect |
 | `prefer` | capability id | The capability the app would rather the agent use |
+
+Whatever the policy says, an automation session always tells the app that an agent is acting for its user, and every step goes through the Gate.
 
 ## A.11 Grants and approval tokens
 
@@ -402,11 +403,11 @@ The `automation` block lets an app say whether the agent may operate its screens
 | Field | Meaning | Simulator |
 |---|---|---|
 | `capability` | Capability id, bound to its major version | `cap` |
-| `match` | Constraints on arguments (`to = Mom`, `amount ≤ 25`) | `match`, a case-insensitive exact match per argument |
+| `match` | Constraints on arguments (`to = Mom`, `device = Kitchen speaker`) | `match`, a case-insensitive exact match per argument |
 | `until` | Expiry; default seven days | no; grants last for the session |
 | `uses` | Optional count | no |
 | `origin` | Your words or the card you confirmed, and when | `label` only |
-| `id` | Written into every ledger entry the grant allows | `id` |
+| `id` | Written into every ledger entry the grant allows | `id`, but the ledger doesn't record it |
 
 Grants apply only to consequential calls, never to the floor or to irreversible ones.
 
@@ -435,6 +436,7 @@ With the effect class computed (declared class, raised by `raiseWhen` and kinds)
 |---|---|---|---|---|
 | any | Unknown, unsigned or revoked capability, outside the run's reach, or a deny rule matches | deny | deny | deny |
 | any | Over a hard limit or cap | deny | deny | deny |
+| any | A sensitive argument came from untrusted content, or private data would reach a new sink | ask for a release, then the rows below | same | same |
 | read | | allow | allow | allow |
 | reversible | | ask | allow, with Undo | allow, with Undo |
 | consequential | No grant covers it | ask | ask | allow, within the run's reach |
@@ -489,6 +491,7 @@ How it compares with the full table:
 | 8. Mode ceiling | per domain | one global mode |
 | 8. Grants | scoped, with expiry and uses | exact argument match, for the session, consequential only |
 | Approval tokens | bound, re-checked at commit | none; the call runs on approval |
+| Card actions | pass the same Gate as the planner's calls | pass `decide()`: denials apply and irreversible calls are refused from a card; the tap itself counts as the approval for an ask; recorded as `who: 'you'` |
 
 ## Assumptions and unknowns
 

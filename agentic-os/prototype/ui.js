@@ -122,6 +122,11 @@
   // ------------------------------------------------------------ direct manipulation
   // When you move a slider or tap a button on a card, that is you acting, not the agent. It still goes in the ledger.
   function userAct(capId, args, { quiet = false } = {}) {
+    // A tap on a card is your approval, but it still passes the Gate: hard limits and unknown
+    // capabilities are refused, and anything irreversible has to start as a request so it can ask with Face ID.
+    const d = OS.decide(capId, args);
+    if (d.verdict === 'deny') { note(d.reason); return null; }
+    if (d.faceId) { note('Irreversible actions start from a request, so the phone can ask with Face ID.'); return null; }
     try {
       const out = OS.execute(capId, args, 'you', null);
       if (!quiet) {

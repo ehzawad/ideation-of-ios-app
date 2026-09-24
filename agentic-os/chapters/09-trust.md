@@ -177,7 +177,7 @@ Done. Messages to anyone else still ask. It's in Grants if you want to change it
 
 A grant has these parts:
 
-- **capability** and **argument constraints**: `messages.send` where `to = Mom`; `wallet.pay` where `to = Sam` and `amount ≤ 25`;
+- **capability** and **argument constraints**: `messages.send` where `to = Mom`; `phone.call` where `to = Sam`. Grants only cover consequential capabilities. Irreversible ones like `wallet.pay` can't be granted; bounded purchases use mandates (below);
 - **window**: an expiry, with a default of seven days. There are no silent forever grants. A permanent grant is a separate, deliberate choice;
 - **uses**: optional ("once", "up to 3 times");
 - **origin**: the words you said, the card you confirmed, and the time;

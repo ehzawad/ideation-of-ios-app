@@ -86,9 +86,9 @@ Every field is there because some component reads it:
 
 Four choices shape the rest of the format.
 
-**Rules are data, not code.** In [the simulator](../prototype/), capabilities in `os.js` carry JavaScript functions: `riskFor` raises the effect class for some arguments, and `check` enforces hard limits such as the Wallet's $50 per-payment cap. That works when one author wrote everything. On a real phone the Gate can't run a pack's code to decide whether that pack's call is safe. So the manifest states those rules as data, small expressions over the arguments and over entity attributes the OS resolves itself (`device.paired == false`, `amount > wallet.perPaymentCap`), and the Gate evaluates them. A rule can raise a class or deny a call. None can lower a class.
+**Rules are data.** In [the simulator](../prototype/), capabilities in `os.js` carry JavaScript functions: `riskFor` raises the effect class for some arguments, and `check` enforces hard limits such as the Wallet's $50 per-payment cap. That works when one author wrote everything. On a real phone the Gate can't run a pack's code to decide whether that pack's call is safe. So the manifest states those rules as data, small expressions over the arguments and over entity attributes the OS resolves itself (`device.paired == false`, `amount > wallet.perPaymentCap`), and the Gate evaluates them. A rule can raise a class or deny a call. None can lower a class.
 
-**Two descriptions.** The planner's description is a way to slip it instructions, so it is kept short, linted and reviewed, apart from the friendly one people see. Neither can change what the Gate allows ([Chapter 9](09-trust.md)).
+**Two descriptions.** The planner's description is a way to slip it instructions, so it is kept short, linted and reviewed, apart from the friendly one people see. For standard verbs the platform writes it ([Chapter 12](12-developers.md)). Neither can change what the Gate allows.
 
 **Undo is declared before the call,** so the approval card and the receipt can state it honestly: "Undo", "Undo for 10 seconds", "Cancel for credit until Saturday 11:10 AM", or "Can't be undone".
 
@@ -229,11 +229,11 @@ The case for this comes from COMMITGUARD, a 2026 study: agents reached the visib
 
 **Standard verbs.** The OS defines verbs such as `message.send`, `alarm.create`, `ride.request`, `order.place` and `booking.change`, each with fixed parameters and a minimum class, and a capability declares which verb it `implements`. The planner plans in verbs where it can, and the registry resolves the verb and a provider to a capability id. This generalizes Apple's schemas: "a person can set an alarm on different apps that support the `createAlarm` schema with the same phrases" ([Apple](https://developer.apple.com/documentation/appintents/app-schema-domain-clock)). Apple Intelligence "only uses the properties that each schema defines", and extra properties must be optional ([Apple](https://developer.apple.com/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence)). The agentic phone does the same: a pack's extra parameters are optional, used only when you mention them.
 
-**Verb groups.** Apple requires an app that supports any schema in its Mail, Clock or Messages domains to support all of them, checked by Xcode at build time ([Apple](https://developer.apple.com/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence)); it flags `sendMessage` without `draftMessage` because confirmation needs a draft ([WWDC26 session 240](https://developer.apple.com/videos/play/wwdc2026/240/)). The agentic phone uses groups to make preview and undo mandatory: `message.send` requires `message.draft`; `order.place` requires `order.status` and `order.cancel`; `booking.change` requires `booking.get`. A pack missing a companion doesn't install.
+**Verb groups.** Apple requires an app that supports any schema in its Mail, Clock or Messages domains to support all of them, checked by Xcode at build time ([Apple](https://developer.apple.com/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence)); it flags `sendMessage` without `draftMessage` because confirmation needs a draft ([WWDC26 session 240](https://developer.apple.com/videos/play/wwdc2026/240/)). The agentic phone uses groups to make preview and undo mandatory: `message.send` requires `message.draft`; `order.place` requires `order.quote`, `order.status` and `order.cancel`; `booking.change` requires `booking.get`. A pack missing a companion doesn't install.
 
 **Choosing a provider.** When several packs implement a verb, a provider you name wins ("from Corner Pizza"), then memory ("your usual"), then a choice card. The planner never silently picks a provider for a consequential or irreversible call. How that choice card is ordered, and who may pay to be on it, is [Chapter 12](12-developers.md)'s question.
 
-**What you see.** The Line shows a capability's short name, which is the verb when it implements one, and its provider (`● order.place(cart: 41) · Corner Pizza`). The ledger stores the full id and version. "What can you do?" is answered from the installed manifests' titles and examples, so it's always true ([Chapter 4](04-the-line.md)). When nothing matches, the phone says so. In [the simulator](../prototype/), try "Order a pizza": no capability matches, and it says it can't, rather than pretending.
+**What you see.** The Line shows a capability's short name and its provider (`● order.place(cart: 41) · Corner Pizza`). The ledger stores the full id and version. "What can you do?" is answered from the installed manifests' titles and examples, so it's always true ([Chapter 4](04-the-line.md)). When nothing matches, the phone says so. In [the simulator](../prototype/), try "Order a pizza": no capability matches, and it says it can't, rather than pretending.
 
 ## System and third-party capabilities
 
@@ -249,28 +249,26 @@ Capabilities come from four kinds of source, and the manifest's trust depends on
 
 **Some capabilities are system-only:** switching radios, pairing without a prompt, secure settings. Android already reserves these; the permission to "pair bluetooth devices without user interaction" is "Not for use by third-party applications" ([Android](https://developer.android.com/reference/android/Manifest.permission)). Some kinds are system-mediated even when a pack implements the verb: every `spend` goes through the Wallet's payment sheet.
 
-**Packs are principals.** A pack's code holds only the capabilities its manifest `requires`, shown at install. If a food-delivery pack asks for your contacts, that's a call the Gate evaluates, not a right it inherits ([Chapter 9](09-trust.md)).
+**Packs are principals.** A pack's code holds only the capabilities its manifest `requires`, shown at install. If a food-delivery pack asks for your contacts, the Gate evaluates that call like any other ([Chapter 9](09-trust.md)).
 
 **Remote capabilities fill gaps.** Google's Android guidance offers remote MCP servers alongside AppFunctions for reach across platforms ([Android](https://developer.android.com/ai/intelligence-system)). The price is trust: a remote manifest is derived, and its results are low-integrity data.
 
 ## Examples: three system capabilities and a food order
 
-The alarm manifest above is the simplest case. `audio.setVolume` is much the same: reversible, undone from a snapshot, allowed on a locked phone, with a slider card bound to the volume. It is also a capability no app has today; on iOS, "Only the user can directly set the system volume" ([Apple](https://developer.apple.com/documentation/avfaudio/avaudiosession/outputvolume)). `bluetooth.connect` is the interesting one, because the same capability has two classes. In [the simulator](../prototype/), try "Connect to Bluetooth" and pick the speaker you haven't paired:
+The alarm manifest above is the simplest case. `audio.setVolume` is much the same: reversible, undone from a snapshot, allowed on a locked phone, with a slider card bound to the volume. It is also a capability no app has today; on iOS, "Only the user can directly set the system volume" ([Apple](https://developer.apple.com/documentation/avfaudio/avaudiosession/outputvolume)). `bluetooth.connect` is the interesting one, because the same capability has two classes. In [the simulator](../prototype/), try "Pair the JBL speaker", a nearby speaker you haven't paired:
 
 ```
-› connect the JBL speaker
-● bluetooth.list()
-  └ Paired: AirPods Pro, Car audio, Kitchen speaker · Nearby: JBL Flip 6
+› pair the JBL speaker
 ◆ Needs you · consequential — Pair JBL Flip 6? Pairing a new device (JBL Flip 6) lets it connect again later without asking. [Cancel] [Pair]
 › pair
 ● bluetooth.connect(device: JBL Flip 6)
   └ Paired and connected JBL Flip 6                          [Undo]
-Connected. Next time I'll connect it without asking.
+Paired. Next time I'll connect it without asking.
 ```
 
 The reason on the card comes from the capability, not the model: `whyRisky` in the simulator, the `reason` template in the manifest.
 
-**A food order from a third-party pack.** Corner Pizza, a local restaurant, ships a small pack: `menu.search` and `menu.usual` (read), `cart.build` (reversible), `order.place` (irreversible), `order.status` and `order.cancel`. Its `order.place` manifest declares the kinds `spend` and `write-remote`, the witnesses `cart.version` and `cart.total`, a two-minute compensator, one egress sink (the restaurant's order endpoint, which receives items, address and phone number), and a memory policy that lets the phone remember what you ordered.
+**A food order from a third-party pack.** Corner Pizza, a local restaurant, ships a small pack: `menu.search` and `menu.usual` (read), `cart.build` (reversible; it implements `order.quote`), `order.place` (irreversible), `order.status` and `order.cancel`. Its `order.place` manifest declares the kinds `spend` and `write-remote`, the witnesses `cart.version` and `cart.total`, a two-minute compensator, one egress sink (the restaurant's order endpoint, which receives items, address and phone number), and a memory policy that lets the phone remember what you ordered.
 
 ```
 › order my usual from corner pizza
@@ -336,7 +334,7 @@ In the agentic phone, automation is one synthetic capability, `automation.run(ap
 
 ### An opt-out protocol
 
-Automation without consent gets blocked. Within days of ByteDance's first Doubao phone, WeChat logged its users out and Alipay, Taobao and banks blocked it or warned users off ([SCMP](https://www.scmp.com/business/china-business/article/3335404/bytedances-agentic-ai-smartphone-dials-digital-backlash-chinas-top-apps)). Amazon sued Perplexity, alleging among other things that its Comet browser agent disguised itself as Chrome rather than identifying itself ([Payments Dive](https://www.paymentsdive.com/news/amazon-sues-perplexity-ai-shopping-agents/804923/)). The Ninth Circuit vacated the resulting injunction in August 2026, holding that the access was by the user, employing the assistant as a tool ([Cooley](https://www.cooley.com/news/insight/2026/2026-08-06-ninth-circuit-rules-on-ai-agent-access-to-third-party-websites-under-cfaa)). That is legal cover for the user's agent, not commercial peace with the app.
+Automation without consent gets blocked. Within days of ByteDance's first Doubao phone, WeChat logged its users out and Alipay, Taobao and banks blocked it or warned users off ([SCMP](https://www.scmp.com/business/china-business/article/3335404/bytedances-agentic-ai-smartphone-dials-digital-backlash-chinas-top-apps)). Amazon sued Perplexity, alleging among other things that its Comet browser agent disguised itself as Chrome rather than identifying itself ([Payments Dive](https://www.paymentsdive.com/news/amazon-sues-perplexity-ai-shopping-agents/804923/)). The Ninth Circuit vacated the resulting injunction in August 2026, holding that the access was by the user, employing the assistant as a tool ([Cooley](https://www.cooley.com/news/insight/2026/2026-08-06-ninth-circuit-rules-on-ai-agent-access-to-third-party-websites-under-cfaa)). That protects the user's agent in court. It doesn't make the app cooperate.
 
 ByteDance's answer for its second phone is SAEP, a screen-automation protocol. According to Pandaily's secondary coverage, it lets an app declare which pages may be read, which actions may be automated and which areas are off-limits, with a 30-day public notice period; Doubao stops if an app opts out, and officials likened it to robots.txt for agents ([Pandaily](https://pandaily.com/bytedance-doubao-phone-agent-mcp-a2a-gui-fallback)).
 
@@ -350,7 +348,6 @@ The agentic phone adopts the same idea as an `automation` block that an app can 
     { "screens": ["reservations"], "actions": ["read", "tap", "type"] }
   ],
   "never": ["payment", "account", "messages"],
-  "identify": true,
   "noticeDays": 30,
   "prefer": "com.larkbistro.reservation.create"
 }
@@ -361,7 +358,7 @@ The agentic phone adopts the same idea as an `automation` block that an app can 
 - **The agent identifies itself.** An automation session tells the app it is an agent acting for its user, so the app can log it, rate-limit it, or offer a lighter flow. Not identifying itself was part of Amazon's complaint against Comet.
 - **Changes give notice.** A policy change takes effect after `noticeDays`, so your routines don't break overnight.
 - **`prefer` points to a capability** the app would rather you use.
-- **No policy means supervised, not free:** reading and navigation are allowed, always visible, never on the screens above, and every step goes through the Gate.
+- **No policy means supervised reading and navigation only,** always visible, never on the screens above, and every step goes through the Gate.
 
 What it costs: apps can opt out wholesale, and some will. Then the Line says "Lark doesn't allow automation. Want me to open it?", which is honest and less useful. The protocol also helps only if many phone makers honor the same file. What app makers will want in exchange is [Chapter 12](12-developers.md)'s subject.
 
@@ -413,7 +410,6 @@ What it costs: apps can opt out wholesale, and some will. Then the Line says "La
 - [PalmClaw](https://arxiv.org/abs/2607.13027)
 - [MobileWorld](https://huggingface.co/papers/2512.19432)
 - [Google, Gemini multi-step tasks on Android](https://blog.google/innovation-and-ai/products/gemini-app/android-multi-step-tasks/)
-- [Gemini screen automation help](https://support.google.com/pixelphone/answer/16940971?hl=en)
 - [Open-AutoGLM README](https://github.com/zai-org/Open-AutoGLM/blob/main/README_en.md)
 - [TechNode, nubia NaviX Ultra launch](https://technode.com/2026/09/17/nubia-navix-ultra-second-generation-doubao-phone-launches/)
 - [Pandaily on Doubao gen 2 and SAEP](https://pandaily.com/bytedance-doubao-phone-agent-mcp-a2a-gui-fallback)
