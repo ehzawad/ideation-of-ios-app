@@ -32,7 +32,7 @@ body { margin: 0; background: #fcfcfb; font-family: Inter, sans-serif; -webkit-f
 .cap-title { font-weight: 700; font-size: 20px; color: #0b0b0b; letter-spacing: -0.3px; }
 .cap-line { font-size: 15px; line-height: 21px; color: #52514e; }
 </style></head>
-<body><div id="root"></div>
+<body><div id="root"></div><div id="patterns" style="display:flex;gap:60px;padding:60px;width:1506px"></div>
 <script>
 const C = { blue: '#0a84ff', blueL: '#007aff', green: '#34c759', orange: '#ff9500', red: '#ff3b30', purple: '#af52de', teal: '#30b0c7', gray: '#8e8e93', gray2: '#aeaeb2', label2: '#3c3c43' };
 const TB = '#2a78d6', TW = '#eb6834', TM = '#1baf7a';
@@ -73,7 +73,7 @@ function al(parent, dir = 'col', { gap = 0, pad = null, padX = null, padY = null
 function card(parent, { dir = 'col', pad = 16, gap = 10, radius = 22, bg = '#fff', shadow = true, stroke = null } = {}) { const f = el('div', 'card', parent, { flexDirection: dir === 'row' ? 'row' : 'column', padding: pad + 'px', gap: gap + 'px', borderRadius: radius + 'px', background: bg }); if (!shadow) f.style.boxShadow = 'none'; if (stroke) f.style.outline = stroke; if (dir === 'row') f.style.alignItems = 'center'; return f; }
 function glass(parent, o = {}) { const f = card(parent, o); f.classList.add('glass'); f.style.background = ''; return f; }
 function darkGlass(parent, o = {}) { const f = card(parent, o); f.classList.add('dglass'); f.style.background = ''; return f; }
-function pill(parent, label, { bg = C.blueL, color = '#fff', size = 15, h = 44, icon = null, grow = false, op = 1 } = {}) { const b = el('div', 'pill', parent, { height: h + 'px', borderRadius: h / 2 + 'px', color, fontSize: size + 'px' }); b.style.background = op < 1 ? hexA(bg, op) : bg; if (grow) { if (parent.classList.contains('row')) b.style.flex = '1'; else b.style.alignSelf = 'stretch'; } if (icon) svgIcon(b, icon, { size: size + 1, color, sw: 2.4 }); el('span', null, b).textContent = label; return b; }
+function pill(parent, label, { bg = C.blueL, color = '#fff', size = 15, h = 44, icon = null, grow = false, op = 1 } = {}) { const b = el('div', 'pill', parent, { height: h + 'px', borderRadius: h / 2 + 'px', color, fontSize: size + 'px' }); b.style.background = op < 1 ? hexA(bg, op) : bg; if (grow) { if (parent.classList.contains('row') || parent.style.flexDirection === 'row') b.style.flex = '1'; else b.style.alignSelf = 'stretch'; } if (icon) svgIcon(b, icon, { size: size + 1, color, sw: 2.4 }); el('span', null, b).textContent = label; return b; }
 function hexA(h, a) { h = h.replace('#', ''); return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`; }
 function row(parent, o = {}) { const r = al(parent, 'row', Object.assign({ gap: 10 }, o)); return r; }
 function spacer(parent) { return el('div', 'grow', parent); }
@@ -83,8 +83,8 @@ const SIG = c => `<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y=
 const WIFI = c => `<svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l2.4-2.9a3.6 3.6 0 0 0-4.8 0L8 11.5zM3.6 6.2a6.6 6.6 0 0 1 8.8 0l1.5-1.8a9 9 0 0 0-11.8 0l1.5 1.8zM.2 2.3a11.9 11.9 0 0 1 15.6 0" fill="${c}"/></svg>`;
 const BATT = c => `<svg width="27" height="13" viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="23" height="12" rx="3.8" fill="none" stroke="${c}" stroke-opacity="0.4"/><rect x="2" y="2" width="20" height="9" rx="2.5" fill="${c}"/><path d="M25 4.5v4a2.2 2.2 0 0 0 0-4z" fill="${c}" fill-opacity="0.4"/></svg>`;
 const root = document.getElementById('root');
-function phone(id, { bg = '#f2f2f7', dark = false, gradient = null, gap = 14, time = '9:41' } = {}) {
-  const slot = el('div', 'slot', root); slot.dataset.id = id;
+function phone(id, { bg = '#f2f2f7', dark = false, gradient = null, gap = 14, time = '9:41', target = root } = {}) {
+  const slot = el('div', 'slot', target); slot.dataset.id = id;
   const p = el('div', 'phone', slot); p.dataset.id = id;
   p.style.background = gradient ? `linear-gradient(180deg, ${gradient.join(', ')})` : bg;
   const col = dark ? '#fff' : '#000';
@@ -163,5 +163,31 @@ function bar(parent, width, fillW, bg, fg) { const b = el('div', null, parent, {
   const st = card(body, { dir: 'row', gap: 10, radius: 16, pad: 12, bg: '#e8f6ea', shadow: false }); badge(st, 'check', C.green, { size: 22 }); txt(st, '7 of 9 answers today with no help', { size: 14, w: 'Semibold', color: '#1d6b30' });
   spacer(body); const lis = glass(body, { dir: 'row', gap: 10, radius: 30, pad: 12 }); svgIcon(lis, 'wave', { size: 22, color: C.blueL, sw: 2.4 }); txt(lis, 'Listening through AirPods', { size: 15, w: 'Semibold' });
   caption(slot, 'M-03', 'Fading Whisper', 'An earbud prompter for real conversations that gives you less help every week, until you don’t need it.', TM); }
+
+// ---------------- agent UI patterns (mirror the Figma page "Agent UI patterns") ----------------
+const PT = document.getElementById('patterns');
+{ const { slot, body } = phone('pattern-live-activity', { dark: true, gradient: ['#0f2027', '#203a43', '#5b4b8a', '#c9a3b9'], gap: 12, target: PT });
+  lockClock(body);
+  const la = darkGlass(body, { gap: 12, radius: 26, pad: 16 });
+  const h = row(la); tile(h, 'plane', C.blue, { size: 30, radius: 8 }); txt(h, 'Travel agent', { size: 15, w: 'Semibold', color: '#fff' }); spacer(h); txt(h, 'Step 3 of 3', { size: 13, w: 'Medium', color: '#fff', op: 0.6 });
+  txt(la, 'Your 6:05 AM flight was cancelled', { size: 18, w: 'Semibold', color: '#fff' });
+  const st = al(la, 'col', { gap: 9 }); step(st, 'done', 'Found 3 same-day options', null, { dark: true }); step(st, 'done', 'Held seat 14C on the 8:20 AM', 'Hold expires in 18 min', { dark: true }); step(st, 'ask', 'Waiting for your OK', '+$40 fare difference, under your $150 cap', { dark: true });
+  const b = row(la, { gap: 8 }); pill(b, 'Approve', { bg: C.green, grow: true, icon: 'check' }); pill(b, 'Other options', { bg: '#ffffff', op: 0.18, grow: true });
+  spacer(body); txt(body, 'Updated by the agent’s server through push', { size: 12, color: '#fff', op: 0.65, align: 'center' });
+  caption(slot, '1', 'Agent at work', 'A Live Activity shows the plan, what’s done, and the one thing waiting for you. The agent’s server updates it through push.', '#e5e5ea'); }
+{ const { slot, body } = phone('pattern-drafts', { gap: 12, target: PT });
+  navTitle(body, 'Inbox agent', '4 replies drafted. Nothing sent yet.');
+  for (const [from, subj, reply, ok] of [['Dr. Patel’s office', 'Can we move you to Tue 3:30?', 'Yes, Tuesday 3:30 works. Thank you!', true], ['Landlord', 'Water shut-off Friday 9–11', 'Thanks for the heads-up. I’ll plan around it.', true], ['Maya’s school', 'Field trip form due Wed', 'Form filled. It asks for $12. Pay it?', false], ['Unknown sender', 'Your package is on hold', 'Not replying. This looks like a scam, so I moved it to Junk.', true]]) {
+    const c = card(body, { gap: 6, radius: 18, pad: 14 }); const r1 = row(c); txt(r1, from, { size: 15, w: 'Semibold' }); spacer(r1); if (ok) badge(r1, 'check', C.blueL, { size: 20 }); else badge(r1, 'alert', C.orange, { size: 20 });
+    txt(c, subj, { size: 13, color: C.label2, op: 0.6 }); const q = al(c, 'row', { padX: 10, padY: 8, radius: 10, bg: ok ? '#eaf3ff' : '#fff4e5' }); txt(q, reply, { size: 14, lh: 19 }); }
+  spacer(body); const bar2 = glass(body, { dir: 'row', gap: 8, radius: 30, pad: 8 }); pill(bar2, 'Send 3', { grow: true, icon: 'send' }); pill(bar2, 'Review each', { bg: '#000000', op: 0.06, color: '#000', grow: true });
+  caption(slot, '2', 'Drafts, you approve', 'The agent does the work and stops before anything leaves the phone. Items it isn’t sure about are marked, not guessed.', '#e5e5ea'); }
+{ const { slot, body } = phone('pattern-receipt-undo', { dark: true, gradient: ['#1e3c72', '#2a5298', '#7aa6d8', '#dfe9f3'], gap: 10, target: PT });
+  lockClock(body);
+  notif(body, 'plane', C.blue, 'Travel agent', 'now', 'Rebooked: 8:20 AM, seat 14C', 'You were asleep, so I used your rule: same day, under $150. Paid +$40 with your saved card.', [['Undo (23 h left)', 'undo', false], ['Details', null, true]]);
+  notif(body, 'dollar', C.green, 'Money agent', '2 min ago', 'Refund request filed: $62', 'The airline owes you for the cancelled leg. I’ll check back Friday and tell you what happened.');
+  notif(body, 'shield', C.orange, 'Money agent', '1 h ago', 'I did not pay this one', 'A $489 “parking fine” link came by text. It doesn’t match any city portal. Blocked.');
+  caption(slot, '3', 'Acted, here’s the receipt', 'Inside your limits the agent acts, then reports with a receipt and an undo window. It also tells you what it refused to do.', '#e5e5ea'); }
+
 document.fonts.ready.then(() => { window.__ready = true; });
 </script></body></html>

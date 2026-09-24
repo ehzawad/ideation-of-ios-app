@@ -18,5 +18,6 @@ for (const id of ids) {
   await page.locator(`.phone[data-id="${id}"]`).screenshot({ path: path.join(out, `${id}.png`), omitBackground: true });
 }
 await page.locator('#root').screenshot({ path: path.join(out, 'gallery.png') });
+await page.locator('#patterns').screenshot({ path: path.join(out, 'patterns.png') });
 await browser.close();
 console.log('rendered', ids.join(', '), '+ gallery');

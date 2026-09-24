@@ -12,6 +12,8 @@ Every idea gets a card with the moment it helps, how the agent works (with a dia
 
 Snapshot date: **September 2026** (iOS 27, a week after Siri AI's beta launch).
 
+> **New to iOS?** The repo also has a learning hub: **[iOS 27 in 7 days](learn/README.md)**, a seven-day plan for building the mental model of an experienced iOS developer. It covers Swift 6.4, SwiftUI and Liquid Glass, App Intents and Siri AI, Foundation Models and on-device ML, Metal 4, and shipping, and is also available as a [PDF](learn/ios27-in-7-days.pdf).
+
 <!-- BEGIN GENERATED:stats -->
 | Tier | Ideas | What it means |
 |---|---|---|
@@ -34,13 +36,15 @@ Eight ideas that best show what each tier looks like. Each has a deep dive and a
 | B-18 | [**Scam-call guardian agents**](ideas/building-now/B-18-scam-call-guardians.md)<br/><sub>An AI screens unknown callers, flags scam scripts and cloned voices, and alerts family before money moves.</sub> | Building now | Where agents protect instead of act, and where iOS walls hurt the most (no call audio for third parties). |
 | W-01 | [**Denial Clock**](ideas/whitespace/W-01-denial-clock.md)<br/><sub>Times your prior auths against the insurer's legal deadlines, then runs the appeal when the answer is no.</sub> | Whitespace | New 2026 federal deadlines give a patient-side agent something rare: hard rules to hold an insurer to. |
 | W-02 | [**Night-Before Check**](ideas/whitespace/W-02-night-before-check.md)<br/><sub>A separate checker agent that re-verifies tomorrow's family plans against the original messages each evening.</sub> | Whitespace | A direct answer to why Milo shut down: a second agent whose only job is to catch the first one's mistakes. |
-| W-03 | [**Agent Control Tower**](ideas/whitespace/W-03-agent-control-tower.md)<br/><sub>One iPhone inbox to approve, pause and audit every AI agent that acts for you, whoever made it.</sub> | Whitespace | Everyone will have five agents by 2027. Nobody has one place to see, approve and stop them all. |
+| W-03 | [**Agent Control Tower**](ideas/whitespace/W-03-agent-control-tower.md)<br/><sub>One iPhone inbox to approve, pause and audit every AI agent that acts for you, whoever made it.</sub> | Whitespace | People already run agents from several companies at once. Nobody offers one place to see, approve and stop all of them. |
 | M-01 | [**Seconds-Ahead Hazard Voice**](ideas/moonshot/M-01-seconds-ahead-hazard-voice.md)<br/><sub>Warns a blind walker about the reversing car or open trench before they reach it, not after they ask.</sub> | Moonshots | The hardest perception problem on a phone, with the highest stakes: warn before the danger, not after the question. |
 | M-02 | [**Household Spending Constitution**](ideas/moonshot/M-02-household-spending-constitution.md)<br/><sub>One set of spending rules, signed with Face ID, that every AI agent in your home must follow at checkout.</sub> | Moonshots | Apple Pay has no agent API. This is what a household's rules for AI spending could look like if it did. |
 | M-03 | [**Fading Whisper**](ideas/moonshot/M-03-fading-whisper.md)<br/><sub>An earbud prompter for real conversations in a new language that gives you less help every week.</sub> | Moonshots | An assistant designed to make itself unnecessary: less help every week until you don't need it. |
 <!-- END GENERATED:flagships -->
 
-<!-- FIGMA_GALLERY -->
+<p align="center"><img src="assets/mockups/gallery.png" alt="Eight iPhone mockups, one per flagship idea" width="100%"></p>
+
+The screens were designed in Figma ([Agentic iOS Apps — Idea Atlas](https://www.figma.com/design/FWoProYYQvSGluivc9NX5m)). More on the patterns behind them: **[Agent UI patterns](docs/ui-patterns.md)**.
 
 ## What counts as "agentic"
 
@@ -176,6 +180,8 @@ The full sortable index with scores is in **[ideas/README.md](ideas/README.md)**
 | [Unsaid and wrong assumptions](docs/assumptions.md) | The beliefs that sink agent products, and the open questions |
 | [Agent UI patterns](docs/ui-patterns.md) | Mockups of approval, status, receipt and guardrail screens |
 | [How this atlas was made](docs/method.md) | Sources, scoring, and the limits of this snapshot |
+| [iOS 27 in 7 days](learn/README.md) | The learning hub: mental models, APIs and a capstone app, as chapters and a [PDF](learn/ios27-in-7-days.pdf) |
+| [Research notes](research/README.md) | The raw findings behind the atlas, with confidence tags and sources |
 
 ## Contributing
 
