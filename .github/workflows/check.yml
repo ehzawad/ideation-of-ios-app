@@ -1,0 +1,16 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-is-fresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate data and generated files
+        run: python3 scripts/build.py --check
