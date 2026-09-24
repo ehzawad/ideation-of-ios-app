@@ -112,7 +112,7 @@ The class and the undo are separate axes. The class sets the friction before the
 |---|---|---|---|
 | `audio.setVolume` | reversible | exact | The OS restores the old level |
 | `bluetooth.connect`, paired device | reversible | exact | Disconnect |
-| `bluetooth.connect`, new device | consequential | exact on the phone | Unpair; the reason is that the device could reconnect later |
+| `bluetooth.connect`, new device | consequential | exact on the phone | Unpair; consequential because the device could reconnect later |
 | `messages.send` | consequential | window, 10 s | A delayed send; after that it's delivered |
 | `booking.change`, no fare difference | consequential | compensable | Cancel for credit, on the airline's terms |
 | `order.place` | irreversible | compensable | Cancel within the restaurant's window |
