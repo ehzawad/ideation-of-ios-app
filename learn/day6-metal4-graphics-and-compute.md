@@ -309,6 +309,7 @@ final class RingRenderer: NSObject, MTKViewDelegate {
 - The command *buffer* comes from the device, not the queue, and is reused forever. The *allocators* are what need a copy per frame in flight.
 - Residency is declared once, on the queue, for everything the renderer owns. Apple's `MTKView.residencySet` docs say to add both the view's set and its `CAMetalLayer`'s set, so the drawable textures are resident too. Optionally call `resident.requestResidency()` after `commit()`, so Metal does the residency work now instead of during the first frame's commit.
 - `init?` returns `nil` on devices without `MTLGPUFamily.metal4`. That's your signal to show the SwiftUI shader version instead.
+- `@MainActor` is what default isolation would infer anyway. It matches `MTKViewDelegate`, whose `draw(in:)` and `mtkView(_:drawableSizeWillChange:)` are declared `@MainActor`, so the conformance needs no `nonisolated`.
 
 **4. Compiling the pipeline with `MTL4Compiler`.** Pixel format is baked in, which is why the renderer passes the view's format.
 
