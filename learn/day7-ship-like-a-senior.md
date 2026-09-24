@@ -60,7 +60,7 @@ flowchart TB
 
 **Swift Testing** is the default for new tests. `#expect` records a failure and keeps going. `#require` stops the test by throwing, and also unwraps optionals. `@Test(arguments:)` makes one test case per input. *Traits* add tags, time limits, conditions and serial execution. A suite is just a type, and each test gets a **fresh instance**, so `init` is your setup.
 
-**Tests run in parallel, in one process, by default** ([parallelization](https://developer.apple.com/documentation/testing/parallelization)). Two tests that share a singleton, a `UserDefaults` key or a file can pass alone and fail together. Inject the dependency so each test gets its own. `.serialized` only orders tests inside one suite. For async code, mark the test `async` and `await` the work. For events you can't await, such as callbacks, use `confirmation`: its count is checked **when its closure returns**, so the event must happen before then. `expectedCount: 0` proves something *didn't* happen. **Exit tests** (`#expect(processExitsWith:)`) check that a `precondition` stops the process, but they [don't run on iOS](https://developer.apple.com/documentation/testing/exit-testing), only on macOS, Linux, FreeBSD, OpenBSD and Windows. That's one more reason to keep core logic in a package that builds for macOS.
+**Tests run in parallel, in one process, by default** ([parallelization](https://developer.apple.com/documentation/testing/parallelization)). Two tests that share a singleton, a `UserDefaults` key or a file can pass alone and fail together. Inject the dependency so each test gets its own. `.serialized` only runs the tests inside one suite one at a time; other suites still run alongside it. For async code, mark the test `async` and `await` the work. For events you can't await, such as callbacks, use `confirmation`: its count is checked **when its closure returns**, so the event must happen before then. `expectedCount: 0` proves something *didn't* happen. **Exit tests** (`#expect(processExitsWith:)`) check that a `precondition` stops the process, but they [don't run on iOS](https://developer.apple.com/documentation/testing/exit-testing), only on macOS, Linux, FreeBSD, OpenBSD and Windows. That's one more reason to keep core logic in a package that builds for macOS.
 
 **Model output is not deterministic**, so don't assert exact text. Test your code with a stub, and measure the real model with the new **Evaluations** framework. An evaluation runs a dataset through your feature, scores each response and aggregates the scores. It runs as a Swift Testing test, and its report appears in the Report navigator ([Evaluating language model responses](https://developer.apple.com/documentation/evaluations/evaluating-language-model-responses)).
 
@@ -84,7 +84,7 @@ flowchart TB
 | `p` (`expression`) | Compiles and runs an expression. | You need a computed property or a function call. |
 | `po` | Runs an expression and prints its object description. | You want the type's own `debugDescription`. |
 
-If `p` or `po` fails on a value typed as a protocol, fall back to `v`. The `@DebugDescription` macro turns a type's description into a summary that `v` and Xcode's variables view can show without running code. Xcode 27 adds `language swift task tree`, which prints every Swift task the debugger knows about.
+Since Xcode 15, `p` and `po` are aliases for LLDB's `dwim-print`, which reads a plain variable the way `v` does and compiles code only when the expression needs it. If `p` or `po` fails on a value typed as a protocol, fall back to `v`. The `@DebugDescription` macro turns a type's description into a summary that `v` and Xcode's variables view can show without running code. Xcode 27 adds `language swift task tree`, which prints every Swift task the debugger knows about.
 
 **The view debugger** (Debug View Hierarchy) explodes the screen into 3D layers, so you can see which view is covering or clipping another. **The memory graph** (Debug Memory Graph) shows who holds a reference to what. A retain cycle shows up as objects pointing at each other with nothing else pointing at them.
 
@@ -126,7 +126,7 @@ Apple's numbers ([Understanding user interface responsiveness](https://developer
 
 **Memory.** iOS counts memory in pages, typically 16 KB, and memory counts once you write to it (*dirty* memory). Exceed the device's limit and the system terminates your app. Under memory pressure it also terminates apps, most often ones in the background. That's a **jetsam** event, and its report has **no backtrace** ([jetsam event reports](https://developer.apple.com/documentation/xcode/identifying-high-memory-use-with-jetsam-event-reports)). Lower memory at suspension means fewer background kills.
 
-**The Instruments loop:** reproduce on a device, choose Product > Profile, pick a template, narrow the time range to the bad moment, read the call tree, change one thing, record again. Xcode 27 adds Call Tree, Flame Graph and Top Functions views, and **Run Comparison** for before and after.
+**The Instruments loop:** reproduce on a device, choose Product > Profile, pick a template, narrow the time range to the bad moment, read the call tree, change one thing, record again. The CPU call tree has Flame Graph (Xcode 16) and Top Functions (Xcode 26.4) modes, and **Run Comparison** (Xcode 26.4) diffs before and after.
 
 | Question | Instrument or template |
 |---|---|
@@ -145,11 +145,11 @@ Apple's numbers ([Understanding user interface responsiveness](https://developer
 
 **You can't attach a debugger to a user's phone. Logs, signposts, MetricKit and the Organizer are your eyes.**
 
-**`Logger`** writes to the unified logging system with a *subsystem* (usually your bundle ID) and a *category* (a feature). Interpolated values are **redacted by default**, and you opt in per value with `privacy: .public`. Keep the default for anything a user typed.
+**`Logger`** writes to the unified logging system with a *subsystem* (usually your bundle ID) and a *category* (a feature). Interpolated strings and objects are **redacted by default** (integers, floating-point values and Booleans aren't), and you opt in per value with `privacy: .public`. Keep the default for anything a user typed.
 
-**Signposts** mark intervals ("planning took 1.8 s") that Instruments draws on its timeline. In iOS 27, a signposter built on `MetricManager.logHandle(category:)` also feeds MetricKit, which aggregates those intervals from real devices.
+**Signposts** mark intervals ("planning took 1.8 s") that Instruments draws on its timeline. In iOS 27, a signposter built on `MetricManager.logHandle(category:)` also feeds MetricKit, which aggregates those intervals' counts and durations from real devices. For CPU, memory and disk-write figures per interval, Apple's MetricKit article points you to `mxSignpost` instead.
 
-**MetricKit** is new in iOS 27: `MetricManager` delivers daily `MetricReport`s and per-event `DiagnosticReport`s (crash, hang, CPU exception, disk-write exception, launch, memory exception) as async sequences. Both are `Codable`, so uploading is one `JSONEncoder` call. The new StateReporting framework attributes metrics to app states such as "planning" ([Monitoring app performance with MetricKit](https://developer.apple.com/documentation/metrickit/monitoring-app-performance-with-metrickit)). During development, choose Debug > MetricKit > Simulate MetricKit Payloads.
+**MetricKit** (around since iOS 13) gets a new API in iOS 27: `MetricManager` delivers daily `MetricReport`s and per-event `DiagnosticReport`s (crash, hang, CPU exception, disk-write exception, launch, memory exception) as async sequences. Both are `Codable`, so uploading is one `JSONEncoder` call. The new StateReporting framework attributes metrics to app states such as "planning" ([Monitoring app performance with MetricKit](https://developer.apple.com/documentation/metrickit/monitoring-app-performance-with-metrickit)). During development, choose Debug > MetricKit > Simulate MetricKit Payloads.
 
 **Xcode Organizer** shows anonymized data from participating users' devices. Xcode 27 adds an Insights overview of regressions, a Hitches metric that replaces Scrolling, storage metrics, and **Generate Recommendations**, which opens a hang, crash, launch, battery or disk-write report in the coding assistant.
 
@@ -164,7 +164,7 @@ Apple's numbers ([Understanding user interface responsiveness](https://developer
 | Data | Where it goes | The choice that matters |
 |---|---|---|
 | Tokens, passwords, API keys issued to this user | Keychain (`SecItemAdd`, `SecItemCopyMatching`) | Accessibility: `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` is readable only while unlocked and doesn't move to a new device. `kSecAttrAccessibleAfterFirstUnlock` stays readable in the background after the first unlock. |
-| Files and databases | App container with a `FileProtectionType` | `.complete` can't be read while the device is locked. `.completeUntilFirstUserAuthentication` can be read after the first unlock since boot. |
+| Files and databases | App container with a `FileProtectionType` | `.complete` can't be read while the device is locked. `.completeUntilFirstUserAuthentication`, the default for new files, can be read after the first unlock since boot. |
 | Preferences | `UserDefaults` | Never secrets. It's a plain property list. |
 | Network traffic | HTTPS, enforced by App Transport Security | Exceptions weaken ATS, and [some need a justification](https://developer.apple.com/documentation/security/preventing-insecure-network-connections) at App Store submission. Fix the server instead. |
 
@@ -202,7 +202,7 @@ Your app *claims* entitlements in its code signature, and each claim must appear
 
 1. The **privacy nutrition label** in App Store Connect. It covers what you *and* your third-party SDKs collect. "Collect" means data leaves the device and stays accessible longer than it takes to serve the request ([App privacy details](https://developer.apple.com/app-store/app-privacy-details/)).
 2. The **privacy manifest**, `PrivacyInfo.xcprivacy`, in your app and in each SDK. It lists collected data types and *required reason APIs* such as `UserDefaults`. Since May 1, 2024, App Store Connect rejects uploads that use those APIs without a declared reason ([Privacy manifest files](https://developer.apple.com/documentation/bundleresources/privacy-manifest-files)).
-3. **Consent in the app**, at the moment of use, as guidelines 5.1.1 and 5.1.2 require.
+3. **Consent in the app** before you collect or share, as guidelines 5.1.1 and 5.1.2 require. Ask at the moment of use.
 
 **Xcode Cloud** is Apple's CI/CD service. A workflow has start conditions, actions (build, test, analyze, archive) and post-actions such as distributing to TestFlight. Scripts in a `ci_scripts` folder run at three fixed points: after clone, before `xcodebuild`, and after `xcodebuild`.
 
@@ -210,7 +210,7 @@ Your app *claims* entitlements in its code signature, and each claim must appear
 
 | Rule | What it says, in short | How agent apps trip | Errand's answer |
 |---|---|---|---|
-| **2.1** App Completeness | Submit a final build with working URLs, a demo account or approved demo mode, and your backend switched on. Crashes and obvious bugs get rejected. | The reviewer's device has Apple Intelligence off, and the main feature looks broken. | A clear "model unavailable" state and a fallback, explained in Notes for Review. |
+| **2.1** App Completeness | Submit a final build with working URLs, a demo account (or an approved demo mode) if there's a login, and your backend switched on. Crashes and obvious bugs get rejected. | The reviewer's device has Apple Intelligence off, and the main feature looks broken. | A clear "model unavailable" state and a fallback, explained in Notes for Review. |
 | **2.3** Accurate Metadata | Metadata, including privacy information, must match the app. No hidden features. Describe new features specifically in Notes for Review. | "It does your errands for you" when it only drafts steps. | Say exactly what runs on its own and what asks first. |
 | **2.5.2** | The app must be self-contained. It may not download or run code that adds or changes features. | An agent that writes and runs new logic, or downloads "skills" that add features. | Model output is data: steps and arguments for tools compiled into the app. |
 | **3.1.1** In-App Purchase | Digital features and content use in-app purchase. Credits bought that way can't expire. US storefront apps may link to other purchase methods (3.1.1(a)). | Selling AI credits only on the web. | If you charge for cloud use, sell it through in-app purchase, plus a US link-out if you want one. |
@@ -300,9 +300,9 @@ let package = Package(
 )
 ```
 
-- The `.macOS(.v27)` entry lets `swift test` run the core on your Mac. That needs macOS 27. On macOS Tahoe 26.6, run the same tests in the iOS Simulator from Xcode.
+- The `.macOS(.v27)` entry lets `swift test` run the core on your Mac. That needs macOS 27. On macOS Tahoe 26.6, run the same tests in the iOS Simulator from Xcode. `swift test` builds every test target for macOS, so `ErrandFeatures` must compile there too: wrap iOS-only modifiers in `#if os(iOS)`.
 - `ErrandFeatures` never imports `ErrandPlanner`. Only the app target chooses the real planner, so previews and tests can never call the model by accident.
-- With `swift-tools-version: 6.4`, XCTest assertions that fail inside Swift Testing tests count as real failures ("complete" interoperability mode), per [Migrating a test from XCTest](https://developer.apple.com/documentation/testing/migratingfromxctest).
+- With `swift-tools-version: 6.4`, XCTest assertions that fail inside Swift Testing tests count as real failures ("complete" interoperability mode), per [Migrating a test from XCTest](https://developer.apple.com/documentation/testing/migratingfromxctest). In Xcode, the test plan's Swift Testing and XCTest Interoperability setting decides, and its default reports them as warnings.
 
 **2. Seams in the core: a planner protocol, a stub, and an approval gate.**
 
@@ -370,8 +370,10 @@ public final class ErrandListModel {
         self.steps = steps
     }
     public func plan(_ request: String) async {
-        do { steps = try await planner.plan(for: request) }
-        catch { errorMessage = error.localizedDescription }
+        do {
+            steps = try await planner.plan(for: request)
+            errorMessage = nil
+        } catch { errorMessage = error.localizedDescription }
     }
 }
 
@@ -555,7 +557,7 @@ struct InstrumentedPlanner: ErrandPlanning {
     static let logger = Logger(subsystem: "com.example.errand", category: "planner")
     static let signposter = OSSignposter(logHandle: MetricManager.logHandle(category: "planner"))
     func plan(for request: String) async throws -> [ErrandStep] {
-        let interval = Self.signposter.beginInterval("plan")
+        let interval = Self.signposter.beginInterval("plan", id: Self.signposter.makeSignpostID())
         defer { Self.signposter.endInterval("plan", interval) }
         do {
             let steps = try await base.plan(for: request)
@@ -581,15 +583,15 @@ final class DiagnosticsReporter: Sendable {
             case .crash, .memoryException:
                 let payload = try? JSONEncoder().encode(report)  // upload only with consent
                 logger.fault("Diagnostic report, \(payload?.count ?? 0, privacy: .public) bytes")
-            @unknown default: break
+            default: break  // CPU, disk-write and launch diagnostics, plus future cases
             }
         }
     }
 }
 ```
 
-- The decorator adds logging and timing without touching the planner or its callers. It's the same seam from pattern 2, used a second time. Signposts on a `MetricManager.logHandle(category:)` handle show up in Instruments, and MetricKit aggregates them from the field.
-- `request` is interpolated without a privacy argument, so the system redacts it. The step count and error type are marked `.public` because they're safe and useful.
+- The decorator adds logging and timing without touching the planner or its callers. It's the same seam from pattern 2, used a second time. Signposts on a `MetricManager.logHandle(category:)` handle show up in Instruments, and MetricKit aggregates them from the field. `makeSignpostID()` keeps overlapping plans apart; the default `.exclusive` ID assumes only one interval with that name runs at a time.
+- `request` is interpolated without a privacy argument, so the system redacts it. The error type is marked `.public` because it's safe and useful. The count is an integer, which is public anyway; the annotation just states the intent.
 - Create one `DiagnosticsReporter` for the app's lifetime and start it from a `.task` on the root view. Apple's docs warn that two managers iterating the same sequence each get only part of the reports.
 
 ## What's new in iOS 27 (and what old tutorials get wrong)
@@ -606,11 +608,11 @@ final class DiagnosticsReporter: Sendable {
 **Testing, performance and observability**
 - New: the **Evaluations** framework, `XCUIVoiceOverService`, a test-plan setting for how app crashes during UI tests count, and a launch-test template that runs across orientations, localizations and appearances.
 - Swift 6.4 lets XCTest and Swift Testing assertions work in each other's tests. `swift test` gains `--maximum-repetitions` and `--repeat-until`.
-- Instruments adds the **Foundation Models** and **Swift Executors** instruments, three CPU profile views, Run Comparison, and StateReporting states in Points of Interest. LLDB gains `language swift task tree` and its own MCP server, `lldb-mcp`.
+- Instruments adds the **Swift Executors** instrument, a richer **Foundation Models** instrument (prompts, responses, token usage), and StateReporting states in Points of Interest. Run Comparison and Top Functions arrived earlier, in Xcode 26.4. LLDB gains `language swift task tree` and its own MCP server, `lldb-mcp`.
 - MetricKit's `MetricManager` replaces `MXMetricManager` and its subscriber protocol (the docs mark `MXMetricManager` deprecated as of iOS 27.2). Organizer adds Insights, Hitches, storage metrics and Generate Recommendations.
 
 **Distribution and policy**
-- Per Apple's June 2026 notes, Xcode Cloud can build and test without a Developer Program membership, and TestFlight workflows are easier to add. TestFlight and the App Store still need membership.
+- Apple's Xcode Cloud page and setup docs still list Apple Developer Program membership as a requirement (it includes 25 compute hours a month), as do TestFlight and the App Store.
 - On Demand Resources is deprecated in favor of Background Assets.
 - The App Review Guidelines were last updated June 8, 2026. Rule 5.1.2(i) names third-party AI explicitly.
 
@@ -631,7 +633,7 @@ final class DiagnosticsReporter: Sendable {
 - **"Crashes" with no backtrace, often after the camera or a big model** → jetsam: the system reclaimed memory → read the jetsam event report, check memory at suspension in Organizer, and free caches when you move to the background.
 - **App Store Connect rejects the upload over the privacy manifest** → the app or an SDK uses a required-reason API such as `UserDefaults` without a declared reason → add `PrivacyInfo.xcprivacy` with the right category and reason code, and update SDKs that ship their own.
 - **A performance trace leaked user data** → Foundation Models traces store prompts and responses **unencrypted**, and Instruments warns you when recording starts → treat `.trace` files as sensitive. Don't attach them to public bug reports or commit them.
-- **Logs show `<private>` exactly where you needed a value** → interpolations are redacted by default → mark safe values (counts, enum cases, error types) `.public`. Leave anything the user typed private.
+- **Logs show `<private>` exactly where you needed a value** → interpolated strings and objects are redacted by default → mark safe values (enum cases, error types, IDs you generated) `.public`. Leave anything the user typed private.
 
 ## Legacy you'll still meet
 
@@ -657,7 +659,7 @@ final class DiagnosticsReporter: Sendable {
 **2. Plant a hang and catch it (45 min).** In a button action, sort 500,000 random strings on the main actor. Choose Product > Profile, add Time Profiler and Hangs, tap the button, and find the hang. Move the work off the main actor (a `@concurrent` function or a separate actor), record again, and use Run Comparison.
 *Done when:* the Hangs track shows nothing over 250 ms for that tap, and the comparison shows the main thread's time falling.
 
-**3. Wire up field observability (30 min).** Add `InstrumentedPlanner` and `DiagnosticsReporter` from pattern 7. Run from Xcode, then choose Debug > MetricKit > Simulate MetricKit Payloads. In Console, filter by subsystem `com.example.errand`. In Instruments, find the `plan` signposts.
+**3. Wire up field observability (30 min).** Add `InstrumentedPlanner` and `DiagnosticsReporter` from pattern 7. Run from Xcode, then choose Debug > MetricKit > Simulate MetricKit Payloads. In Console, filter by subsystem `com.example.errand`. In Instruments, find the `plan` signposts. Apple notes that simulated payloads arrive only while the app observes `metricReports`, so if nothing shows up, iterate that sequence too, in its own task, and log each report's `timeRange`.
 *Done when:* you see a simulated diagnostic in your log and a `plan` interval in Instruments, and no log line marks the errand text `.public`.
 
 **4. Rehearse App Review (30 min).** Write Errand's Notes for Review, privacy label answers, and consent copy. Go through the eight rules in the table above and write one line per rule on how Errand complies.
@@ -697,7 +699,7 @@ final class DiagnosticsReporter: Sendable {
 </plist>
 ```
 
-`CA92.1` covers reading and writing defaults that only your app can access. If you added a third-party cloud fallback on Day 5, list the data types it receives under `NSPrivacyCollectedDataTypes`, and confirm the consent screen names the provider and appears before the first call.
+`CA92.1` covers reading and writing defaults that only your app can access. If the app and its widget or Live Activity extension share defaults through an App Group, add `1C8F.1` too, and give each extension that calls a required-reason API its own manifest. If you added a third-party cloud fallback on Day 5, list the data types it receives under `NSPrivacyCollectedDataTypes`, and confirm the consent screen names the provider and appears before the first call.
 *Done when:* the privacy report Xcode generates from your archive matches your planned privacy label, line by line.
 
 *d. TestFlight build (20 min).* Set the version and build number. Choose Product > Archive, then Validate App, then Distribute App to App Store Connect. Create an internal testing group and fill in Test Information. Or add an Xcode Cloud workflow with a TestFlight post-action.
@@ -792,7 +794,7 @@ You've finished the week when you can do or explain each of these without lookin
 **System surfaces (Day 4)**
 - [ ] Expose an action and an entity through App Intents so Siri, Shortcuts and Spotlight can use them.
 - [ ] Explain what belongs in a widget, a Live Activity and a Control, and the limits of each.
-- [ ] Explain why only Siri can call other apps' intents, and what that means for an agent app.
+- [ ] Explain why your app can't call other apps' intents (only the system, through Siri and Shortcuts, orchestrates them), and what that means for an agent app.
 
 **Apple Intelligence (Day 5)**
 - [ ] Get typed output from the on-device model with `LanguageModelSession` and `@Generable`, and handle the model being unavailable.
@@ -832,7 +834,7 @@ Swift Testing and XCUIAutomation pages list a Swift or Xcode version instead of 
 - `withKnownIssue(_:isIntermittent:isolation:sourceLocation:_:)` — Swift 6.0, Xcode 16.0
 - `expect(processExitsWith:observing:_:sourceLocation:performing:)` — Swift 6.2, Xcode 26.0 (exit tests: macOS, Linux, FreeBSD, OpenBSD, Windows)
 - `Attachment` — Swift 6.2, Xcode 26.0
-- `Evaluation`, `ArrayLoader`, `ModelSample`, `ModelSubject`, `Metric`, `Evaluator`, `MetricsAggregator`, `EvaluationTrait`, `EvaluationContext` — iOS 27.0 (Xcode 27.0)
+- `Evaluation`, `ArrayLoader`, `ModelSample`, `ModelSubject`, `Metric`, `Evaluator`, `MetricsAggregator`, `EvaluationTrait`, `EvaluationContext` — iOS 27.0 (Xcode 27.0); the `.evaluates(_:info:)` trait factory appears in Apple's Evaluations articles but has no reference page of its own
 - `ModelSample.init(prompt:expected:instructions:generationSchema:expectations:)`, `ModelSample.promptDescription` — iOS 27.0
 - `ModelSubject.init(value:transcript:)` — iOS 27.0
 - `Metric.passing(rationale:)`, `failing(rationale:)`, `ignore(rationale:)` — iOS 27.0
@@ -863,11 +865,12 @@ Swift Testing and XCUIAutomation pages list a Swift or Xcode version instead of 
 - `JSONEncoder.encode(_:)` — iOS 8.0
 - `Measurement.formatted()` — iOS 15.0
 - `Logger`, `Logger.init(subsystem:category:)`, `info(_:)`, `error(_:)`, `fault(_:)` — iOS 14.0
-- `OSSignposter`, `init(logHandle:)`, `beginInterval(_:id:)`, `endInterval(_:_:)` — iOS 15.0
+- `OSSignposter`, `init(logHandle:)`, `makeSignpostID()`, `beginInterval(_:id:)`, `endInterval(_:_:)` — iOS 15.0
+- `mxSignpost(_:dso:log:name:signpostID:_:_:)` — iOS 13.0 (referenced)
 - `MetricManager`, `init()`, `init(enabledStateReportingDomains:)`, `diagnosticReports` — iOS 27.0
 - `MetricManager.metricReports` — iOS 27.0
 - `MetricManager.logHandle(category:)` — iOS 27.0
-- `MetricReport`, `DiagnosticReport`, `DiagnosticReport.result`, `DiagnosticReport.environment` — iOS 27.0
+- `MetricReport`, `MetricReport.timeRange`, `DiagnosticReport`, `DiagnosticReport.result`, `DiagnosticReport.environment` — iOS 27.0
 - `DiagnosticReport.Environment.applicationVersion` — iOS 27.0
 - `DiagnosticResult` (`.crash`, `.hang`, `.cpuException`, `.diskWriteException`, `.appLaunch`) — iOS 27.0
 - `DiagnosticResult.memoryException(_:)`, `MemoryExceptionDiagnostic` — iOS 27.0
@@ -883,7 +886,7 @@ Swift Testing and XCUIAutomation pages list a Swift or Xcode version instead of 
 - `DCAppAttestService`, `generateKey()`, `attestKey(_:clientDataHash:)`, `generateAssertion(_:clientDataHash:)` — iOS 14.0
 - `DCDevice` — iOS 11.0
 - App Privacy Configuration (`NSPrivacyTracking`, `NSPrivacyCollectedDataTypes`, `NSPrivacyAccessedAPITypes`, `NSPrivacyAccessedAPIType`, `NSPrivacyAccessedAPITypeReasons`) — iOS 17.0
-- `NSPrivacyAccessedAPICategoryUserDefaults` reason `CA92.1` — listed under `NSPrivacyAccessedAPIType`
+- `NSPrivacyAccessedAPICategoryUserDefaults` reasons `CA92.1` (app only) and `1C8F.1` (App Group) — listed under `NSPrivacyAccessedAPIType`
 - `DebugDescription()` macro — iOS 8.0
 - `NSBundleResourceRequest` — iOS 9.0, deprecated 27.0
 - `PackageDescription` `SupportedPlatform.IOSVersion.v27`, `MacOSVersion.v27` — SwiftPM 6.4

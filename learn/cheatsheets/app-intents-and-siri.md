@@ -16,7 +16,7 @@
 | Phrases | `AppShortcutsProvider` | `static var appShortcuts: [AppShortcut]` | Zero-setup Siri, Spotlight and Action button entries |
 | Contract | `@AppIntent(schema:)`, `@AppEntity(schema:)`, `@AppEnum(schema:)` | Whatever the schema lists | "This intent *is* create-a-reminder" for Apple Intelligence |
 
-In a target whose Default Actor Isolation is `MainActor`, declare intents, entities, enums and queries `nonisolated`: the protocols are nonisolated and `Sendable`. Use `static let` for `title`, `description` and friends; a stored `static var` fails Swift 6 checking.
+In a target whose Default Actor Isolation is `MainActor`, declare intents, entities, enums and queries `nonisolated`: the protocols are nonisolated and `Sendable`. Adopting one in the primary declaration already opts a type out of main-actor inference (they inherit `SendableMetatype`); writing `nonisolated` makes that explicit and also covers conformances added in extensions and helpers like `ActivityAttributes` types. Use `static let` for `title`, `description` and friends; a stored `static var` fails Swift 6 checking.
 
 ## Which protocol for which system feature
 
@@ -30,7 +30,7 @@ In a target whose Default Actor Isolation is `MainActor`, declare intents, entit
 | Spotlight results | `IndexedEntity` + `OpenIntent` | Index with `CSSearchableIndex(name:).indexAppEntities(_:priority:)` |
 | A phrase with no setup, or an Action button entry | `AppShortcutsProvider` | Up to 10 per app. Every phrase contains `\(.applicationName)`. Show one with `SiriTipView` |
 | A result view with buttons | `SnippetIntent` | Return with `.result(snippetIntent:)` or `.result(value:dialog:snippetIntent:)`. `perform()` re-runs; no side effects |
-| Approval with a custom view | `requestConfirmation(conditions:actionName:dialog:showDialogAsPrompt:snippetIntent:)` | Throws if the person cancels |
+| Approval with a custom view | `requestConfirmation(conditions:actionName:dialog:showDialogAsPrompt:snippetIntent:)` | Throws if the person cancels. `actionName` labels the confirm button (default `.continue`). An overload returns the snippet intent's value when its result is `ReturnsValue` |
 | A widget button or toggle | `AppIntent` with `Button(intent:label:)` / `Toggle(isOn:intent:label:)` | Runs in the widget extension by default. Widgets don't resolve parameters: pass them set |
 | A configurable widget | `WidgetConfigurationIntent` + `AppIntentConfiguration` + `AppIntentTimelineProvider` | Replaces `IntentConfiguration` / `INIntent` |
 | A widget button that runs the person's chosen shortcut or app | `RunSystemShortcutIntent(shortcut:)` with a `SystemShortcut` parameter | iOS 27. Widgets only, via `Button` |
@@ -42,8 +42,8 @@ In a target whose Default Actor Isolation is `MainActor`, declare intents, entit
 | Camera from the Lock Screen or Action button | `CameraCaptureIntent` | With a locked camera capture extension |
 | A workout from the Action button | `StartWorkoutIntent` | Also `PauseWorkoutIntent`, `ResumeWorkoutIntent` |
 | Work longer than 30 seconds | `LongRunningIntent` + `performBackgroundTask(options:operation:)` | iOS 27. Update `progress` or get cancelled. Progress shows as a Live Activity |
-| Clean up on cancel | `CancellableIntent` | Reason: `.userCancelled` or `.timeout` |
-| Undo | `UndoableIntent` | Register with its `undoManager` |
+| Clean up on cancel | `CancellableIntent` + `withIntentCancellationHandler(operation:onCancel:isolation:)` (or `onCancel:` of `performBackgroundTask`) | Reason: `.userCancelled` or `.timeout`. Keep the handler quick |
+| Undo | `UndoableIntent` | Register with its `undoManager` (the reference). Apple's iOS 27 sample also implements an `undo()` method the reference doesn't list yet |
 | Visual intelligence results | `IntentValueQuery` with `SemanticContentDescriptor` input + `OpenIntent` | One such query per app; `@UnionValue` for several entity types |
 | Siri to know what's on screen | `appEntityIdentifier(_:)` (SwiftUI), `NSUserActivity.appEntityIdentifier` | Only the entities the view really shows |
 | Better suggestions | `IntentDonationManager.shared.donate(intent:)`, `donate()` | Only for actions started in your UI |
@@ -150,7 +150,7 @@ Never add a parameter that decides whether a safety gate applies (`approved`, `s
 - Treat every `String` parameter as untrusted data. Validate length and format; store it, don't execute it.
 - Re-read state by ID inside `perform()`; the entity may be stale.
 - Side effects: `requestConfirmation` before acting, with the effect spelled out. Don't rely on `.lowConfidenceSource` for anything that sends, pays, deletes or calls.
-- `authenticationPolicy = .requiresAuthentication` for anything personal or destructive.
+- `authenticationPolicy = .requiresAuthentication` for anything personal or destructive. It's satisfied by any unlocked device in the request, such as an Apple Watch; use `.requiresLocalDeviceAuthentication` when this device must be unlocked.
 - Shared or public entities: `OwnershipProvidingEntity`.
 - Offer `UndoableIntent` where reversal makes sense.
 - Snippet `perform()` reads only.
@@ -277,6 +277,7 @@ nonisolated struct ErrandVisualQuery: IntentValueQuery {
 - IntentExecutionTargets (.main, .appIntentsExtension, .widgetKitExtension) — iOS 27.0
 - IntentAuthenticationPolicy (.alwaysAllowed, .requiresAuthentication, .requiresLocalDeviceAuthentication) — iOS 16.0
 - ConfirmationConditions.lowConfidenceSource — iOS 18.0
+- ConfirmationActionName (.continue) — iOS 16.0
 - AssistantSchemaIntent.isAssistantOnly — iOS 18.0
 - AppIntentError.init(description:) — iOS 27.0
 - AppEntity — iOS 16.0
@@ -337,6 +338,7 @@ nonisolated struct ErrandVisualQuery: IntentValueQuery {
 - LongRunningTaskOptions.requiresGPU — iOS 27.0
 - ProgressReportingIntent.progress — iOS 17.0
 - CancellableIntent — iOS 26.4
+- CancellableIntent.withIntentCancellationHandler(operation:onCancel:isolation:) — iOS 26.4
 - IntentCancellationReason (.userCancelled, .timeout) — iOS 26.4
 - UndoableIntent — iOS 26.0
 - UndoableIntent.undoManager — iOS 26.0

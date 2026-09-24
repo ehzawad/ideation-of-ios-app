@@ -28,14 +28,14 @@ flowchart TD
 
 | Situation | Use | Notes |
 |---|---|---|
-| Local UI value (sheet open, draft text, selection) | `@State private var x = …` | Keep `private`. Xcode 27 builds it with the `State()` macro. |
+| Local UI value (sheet open, draft text, selection) | `@State private var x = …` | Keep `private`. Xcode 27 builds it with the `State()` macro; to set it in `init`, declare it without an initial value. |
 | Own a model object | `@State private var model = Model()` | With Xcode 27, a class is created and stored once. |
 | Edit a value owned above | `@Binding var x: T` | Pass `$x` from the owner. |
 | Model class | `@MainActor @Observable final class Model` | Tracks every stored `var`. Use `@ObservationIgnored` to opt a property out. |
 | Pass a model to a child | `let model: Model` (plain property) | No wrapper needed; reads are tracked. |
 | Bindings into a model | `@Bindable var model: Model`, or `@Bindable var model = model` inside `body` | Gives `$model.title`. |
 | Share a model app-wide | `.environment(model)` on an ancestor, `@Environment(Model.self) private var model` to read | Crashes if missing. Use `Model?` to make it optional. |
-| Custom environment value | `extension EnvironmentValues { @Entry var compact = false }`, read with `@Environment(\.compact)` | Set with `.environment(\.compact, true)`. |
+| Custom environment value | `extension EnvironmentValues { @Entry var compact = false }`, read with `@Environment(\.compact)` | Set with `.environment(\.compact, true)`. Keep defaults to plain values; Xcode 27 warns on class instances and closures. |
 | System settings | `@Environment(\.dynamicTypeSize)`, `\.colorScheme`, `\.colorSchemeContrast`, `\.accessibilityReduceMotion`, `\.accessibilityReduceTransparency`, `\.horizontalSizeClass` | Read-only inputs; views update when they change. |
 | Actions from the system | `@Environment(\.dismiss)`, `\.openURL` | Call like functions: `dismiss()`. |
 | Small preferences | `@AppStorage("key")` | UserDefaults-backed. Not for secrets or big data. |
@@ -86,7 +86,7 @@ flowchart TD
 
 **Adaptivity inputs:** size classes (`horizontalSizeClass`, `verticalSizeClass`), `dynamicTypeSize.isAccessibilitySize`, layout direction. Decide by size class, not by device or orientation.
 
-**iPhone Duo and new hardware (iOS 27.1 beta, don't ship against 27.0):** `ArrangementView { primary } secondary: { secondary }` with `.arrangementViewStyle(.split)` or `.overlay`; `GeometryProxy.reservedRegions(kind:options:layoutDirectionBehavior:)` with kinds `.occlusion` (camera) and `.division` (hinge); `.onHingeChange(isEnabled:_:)` with `DeviceHinge` status `.closed`, `.partiallyOpen`, `.fullyOpen`; `toolbarVerticalEdge` for vertical toolbars.
+**iPhone Duo and new hardware (iOS 27.1 beta, don't ship against 27.0):** `ArrangementView { primary } secondary: { secondary }` with `.arrangementViewStyle(.split)` or `.overlay`; `GeometryProxy.reservedRegions(kind:options:layoutDirectionBehavior:)` with kinds `.occlusion` (camera) and `.division` (hinge); `.onHingeChange(isEnabled:_:)` with `DeviceHinge` status `.closed`, `.partiallyOpen`, `.fullyOpen`; the `toolbarVerticalEdge` environment value tells you which edge vertical toolbars sit on.
 
 ## Navigation
 
@@ -145,7 +145,7 @@ TabView(selection: $tab) {
 | Legibility under bars | `.scrollEdgeEffectStyle(.soft or .hard, for: .top)` |
 | Forms | `Form { … }.formStyle(.grouped)`, `LabeledContent`, `Toggle`, `Picker`, `DatePicker`, `Stepper`, `Slider` (tick marks when you pass `step`), `TextField(_:text:axis:)` |
 | Keyboard | `@FocusState`, `.focused(_:equals:)`, `.onSubmit(of:_:)`, `.submitLabel(_:)`, `.scrollDismissesKeyboard(_:)` |
-| Images from the web (iOS 27 caching) | `AsyncImage(request:scale:)`, `.asyncImageURLSession(_:)` |
+| Images from the web (HTTP-cached automatically in iOS 27) | `AsyncImage(url:)`; customize with `AsyncImage(request:scale:)` or `.asyncImageURLSession(_:)` |
 
 ## Animation, gestures, shaders
 
@@ -161,7 +161,7 @@ TabView(selection: $tab) {
 | Same element, two places | `.matchedGeometryEffect(id:in:properties:anchor:isSource:)` |
 | Custom animatable view | `@Animatable` macro |
 | Haptics | `.sensoryFeedback(.success, trigger: x)` |
-| Honor Reduce Motion | `withAnimation(reduceMotion ? nil : .smooth) { … }` |
+| Honor Reduce Motion | `withAnimation(reduceMotion ? nil : .smooth) { … }`; for state that changes later (after an `await`), `.animation(reduceMotion ? nil : .smooth, value: x)` |
 | Tap | `.onTapGesture(count:perform:)` |
 | Drag, pinch, rotate | `DragGesture`, `MagnifyGesture`, `RotateGesture` with `.onChanged`, `.onEnded`, `.updating` |
 | Combine or disable | `.simultaneousGesture(_:including:)`, `.gesture(_:isEnabled:)` |
@@ -176,7 +176,7 @@ TabView(selection: $tab) {
 | `.distortionEffect(_:maxSampleOffset:isEnabled:)` | `[[ stitchable ]] float2 f(float2 position, args...)` | Move pixels (ripple, wave) |
 | `Shader` as a fill | `[[ stitchable ]] half4 f(float2 position, args...)` | Paint a shape or text |
 
-Arguments: `.float(x)`, `.color(c)`. Views backed by UIKit may not render into a shader effect.
+Arguments: `.float(x)`, `.color(c)`. For `layerEffect`, `#include <SwiftUI/SwiftUI.h>` in the `.metal` file to get `SwiftUI::Layer`. Views backed by UIKit may not render into a shader effect.
 
 ## Liquid Glass
 
@@ -275,7 +275,7 @@ Arguments: `.float(x)`, `.color(c)`. Views backed by UIKit may not render into a
 - [ ] Symbol effects for feedback (`bounce`, `pulse`, `wiggle`, `breathe`, `replace`) instead of custom animation.
 
 **Touch and spacing**
-- [ ] Hit targets 44×44 pt (minimum 28×28 pt).
+- [ ] Controls 44×44 pt by default (HIG minimum 28×28 pt).
 - [ ] About 12 pt padding around bezeled controls, about 24 pt around borderless ones.
 - [ ] Standard spacing; no overridden control metrics.
 
@@ -390,7 +390,7 @@ Versions are the iOS "introduced" versions that `appledoc.py` reported. Some mac
 - ScrollPosition, init(idType:), viewID, scrollTo(id:anchor:), scrollTo(edge:), scrollPosition(_:anchor:) — iOS 18.0; scrollTargetBehavior(_:), scrollTargetLayout(isEnabled:), paging, viewAligned — iOS 17.0
 - onScrollGeometryChange(for:of:action:), onScrollVisibilityChange(threshold:_:), onScrollPhaseChange(_:) — iOS 18.0; scrollTransition(_:axis:transition:) — iOS 17.0
 - scrollDismissesKeyboard(_:) — iOS 16.0; onSubmit(of:_:), submitLabel(_:) — iOS 15.0
-- AsyncImage — iOS 15.0; asyncImageURLSession(_:), AsyncImage init(request:scale:) — iOS 27.0
+- AsyncImage, init(url:scale:) — iOS 15.0; asyncImageURLSession(_:), AsyncImage init(request:scale:) — iOS 27.0
 - withAnimation(_:_:), animation(_:value:) — iOS 13.0; spring(duration:bounce:blendDuration:), smooth, snappy, bouncy — iOS 13.0 (back-deployed)
 - transition(_:), Transition.opacity — iOS 17.0; contentTransition(_:) — iOS 16.0; numericText(value:) — iOS 17.0; ContentTransition.symbolEffect(_:options:) — iOS 17.0
 - phaseAnimator(_:trigger:content:animation:), keyframeAnimator(initialValue:trigger:content:keyframes:), LinearKeyframe, SpringKeyframe — iOS 17.0

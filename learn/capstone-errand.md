@@ -31,11 +31,11 @@ You tell Errand what needs doing: "renew my library books before Friday", "find 
 Three rules shape the design:
 
 1. **One writer.** Every write goes through `ErrandStore`, an actor over SwiftData. Views read with `@Query`. Intents, the import job and the UI all call the same actor, so there's one place where the approval rule is enforced.
-2. **Values cross boundaries, models don't.** The actor returns `Errand` structs. `@Model` objects never leave the actor's context.
+2. **Values cross boundaries, models don't.** The actor returns `Errand` structs. Its `@Model` objects never leave it. Views get their own from `@Query`, on the main context.
 3. **Model output is untrusted.** The planner's typed output passes through `StepPolicy`, which can add approvals but never remove them.
 
 ```mermaid
-flowchart TB
+flowchart LR
   subgraph APP["App process"]
     V["SwiftUI views<br/>list, detail, compose bar, consent"] -->|"commands"| OM["ErrandsModel<br/>Observable, main actor"]
     V -->|"reads with Query"| DB[("SwiftData store")]
@@ -77,7 +77,7 @@ sequenceDiagram
   participant X as Spotlight index
   participant N as ErrandSnippetIntent
   P->>Siri: Add errand renew library books
-  Siri->>Siri: Match an App Shortcut phrase to AddErrandIntent
+  Siri->>Siri: Match the request to AddErrandIntent
   alt text found in the request
     Siri->>I: Set text to renew library books
   else text missing
@@ -125,7 +125,7 @@ Errand/                           Xcode project, deployment target iOS 27.0
    └─ Tests/ErrandKitTests/       Swift Testing suites
 ```
 
-**Why a package?** The widget extension needs `ErrandActivityAttributes` and `CompleteNextStepIntent`, and the intent needs the store. A package lets both targets share that code without ticking target-membership boxes file by file. It also helps with isolation. New app targets in Xcode 27 default to main-actor isolation, while a package target defaults to `nonisolated` unless its manifest says otherwise ([SE-0466](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0466-control-default-actor-isolation.md)). That is the right default for domain code that actors and intents call from anywhere. App intents can live in a Swift package. Declare `public struct ErrandKitPackage: AppIntentsPackage {}` in the package, then list it in `includedPackages` of an `AppIntentsPackage` in the app and in the widget extension.
+**Why a package?** The widget extension needs `ErrandActivityAttributes` and `CompleteNextStepIntent`, and the intent needs the store. A package lets both targets share that code without ticking target-membership boxes file by file. It also helps with isolation. The Day 0 setup gives the app target main-actor default isolation, while a package target defaults to `nonisolated` unless its manifest says otherwise ([SE-0466](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0466-control-default-actor-isolation.md)). That is the right default for domain code that actors and intents call from anywhere. App intents can live in a Swift package. Declare `public struct ErrandKitPackage: AppIntentsPackage {}` in the package, then list it in `includedPackages` of an `AppIntentsPackage` in the app and in the widget extension.
 
 | Target | Setting | Value | Why |
 |---|---|---|---|
@@ -370,7 +370,7 @@ struct ComposeBar: View {
 - [ ] You can add an errand, open it, and go back.
 - [ ] VoiceOver reads a row as one element: "Renew books, 0 of 1 steps done".
 - [ ] At the largest accessibility text size, nothing is clipped and the compose bar still works.
-- [ ] With Reduce Transparency on (Settings > Accessibility), the bar is still readable.
+- [ ] With Reduce Transparency turned on in Accessibility settings, the bar is still readable.
 
 **If you're stuck:**
 - Tapping a row does nothing: check that the `navigationDestination` type (`UUID`) matches the `NavigationLink` value type.
@@ -425,7 +425,7 @@ extension Errand {
 }
 ```
 
-The store becomes a model actor: an actor whose code runs on the queue that owns its own `ModelContext`. It still takes and returns `Errand` values:
+The store becomes a model actor: an actor with its own `ModelContext` and an executor that serializes all code running on it. It keeps its method names and still takes and returns `Errand` values. The step is now a class instance, so `update` changes it in place and saves:
 
 ```swift
 @ModelActor
@@ -439,14 +439,7 @@ public actor ErrandStore {
 
     public func errand(id: UUID) throws -> Errand? { try record(id).map(Errand.init) }
 
-    @discardableResult
-    public func complete(stepID: UUID, in errandID: UUID) throws -> Errand {
-        try update(stepID, in: errandID) { step in
-            guard step.status != .needsApproval else { throw ErrandError.needsApproval }
-            step.status = .done
-        }
-    }
-    // approve(stepID:in:) is the same, with step.status = .approved
+    // approve(stepID:in:) and complete(stepID:in:) keep their Day 1 bodies unchanged.
 
     private func update(_ stepID: UUID, in errandID: UUID,
                         _ change: (StepRecord) throws -> Void) throws -> Errand {
@@ -469,6 +462,11 @@ public actor ErrandStore {
 Add a small `public enum ErrandDatabase` with `open(inMemory: Bool = false) throws -> (container: ModelContainer, store: ErrandStore)`. It builds a `ModelContainer(for: ErrandRecord.self, StepRecord.self, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))` and an `ErrandStore(modelContainer:)` on it. Then the app never needs to know the schema, and tests get a fresh in-memory database with one call. Wire it up in the app:
 
 ```swift
+import AppIntents
+import SwiftData
+import SwiftUI
+import ErrandKit
+
 @main
 struct ErrandApp: App {
     private let container: ModelContainer
@@ -478,9 +476,10 @@ struct ErrandApp: App {
         let database: (container: ModelContainer, store: ErrandStore)
         do { database = try ErrandDatabase.open() }
         catch { fatalError("Could not open the errand store: \(error)") }
+        let store = database.store
+        AppDependencyManager.shared.add(dependency: store)   // for Day 4's intents
         container = database.container
-        AppDependencyManager.shared.add(dependency: database.store)   // for Day 4's intents
-        model = ErrandsModel(store: database.store)
+        model = ErrandsModel(store: store)
     }
 
     var body: some Scene {
@@ -490,7 +489,7 @@ struct ErrandApp: App {
 }
 ```
 
-In `ErrandListView`, replace `model.errands` with `@Query(sort: \ErrandRecord.createdAt, order: .reverse) private var records: [ErrandRecord]` and show `Errand(record)` in each row. `ErrandsModel` keeps the commands: add, approve, complete. Reads come from `@Query`, writes go through the actor.
+In `ErrandListView`, replace `model.errands` with `@Query(sort: \ErrandRecord.createdAt, order: .reverse) private var records: [ErrandRecord]` and show `Errand(record)` in each row. Delete `errands` and `load()` from `ErrandsModel`, and add `try` where `add` now throws. The model keeps the commands: add, approve, complete. Reads come from `@Query`, writes go through the actor.
 
 Reminders. Ask for permission when the person first sets a due date, not at launch:
 
@@ -690,7 +689,7 @@ public struct ErrandSnippetIntent: SnippetIntent {
 }
 ```
 
-`ErrandSnippetView` is a plain SwiftUI view in the package: the steps, plus `Button(intent: CompleteNextStepIntent(errand: entity))` for the next one.
+`ErrandSnippetView` is a plain SwiftUI view in the package. It takes the optional `Errand`, lists its steps, and adds `Button(intent: CompleteNextStepIntent(errand: ErrandEntity(errand)))` for the next one.
 
 One intent completes a step from Siri, Shortcuts, the snippet, the Live Activity and the Control. It adopts `LiveActivityIntent`, so the system runs it in the app's process, where the store and the Live Activity live. It still asks before an approval step, as a second line of defense:
 
@@ -782,9 +781,13 @@ struct ErrandLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     ErrandActivityView(title: context.attributes.title, state: context.state)
                 }
-            } compactLeading: { Image(systemName: "checklist") }
-              compactTrailing: { Text("\(context.state.done)/\(context.state.total)") }
-              minimal: { Text("\(context.state.done)") }
+            } compactLeading: {
+                Image(systemName: "checklist")
+            } compactTrailing: {
+                Text("\(context.state.done)/\(context.state.total)")
+            } minimal: {
+                Text("\(context.state.done)")
+            }
         }
     }
 }
@@ -820,7 +823,7 @@ Last, add `OpenErrandIntent: OpenIntent` with `@Parameter(title: "Errand") var t
 - [ ] **Track on Lock Screen** starts the Live Activity. Its Done button and the Control both advance it. On an approval step, the Live Activity shows "Open Errand to approve".
 
 **If you're stuck:**
-- The phrase does nothing: App Shortcut phrases must include `\(.applicationName)`. Build and run once so the system learns them.
+- The phrase does nothing: App Shortcuts are available once the app is installed, so first check that the Shortcuts app lists them. If it doesn't, `ErrandKitPackage` is probably missing from the app's `includedPackages`.
 - A button in the Live Activity does nothing: the intent must be `LiveActivityIntent`, and `ErrandKit` must be linked to both targets.
 - `@Dependency` crashes with a missing dependency: register it in `ErrandApp.init`, before any intent can run.
 - The snippet or dialog doesn't appear with Siri AI: Apple notes that the system "might not display `IntentDialog` or `ShowsSnippetView`" there. Return a value too, as `AddErrandIntent` does.
@@ -942,14 +945,14 @@ Now wire it in:
 **Done when:**
 - [ ] "Renew my library books before Friday, the fee is $3" gives 3 to 6 steps, and the fee step needs approval.
 - [ ] With Apple Intelligence off, the app still works through the manual path.
-- [ ] With the PCC toggle off, no request goes to PCC. Check with the Foundation Models instrument.
+- [ ] With the PCC toggle off, the PCC branch never runs. A breakpoint on it is enough to check.
 - [ ] The scheme option **Simulated Apple Foundation Models Availability > Quota Usage Limit Reached** (Edit Scheme > Run > Options) shows your quota message.
 
 **If you're stuck:**
-- Every call fails on a new device: check `SystemLanguageModel.default.availability`. `.unavailable(.modelNotReady)` means the model is still downloading.
+- Every call fails on a new device: check `SystemLanguageModel.default.availability`. `.unavailable(.modelNotReady)` means the model isn't on the device yet. The system downloads it based on network, battery and load.
 - `contextSizeExceeded`: the on-device window is 4,096 tokens, and instructions, the tool definition and the `@Generable` schema all count. Shorten `@Guide` descriptions before anything else.
-- A Siri request times out: Apple's docs give an app intent 30 seconds in the background. Keep planning short, or adopt `LongRunningIntent` (iOS 27) and report progress.
-- The first plan is slow: create the session when the compose field gets focus and call `prewarm(promptPrefix:)`.
+- A Siri request times out: Apple's docs say a background task traditionally gets up to 30 seconds. Keep planning short, or adopt `LongRunningIntent` (iOS 27) and report progress.
+- The first plan is slow: let `Planner` create its session when the person starts typing and call `prewarm(promptPrefix:)` on it. Apple suggests prewarming only when you have at least a second before the request.
 
 ---
 
@@ -1068,9 +1071,10 @@ struct PersistenceTests {
     @Test func stepsKeepTheirOrder() async throws {
         let (_, store) = try ErrandDatabase.open(inMemory: true)
         let titles = ["Find card", "Check due dates", "Renew online"]
-        try await store.add(Errand(title: "Renew books", steps: titles.map { ErrandStep(title: $0) }))
-        let saved = try await store.all()   // or errand(id:) with the id you kept
-        #expect(saved.first?.steps.map(\.title) == titles)
+        let errand = Errand(title: "Renew books", steps: titles.map { ErrandStep(title: $0) })
+        try await store.add(errand)
+        let saved = try await store.errand(id: errand.id)
+        #expect(saved?.steps.map(\.title) == titles)
     }
 }
 ```
@@ -1131,25 +1135,25 @@ Checked with `scripts/appledoc.py` on 2026-09-24. The version is the iOS release
 - `glassEffect(_:in:)`, `Glass.interactive(_:)`, `GlassEffectContainer`, `init(spacing:content:)`, `.glass` and `.glassProminent` button styles — iOS 26.0
 - `safeAreaInset(edge:alignment:spacing:content:)` — iOS 15.0; `task(name:priority:file:line:_:)` — iOS 15.0
 - `accessibilityLabel(_:)`, `accessibilityValue(_:)` — iOS 16.0; `accessibilityElement(children:)`, `accessibilityReduceMotion` — iOS 13.0
-- `Button(_:systemImage:action:)`, `labelStyle(_:)`, `LabelStyle.iconOnly` — iOS 14.0; `Button(intent:label:)`, `Button(_:intent:)` — iOS 17.0
+- `Button(_:systemImage:action:)`, `labelStyle(_:)`, `LabelStyle.iconOnly` — iOS 14.0; `Button(intent:label:)` — iOS 17.0; `ProgressView` — iOS 14.0
 - `Animatable`, `Animatable()` macro, `AnimatableIgnored()` macro — iOS 13.0 (the macros were added to SwiftUI in June 2025)
-- `ShaderLibrary`, `ShaderFunction.dynamicallyCall(withArguments:)`, `Shader.Argument.float(_:)`, `Shader.Argument.boundingRect`, `colorEffect(_:isEnabled:)`, `layerEffect(_:maxSampleOffset:isEnabled:)`, `visualEffect(_:)` — iOS 17.0; `Shader.compile(as:)` — iOS 18.0
+- `ShaderLibrary`, `ShaderFunction.dynamicallyCall(withArguments:)`, `Shader.Argument.float(_:)`, `Shader.Argument.boundingRect`, `colorEffect(_:isEnabled:)` — iOS 17.0; `Shader.compile(as:)`, `Shader.UsageType.colorEffect` — iOS 18.0
 - `TimelineView` — iOS 15.0; `TimelineSchedule.animation(minimumInterval:paused:)` — iOS 15.0; `animation(_:value:)` — iOS 13.0
 - `Model()` macro, `Attribute(_:originalName:hashModifier:)`, `Schema.Attribute.Option.unique`, `Relationship(...)`, `Schema.Relationship.DeleteRule.cascade`, `ModelActor()` macro, `ModelActor`, `ModelContext.save()`, `insert(_:)`, `fetch(_:)`, `FetchDescriptor`, `fetchLimit`, `Query`, `modelContainer(_:)` — iOS 17.0
 - `ModelContainer.init(for:configurations:)` — iOS 18.0; `ModelConfiguration(isStoredInMemoryOnly:)` — iOS 17.0; `Predicate(_:)` macro — iOS 17.0
-- `UNUserNotificationCenter.current()`, `requestAuthorization(options:)`, `add(_:)`, `UNMutableNotificationContent`, `UNCalendarNotificationTrigger(dateMatching:repeats:)`, `UNNotificationRequest(identifier:content:trigger:)` — iOS 10.0
-- `BGContinuedProcessingTaskRequest`, `BGContinuedProcessingTask`, `updateTitle(_:subtitle:)` — iOS 26.0; `BGTaskScheduler.submitTaskRequest(_:)` — iOS 27.0 (replaces `submit(_:)`, deprecated in 27.0); `register(forTaskWithIdentifier:using:launchHandler:)`, `BGTask.setTaskCompleted(success:)`, `expirationHandler` — iOS 13.0
+- `UNUserNotificationCenter.current()`, `requestAuthorization(options:)`, `add(_:)`, `UNMutableNotificationContent`, `UNCalendarNotificationTrigger(dateMatching:repeats:)`, `UNNotificationRequest(identifier:content:trigger:)`, `UNNotificationCategory`, `UNNotificationAction` — iOS 10.0
+- `BGContinuedProcessingTaskRequest(identifier:title:subtitle:)`, `BGContinuedProcessingTask` — iOS 26.0; `BGTaskScheduler.submitTaskRequest(_:)` — iOS 27.0 (replaces `submit(_:)`, deprecated in 27.0); `register(forTaskWithIdentifier:using:launchHandler:)`, `BGTask.setTaskCompleted(success:)`, `expirationHandler` — iOS 13.0
 - Info.plist `BGTaskSchedulerPermittedIdentifiers` — iOS 13.0; `NSSupportsLiveActivities` — iOS 16.1; `NSCalendarsFullAccessUsageDescription` — iOS 17.0
 - Entitlements: `com.apple.developer.private-cloud-compute` — iOS 27.0; App Groups — iOS 3.0
-- `AppIntent`, `AppEntity`, `EntityQuery`, `EntityStringQuery.entities(matching:)`, `AppShortcutsProvider`, `AppShortcutPhraseToken.applicationName`, `IntentDialog`, `IntentDescription`, `TypeDisplayRepresentation`, `EntityProperty`, `AppDependencyManager`, `ConfirmationActionName`, `OpenIntent` — iOS 16.0
-- `AppShortcut(intent:phrases:shortTitle:systemImageName:)`, `AppIntent.isDiscoverable`, `DisplayRepresentation(title:subtitle:image:synonyms:)` — iOS 17.0; `LiveActivityIntent`, `AppIntentsPackage` — iOS 17.0
+- `AppIntent`, `AppEntity`, `EntityQuery`, `EntityStringQuery.entities(matching:)`, `AppShortcutsProvider`, `AppShortcutPhraseToken.applicationName`, `IntentParameter` (`@Parameter`) with `requestValueDialog`, `IntentDialog`, `IntentDescription`, `TypeDisplayRepresentation`, `EntityProperty` (`@Property`), `AppDependency` (`@Dependency`), `AppDependencyManager.add(key:dependency:)`, `OpenIntent` — iOS 16.0
+- `AppShortcut(intent:phrases:shortTitle:systemImageName:)`, `DisplayRepresentation(title:subtitle:image:synonyms:)`, `LiveActivityIntent`, `AppIntentsPackage` — iOS 17.0
 - `IndexedEntity`, `CSSearchableIndex.indexAppEntities(_:priority:)`, `requestConfirmation(conditions:actionName:dialog:)` — iOS 18.0; `AppIntent(schema:)` macro — iOS 18.0
-- `SnippetIntent`, `SnippetIntent.reload()`, `ShowsSnippetIntent`, `IntentResult.result(value:dialog:snippetIntent:)`, `UndoableIntent` — iOS 26.0
+- `SnippetIntent`, `SnippetIntent.reload()`, `ShowsSnippetIntent`, `IntentResult.result(value:dialog:snippetIntent:)`, `UndoableIntent`, `UndoableIntent.undoManager` — iOS 26.0
 - `AppIntentError(description:)`, `LongRunningIntent`, `AppSchema.RemindersIntent.createReminder` — iOS 27.0
-- `ActivityAttributes`, `Activity.activities`, `ActivityAuthorizationInfo.areActivitiesEnabled`, `ActivityConfiguration(for:content:dynamicIsland:)`, `DynamicIsland`, `DynamicIslandExpandedRegion` — iOS 16.1; `Activity.request(attributes:content:pushType:)`, `update(_:)`, `end(_:dismissalPolicy:)`, `ActivityContent(state:staleDate:relevanceScore:)`, `ActivityUIDismissalPolicy.immediate` — iOS 16.2
+- `ActivityAttributes`, `Activity.activities`, `ActivityAuthorizationInfo.areActivitiesEnabled`, `ActivityUIDismissalPolicy.immediate`, `ActivityConfiguration(for:content:dynamicIsland:)`, `DynamicIsland`, `DynamicIslandExpandedRegion` — iOS 16.1; `Activity.request(attributes:content:pushType:)`, `update(_:)`, `end(_:dismissalPolicy:)`, `ActivityContent(state:staleDate:relevanceScore:)` — iOS 16.2
 - `ControlWidget`, `StaticControlConfiguration(kind:content:)`, `ControlWidgetButton(action:label:)`, `ControlWidgetConfiguration.displayName(_:)` — iOS 18.0; `WidgetBundle` — iOS 14.0
-- `LanguageModelSession`, `respond(to:generating:includeSchemaInPrompt:options:)`, `Generable(description:)` macro, `Guide(description:)` and `Guide(description:_:)` macros, `GenerationGuide.maximumCount(_:)`, `range(_:)`, `Tool`, `SystemLanguageModel.isAvailable`, `prewarm(promptPrefix:)` — iOS 26.0
-- `LanguageModelSession.init(model:tools:instructions:)` taking `some LanguageModel` and a `String` — iOS 27.0; `LanguageModel`, `PrivateCloudComputeLanguageModel`, `quotaUsage`, `QuotaUsage.isLimitReached`, `limitIncreaseSuggestion`, `PrivateCloudComputeLanguageModel.Error.quotaLimitReached(_:)`, `LanguageModelError.contextSizeExceeded(_:)` — iOS 27.0
+- `LanguageModelSession`, `respond(to:generating:includeSchemaInPrompt:options:)`, `Generable(description:)` macro, `Guide(description:)` and `Guide(description:_:)` macros, `GenerationGuide.maximumCount(_:)`, `range(_:)`, `Tool`, `Tool.call(arguments:)`, `SystemLanguageModel.isAvailable`, `availability`, `UnavailableReason.modelNotReady`, `prewarm(promptPrefix:)` — iOS 26.0
+- `LanguageModelSession.init(model:tools:instructions:)` taking `some LanguageModel` and a `String` — iOS 27.0; `LanguageModel`, `PrivateCloudComputeLanguageModel`, `isAvailable`, `quotaUsage`, `QuotaUsage.isLimitReached`, `status`, `resetDate`, `limitIncreaseSuggestion`, `PrivateCloudComputeLanguageModel.Error.quotaLimitReached(_:)`, `LanguageModelError.contextSizeExceeded(_:)`, `ContextOptions`, `ContextOptions.ReasoningLevel` — iOS 27.0
 - `EKEventStore.requestFullAccessToEvents()`, `EKAuthorizationStatus.fullAccess` — iOS 17.0; `predicateForEvents(withStart:end:calendars:)`, `events(matching:)` — iOS 4.0; `authorizationStatus(for:)` — iOS 6.0
 - `MTL4CommandQueue`, `MTL4CommandAllocator.reset()`, `MTL4RenderCommandEncoder`, `MTLDevice.makeMTL4CommandQueue()` — iOS 26.0; `MTKView` — iOS 9.0; `UIViewRepresentable` — iOS 13.0
 - Swift Testing `Test(_:_:)`, `Test(_:_:arguments:)`, `expect(_:_:sourceLocation:)`, `expect(throws:_:sourceLocation:performing:)` — Swift 6.0 / Xcode 16 (no iOS version listed)

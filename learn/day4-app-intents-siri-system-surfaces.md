@@ -92,7 +92,7 @@ Apple's migration advice follows from this. When a new schema-based intent would
 
 The system decides where your code runs. Your intent can run in the app in the foreground, the app in the background, an App Intents extension (always background), or a widget extension (widget buttons and controls). You state a preference with `supportedModes`, an `IntentModes` value such as `.background` or `[.background, .foreground(.dynamic)]`. It's a suggestion. Inside `perform()`, `systemContext.currentMode` tells you what actually happened, `continueInForeground(_:alwaysConfirm:)` asks to bring the app forward, and `systemContext.isVoiceOnly` (new in iOS 27) tells you there's no screen at all. New in iOS 27, `allowedExecutionTargets` pins an intent or query to `.main`, `.appIntentsExtension` or `.widgetKitExtension` when the same code is linked into several targets.
 
-Time is limited too. On iOS, a background intent gets 30 seconds unless it adopts `LongRunningIntent` (iOS 27) and wraps its work in `performBackgroundTask(options:operation:)`. That method extends the time only while you keep updating `progress`. The system shows that progress to the person as a Live Activity, using your `localizedDescription` as the title and a progress bar from `completedUnitCount` and `totalUnitCount`. Add `CancellableIntent` and your cleanup code learns *why* it was cancelled: `.userCancelled` or `.timeout`.
+Time is limited too. On iOS, a background intent gets 30 seconds unless it adopts `LongRunningIntent` (iOS 27) and wraps its work in `performBackgroundTask(options:operation:)`. That method extends the time only while you keep updating `progress`. The system shows that progress to the person as a Live Activity, using your `localizedDescription` as the title and a progress bar from `completedUnitCount` and `totalUnitCount`. Add `CancellableIntent` and your cleanup code learns *why* it was cancelled (`.userCancelled` or `.timeout`), either in the `onCancel:` closure of `performBackgroundTask` or by wrapping ordinary work in `withIntentCancellationHandler(operation:onCancel:isolation:)`.
 
 Two more consequences. A `SnippetIntent`'s `perform()` is called again after every button tap in the snippet, so it must not change anything. And Apple warns: "When someone performs an action with Siri AI that invokes your app intent, the system might not display `IntentDialog` or `ShowsSnippetView`." Your result dialog is not a reliable place for anything the person must see.
 
@@ -206,9 +206,9 @@ Widgets also never resolve parameters: an intent you pass to a widget button mus
 
 ## Core patterns in code
 
-The code extends the Errand app from Days 1–3. `Errand` and `Step` are the value types from Day 1. `ErrandStore` is the Day 1 actor, now backed by SwiftData; it hands out value snapshots, never `@Model` objects. The capstone step lists the few store methods today's code calls.
+The code extends the Errand app from Days 1–3. `Errand` and `Step` are the value types from Day 1, with two small additions to `Step` (`isDone` and `sideEffect`) that the capstone step spells out. `ErrandStore` is the Day 1 actor, now backed by SwiftData; it hands out value snapshots, never `@Model` objects. The capstone step lists the few store methods today's code calls.
 
-One setup note first. The App Intents protocols are nonisolated and `Sendable` (`AppIntent` inherits `Sendable` and `SendableMetatype`). If your app target's Default Actor Isolation is `MainActor`, as Day 0 recommends, mark your intent, entity and query types `nonisolated` so they aren't pulled onto the main actor. The examples do this. Views stay on the main actor as usual.
+One setup note first. The App Intents protocols are nonisolated and `Sendable` (`AppIntent` inherits `Sendable` and `SendableMetatype`). With Default Actor Isolation set to `MainActor`, as Day 0 recommends, a type that adopts one of them in its primary declaration already stays nonisolated (the `SendableMetatype` rule from Day 1). A type that adopts it in an extension, or a helper such as `ErrandActivityAttributes` (only `Codable`), would still become `@MainActor`. The examples write `nonisolated` on every intent, entity, query and helper so the choice is visible. Views stay on the main actor as usual.
 
 **1. Nouns: an entity and the query that finds it.** The entity wraps a snapshot and exposes only what the system needs.
 
@@ -319,9 +319,9 @@ nonisolated struct CompleteStepIntent: AppIntent {
         guard let current = await store.step(id: step.id), !current.isDone else {
             throw AppIntentError(description: "That step is already done or no longer exists.")
         }
-        if current.sideEffect != nil {
+        if let effect = current.sideEffect {
             // Throws if the person cancels, so nothing below runs.
-            try await requestConfirmation(dialog: "Approve this step?",
+            try await requestConfirmation(dialog: "\(current.title): \(effect). Continue?",
                                           snippetIntent: StepApprovalSnippetIntent(step: step))
         }
         let outcome = try await store.complete(stepID: current.id)
@@ -332,7 +332,7 @@ nonisolated struct CompleteStepIntent: AppIntent {
 ```
 
 - Approval comes from `requestConfirmation`, which the system shows to the person. Nothing the caller passes in can skip it.
-- `.requiresAuthentication` means a locked phone can't complete a step. `allowedExecutionTargets = .main` (iOS 27) keeps this intent in the app process even if the file is later shared with an extension.
+- `.requiresAuthentication` means a locked phone can't complete a step, unless the request came from another device the person already unlocked, such as their Apple Watch. Use `.requiresLocalDeviceAuthentication` to insist on unlocking this device. `allowedExecutionTargets = .main` (iOS 27) keeps this intent in the app process even if the file is later shared with an extension.
 - The error uses `AppIntentError(description:)`, new in iOS 27, so Siri and Shortcuts show a real sentence instead of a generic failure.
 
 **4. The approval snippet.** A `SnippetIntent` renders the view the person approves. It reads state and changes nothing.
@@ -356,7 +356,7 @@ nonisolated struct StepApprovalSnippetIntent: SnippetIntent {
         return .result(view: StepApprovalView(
             errandTitle: step.errandTitle,
             stepTitle: fresh?.title ?? step.title,
-            sideEffect: fresh?.sideEffect ?? "No outside action"))
+            sideEffect: fresh?.sideEffect ?? step.sideEffect ?? "No outside action"))
     }
 }
 
@@ -375,8 +375,8 @@ struct StepApprovalView: View {
 }
 ```
 
-- Shown through `requestConfirmation`, the snippet gets system Approve and Cancel buttons. Your own buttons, like "Review in Errand," must be initialized with an app intent, exactly as in widgets.
-- The view spells out the side effect ("Calls Joe's Plumbing") in the approval itself. That's the text Siri AI can't skip.
+- Shown through `requestConfirmation`, the snippet gets the system's confirm and Cancel buttons. The confirm label comes from `actionName`: `.continue` ("Continue") by default, or a verb such as `.call`, `.send` or `.pay`. Your own buttons, like "Review in Errand," must be initialized with an app intent, exactly as in widgets.
+- The view spells out the side effect ("Calls Joe's Plumbing") in the approval itself, and `CompleteStepIntent`'s dialog repeats it, so a voice-only request with no screen still hears it. Unlike a result dialog, this text comes before the action, and `perform()` can't continue without an answer.
 - `OpenErrandScreenIntent` is defined in the capstone step.
 
 **5. Give Siri context: index, annotate, donate.** Three small calls tell Apple Intelligence what exists, what's on screen, and what the person does.
@@ -412,7 +412,7 @@ func didAddErrandInApp(title: String) async {
 - Donate only actions the person started in your UI. The system already records intents it ran itself.
 - Annotate only with entities the view really shows. Apple says so explicitly, and wrong annotations make "this" resolve to the wrong thing.
 
-**6. Live Activity: data and lifecycle.** The attributes file belongs to both the app and the widget extension.
+**6. Live Activity: data and lifecycle.** `ErrandActivityAttributes` belongs to both the app and the widget extension. The `ErrandActivity` helper starts and updates activities, which only the app does, so keep it in an app-only file.
 
 ```swift
 import ActivityKit
@@ -496,7 +496,7 @@ struct NewErrandControl: ControlWidget {
 }
 ```
 
-- You must provide every presentation: Lock Screen, expanded (`.leading`, `.trailing`, `.center`, `.bottom` regions), compact leading and trailing, and minimal. The system picks one per place.
+- You must provide every presentation: Lock Screen, expanded (built from any of the `.leading`, `.trailing`, `.center` and `.bottom` regions), compact leading and trailing, and minimal. The system picks one per place.
 - The control opens the app instead of completing a step. Anything with side effects that runs from Control Center should need unlock and a look at what it will do.
 - Add `ErrandActivityWidget()` and `NewErrandControl()` to the `WidgetBundle`'s `body`. Their order there is the order in the widget and controls galleries.
 
@@ -511,7 +511,7 @@ From Apple's June 2026 update notes (plus Core Spotlight's July 2026 note), chec
 - **`IntentValueRepresentation`** in `transferRepresentation` bridges your entities to system values like `IntentPerson` and `PlaceDescriptor`. (The reference page lists it as iOS 26.4.)
 - **`RunSystemShortcutIntent`** lets a widget button run an App Shortcut, a custom shortcut, a system action, or open another app, whichever the person picked when configuring the widget.
 - **`LongRunningIntent`** with `performBackgroundTask(options:operation:)` and `LongRunningTaskOptions` (for example `.requiresGPU`) extends background time while you report progress.
-- **`CancellableIntent`** and **`IntentCancellationReason`** separate a deliberate cancel from a timeout. **`UndoableIntent`** reverses an intent's effect. **`supportedModes`** and **`currentMode`** choose and inspect foreground or background. The notes list all of these for iOS 27; the reference pages mark them iOS 26.0 or 26.4.
+- **`CancellableIntent`** and **`IntentCancellationReason`** separate a deliberate cancel from a timeout. **`UndoableIntent`** reverses an intent's effect. Its reference page documents only `undoManager` for registering undo actions; Apple's iOS 27 sample also implements an `undo()` method on the intent, which the reference doesn't list yet, so check the SDK before relying on either. **`supportedModes`** and **`currentMode`** choose and inspect foreground or background. The notes list all of these for iOS 27; the reference pages mark them iOS 26.0 or 26.4.
 - **`allowedExecutionTargets`** with **`IntentExecutionTargets`** picks which process runs an intent or query.
 - **`EntityCollection`** stores only IDs, so a parameter with hundreds of entities doesn't load each one during resolution. **`AppUnionValue`** gives `@UnionValue` parameters a proper picker. **`IndexedEntityQuery`** handles Spotlight's reindex requests.
 - **`AppIntentError(description:)`** gives failures a localized message.
@@ -528,7 +528,7 @@ What old tutorials get wrong: `static var title = ...` (fails under Swift 6), `o
 
 - **Siri says it can't find the thing → the query only implements `entities(for:)`, the entity isn't indexed, or its display title is vague → add `EntityStringQuery` and `suggestedEntities()`, adopt `IndexedEntity`, and give entities short, familiar titles.**
 - **People's shortcuts break after a refactor → you renamed an intent (its persistent identifier defaults to the type name) or changed a parameter → keep `persistentIdentifier` stable across renames; for incompatible changes, add a new intent next to the old one, hide it with `isAssistantOnly` during a schema migration, and mark the old one with `DeprecatedAppIntent` when you retire it.**
-- **Swift 6 errors on intent, entity or query conformances in the app target → the target's default isolation is `MainActor`, but the App Intents protocols are nonisolated and `Sendable` → mark those types `nonisolated`, or move them into a framework that keeps nonisolated defaults (and list it in an `AppIntentsPackage`).**
+- **Swift 6 errors on intent, entity or query conformances in the app target → the target's default isolation is `MainActor` and the type was inferred `@MainActor` (typically because the conformance is in an extension, not the primary declaration), but the App Intents protocols are nonisolated and `Sendable` → mark those types `nonisolated`, or move them into a framework that keeps nonisolated defaults (and list it in an `AppIntentsPackage`).**
 - **A snippet button fires the action twice, or the snippet shows stale data → the system re-runs the snippet's `perform()` after every interaction → keep snippet `perform()` read-only, fetch fresh state, and call `reload()` when data changes while it's visible.**
 - **A background intent dies around the 30-second mark → the standard background limit → adopt `LongRunningIntent`, wrap the work in `performBackgroundTask`, and update `progress` regularly, or the system cancels with `.timeout`.**
 - **A widget button runs but the widget shows old state → `perform()` returned before the write finished, or the widget reads a store the app didn't write → `await` the write before returning (the system reloads the timeline right after), and share data through an App Group.**
@@ -574,14 +574,14 @@ Add to `ErrandStore` (plain Swift, no framework APIs):
 | `step(id:) -> Step?` | `CompleteStepIntent`, the snippet |
 | `complete(stepID:) throws -> ErrandProgress` | `CompleteStepIntent` |
 
-`Step` needs `id`, `title`, `isDone` and `sideEffect: String?` (a plain description like "Calls Joe's Plumbing", or `nil` when harmless). `ErrandProgress` carries `errandID` and an `activityState` of type `ErrandActivityAttributes.ContentState`.
+Day 1's `Step` already has `id`, `title`, `status` and `needsApproval`. Add `var isDone: Bool { status == .done }` and `sideEffect: String?` (a plain description like "Calls Joe's Plumbing", or `nil` when harmless; set it on every step whose `needsApproval` is `true`). `ErrandProgress` carries `errandID` and an `activityState` of type `ErrandActivityAttributes.ContentState`.
 
 Then:
 
 1. Add `ErrandEntity` and `ErrandQuery` (pattern 1). Write `StepEntity` the same way: it wraps a `Step`, keeps an `errandTitle`, exposes `title` and `isDone` with `@ComputedProperty`, and leaves `sideEffect` as a plain property. Add a `StepQuery` that adopts `EntityStringQuery`.
 2. Register the store in your `App.init`: `AppDependencyManager.shared.add(dependency: store)`.
 3. Add `AddErrandIntent`, `CompleteStepIntent`, `StepApprovalSnippetIntent` and `ErrandShortcuts` (patterns 2–4).
-4. Add a widget extension with "Include Live Activity" and "Include Control" checked. Set `NSSupportsLiveActivities` to `YES` in the app's Info.plist. Give the attributes file (pattern 6) both target memberships, and put pattern 7 in the extension. Call `ErrandActivity.start` from a Start button on the errand screen.
+4. Add a widget extension with "Include Live Activity" and "Include Control" checked. Set `NSSupportsLiveActivities` to `YES` in the app's Info.plist. Give the file with `ErrandActivityAttributes` (pattern 6) both target memberships, keep `ErrandActivity` in the app target, and put pattern 7 in the extension. Call `ErrandActivity.start` from a Start button on the errand screen.
 5. Add the intent the control and snippet open. Give this file both target memberships:
 
 ```swift
@@ -603,6 +603,7 @@ nonisolated struct OpenErrandScreenIntent: OpenIntent, TargetContentProvidingInt
 
     init() {}
     init(screen: ErrandScreen) { target = screen }
+    // No perform(): an OpenIntent that only opens a scene can use the default on iOS.
 }
 
 // On the root view of your WindowGroup:
@@ -616,7 +617,7 @@ Then set `UIApplicationSupportsMultipleScenes` to `YES` in the app's scene manif
 *Done when:*
 - Saying "Add an errand in Errand" to Siri gets the question "What's the errand?", and the new errand appears in the app.
 - The Shortcuts app lists Add Errand and Complete Step under Errand, and Complete Step offers a step picker fed by `StepQuery`.
-- Completing a step that has a `sideEffect` shows the approval snippet with the side effect spelled out; Cancel leaves the step open; Approve completes it.
+- Completing a step that has a `sideEffect` shows the approval snippet with the side effect spelled out; Cancel leaves the step open; the confirm button completes it.
 - Completing any step on a locked phone asks you to unlock first.
 - Starting an errand shows a Live Activity on the Lock Screen and in the Dynamic Island; completing steps from Siri updates it; the last step ends it.
 - The New Errand control in Control Center opens the app on the new-errand screen.
@@ -675,7 +676,7 @@ Parameters are filled by whoever calls the intent: Siri's model, a shortcut, or 
 
 <details><summary>Answer</summary>
 
-It tells the system an entity's ID is the same on all the person's devices, so Siri can hand a conversation from one device to another and still find the entity. If your IDs already come from a server or a synced store, just add the protocol. If each device has its own local ID, use `SyncableEntityIdentifier(local:stable:)` as the `id` type.
+It tells the system an entity's ID is the same on all the person's devices, so Siri can hand a conversation from one device to another and still find the entity. If your IDs already come from a server or a synced store, just add the protocol. If each device has its own local ID, make the `id` a `SyncableEntityIdentifier<Local, Stable>` and create it with `init(local:stable:)`.
 
 </details>
 
@@ -733,6 +734,7 @@ Define App Shortcuts with an `AppShortcutsProvider`. Every phrase must include y
 - IntentAuthenticationPolicy — iOS 16.0
 - ConfirmationConditions — iOS 18.0
 - ConfirmationConditions.lowConfidenceSource — iOS 18.0
+- ConfirmationActionName (.continue, .call, .send, .pay) — iOS 16.0
 - AppIntentError — iOS 16.0
 - AppIntentError.init(description:) — iOS 27.0
 - AppEntity — iOS 16.0
@@ -756,6 +758,7 @@ Define App Shortcuts with an `AppShortcutsProvider`. Every phrase must include y
 - IndexedEntityQuery.reindexAllEntities(indexDescription:) — iOS 27.0
 - SyncableEntity — iOS 27.0
 - SyncableEntityIdentifier — iOS 27.0
+- SyncableEntityIdentifier.init(local:stable:) — iOS 27.0
 - OwnershipProvidingEntity — iOS 27.0
 - EntityOwnership — iOS 27.0
 - EntityCollection — iOS 27.0
@@ -785,6 +788,7 @@ Define App Shortcuts with an `AppShortcutsProvider`. Every phrase must include y
 - LongRunningTaskOptions — iOS 27.0
 - ProgressReportingIntent — iOS 17.0
 - CancellableIntent — iOS 26.4
+- CancellableIntent.withIntentCancellationHandler(operation:onCancel:isolation:) — iOS 26.4
 - IntentCancellationReason — iOS 26.4
 - UndoableIntent — iOS 26.0
 - UndoableIntent.undoManager — iOS 26.0

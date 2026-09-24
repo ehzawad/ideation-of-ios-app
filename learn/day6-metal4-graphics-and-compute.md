@@ -118,7 +118,7 @@ The reward is lower CPU overhead and more predictable frames. The price is that 
 
 Before Metal 4, using a Core ML model inside a rendering loop usually meant: GPU renders, CPU waits, CPU runs the model, CPU hands the result back, GPU continues. Each round trip could easily cost a frame. Metal 4 adds a *machine learning pass*. You convert a Core ML model into a Metal package with the `metal-package-builder` tool in Xcode, compile it into an `MTL4MachineLearningPipelineState`, and encode it with an `MTL4MachineLearningCommandEncoder` in the same command buffer as your other work. Inputs and outputs are `MTLTensor`s, a new resource type for multidimensional arrays. The system chooses whether each model runs on the GPU or the Neural Engine. When it picks the Neural Engine, the GPU is free to run other work at the same time.
 
-Metal Shading Language (MSL) 4 also has tensor types and operations (matrix multiply, convolution, reduction) you can call inline from any shader stage. On iOS 27, the new Core AI framework can also encode inference onto a Metal command queue you provide, through `ComputeStream(commandQueue:)`. Day 5 covers Core AI itself.
+Metal Shading Language (MSL) 4 also has tensor types and operations (matrix multiply, convolution, reduction) you can call inline from any shader stage. On iOS 27, the new Core AI framework can also encode inference onto a Metal command queue you provide, through `ComputeStream(commandQueue:)`. That initializer takes a Metal 3 `MTLCommandQueue`, not an `MTL4CommandQueue`, so you order its work against your Metal 4 passes with an `MTLEvent` or `MTLSharedEvent`. Day 5 covers Core AI itself.
 
 **Senior tell:** they keep data on the GPU from capture to display, and treat every CPU readback inside a frame as a bug to justify.
 
@@ -258,6 +258,7 @@ struct ErrandProgressRing: View, Animatable {
 
 - `ShaderLibrary.errandRing(...)` is dynamic member lookup plus `@dynamicCallable`: the name must match the MSL function exactly, and the Swift compiler can't catch a typo.
 - Conforming to `Animatable` makes `withAnimation { ring.progress = 0.8 }` interpolate the value frame by frame. Shader arguments don't animate by themselves.
+- The `nonisolated` accessor can still read and write `progress`: within its own module, Swift treats a `Sendable` stored property of a main-actor struct as nonisolated (SE-0434). Apple's docs now also offer the `@Animatable` macro, which synthesizes `animatableData` from the stored properties (you mark the rest with `@AnimatableIgnored`). The hand-written version here makes it explicit that only `progress` animates.
 - A shader is invisible to VoiceOver. The label and value make the ring an accessible element, and Reduce Motion pauses the timeline.
 
 **3. The Metal 4 renderer's long-lived objects.** Everything here is created once. This follows Apple's "Drawing a triangle with Metal 4" sample, in Swift. Put blocks 3 to 5 in one file, `RingRenderer.swift`, because the extensions touch private state.
@@ -306,7 +307,7 @@ final class RingRenderer: NSObject, MTKViewDelegate {
 ```
 
 - The command *buffer* comes from the device, not the queue, and is reused forever. The *allocators* are what need a copy per frame in flight.
-- Residency is declared once, on the queue, for everything the renderer owns. Apple's `MTKView.residencySet` docs say to add both the view's set and its `CAMetalLayer`'s set, so the drawable textures are resident too.
+- Residency is declared once, on the queue, for everything the renderer owns. Apple's `MTKView.residencySet` docs say to add both the view's set and its `CAMetalLayer`'s set, so the drawable textures are resident too. Optionally call `resident.requestResidency()` after `commit()`, so Metal does the residency work now instead of during the first frame's commit.
 - `init?` returns `nil` on devices without `MTLGPUFamily.metal4`. That's your signal to show the SwiftUI shader version instead.
 
 **4. Compiling the pipeline with `MTL4Compiler`.** Pixel format is baked in, which is why the renderer passes the view's format.
@@ -324,7 +325,7 @@ extension RingRenderer {
     }
 
     /// Builds the render pipeline once, off the main thread. Never call this per frame.
-    nonisolated static func makePipeline(device: any MTLDevice, pixelFormat: MTLPixelFormat)
+    @concurrent nonisolated static func makePipeline(device: any MTLDevice, pixelFormat: MTLPixelFormat)
         async throws -> any MTLRenderPipelineState {
         guard let library = device.makeDefaultLibrary() else { throw RingError.noShaderLibrary }
 
@@ -348,6 +349,7 @@ extension RingRenderer {
 ```
 
 - `MTL4Compiler` has synchronous and `async` versions of each factory method. Inside an `async` function, `try await` picks the asynchronous one, so the main thread keeps scrolling while the GPU code compiles.
+- `@concurrent` keeps the whole function, including `makeDefaultLibrary()`, off the main actor. Without it, the approachable-concurrency setting from Day 1 (`NonisolatedNonsendingByDefault`) would run this `nonisolated async` function on its caller's actor, which here is the main actor.
 - Functions are named by *descriptor* (`MTL4LibraryFunctionDescriptor`) rather than by fetching `MTLFunction` objects. That indirection is what lets Metal 4 specialize and harvest pipelines later.
 - In a real app, create one compiler and keep it. It's `Sendable`, so it's safe to share across tasks.
 
@@ -397,7 +399,7 @@ extension RingRenderer {
 
 - `setArgumentTable` doesn't copy anything yet. Metal takes a *snapshot* of the table when you encode the draw, so you can point slot 0 at a different buffer next frame without disturbing this one.
 - The wait-for-drawable and signal-drawable calls are *queue* operations on the GPU timeline. The CPU doesn't block on them. The only CPU wait is the shared event, and ideally it returns at once.
-- The render pass descriptor from `MTKView` is built from the view's clear values, so the color attachment is cleared at the start rather than loaded, and the result is stored for the display. Those are the load and store actions from mental model 3.
+- The render pass descriptor from `MTKView` is built from the view's clear values. Apple documents the Metal 3 `currentRenderPassDescriptor` as `.clear` + `.store` for the color attachment (`.dontCare` store for depth and stencil). The Metal 4 property's docs don't list its actions, so confirm them in a GPU capture, or set `pass.colorAttachments[0].loadAction` and `storeAction` yourself. Those are the load and store actions from mental model 3.
 
 **6. The shaders for the render pass.** It's the same ring math as block 1, now in a fragment function with a full-screen triangle.
 
@@ -478,7 +480,7 @@ struct StylizePasses {
 
 - Each barrier is a *consumer* barrier placed as late as possible: "don't start my ML stage until earlier dispatch stages finish", and "don't start my fragment stage until earlier ML work finishes". Without them, the three passes may overlap and read half-written data.
 - Threadgroup size is the width of a SIMD group (the threads that run in lockstep) times as many rows as fit. `dispatchThreads` lets Metal trim the edge threadgroups, so the kernel needs no bounds check.
-- Tensors bind to *buffer* slots by resource ID (`setResource(tensor.gpuResourceID, bufferIndex:)`), which is how Apple's ML sample does it. Everything here (textures, tensors, heap) must also be in a residency set.
+- Tensors bind to *buffer* slots by resource ID (`setResource(tensor.gpuResourceID, bufferIndex:)`), which is how Apple's ML sample does it. Everything here (textures, tensors, heap) must also be in a residency set. `MTL4MachineLearningPipelineState` conforms to `MTLAllocation` as well, so add it to the set too.
 
 ## What's new in iOS 27 (and what old tutorials get wrong)
 
@@ -486,7 +488,7 @@ Apple's "Updates" pages don't cover Metal, so these come from the API reference 
 
 - **Metal Shading Language 4.1** (`MTLLanguageVersion.version4_1`). The spec lists placement `new`, an option to round float-to-float conversions toward zero (exposed as `MTLCompileOptions.floatingPointConversionRoundingMode`), `function_id` in ray intersection results, packed block-scaling types, multiplane tensors and `tensor_blockwise`, interleave and deinterleave, acquire and release memory order on barriers and atomics, and new texture reads (clamp-to-edge, integer coordinates with offsets, multi-pixel reads).
 - **Multi-plane tensors for quantized models.** A tensor can now carry an auxiliary `scales` plane next to its data plane: `MTLTensorAuxiliaryPlaneDescriptor`, `MTLTensorPlaneType`, `MTLTensorBufferAttachments`, and `makeTensor(descriptor:attachments:)` to back each plane with your own buffer. New `MTLTensorDataType` cases add 8-bit and 4-bit floats (`metalFloat8e4m3`, `metalFloat8e5m2`, `metalFloat4e2m1`), an 8-bit scale type (`metalFloat8ue8m0`), and 2-bit integers. 4-bit integers arrived in iOS 26.4.
-- **Compute pipeline hints.** `MTL4ComputePipelineDescriptor` gains `forwardProgressUsage` (`.automatic`, `.simdGroupParallel`, `.weak`), `contentionRelief` and `optimizeForPersistentKernel`. `MTLComputePipelineState` gains `recommendedPersistentThreadgroupsPerGrid(forThreadsPerThreadgroup:)`. These are for persistent-kernel designs and are only lightly documented so far; leave them at their defaults unless you're profiling that exact case.
+- **Compute pipeline hints.** `MTL4ComputePipelineDescriptor` gains `forwardProgressUsage` (`.automatic`, `.simdGroupParallel`, `.weak`), `contentionRelief` and `optimizeForPersistentKernel`. `MTLComputePipelineState` gains `recommendedPersistentThreadgroupsPerGrid(forThreadsPerThreadgroup:)`. Apple's reference pages list these with no description yet. The names point at persistent-kernel designs, so leave them at their defaults unless you're profiling that exact case.
 - **Three-channel pixel formats** such as `rgb8Unorm`, `rgb16Float` and `rgb32Float`, and a `minLOD` on textures and texture views.
 - **MetalFX** frame interpolation can correct barrel distortion (`isDistortionTextureEnabled`) and takes camera matrices and content offsets. The temporal scaler adds `isJitteredMotionVectorsEnabled` and `isOutputResolutionMotionVectorsEnabled`.
 - **iOS 26.4 additions you'll use on iOS 27:** `MTKView.residencySet` (used in block 3), `MTLDeviceError`, and `MTLDevice.supportsPlacementSparse`.
@@ -513,7 +515,7 @@ What old tutorials get wrong, now:
 - **A shader animation stutters more the longer the app runs** → you passed a large time value (for example, seconds since 2001, about 8×10⁸) as a 32-bit float. At that size a `Float` can only step in 64-second increments → wrap time (`truncatingRemainder(dividingBy:)`) before converting.
 - **Battery drain from a mostly static visual** → `MTKView` redraws continuously at `preferredFramesPerSecond` → lower the rate, or set `isPaused` and `enableSetNeedsDisplay` to redraw only on change. Pause `TimelineView` when nothing moves, and always under Reduce Motion.
 - **A SwiftUI shader shows a placeholder instead of the content** → the effect is on a view backed by UIKit (a map, a web view, an `MTKView`). Apple's docs warn that these may not render into the filtered layer → apply shaders only to SwiftUI-drawn content.
-- **Works on a phone, fails in the Simulator (or the reverse)** → the Simulator's GPU offers roughly `MTLGPUFamily.apple2` features → gate Metal 4 with `supportsFamily(.metal4)`, keep a fallback (the SwiftUI shader), and test Metal on a real device.
+- **Works on a phone, fails in the Simulator (or the reverse)** → Apple's Simulator article says its Metal device has capabilities similar to an `MTLGPUFamily.apple2` GPU, and doesn't promise Metal 4 → gate Metal 4 with `supportsFamily(.metal4)`, expect the fallback (the SwiftUI shader) to be what runs in the Simulator, and test Metal on a real device.
 
 ## Legacy you'll still meet
 

@@ -170,11 +170,11 @@ There is no opting out anymore. The `UIDesignRequiresCompatibility` Info.plist k
 - **Typography.** Use text styles like `.body`, `.headline`, `.caption`. On iOS the default body size is 17 pt and the HIG minimum is 11 pt. Text styles scale with Dynamic Type, including the larger accessibility sizes; the HIG suggests letting people enlarge text by at least 200 percent. Prefer Regular, Medium, Semibold, or Bold over the thin weights. When text gets huge, change the layout (stack instead of row) rather than truncate. Scale your own spacing with `@ScaledMetric`.
 - **Color.** Use semantic colors (primary and secondary label colors, system and grouped backgrounds) and your accent color. For custom colors, add light, dark, and increased-contrast variants in the asset catalog. Never carry meaning with color alone. The HIG's contrast floor is 4.5:1 for text up to 17 pt and 3:1 for 18 pt or bold text.
 - **SF Symbols.** Thousands of icons that match San Francisco's weights and scale with text. Four rendering modes: monochrome, hierarchical, palette, multicolor. Variants like `.fill`, `.slash`, `.circle`; often the container picks for you (tab bars prefer fill, toolbars outline). Symbol effects such as bounce, pulse, wiggle, breathe, and replace give feedback without custom animation code.
-- **Spacing and targets.** The default hit target on iOS is 44×44 pt, with 28×28 pt as the minimum. The HIG suggests about 12 pt of padding around bezeled controls and about 24 pt around borderless ones. Prefer the system's standard spacing to your own numbers.
+- **Spacing and targets.** The HIG's default control size on iOS is 44×44 pt, with 28×28 pt as the minimum. The HIG suggests about 12 pt of padding around bezeled controls and about 24 pt around borderless ones. Prefer the system's standard spacing to your own numbers.
 - **Hierarchy.** Put the most important things at the top and leading edge. Group related items. Hide detail behind disclosure. Keep titles short (the HIG suggests under 15 characters) and toolbars to about three groups.
 - **Motion.** Brief, purposeful, cancellable, and optional. Honor Reduce Motion.
 - **Accessibility.** VoiceOver reads an accessibility tree built from your views. Each element has a *label* (what it is), a *value* (its state), *traits* (button, header, toggle), an optional *hint*, and *actions*. Standard controls fill these in. Icon-only buttons and custom rows need your help.
-- **App icons.** Icons are now layered. You draw a background and foreground layers, compose them in Icon Composer, and the system adds highlights, refraction, and shadows. People can choose default, dark, clear, or tinted appearances. Don't bake effects or masks into your artwork.
+- **App icons.** Icons are now layered. You draw foreground layers, then set the background and compose them in Icon Composer, and the system adds highlights, refraction, and shadows. People can choose default, dark, clear, or tinted appearances. Don't bake effects or masks into your artwork.
 
 **Senior tell:** before a screen is "done," they run it at the largest accessibility text size, in Dark Mode with Increase Contrast, and with VoiceOver on.
 
@@ -280,7 +280,7 @@ struct ErrandFilterField: View {
 
 - With Xcode 27's `State()` macro, `ErrandBoard(...)` runs once, not on every rebuild of the `App` struct.
 - `@Environment(ErrandBoard.self)` reads by type. If no ancestor called `.environment(board)`, SwiftUI stops with an error, so previews must inject one too.
-- `@Bindable var board = board` inside `body` is the pattern Apple uses in its iOS 27 Wishlist sample to get `$board.filter`.
+- `@Bindable var board = board` inside `body` is the pattern Apple's iOS 27 Wishlist sample uses (there for `$dataSource.searchText`); here it gives you `$board.filter`.
 
 **2. Navigation as data.** The path is an array of IDs, destinations are registered by type, and the detail zooms out of its row.
 
@@ -319,6 +319,7 @@ struct ErrandListView: View {
 - `Errand.ID` is a `UUID` (Day 1), which is `Hashable` and `Codable`, so it works with `NavigationLink(value:label:)` and the path can be saved for state restoration.
 - Opening an errand from a notification or an App Intent is `path = [id]`. No view needs to be "active."
 - `.task` is tied to the list's lifetime: it starts before the list appears, and SwiftUI can cancel it when the list goes away. Cancellation is cooperative (Day 1), so long loops should check for it.
+- `NewErrandSheet` is your own small form (a `TextField` and an Add button that calls a board method, which adds to the store and reloads). It reads the board from the environment, which sheets inherit.
 
 **3. A toolbar that adopts Liquid Glass.** Standard items become glass automatically; you decide grouping and priority.
 
@@ -425,7 +426,7 @@ struct ErrandRow: View {
 - `AnyLayout` changes the arrangement while the children keep their identity, so nothing resets and the change can animate.
 - Text styles (`.headline`, `.subheadline`) scale with Dynamic Type. No fixed frames means no clipping at large sizes.
 - `.accessibilityElement(children: .combine)` makes the row one VoiceOver stop that reads the title and the count together.
-- `@Entry` declares a custom environment value in one line. A parent turns counts off with `.environment(\.showsStepCounts, false)`.
+- `@Entry` declares a custom environment value in one line. A parent turns counts off with `.environment(\.showsStepCounts, false)`. Keep `@Entry` defaults to plain values: Xcode 27 warns when the default is a class instance or a closure.
 
 **6. An accessible step row.** Symbol, spoken state, feedback, and respect for Reduce Motion, driven by Day 1's `Status`.
 
@@ -449,7 +450,7 @@ struct StepRow: View {
 
     var body: some View {
         Button {
-            withAnimation(reduceMotion ? nil : .snappy) { advance() }
+            advance()
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: step.status.display.symbol)
@@ -466,12 +467,13 @@ struct StepRow: View {
         .disabled(step.status == .done || step.status == .waitingForApproval)
         .accessibilityValue(step.status.display.spoken)
         .sensoryFeedback(.success, trigger: step.status == .done)
+        .animation(reduceMotion ? nil : .snappy, value: step.status)
     }
 }
 ```
 
 - The symbol is hidden from VoiceOver because the value already speaks the state ("Waiting for approval"). Meaning never rides on the icon or color alone.
-- `.contentTransition(.symbolEffect(.replace))` animates the symbol swap; `withAnimation(nil)` turns motion off when Reduce Motion is on.
+- `.contentTransition(.symbolEffect(.replace))` animates the symbol swap, but only inside an animation. The new status arrives later, when the board's `Task` reloads from the actor, so `withAnimation { advance() }` would animate nothing. `.animation(_:value:)` keyed on `step.status` animates whenever the new value lands, and passing `nil` turns motion off when Reduce Motion is on.
 - `.contentShape(.rect)` makes the whole row tappable. The row is disabled when tapping can't move the step: nothing leaves `.done` in Day 1's state machine, and a waiting step moves only through the Approve button.
 
 **7. When you still need UIKit.** Wrap a UIKit view with `UIViewRepresentable`; use a coordinator for delegate callbacks.
@@ -513,13 +515,13 @@ struct SketchPad: UIViewRepresentable {
 
 ## What's new in iOS 27 (and what old tutorials get wrong)
 
-- **`@State` is a macro when you build with Xcode 27.** A class stored in `@State` is created and stored once. Advice to defer model creation into `.task` to avoid repeated allocation is out of date.
+- **`@State` is a macro when you build with Xcode 27.** A class stored in `@State` is created and stored once. Advice to defer model creation into `.task` to avoid repeated allocation is out of date. The macro is mostly source compatible, but the iOS 27 release notes list exceptions: assigning a `@State` property in `init` when its declaration also has an initial value no longer compiles (drop the initial value), and a view whose stored properties are all private no longer gets a synthesized private memberwise initializer.
 - **One builder for everything.** `@ContentBuilder` (a type alias for `ViewBuilder`) replaces type-specific builders like `ToolbarContentBuilder` and `CommandsBuilder`. You'll see it throughout the SwiftUI signatures in the docs.
 - **Toolbars got smarter about space.** `visibilityPriority(_:)`, `ToolbarOverflowMenu`, the `topBarPinnedTrailing` placement, and `toolbarMinimizationBehavior(_:for:)`. Stop hand-building "More" menus to decide what overflows.
 - **Tabs:** the `.prominent` role places one tab in a separate trailing spot. If no tab is prominent, a `.search` tab may get that treatment.
 - **Reordering and swipe actions leave `List`.** `reorderable()` with `reorderContainer(for:isEnabled:move:)`, and `swipeActions(edge:allowsFullSwipe:content:onPresentationChanged:)` with `swipeActionsContainer()`, work in stacks, grids, scroll views, and custom layouts.
 - **Sheets can cross-fade.** `.navigationTransition(.crossFade)` on sheet content fades it in instead of sliding it up.
-- **`AsyncImage` can cache.** Give it a configured session with `asyncImageURLSession(_:)` or pass a `URLRequest` with the new `init(request:scale:)` family.
+- **`AsyncImage` caches.** It now honors standard HTTP caching automatically. To customize, give it a configured session with `asyncImageURLSession(_:)` or pass a `URLRequest` (with its own `cachePolicy`) to the new `init(request:scale:)` family.
 - **Alerts from data.** `alert(error:actions:)` and `alert(_:item:actions:)` present from an optional error or item, like `sheet(item:)` does.
 - **Gestures can filter input.** Gestures such as `DragGesture` take `GestureInputKinds` (direct touch, indirect touch, pencil, pointer).
 - **No Liquid Glass opt-out.** `UIDesignRequiresCompatibility` is ignored when you build for iOS 27 or later.
@@ -527,7 +529,7 @@ struct SketchPad: UIViewRepresentable {
 - **VoiceOver in UI tests.** Xcode 27 adds `XCUIVoiceOverService` to drive VoiceOver and read what it speaks.
 - **Icon Composer 2.0** ships with Xcode 27 and adds a sharper rendering mode for what Apple calls the "upcoming 2027 operating systems."
 - **September 2026, iOS 27.1 beta:** `ArrangementView`, reserved regions, hinge state, vertical toolbars, and `CameraCaptureAccessory` for iPhone Duo. Beta only today.
-- **Deprecation markers in the current docs (27.2 beta SDK):** `NavigationView`, `tabItem(_:)`, `foregroundColor(_:)`, `cornerRadius(_:antialiased:)`, `edgesIgnoringSafeArea(_:)`, and `MagnificationGesture`.
+- **Deprecation markers in the current docs (27.2 beta SDK):** `NavigationView`, `tabItem(_:)`, `foregroundColor(_:)`, `cornerRadius(_:antialiased:)`, `edgesIgnoringSafeArea(_:)`, `MagnificationGesture`, and `RotationGesture`.
 
 ## Pitfalls you only learn by shipping
 
@@ -553,7 +555,7 @@ struct SketchPad: UIViewRepresentable {
 | `EnvironmentKey` struct plus a computed property | `@Entry` |
 | `onChange(of:perform:)` | `onChange(of:initial:_:)` |
 | `.foregroundColor(_:)`, `.cornerRadius(_:)`, `.edgesIgnoringSafeArea(_:)` | `.foregroundStyle(_:)`, `.clipShape(.rect(cornerRadius:))`, `.ignoresSafeArea(_:edges:)` |
-| `MagnificationGesture` | `MagnifyGesture` |
+| `MagnificationGesture`, `RotationGesture` | `MagnifyGesture`, `RotateGesture` |
 | `ToolbarContentBuilder`, `CommandsBuilder` | `@ContentBuilder` |
 | Custom blur views and tinted bar backgrounds | System Liquid Glass bars plus `scrollEdgeEffectStyle(_:for:)` |
 
@@ -588,7 +590,7 @@ Then apply it to a failed step's background: `RoundedRectangle(cornerRadius: 12)
 Build the list and detail screens on top of Day 1's model and store:
 
 - `ErrandApp` (replace the one Xcode's template made on Day 1) owns one `ErrandBoard` with `@State` and injects it (pattern 1). Seed the store with two sample errands on first launch so there's something to see; SwiftData replaces this on Day 3.
-- `ErrandListView`: `NavigationStack(path:)`, rows from pattern 5, zoom transition, an empty state (`ContentUnavailableView`), and the toolbar from pattern 3. For delete, add a `remove(_:)` method to the Day 1 store and call it from `.onDelete` on the `ForEach`.
+- `ErrandListView`: `NavigationStack(path:)`, rows from pattern 5, zoom transition, an empty state (`ContentUnavailableView`), and the toolbar from pattern 3. For delete, add a `remove(_:)` method to the Day 1 store and call it from `.onDelete` on the `ForEach`, through a board method like the ones below (the store is private to the board).
 - `ErrandDetailView`: the steps as `StepRow`s (pattern 6) and the `ApprovalBar` (pattern 4) in a `safeAreaBar`.
 - Add three methods to `ErrandBoard`, in the same file so they can reach the private `store`. The actor stays the source of truth: each method moves the step through Day 1's state machine, then reloads. A step with `needsApproval` stops at `.waitingForApproval` until the person taps Approve. That's Errand's rule, "ask before any side effect," showing up in the UI for the first time.
 
@@ -802,7 +804,7 @@ Versions are the iOS "introduced" versions that `appledoc.py` reported. Some Swi
 - KeyframeAnimator, keyframeAnimator(initialValue:trigger:content:keyframes:) — iOS 17.0
 - matchedGeometryEffect(id:in:properties:anchor:isSource:) — iOS 14.0
 - DragGesture init(minimumDistance:coordinateSpace:inputKinds:) — iOS 27.0; GestureInputKinds — iOS 27.0
-- MagnifyGesture — iOS 17.0; MagnificationGesture — deprecated 27.2 (beta docs)
+- MagnifyGesture, RotateGesture — iOS 17.0; MagnificationGesture, RotationGesture — deprecated 27.2 (beta docs)
 - colorEffect(_:isEnabled:), layerEffect(_:maxSampleOffset:isEnabled:), distortionEffect(_:maxSampleOffset:isEnabled:) — iOS 17.0
 - Shader, ShaderLibrary, Shader.Argument.float(_:) — iOS 17.0
 - Image init(systemName:) — iOS 13.0
