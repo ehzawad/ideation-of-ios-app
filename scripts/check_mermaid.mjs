@@ -13,7 +13,9 @@ function walk(dir, acc = []) {
   }
   return acc;
 }
-const files = process.argv.length > 2 ? process.argv.slice(2).map(p => path.resolve(p)) : walk(root);
+const files = process.argv.length > 2
+  ? process.argv.slice(2).map(p => path.resolve(p)).flatMap(p => statSync(p).isDirectory() ? walk(p) : [p])
+  : walk(root);
 const blocks = [];
 for (const f of files) {
   const md = readFileSync(f, 'utf8');
