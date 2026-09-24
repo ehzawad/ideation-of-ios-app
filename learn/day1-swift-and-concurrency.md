@@ -200,7 +200,7 @@ The pieces:
 | Default Actor Isolation = `MainActor` | `SWIFT_DEFAULT_ACTOR_ISOLATION` | Unannotated code in the module is inferred `@MainActor`. Your app starts single-threaded. |
 | Approachable Concurrency = Yes | `SWIFT_APPROACHABLE_CONCURRENCY` | Turns on five upcoming features, including `NonisolatedNonsendingByDefault`: a nonisolated `async` function runs on the *caller's* actor unless you mark it `@concurrent`. |
 
-Together they flip the old default. You write sequential code on the main actor and opt into parallelism explicitly, with `@concurrent` functions or actors. `nonisolated(nonsending)` spells the new behavior on a single function. Under main-actor default isolation, some declarations are left alone: actors and their members, anything you mark `nonisolated`, and types that declare a `Sendable` conformance in their primary declaration. Swift packages get the same option through `.defaultIsolation(MainActor.self)`. A package without it stays nonisolated by default.
+Together they flip the old default. You write sequential code on the main actor and opt into parallelism explicitly, with `@concurrent` functions or actors. `nonisolated(nonsending)` spells the new behavior on a single function. Under main-actor default isolation, some declarations are left alone: actors and their members, anything you mark `nonisolated`, and types whose primary declaration conforms to a protocol that inherits `SendableMetatype` (`Sendable` does, so do `Error` and `CodingKey`). Swift packages get the same option through `.defaultIsolation(MainActor.self)`. A package without it stays nonisolated by default.
 
 For tiny state you access synchronously, an actor can be too much. `Mutex` (from the Synchronization module) guards a value with a lock for a short, non-`await`ing critical section. `Atomic` handles counters and flags.
 
@@ -225,10 +225,13 @@ flowchart TB
 - **`async let`** starts a fixed number of children in parallel. The parent awaits them by name.
 - **Task groups** (`withTaskGroup`, `withThrowingTaskGroup`) handle a dynamic number of children. **Discarding task groups** are for side effects only: finished children are thrown away, so memory doesn't grow in long-running loops. A throwing discarding group cancels itself on the first error and rethrows it.
 - **Cancellation is cooperative.** `cancel()` only sets a flag. Your code checks `Task.isCancelled` or calls `try Task.checkCancellation()`. Many async APIs, including `Task.sleep`, throw `CancellationError` when cancelled. `withTaskCancellationHandler` reacts immediately. New in Swift 6.4, `withTaskCancellationShield` protects cleanup that must finish.
-- **Unstructured tasks.** `Task { }` inherits the current actor, priority and task-local values. `Task.detached` inherits none of them. Dropping the handle does *not* cancel the task, and a thrown error stays inside until someone awaits `.value`. `Task.immediate` (iOS 26) starts running synchronously in the caller's context until its first real suspension.
+- **Unstructured tasks.** `Task { }` inherits the current actor, priority and task-local values. `Task.detached` inherits none of them. Dropping the handle does *not* cancel the task, and a thrown error stays inside until someone awaits `.value`. `Task.immediate` (iOS 26) starts running right away in the caller's context, when the isolation matches, instead of waiting to be scheduled.
 - **Values over time** are `AsyncSequence`s, consumed with `for await`. `AsyncStream` bridges callback-based code. `Observations` (iOS 26) turns reads of `@Observable` properties into a stream of changes:
 
 ```swift
+@MainActor @Observable
+final class ErrandListModel { var errands: [Errand] = [] }
+
 @MainActor
 func logErrandCount(_ model: ErrandListModel) async {
     for await count in Observations({ model.errands.count }) {
@@ -367,7 +370,8 @@ func validatedTitle(_ raw: String) throws(TitleError) -> String {
 
 func messageFor(_ raw: String) -> String {
     do {
-        return "OK: " + (try validatedTitle(raw))
+        let title = try validatedTitle(raw)
+        return "Saved \"\(title)\"."
     } catch {
         switch error {                        // `error` is TitleError, not `any Error`
         case .empty: return "Give the errand a name."
@@ -512,7 +516,7 @@ nonisolated enum Summarizer {
 - **Continuations.** The new noncopyable `Continuation` with `withContinuation(of:throwing:_:)` (iOS 27) makes "resume exactly once" a compile-time rule. `withCheckedContinuation(function:_:)` replaces the older `isolation:` overloads, which the docs now list as deprecated.
 - **Observation.** `withContinuousObservation(options:apply:)` and `withObservationTracking(options:_:onChange:)` (iOS 27) report `willSet`, `didSet` and `deinit` events. `Observations` (iOS 26) is the async-sequence form.
 - **Ownership types** for performance-critical code: `UniqueArray`, `UniqueBox`, `Ref`/`MutableRef` and the `Iterable` protocol (all iOS 27). Recognize them. You won't need them this week.
-- **Swift Testing and XCTest interoperate.** You can call `XCTAssert…` inside a `@Test` and `#expect` inside an `XCTestCase`. Xcode 27 adds a test-plan setting that controls how such cross-framework failures are reported. `CustomTestReflectable` customizes failure output. `swift test --repeat-until fail` hunts flaky tests.
+- **Swift Testing and XCTest interoperate.** You can call `XCTAssert…` inside a `@Test` and `#expect` inside an `XCTestCase`. Xcode 27 adds a test-plan setting that controls how such cross-framework failures are reported. `CustomTestReflectable` customizes failure output. `swift test --repeat-until fail --maximum-repetitions 50` hunts flaky tests.
 - **Debugging.** LLDB's new `language swift task tree` command prints every task the debugger knows about. Instruments adds a Swift Executors instrument (main actor, cooperative pool, custom executors) and groups tasks into Task Collections by name. Name your tasks with `Task(name:)`.
 - **`#Preview` code now explicitly runs on the main actor**, so previews can call main-actor APIs without warnings.
 - **What old tutorials get wrong:**
@@ -531,7 +535,7 @@ nonisolated enum Summarizer {
 - **The screen closed but the work kept going** → dropping a `Task` handle does not cancel it → keep the handle and cancel it on teardown (on Day 2, SwiftUI's `.task` does this for you), and check for cancellation inside loops.
 - **Memory climbs and `deinit` never runs** → a task that loops forever, or iterates an endless async sequence, captures `self` strongly → capture `[weak self]` and unwrap once per iteration, or cancel the task.
 - **The app freezes under load** → a semaphore, `DispatchQueue.sync` or a lock is waiting for async work on the cooperative thread pool, which has a limited number of threads → never block inside async code. Bridge with continuations. Keep `Mutex` sections short and free of `await`.
-- **"main actor-isolated conformance of 'Errand' to 'Decodable' cannot be used in nonisolated context"** → with default `MainActor` isolation, your model struct and its conformances became main-actor-isolated → mark model types `nonisolated`, declare `Sendable` on them, or move them into a package.
+- **"main actor-isolated conformance of 'Errand' to 'Decodable' cannot be used in nonisolated context"** → with default `MainActor` isolation, your model struct and its conformances became main-actor-isolated → mark model types `nonisolated` (the explicit fix), or move them into a package whose default isolation is nonisolated.
 - **A continuation hangs or crashes** → one code path never resumes (the caller waits forever), or two paths both resume (crash) → resume exactly once on every path. `CheckedContinuation` logs misuse at runtime. iOS 27's `Continuation` catches it at compile time.
 
 ## Legacy you'll still meet
@@ -720,7 +724,8 @@ struct ErrandStoreTests {
         await store.add(errand)
         try await store.move(step: step.id, in: errand.id, to: .running)
         try await store.move(step: step.id, in: errand.id, to: .done)
-        #expect(try await store.errand(withID: errand.id).progress == 1.0)
+        let saved = try await store.errand(withID: errand.id)
+        #expect(saved.progress == 1.0)
     }
 
     @Test func `Unknown errand throws`() async {
@@ -737,6 +742,8 @@ struct ErrandStoreTests {
     }
 }
 ```
+
+The module and the struct are both called `Errand`. That's legal. If you ever need to tell them apart, Swift 6.4's module selector syntax is `Errand::Errand`.
 
 *Done when:* ⌘U runs all tests green (the last one runs once per status). The project builds in the Swift 6 language mode with zero warnings. You can say why `Errand` is a `struct` but `ErrandStore` is an `actor`, and what `nonisolated` on the model types protects you from. Stretch: add a `@Test` for an invalid move that expects `StoreError.invalidMove(from: .pending, to: .done)`.
 
@@ -787,7 +794,7 @@ Nothing visible. The error isn't rethrown and the other children aren't cancelle
 7. Your app target uses default `MainActor` isolation. Decoding `struct Errand: Codable` inside an actor fails with an "isolated conformance" error. Why, and what are two fixes?
 <details><summary>Answer</summary>
 
-Unannotated declarations in the module, including `Errand` and its `Codable` conformance, were inferred `@MainActor`. So the conformance can only be used on the main actor. Fixes: mark the type `nonisolated`, declare `Sendable` in its primary declaration (which exempts it from default isolation), or move model types to a module whose default isolation is nonisolated, such as a package.
+Unannotated declarations in the module, including `Errand` and its `Codable` conformance, were inferred `@MainActor`. So the conformance can only be used on the main actor. Fixes: mark the type `nonisolated`, or move model types to a module whose default isolation is nonisolated, such as a package. (Declaring `Sendable` in the type's primary declaration also opts it out of default isolation, but `nonisolated` says what you mean.)
 
 </details>
 

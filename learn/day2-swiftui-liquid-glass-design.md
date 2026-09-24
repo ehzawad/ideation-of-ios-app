@@ -91,11 +91,11 @@ Views are main-actor code: the `View` protocol is declared `@MainActor`. So make
 
 ```mermaid
 sequenceDiagram
-  participant P as "Parent"
-  participant C as "Child"
-  P->>C: "Proposal: 358 wide, height unspecified"
-  C-->>P: "I will be 358 by 44"
-  P->>C: "Place at x 16, y 120"
+  participant P as Parent
+  participant C as Child
+  P->>C: Proposes 358 wide, height unspecified
+  C-->>P: Chooses 358 by 44
+  P->>C: Places it at x 16, y 120
 ```
 
 A proposal can be a concrete size or one of three special cases from `ProposedViewSize`: zero (the child answers with its minimum size), infinity (its maximum), or unspecified (its ideal size). Views differ in how they answer. `Text` wraps and then truncates. A non-resizable `Image` keeps its natural size. `Color` and `Spacer` take what they're offered. Stacks measure their children's flexibility and share out space; `layoutPriority(_:)` lets one child claim space first. Every modifier is itself a view in this chain, which is why `.padding().background(.blue)` and `.background(.blue).padding()` look different.
