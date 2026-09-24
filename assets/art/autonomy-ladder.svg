@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 470" width="1280" height="470" role="img" aria-labelledby="title desc">
+  <title id="title">The autonomy ladder</title>
+  <desc id="desc">Four rising steps. L1: the agent suggests and you act. L2: it drafts and you approve. L3: it acts within guardrails and reports back. L4: it runs long goals on its own. Each step up needs more trust infrastructure: undo, spending limits, receipts, and audit logs.</desc>
+  <style>
+    svg { --bg:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --line:#e1e0d9; --card:#ffffff;
+          --s1:#cde2fb; --s2:#9ec5f4; --s3:#5598e7; --s4:#256abf; --accent:#eb6834; --lvl-lo:#0b0b0b; }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#111113; --ink:#ffffff; --ink2:#c3c2b7; --muted:#8e8e93; --line:#2c2c2a; --card:#1c1c1e;
+            --s1:#184f95; --s2:#1c5cab; --s3:#256abf; --s4:#2a78d6; --accent:#d95926; --lvl-lo:#ffffff; }
+    }
+    text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .bg { fill: var(--bg); }
+    .title { fill: var(--ink); font-size: 24px; font-weight: 700; }
+    .sub { fill: var(--ink2); font-size: 14px; }
+    .lvl { fill: var(--lvl-lo); font-size: 13px; font-weight: 800; letter-spacing: 0.5px; }
+    .lvl-hi { fill: #ffffff; }
+    .name { fill: var(--ink); font-size: 16px; font-weight: 700; }
+    .quote { fill: var(--ink2); font-size: 13px; font-style: italic; }
+    .needs { fill: var(--muted); font-size: 12px; }
+    .needs-b { fill: var(--ink2); font-size: 12px; font-weight: 700; }
+    .card { fill: var(--card); stroke: var(--line); stroke-width: 1; }
+    .axis { stroke: var(--line); stroke-width: 1; }
+    .ann { fill: var(--ink2); font-size: 13px; }
+    .ann-b { fill: var(--ink); font-size: 13px; font-weight: 700; }
+    .zone { fill: var(--accent); opacity: 0.08; }
+    .zone-line { stroke: var(--accent); stroke-width: 1.5; }
+  </style>
+  <rect class="bg" width="1280" height="470" rx="12"/>
+  <text x="40" y="52" class="title">The autonomy ladder</text>
+  <text x="40" y="76" class="sub">How much an agent does before it asks you. Every idea card in this atlas names its rung.</text>
+
+  <!-- the frontier zone between L2 and L3 -->
+  <rect class="zone" x="638" y="100" width="12" height="340"/>
+  <line class="zone-line" x1="644" y1="100" x2="644" y2="440"/>
+  <text x="628" y="116" class="ann-b" text-anchor="end">The hard part is this line →</text>
+  <text x="628" y="136" class="ann" text-anchor="end">Crossing from "asks first" to "acts, then tells you"</text>
+  <text x="628" y="154" class="ann" text-anchor="end">needs undo, limits, receipts, and a clear owner</text>
+  <text x="628" y="172" class="ann" text-anchor="end">when it goes wrong. Most iOS agents stop before it.</text>
+
+  <!-- steps: rising bars -->
+  <g>
+    <rect x="40"  y="380" width="290" height="60"  rx="6" fill="var(--s1)"/>
+    <rect x="346" y="330" width="290" height="110" rx="6" fill="var(--s2)"/>
+    <rect x="652" y="280" width="290" height="160" rx="6" fill="var(--s3)"/>
+    <rect x="958" y="230" width="290" height="210" rx="6" fill="var(--s4)"/>
+  </g>
+  <text x="56" y="416" class="lvl">L1 · SUGGESTS</text>
+  <text x="362" y="366" class="lvl">L2 · DRAFTS, YOU APPROVE</text>
+  <text x="668" y="316" class="lvl lvl-hi">L3 · ACTS, THEN REPORTS</text>
+  <text x="974" y="266" class="lvl lvl-hi">L4 · RUNS LONG GOALS</text>
+
+  <!-- cards above each step -->
+  <g transform="translate(40 250)">
+    <rect class="card" width="290" height="118" rx="12"/>
+    <text x="16" y="30" class="name">Points, you act</text>
+    <text x="16" y="54" class="quote">"Your passport expires in 5 months.</text>
+    <text x="16" y="72" class="quote">Here's the renewal form."</text>
+    <text x="16" y="100" class="needs"><tspan class="needs-b">Needs:</tspan> good timing, low noise</text>
+  </g>
+  <g transform="translate(346 200)">
+    <rect class="card" width="290" height="118" rx="12"/>
+    <text x="16" y="30" class="name">Does the work, you sign</text>
+    <text x="16" y="54" class="quote">"I drafted replies to 4 emails and</text>
+    <text x="16" y="72" class="quote">filled the form. Tap to send."</text>
+    <text x="16" y="100" class="needs"><tspan class="needs-b">Needs:</tspan> previews, easy edits</text>
+  </g>
+  <g transform="translate(652 150)">
+    <rect class="card" width="290" height="118" rx="12"/>
+    <text x="16" y="30" class="name">Acts inside your limits</text>
+    <text x="16" y="54" class="quote">"Rebooked you on the 8:20 (+$40,</text>
+    <text x="16" y="72" class="quote">under your $150 cap). Undo: 24h."</text>
+    <text x="16" y="100" class="needs"><tspan class="needs-b">Needs:</tspan> undo, spend caps, receipts</text>
+  </g>
+  <g transform="translate(958 100)">
+    <rect class="card" width="290" height="118" rx="12"/>
+    <text x="16" y="30" class="name">Owns an outcome for weeks</text>
+    <text x="16" y="54" class="quote">"Over 3 weeks I got your internet</text>
+    <text x="16" y="72" class="quote">bill down 22%. Log attached."</text>
+    <text x="16" y="100" class="needs"><tspan class="needs-b">Needs:</tspan> audit log, delegation, liability</text>
+  </g>
+</svg>

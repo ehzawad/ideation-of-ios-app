@@ -1,0 +1,53 @@
+name: New idea
+description: Propose an agentic iPhone app idea for the atlas
+title: "[Idea] "
+labels: ["idea"]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Idea name
+      placeholder: "e.g. Bureaucracy copilot for new immigrants"
+    validations:
+      required: true
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Which tier do you think it belongs in?
+      options:
+        - "B · Being built now (it exists, or several teams are clearly building it)"
+        - "W · Whitespace (buildable today, but almost nobody is doing it)"
+        - "M · Moonshot (worth wanting, but genuinely hard)"
+        - "Not sure"
+    validations:
+      required: true
+  - type: textarea
+    id: moment
+    attributes:
+      label: The moment
+      description: A concrete scene where the agent earns its keep.
+      placeholder: "You get a letter from the tax office in a language you only half read. You take a photo, and..."
+    validations:
+      required: true
+  - type: textarea
+    id: actions
+    attributes:
+      label: What does the agent actually do?
+      description: The steps it takes on your behalf, and where it stops to ask you.
+    validations:
+      required: true
+  - type: textarea
+    id: ios
+    attributes:
+      label: iOS building blocks and walls
+      description: Which frameworks would it use (App Intents, Foundation Models, HealthKit...)? What does iOS not let it do?
+  - type: textarea
+    id: prior
+    attributes:
+      label: Prior art
+      description: Links to anything close. For a Whitespace idea, say why the nearest thing falls short.
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Unsaid assumptions
+      description: What has to be true for this to work that people usually don't say out loud?
