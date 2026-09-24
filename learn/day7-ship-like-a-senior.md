@@ -351,7 +351,6 @@ import ErrandCore
 @Observable @MainActor
 public final class ErrandListModel {
     public private(set) var steps: [ErrandStep]
-    public private(set) var isPlanning = false
     public private(set) var errorMessage: String?
     private let planner: any ErrandPlanning
 
@@ -361,8 +360,6 @@ public final class ErrandListModel {
     }
 
     public func plan(_ request: String) async {
-        isPlanning = true
-        defer { isPlanning = false }
         do { steps = try await planner.plan(for: request) }
         catch { errorMessage = error.localizedDescription }
     }
@@ -374,17 +371,12 @@ public final class ErrandListModel {
             steps: (0..<count).map { ErrandStep(title: "Step \($0 + 1)") }))
 }
 
-// App target (imports ErrandCore, ErrandFeatures, ErrandPlanner):
-// the only code that picks real services.
+// App target (imports ErrandCore, ErrandFeatures, ErrandPlanner): picks real services.
 @main
 struct ErrandApp: App {
     @State private var model = ErrandListModel(planner: Self.makePlanner())
-
     var body: some Scene {
-        WindowGroup {
-            NavigationStack { ErrandListView() }  // reads @Environment(ErrandListModel.self)
-                .environment(model)
-        }
+        WindowGroup { NavigationStack { ErrandListView() }.environment(model) }
     }
 
     private static func makePlanner() -> any ErrandPlanning {
@@ -407,9 +399,7 @@ import Testing
 import ErrandCore
 @testable import ErrandFeatures
 
-extension Tag {
-    @Tag static var approval: Self
-}
+extension Tag { @Tag static var approval: Self }
 
 @Suite("Approval gate", .tags(.approval))
 struct ApprovalGateTests {
@@ -441,7 +431,7 @@ struct ErrandListModelTests {
         await model.plan("Renew my library books")
         let first = try #require(model.steps.first)
         #expect(first.title == "Find card")
-        #expect(model.isPlanning == false)
+        #expect(model.errorMessage == nil)
     }
 }
 ```
@@ -484,7 +474,6 @@ struct PlanLengthEvaluation: Evaluation {
         aggregator.computeMean(of: reasonableLength)
     }
 }
-
 struct PlannerQualityTests {
     static let evaluation = PlanLengthEvaluation()
 
@@ -554,7 +543,6 @@ import ErrandCore
 struct InstrumentedPlanner: ErrandPlanning {
     let base: any ErrandPlanning
     static let logger = Logger(subsystem: "com.example.errand", category: "planner")
-    // Signposts on this handle show in Instruments, and MetricKit aggregates them.
     static let signposter = OSSignposter(logHandle: MetricManager.logHandle(category: "planner"))
 
     func plan(for request: String) async throws -> [ErrandStep] {
@@ -584,8 +572,7 @@ final class DiagnosticsReporter: Sendable {
             case .crash, .memoryException:
                 let payload = try? JSONEncoder().encode(report)  // upload only with consent
                 logger.fault("Diagnostic report, \(payload?.count ?? 0, privacy: .public) bytes")
-            @unknown default:
-                break
+            @unknown default: break
             }
         }
     }
