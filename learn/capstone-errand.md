@@ -1124,7 +1124,7 @@ Each one comes from an idea in the [atlas](../ideas/README.md) and reuses what y
 4. **PCC fallback with quota handling** ([B-26](../ideas/building-now/B-26-offline-on-device-llm.md) is the offline side of the same trade-off). Show `quotaUsage.status` and `resetDate` in Settings. Route long errands to PCC with `ContextOptions(reasoningLevel: .moderate)`, and prove it's worth it with an evaluation.
 5. **Speak Siri's language** ([B-21](../ideas/building-now/B-21-apple-built-in-agents.md)). Adopt the Reminders app schema (iOS 27) with the `@AppIntent(schema: .reminders.createReminder)` macro, so Siri AI can match everyday phrasing to your intent.
 6. **Pause-and-ask by design** ([W-09](../ideas/whitespace/W-09-pause-and-ask-errands.md)). Run the whole app with VoiceOver and Voice Control only. Every approval must be reachable and announced.
-7. **Brain-dump mode** ([B-23](../ideas/building-now/B-23-adhd-task-breakdown.md)). Feed the Day 3 import into the planner, one errand per line, with progress in the same background task.
+7. **Brain-dump mode** ([B-23](../ideas/building-now/B-23-adhd-task-breakdown.md)). Feed the Day 3 import into the planner, one errand per line, with progress in the same background task. Apple's docs don't say whether the on-device model answers while your app is in the background, so test it on a device and plan each item on its own, keeping failures per item.
 
 <details><summary>Verified APIs</summary>
 

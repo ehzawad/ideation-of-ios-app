@@ -40,7 +40,7 @@ flowchart LR
 | `MTL4CommandBuffer` | `device.makeCommandBuffer()` | 1 per thread that encodes | Reusable right after commit; doesn't retain resources |
 | `MTL4CommandAllocator` | `device.makeCommandAllocator()` | frames in flight × encoding threads | `reset()` only after the GPU finishes its work |
 | `MTL4ArgumentTable` | `device.makeArgumentTable(descriptor:)` | 1 per kind of work | Set `maxBufferBindCount` etc. to what you use; snapshot taken at each draw or dispatch |
-| `MTLResidencySet` | `device.makeResidencySet(descriptor:)` | A few, grouped by lifetime | `addAllocation(_:)` then `commit()`; up to 32 sets per queue or command buffer |
+| `MTLResidencySet` | `device.makeResidencySet(descriptor:)` | A few, grouped by lifetime | `addAllocation(_:)` then `commit()`; optional `requestResidency()` at a quiet moment; up to 32 sets per queue or command buffer |
 | `MTL4Compiler` | `device.makeCompiler(descriptor:)` | 1, shared | `Sendable`; sync and `async` factory methods |
 | Pipeline states | compiler | 1 per shader and state combination | Compile at launch or ahead of time, never in `draw(in:)` |
 | Per-frame buffers | `device.makeBuffer(length:options:)` | frames in flight | `.storageModeShared` for CPU-written data |
@@ -87,7 +87,7 @@ Setup it assumes: buffers added to a residency set, `commit()`ed, and attached w
 | Buffer | `table.setAddress(buffer.gpuAddress, index: i)` | `constant T& x [[buffer(i)]]` or `device T* x [[buffer(i)]]` |
 | Texture | `table.setTexture(texture.gpuResourceID, index: i)` | `texture2d<half, access::read> t [[texture(i)]]` |
 | Sampler | `table.setSamplerState(sampler.gpuResourceID, index: i)` | `sampler s [[sampler(i)]]` |
-| Tensor | `table.setResource(tensor.gpuResourceID, bufferIndex: i)` | `tensor<device half, dextents<int, 2>> t` |
+| Tensor | `table.setResource(tensor.gpuResourceID, bufferIndex: i)` | `tensor<device half, dextents<int, 2>> t [[buffer(i)]]` (`#include <metal_tensor>`) |
 | Attach to a pass | render: `setArgumentTable(_:stages:)`; compute and ML: `setArgumentTable(_:)` | |
 
 Binding is not residency. Every buffer, texture, tensor or heap a pass touches must also be in a residency set.
@@ -147,14 +147,14 @@ using namespace metal;
 // Shape fill:        Rectangle().fill(ShaderLibrary.fillName(...))
 [[ stitchable ]] half4 fillName(float2 position, float4 bounds) { return half4(0, 0, 1, 1); }
 // colorEffect:       view.colorEffect(ShaderLibrary.tintName(...))
-[[ stitchable ]] half4 tintName(float2 position, half4 color, half amount) { return color * amount; }
+[[ stitchable ]] half4 tintName(float2 position, half4 color, float amount) { return color * half(amount); }
 // layerEffect:       view.layerEffect(ShaderLibrary.shiftName(...), maxSampleOffset: CGSize(width: 8, height: 0))
 [[ stitchable ]] half4 shiftName(float2 position, SwiftUI::Layer layer) { return layer.sample(position + float2(8, 0)); }
 // distortionEffect:  view.distortionEffect(ShaderLibrary.waveName(...), maxSampleOffset: CGSize(width: 0, height: 10))
 [[ stitchable ]] float2 waveName(float2 position, float time) { return position + float2(0, 10 * sin(position.x / 20 + time)); }
 ```
 
-Arguments: `.float(_:)`, `.float2(_:_:)`, `.float3(_:_:_:)`, `.float4(_:_:_:_:)`, `.color(_:)` (becomes premultiplied `half4`), `.image(_:)`, `.floatArray(_:)`, `.colorArray(_:)`, `.data(_:)`, `.boundingRect` (`float4(x, y, width, height)`). Return premultiplied colors. Precompile with `try await shader.compile(as: .colorEffect)`.
+Arguments (MSL parameter types must match: `.float` is a `float`, not a `half`): `.float(_:)`, `.float2(_:_:)`, `.float3(_:_:_:)`, `.float4(_:_:_:_:)`, `.color(_:)` (becomes premultiplied `half4`), `.image(_:)`, `.floatArray(_:)`, `.colorArray(_:)`, `.data(_:)`, `.boundingRect` (`float4(x, y, width, height)`). Return premultiplied colors. Precompile with `try await shader.compile(as: .colorEffect)`.
 
 **Full-screen triangle** (no vertex buffer; draw 3 vertices):
 
@@ -204,15 +204,21 @@ kernel void sumAll(device const float* input  [[buffer(0)]],
 
 Other built-ins: `[[thread_position_in_threadgroup]]`, `[[threadgroup_position_in_grid]]`, `[[threads_per_threadgroup]]`, `[[simdgroup_index_in_threadgroup]]`, `[[threads_per_simdgroup]]`. Threadgroup memory: `threadgroup float tile[256];` then `threadgroup_barrier(mem_flags::mem_threadgroup);` before reading what other threads wrote. Avoid divergent branches inside a SIMD group: both sides run.
 
-**Tensors in a kernel** (MSL 4, from Apple's inline-ML sample):
+**Tensors in a kernel** (MSL 4, adapted from Apple's inline-ML sample and the MSL spec):
 
 ```metal
+#include <metal_tensor>                                            // the tensor type
+#include <MetalPerformancePrimitives/MetalPerformancePrimitives.h> // matmul2d and friends
+using namespace metal;
+using namespace mpp;
+
 kernel void multiply(uint2 tg [[threadgroup_position_in_grid]],
-                     tensor<device half, dextents<int, 2>> a,
-                     tensor<device half, dextents<int, 2>> b,
-                     tensor<device half, dextents<int, 2>> product) {
+                     tensor<device half, dextents<int, 2>> a       [[buffer(0)]],
+                     tensor<device half, dextents<int, 2>> b       [[buffer(1)]],
+                     tensor<device half, dextents<int, 2>> product [[buffer(2)]]) {
     // Slice per threadgroup with a.slice<...>(x, y), describe the tile with
-    // matmul2d_descriptor, then run matmul2d<descriptor, execution_simdgroups<4>>.
+    // tensor_ops::matmul2d_descriptor, then run
+    // tensor_ops::matmul2d<descriptor, execution_simdgroups<4>>.
 }
 ```
 
@@ -231,19 +237,19 @@ kernel void debugKernel(uint gid [[thread_position_in_grid]]) {
 - Name functions with `MTL4LibraryFunctionDescriptor` (`name`, `library`); specialize with `MTL4SpecializedFunctionDescriptor` + `MTLFunctionConstantValues`.
 - `try await compiler.makeRenderPipelineState(descriptor:)` / `makeComputePipelineState(descriptor:)` from a background task; sync versions exist for prototypes.
 - Unspecialized pipelines: set varying properties to `.unspecialized` (for example `MTLPixelFormat.unspecialized`), then `makeRenderPipelineStateBySpecialization(descriptor:pipeline:)`.
-- Harvest with `MTL4PipelineDataSetSerializer`; ship and load archives with `device.makeArchive(url:)` (`MTL4Archive`).
+- Harvest with `MTL4PipelineDataSetSerializer`; ship and load archives with `device.makeArchive(url:)` (`MTL4Archive`), and hand them to the compiler through `MTL4CompilerTaskOptions.lookupArchives`.
 - iOS limits background compilation threads. Start compiling early.
 
 ## Machine learning pass recipe
 
 1. `xcrun metal-package-builder -ml Model.mlpackage -o Model.mtlpackage` and add the package to the project.
-2. `MTL4LibraryFunctionDescriptor` named `"main"` → `MTL4MachineLearningPipelineDescriptor` → `compiler.makeMachineLearningPipelineState(descriptor:)`. One pipeline per set of concrete input shapes.
+2. `MTL4LibraryFunctionDescriptor` named `"main"` → `MTL4MachineLearningPipelineDescriptor` → `compiler.makeMachineLearningPipelineState(descriptor:)`. One pipeline per set of concrete input shapes; fix dynamic input shapes with `setInputDimensions(_:bufferIndex:)` on the descriptor.
 3. Tensors: `MTLTensorDescriptor` (`dimensions` via `MTLTensorExtents([...])`, innermost first; `dataType`; `usage = .machineLearning`) → `device.makeTensor(descriptor:)`. Fill with `replace(sliceOrigin:sliceDimensions:withBytes:strides:)`.
 4. Bind: `table.setResource(tensor.gpuResourceID, bufferIndex: binding.index)`.
 5. Scratch: `MTLHeapDescriptor` with `type = .placement`, `size = pipeline.intermediatesHeapSize` → `device.makeHeap(descriptor:)`.
-6. Encode: `makeMachineLearningCommandEncoder()` → `setPipelineState` → `setArgumentTable` → `dispatchNetwork(intermediatesHeap:)` → `endEncoding()`. Barriers with `.machineLearning` order it against other passes.
+6. Encode: `makeMachineLearningCommandEncoder()` → `setPipelineState` → `setArgumentTable` → `dispatchNetwork(intermediatesHeap:)` → `endEncoding()`. Barriers with `.machineLearning` order it against other passes. Put the tensors, the heap and the pipeline state (it's an `MTLAllocation` too) in a residency set.
 
-iOS 27: multi-plane tensors (`MTLTensorAuxiliaryPlaneDescriptor`, `MTLTensorPlaneType.scales`, `makeTensor(descriptor:attachments:)`), FP8/FP4 tensor data types. Core AI's `ComputeStream(commandQueue:)` encodes inference onto your `MTLCommandQueue`.
+iOS 27: multi-plane tensors (`MTLTensorAuxiliaryPlaneDescriptor`, `MTLTensorPlaneType.scales`, `makeTensor(descriptor:attachments:)`), FP8/FP4 tensor data types. Core AI's `ComputeStream(commandQueue:)` encodes inference onto your `MTLCommandQueue` (a Metal 3 queue, not an `MTL4CommandQueue`; order it against Metal 4 work with an event).
 
 ## Beyond the basics, one line each
 
@@ -265,7 +271,7 @@ iOS 27: multi-plane tensors (`MTLTensorAuxiliaryPlaneDescriptor`, `MTLTensorPlan
 | Metal Performance HUD | Live FPS, GPU time, frame interval | Scheme diagnostics option |
 | Instruments: Game Performance template | CPU vs GPU timeline (includes Metal System Trace), stutters | Product → Profile |
 | Instruments: Game Memory template | GPU memory growth | Product → Profile |
-| Shader logging | `os_log` from inside shaders | `-fmetal-enable-logging`, `MTLLogState` |
+| Shader logging | `os_log` from inside shaders | `-fmetal-enable-logging`, `MTLLogState`; in Metal 4, set `MTL4CommandBufferOptions.logState` and pass it to `beginCommandBuffer(allocator:options:)` |
 | `gpudebug` | Scriptable trace inspection in Terminal; usable by AI agents | `gpudebug -t Scene.gputrace`, `man gpudebug` |
 
 Debug order for a wrong frame: validation messages → residency → barriers → lifetimes → load/store actions.
@@ -285,7 +291,7 @@ Debug order for a wrong frame: validation messages → residency → barriers �
 Checked with `scripts/appledoc.py` on 2026-09-24; MSL items checked against the Metal Shading Language Specification 4.1 (2026-06-04).
 
 - `MTL4CommandQueue`, `commit(_:options:)`, `waitForDrawable(_:)`, `signalDrawable(_:)`, `signalEvent(_:value:)`, `waitForEvent(_:value:)`, `addResidencySet(_:)` — iOS 26.0
-- `MTL4CommandBuffer`, `beginCommandBuffer(allocator:)`, `endCommandBuffer()`, `makeRenderCommandEncoder(descriptor:options:)`, `makeComputeCommandEncoder()`, `makeMachineLearningCommandEncoder()`, `pushDebugGroup(_:)` — iOS 26.0
+- `MTL4CommandBuffer`, `beginCommandBuffer(allocator:)`, `beginCommandBuffer(allocator:options:)`, `endCommandBuffer()`, `makeRenderCommandEncoder(descriptor:options:)`, `makeComputeCommandEncoder()`, `makeMachineLearningCommandEncoder()`, `pushDebugGroup(_:)` — iOS 26.0
 - `MTL4CommandAllocator`, `reset()` — iOS 26.0
 - `MTL4ArgumentTable`, `setAddress(_:index:)`, `setTexture(_:index:)`, `setSamplerState(_:index:)`, `setResource(_:bufferIndex:)` — iOS 26.0
 - `MTL4ArgumentTableDescriptor.maxBufferBindCount` — iOS 26.0
@@ -293,7 +299,9 @@ Checked with `scripts/appledoc.py` on 2026-09-24; MSL items checked against the 
 - `MTL4RenderCommandEncoder.setRenderPipelineState(_:)`, `setArgumentTable(_:stages:)`, `drawPrimitives(primitiveType:vertexStart:vertexCount:)` — iOS 26.0
 - `MTL4ComputeCommandEncoder.setComputePipelineState(_:)`, `setArgumentTable(_:)`, `dispatchThreads(threadsPerGrid:threadsPerThreadgroup:)`, `dispatchThreadgroups(threadgroupsPerGrid:threadsPerThreadgroup:)`, `build(destinationAccelerationStructure:descriptor:scratchBuffer:)` — iOS 26.0
 - `MTL4MachineLearningCommandEncoder.setPipelineState(_:)`, `setArgumentTable(_:)`, `dispatchNetwork(intermediatesHeap:)` — iOS 26.0
-- `MTL4MachineLearningPipelineState.intermediatesHeapSize`, `MTL4MachineLearningPipelineDescriptor` — iOS 26.0
+- `MTL4MachineLearningPipelineState.intermediatesHeapSize`, `MTL4MachineLearningPipelineDescriptor`, `setInputDimensions(_:bufferIndex:)` — iOS 26.0
+- `MTL4CommandBufferOptions.logState`, `MTL4CompilerTaskOptions.lookupArchives` — iOS 26.0
+- `MTLAllocation` — iOS 18.0 (adopted by `MTL4MachineLearningPipelineState`)
 - `MTL4Compiler`, `makeRenderPipelineState(descriptor:dynamicLinkingDescriptor:compilerTaskOptions:)`, `makeComputePipelineState(descriptor:dynamicLinkingDescriptor:compilerTaskOptions:)`, `makeMachineLearningPipelineState(descriptor:)`, `makeRenderPipelineStateBySpecialization(descriptor:pipeline:)` — iOS 26.0
 - `MTL4LibraryFunctionDescriptor`, `MTL4SpecializedFunctionDescriptor`, `MTL4PipelineDataSetSerializer`, `MTL4Archive`, `MTLDevice.makeArchive(url:)` — iOS 26.0
 - `MTLPixelFormat.unspecialized` — iOS 26.0
@@ -324,8 +332,8 @@ Checked with `scripts/appledoc.py` on 2026-09-24; MSL items checked against the 
 - `UIScreen.currentEDRHeadroom`, `potentialEDRHeadroom` — iOS 16.0
 - `MTL4FXSpatialScaler`, `MTL4FXTemporalScaler`, `MTL4FXFrameInterpolator`, `MTLFXTemporalScalerDescriptor.makeTemporalScaler(device:compiler:)`, `MTL4FXSpatialScaler.encode(commandBuffer:)` — iOS 26.0
 - `Shader.compile(as:)`, `Shader.UsageType` — iOS 18.0; `Shader.Argument` cases, `ShaderLibrary`, `colorEffect(_:isEnabled:)`, `layerEffect(_:maxSampleOffset:isEnabled:)`, `distortionEffect(_:maxSampleOffset:isEnabled:)` — iOS 17.0
-- `ComputeStream.init(commandQueue:)` (Core AI) — iOS 27.0
+- `ComputeStream.init(commandQueue:)` (Core AI; takes `any MTLCommandQueue`) — iOS 27.0
 - `CIFilter` — iOS 5.0; `CIKernel` — iOS 8.0; `RealityView`, `ShaderGraphMaterial`, `LowLevelMesh`, `LowLevelTexture` — iOS 18.0
-- MSL: `[[stitchable]]` (Metal 2.4+), `[[vertex_id]]`, `[[stage_in]]`, `[[position]]`, `[[thread_position_in_grid]]`, `[[thread_index_in_simdgroup]]`, `[[threads_per_simdgroup]]`, `simd_sum` (iOS: Metal 2.3+), `atomic_float` (Metal 3+), `threadgroup_barrier(mem_flags::mem_threadgroup)`, `os_log`, `tensor<device half, dextents<int, 2>>`
+- MSL: `[[stitchable]]` (Metal 2.4+), `[[vertex_id]]`, `[[stage_in]]`, `[[position]]`, `[[thread_position_in_grid]]`, `[[thread_index_in_simdgroup]]`, `[[threads_per_simdgroup]]`, `simd_sum` (iOS: Metal 2.3+), `atomic_float` (Metal 3+), `threadgroup_barrier(mem_flags::mem_threadgroup)`, `os_log`, `tensor<device half, dextents<int, 2>>` with `[[buffer(n)]]` (header `<metal_tensor>`), `mpp::tensor_ops::matmul2d` (header `<MetalPerformancePrimitives/MetalPerformancePrimitives.h>`)
 
 </details>

@@ -674,8 +674,8 @@ Checked with `scripts/appledoc.py` against Apple's documentation on 2026-09-24. 
 - `MTL4MachineLearningPipelineState` — iOS 26.0
 - `MTL4ArgumentTable`, `setAddress(_:index:)`, `setResource(_:bufferIndex:)`, `setTexture(_:index:)` — iOS 26.0
 - `MTL4ArgumentTableDescriptor.maxBufferBindCount` — iOS 26.0
-- `MTLResidencySet`, `addAllocation(_:)`, `commit()` — iOS 18.0
-- `MTLResidencySetDescriptor` — iOS 18.0
+- `MTLResidencySet`, `addAllocation(_:)`, `commit()`, `requestResidency()` — iOS 18.0
+- `MTLResidencySetDescriptor`, `MTLAllocation` — iOS 18.0 (`MTL4MachineLearningPipelineState` conforms to `MTLAllocation`)
 - `MTLSharedEvent` — iOS 12.0
 - `MTLSharedEvent.wait(untilSignaledValue:timeoutMS:)` — iOS 15.0
 - `MTLStages` (`.dispatch`, `.machineLearning`, `.fragment`) — iOS 26.0
@@ -701,7 +701,7 @@ Checked with `scripts/appledoc.py` against Apple's documentation on 2026-09-24. 
 - `MTLTensorAuxiliaryPlaneDescriptor`, `MTLTensorPlaneType`, `MTLTensorBufferAttachments` — iOS 27.0
 - `MTLTensorDataType.metalFloat8e4m3`, `.metalFloat8e5m2`, `.metalFloat4e2m1`, `.metalFloat8ue8m0`, `.int2` — iOS 27.0
 - `MTLTensorDataType.int4` — iOS 26.4
-- `MTL4ComputePipelineDescriptor.forwardProgressUsage`, `.contentionRelief`, `.optimizeForPersistentKernel` — iOS 27.0
+- `MTL4ComputePipelineDescriptor.forwardProgressUsage`, `.contentionRelief`, `.optimizeForPersistentKernel`, `MTLForwardProgressUsage`, `MTLContentionRelief` — iOS 27.0 (no descriptions on Apple's pages yet)
 - `MTLComputePipelineState.recommendedPersistentThreadgroupsPerGrid(forThreadsPerThreadgroup:)` — iOS 27.0
 - `MTLPixelFormat.rgb8Unorm` (and other three-channel formats) — iOS 27.0
 - `MTLTexture.minLOD` — iOS 27.0
@@ -714,7 +714,9 @@ Checked with `scripts/appledoc.py` against Apple's documentation on 2026-09-24. 
 - `MTL4RenderEncoderOptions` — iOS 26.0
 - `MTL4FXSpatialScaler`, `MTL4FXTemporalScaler`, `MTL4FXFrameInterpolator` — iOS 26.0
 - `MTLFXFrameInterpolatorDescriptor.isDistortionTextureEnabled`, `MTLFXTemporalScalerDescriptor.isJitteredMotionVectorsEnabled` — iOS 27.0
-- `ComputeStream.init(commandQueue:)` (Core AI) — iOS 27.0
+- `ComputeStream.init(commandQueue:)` (Core AI; takes `any MTLCommandQueue`) — iOS 27.0
+- `MTLCommandQueue` — iOS 8.0; `MTLEvent` — iOS 12.0
+- Language features (not symbol pages): `@concurrent` and `NonisolatedNonsendingByDefault` (SE-0461), nonisolated access to `Sendable` stored properties of global-actor-isolated value types (SE-0434)
 - Legacy, for recognition only: `MTLCommandQueue.makeCommandBuffer()` (iOS 8.0), `MTLRenderCommandEncoder.setFragmentTexture(_:index:)` (iOS 8.0), `MTLComputeCommandEncoder.useResource(_:usage:)` (iOS 11.0), `MTLDevice.makeRenderPipelineState(descriptor:)` (iOS 8.0), `MTLCommandBuffer.present(_:)` and `addCompletedHandler(_:)` (iOS 8.0), `MTLParallelRenderCommandEncoder` (iOS 8.0), OpenGL ES (deprecated iOS 12.0)
 
 </details>
