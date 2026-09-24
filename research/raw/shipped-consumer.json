@@ -1,0 +1,522 @@
+{
+ "angle": "shipped-consumer",
+ "summary": "As of late September 2026, agentic features on iPhone have moved from demos into mainstream apps, and September 2026 was the biggest month so far. Meta's Muse (launched Sept 8) is a standalone personal-agent app. It sends email, books travel, fills in forms, makes purchases with one-time Stripe Link cards, and since Sept 17 places phone calls to businesses. It took #1 on the US free iPhone chart from ChatGPT with more than 2.5M downloads. The next day OpenAI brought voice-triggered agent work (the 'Work' tab, a cloud browser and finances) to the ChatGPT mobile app. Apple shipped iOS 27 on Sept 14 with Siri AI, which can take actions across apps through App Intents, but only as a gated beta: there is a waitlist, daily usage caps, English only, and no iPhone launch in the EU. The other big players each run an agent product that reaches the iPhone. Google has Gemini Spark (I/O, May 2026) plus AI Mode's agentic restaurant and hotel booking, checkout and business calling. Anthropic has Claude's native iOS integrations (Calendar, Reminders, Health), with Cowork added to mobile (July 2026) and Dispatch for sending tasks from phone to desktop. Perplexity has its iOS Assistant, the Comet browser on iOS (March 2026) and Computer on iOS (March 2026). Microsoft has Copilot Cowork, with approve/reject on mobile. xAI has Grok Bot (Aug 2026). Manus is now owned by Meta, and Genspark's Super Agent includes Call for Me. Almost all of these heavy agents run in cloud sandboxes or cloud browsers and use the iPhone as a remote control and approval screen, because iOS does not let a third-party app operate other apps.\n\nVertical agents are uneven. The strongest are phone-call and errand agents (Pine AI, Genspark Call for Me, Google's agentic calling, Muse calls), shopping price-watchers (Amazon's Alexa for Shopping, which replaced Rufus in May 2026 and adds Buy for Me and price-triggered auto-buy; Google's agentic checkout and Universal Cart; Phia), money agents (Cleo Autopilot, and ChatGPT finances via Plaid), and meeting capture (Granola on iPhone and Apple Watch, Plaud with more than 2.5M users, Otter). Some are weak on mobile or failing. Most AI calendar and inbox agents are desktop-first or web-first: Motion needs a laptop to schedule and Reclaim has no iOS app. Milo, the family-logistics assistant, shut down in January 2026 because its founder concluded AI was 'too early to be reliable'. Apple shelved its own AI health coach. Messaging has become an important channel for agents. Poke became the first AI agent approved on Apple Messages for Business (June 2026), and OpenClaw's iOS companion app shipped in June 2026. Shopping checkout inside the agent has pulled back: OpenAI dropped Instant Checkout in March 2026 after Walmart measured it converting about 3x worse than a click-through to its own site. Payment and other sensitive steps are usually handed back to the user. Method note: WebFetch was blocked by the egress proxy for every domain I tried, so all of these findings come from WebSearch results and snippets, not from opening the pages. Confidence levels reflect that.",
+ "items": [
+  {
+   "name": "Meta Muse (personal AI agent app for iPhone)",
+   "kind": "product",
+   "description": "Standalone agent app from Meta, powered by Meta's Muse Spark model and running on its own secure cloud computer. It sends and reads email, books travel (flights via the Duffel API), fills in web forms, negotiates bills and a car sale, and checks out using a one-time card from Stripe Link. Outbound phone calls to US businesses were quietly switched on around Sept 17. It works in its own app and inside WhatsApp. There is a free tier plus $20 and $100/month plans. In CNN's test it produced useful plans but stalled on a purchase.",
+   "date": "2026-09",
+   "ios_relevance": "Launched in the US on iOS, Android and the web on Sept 8, 2026. It took #1 on the US free iPhone App Store chart from ChatGPT, with more than 2.5M downloads reported. A native Mac app followed Sept 18, and Muse Charm, a keychain device, is planned for December. This is the first mass-market proof that a consumer iPhone agent app can top the charts.",
+   "sources": [
+    "https://9to5mac.com/2026/09/17/meta-ai-launches-muse-personal-agent-including-a-new-mobile-app-for-iphone/",
+    "https://9to5mac.com/2026/09/18/metas-new-muse-ai-agent-app-overtakes-chatgpt-as-top-iphone-app/",
+    "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+    "https://www.cnn.com/2026/09/23/tech/meta-muse-ai-agent",
+    "https://qz.com/meta-stock-muse-ai-app-store-092126",
+    "https://the-decoder.com/muse-can-shop-write-emails-and-negotiate-prices-for-users-all-through-whatsapp/",
+    "https://techcrunch.com/2026/09/23/meta-made-a-tamagotchi-like-wearable-for-its-muse-ai-agent/",
+    "https://www.phocuswire.com/news/technology/meta-launches-ai-agent-travel-booking"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "ChatGPT iOS app: agent mode plus voice-driven 'Work' tab",
+   "kind": "product",
+   "description": "ChatGPT agent (a cloud browser that carries out multi-step tasks) is supported on the iOS app. On Sept 23, 2026 OpenAI added voice-triggered agentic workflows to mobile. Plus and Pro users get a Work tab that can draft documents and email, summarize Slack messages, build sites and presentations, and use the cloud browser and finances. Free and Go users get plugins and connected apps. Reported next steps are recurring agents, deeper integration with the phone's calendar and reminders, and handing tasks between phone and desktop.",
+   "date": "2026-09",
+   "ios_relevance": "This is the flagship general-purpose assistant on iPhone. OpenAI reported 900M weekly active users in Feb 2026, and ChatGPT was the #1 App Store download in April 2026 per Appfigures, with about 15.5M estimated downloads. It is now running into competition from Muse, Gemini and Claude.",
+   "sources": [
+    "https://techcrunch.com/2026/09/23/chatgpt-mobile-app-gets-voice-based-agentic-features/",
+    "https://help.openai.com/en/articles/11752874-chatgpt-agent",
+    "https://www.androguider.com/2026/09/chatgpt-mobile-gets-voice-powered-work.html",
+    "https://appfigures.com/resources/insights/most-downloaded-highest-earning-apps-april-2026"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "ChatGPT Scheduled Tasks (successor to ChatGPT Pulse)",
+   "kind": "product",
+   "description": "Pulse, launched Sept 25, 2025 on mobile for Pro users, ran research overnight and delivered 5-10 personalized morning briefs based on chats and connected apps. On June 17, 2026 OpenAI relaunched Scheduled Tasks with its own sidebar and retired Pulse. Tasks can check the web or connected apps on a schedule and alert the user when something needs attention, running at most once per hour. Recurring tasks auto-pause when the user ignores them.",
+   "date": "2026-06",
+   "ios_relevance": "Mobile push notifications for tasks have to be set up from the mobile app. This is the main proactive, monitoring-style agent pattern on iPhone for Go, Plus, Pro and Business users.",
+   "sources": [
+    "https://openai.com/index/introducing-chatgpt-pulse/",
+    "https://techcrunch.com/2025/09/25/openai-launches-chatgpt-pulse-to-proactively-write-you-morning-briefs",
+    "https://www.digit.in/news/general/openai-is-retiring-chatgpt-pulse-and-replacing-it-with-scheduled-tasks-here-is-why.html",
+    "https://help.openai.com/en/articles/10291617-tasks-in-chatgpt"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "ChatGPT agentic commerce: Instant Checkout (discontinued) and Apps in ChatGPT",
+   "kind": "product",
+   "description": "Instant Checkout (Sept 2025, built on the Stripe/OpenAI Agentic Commerce Protocol) let users buy from Etsy, Walmart and Shopify merchants inside ChatGPT. OpenAI dropped it in March 2026 after Walmart measured in-chat checkout converting about 3x worse than a click-through, while ChatGPT drove about 2x the rate of new customers. Shopping moved to discovery plus merchant apps inside ChatGPT, such as DoorDash, Instacart and Uber Eats.",
+   "date": "2026-03",
+   "ios_relevance": "The apps in ChatGPT, including DoorDash's, roll out on iOS. This shows the practical limit of fully in-agent purchasing on a phone today.",
+   "sources": [
+    "https://openai.com/index/buy-it-in-chatgpt/",
+    "https://www.macrumors.com/2026/03/25/chatgpt-revamps-shopping-features/",
+    "https://www.digitalcommerce360.com/2026/03/06/openai-shifts-checkout-plans-agentic-commerce-strategy/",
+    "https://www.digitalcommerce360.com/2025/12/19/doordash-app-openai-chatgpt/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "ChatGPT Health (Apple Health plus medical records)",
+   "kind": "product",
+   "description": "A health area in ChatGPT that draws on connected Apple Health data and medical records. It can compare lab results, summarize changes since the last appointment, track medications and relate sleep and activity to health outcomes. Health data gets extra encryption and is not used for training. It was announced Jan 7, 2026, and broad US rollout to Free, Go, Plus and Pro users began July 23, 2026.",
+   "date": "2026-07",
+   "ios_relevance": "The Apple Health connection requires the ChatGPT iOS app on an iPhone. This is a clear case of a vertical feature that depends specifically on iOS.",
+   "sources": [
+    "https://www.macrumors.com/2026/01/07/openai-chatgpt-health-apple-health-integration/",
+    "https://www.macrumors.com/2026/07/23/chatgpt-apple-health-integration/",
+    "https://openai.com/index/health-in-chatgpt/",
+    "https://help.openai.com/en/articles/20001036-health-in-chatgpt"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "ChatGPT personal finance (Plaid-connected accounts)",
+   "kind": "product",
+   "description": "Users link accounts at more than 12,000 institutions through Plaid, including Chase, Schwab, Fidelity, Robinhood and Amex. ChatGPT syncs and categorizes the data and builds a dashboard of spending, subscriptions, upcoming payments and portfolio. It answers questions about goals, scenarios and subscription reviews. It launched as a Pro preview in May 2026 and reached US Plus and Pro users on web, iOS and Android on June 25, 2026.",
+   "date": "2026-06",
+   "ios_relevance": "Available in the iOS app, and now reachable from the mobile Work tab. This puts direct competitive pressure on standalone iPhone budgeting apps.",
+   "sources": [
+    "https://techcrunch.com/2026/05/15/openai-launches-chatgpt-for-personal-finance-will-let-you-connect-bank-accounts/",
+    "https://openai.com/index/personal-finance-chatgpt/",
+    "https://help.openai.com/en/articles/20001222-finances-in-chatgpt"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "AI assistants in CarPlay (ChatGPT, Gemini, Claude)",
+   "kind": "platform_api",
+   "description": "iOS 26.4 (late March 2026) added CarPlay support for voice-based conversational apps. ChatGPT Voice arrived in CarPlay on April 2, 2026, and reports say Gemini and Claude are supported too. Use is voice-only, there is no wake word, and the assistant cannot control the car or iPhone functions.",
+   "date": "2026-04",
+   "ios_relevance": "CarPlay is an extension of the iPhone app. It opens the car to third-party assistants for the first time, but with tight action limits.",
+   "sources": [
+    "https://www.engadget.com/ai/openai-brings-chatgpts-voice-mode-to-carplay-191422297.html",
+    "https://techcrunch.com/2026/02/06/apple-is-working-to-make-carplay-compatible-with-ai-chatbots-like-chatgpt",
+    "https://alternativeto.net/news/2026/4/chatgpt-voice-mode-is-now-available-on-apple-carplay"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Gemini Spark (Gemini app on iPhone)",
+   "kind": "product",
+   "description": "A 24/7 personal agent announced at Google I/O on May 19, 2026. It is built on Gemini models with an agent harness from Google Antigravity, runs multi-step background tasks across Gmail, Docs and Sheets, connected apps and signed-in websites, and handles scheduled workflows. Sensitive steps such as passwords and payments are handed back to the user; Spark will load a checkout page but will not press Pay. It is available to Google AI Pro and Ultra subscribers who are over 18 in select countries. Project Mariner was discontinued May 4, 2026.",
+   "date": "2026-05",
+   "ios_relevance": "Available on iPhone and iPad through the Gemini app. Control of a local browser is Chrome-desktop only, and on iPhone Spark runs remote tasks in the background. Gemini had about 15.4M App Store downloads in April 2026 per Appfigures, #2 on the chart.",
+   "sources": [
+    "https://support.google.com/gemini/answer/17094507?hl=en&co=GENIE.Platform%3DiOS",
+    "https://gemini.google/overview/agent/spark/",
+    "https://techcrunch.com/2026/05/19/google-introduces-gemini-spark-a-24-7-agentic-assistant-with-gmail-integration/",
+    "https://blog.google/innovation-and-ai/products/gemini-app/next-evolution-gemini-app/",
+    "https://gizmodo.com/google-comes-for-openclaw-with-gemini-spark-a-personal-ai-agent-2000760778"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Google Search AI Mode agentic booking and 'Let Google Call' calling",
+   "kind": "product",
+   "description": "AI Mode searches several reservation platforms and books restaurants; this went global in April 2026, expanding to 8 more countries with no subscription needed. Hotel booking arrived in August 2026. Agentic calling phones local businesses (salons, auto shops, pet groomers and more) to ask about prices and availability, then reports back by text or email. It began as 'Ask for Me' in Search Labs and is now rolling out to US Search users.",
+   "date": "2026-08",
+   "ios_relevance": "Reached through the Google app and Search on iPhone. Google places the calls from its own servers, so it avoids iOS limits on phone calls.",
+   "sources": [
+    "https://9to5google.com/2026/04/10/google-ai-mode-redesign/",
+    "https://skift.com/2026/08/27/googles-agentic-hotel-booking-tool-comes-to-ai-mode/",
+    "https://blog.google/products-and-platforms/products/shopping/how-to-agentic-calling-let-google-call/",
+    "https://www.androidpolice.com/google-rolling-out-ai-ask-for-me/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Google agentic checkout, Universal Commerce Protocol and Universal Cart",
+   "kind": "product",
+   "description": "Users track an item's price and let Google buy it through Google Pay when it drops below a set target, confirming first. This launched in November 2025 with Wayfair, Chewy, Quince and some Shopify merchants. The Universal Commerce Protocol followed in January 2026. Universal Cart, announced at I/O 2026, is one persistent cart shared across Search, Gemini, YouTube and Gmail, with deal tracking.",
+   "date": "2026-05",
+   "ios_relevance": "Used through the Google and Gemini apps on iPhone. Payment goes through Google Pay, not Apple Pay.",
+   "sources": [
+    "https://blog.google/products-and-platforms/products/shopping/agentic-checkout-holiday-ai-shopping/",
+    "https://9to5google.com/2026/01/11/gemini-ai-mode-checkout/",
+    "https://thenextweb.com/news/google-universal-cart-agent-payments-shopping-io-2026",
+    "https://www.theregister.com/2026/01/12/google_gemini_agentic_ai_shopping_protocol/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Claude iOS app: native iOS integrations, Cowork on mobile and Dispatch",
+   "kind": "product",
+   "description": "Claude on iOS can create and modify Calendar events, manage Reminders, use location and Maps, and draft Messages and Mail. It can create messages but not read existing ones. Apple Health analysis launched in beta in January 2026 for US Pro and Max users. Cowork, the agentic workspace, expanded to iOS in beta on July 7, 2026 for Max users, first as server-hosted sessions that keep working and run scheduled tasks with no device online. Dispatch pairs the phone with a desktop so the user can assign tasks from the phone and get push notifications for approvals and completion.",
+   "date": "2026-07",
+   "ios_relevance": "Claude's iPhone app is both a native assistant for iOS system apps and a remote control for longer cloud and desktop agent runs. Claude entered the worldwide top-10 downloads in April 2026, with about 10.9M App Store downloads.",
+   "sources": [
+    "https://support.claude.com/en/articles/11869619-use-claude-with-ios-apps",
+    "https://www.macrumors.com/2026/01/22/claude-ai-adds-apple-health-connectivity/",
+    "https://www.macstories.net/notes/testing-claudes-native-integration-with-reminders-and-calendar-on-ios-and-ipados/",
+    "https://techcrunch.com/2026/07/07/the-coding-agent-wars-are-spilling-into-the-rest-of-the-office-claude-cowork/",
+    "https://support.claude.com/en/articles/13947068-assign-tasks-from-anywhere-in-claude-cowork",
+    "https://appfigures.com/resources/insights/most-downloaded-highest-earning-apps-april-2026"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Perplexity on iOS: Assistant, Comet browser and Computer",
+   "kind": "product",
+   "description": "Perplexity Assistant for iOS (April 2025) takes actions through iOS apps. It plays Apple Music and podcasts, drafts email, moves meetings, sets Reminders, books Uber rides, and fills OpenTable reservations up to the final Book tap. The Comet agentic browser launched on iOS March 18, 2026 with voice mode and deep research, and got a large update in May 2026. Perplexity Computer, a multi-model agent that turns a goal into finished work, came to the iOS app March 13, 2026 for starting and monitoring tasks.",
+   "date": "2026-03",
+   "ios_relevance": "One of the earliest third-party apps to push App Intents and deep links toward a Siri alternative. Comet brings agentic browsing to iPhone, which the ChatGPT Atlas browser still does not offer.",
+   "sources": [
+    "https://9to5mac.com/2025/04/23/perplexity-targets-siri-with-actually-useful-voice-actions-from-an-iphone-ai-chatbot-app/",
+    "https://www.macrumors.com/2026/03/18/perplexity-comet-browser-iphone/",
+    "https://www.perplexity.ai/hub/blog/meet-comet-for-ios",
+    "https://9to5mac.com/2026/05/21/perplexitys-comet-ai-browser-for-ios-upgraded-with-8-major-improvements/",
+    "https://gadgetbond.com/perplexity-computer-ios-iphone-mobile-app-update-availability/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Microsoft Copilot Cowork (Microsoft 365 Copilot iOS app)",
+   "kind": "product",
+   "description": "From the M365 Copilot iOS app, users hand tasks to the Cowork agent, watch its progress, approve or reject specific actions and review the results. Cowork Skills store reusable instructions, and third-party plugins include HubSpot, LSEG, Moody's and Notion. On the consumer side, Copilot Actions uses a cloud browser to book and order things.",
+   "date": "2026-05",
+   "ios_relevance": "A clear example of the phone as the place where users supervise and approve agent work. Microsoft was also reported to be merging its consumer and enterprise Copilot apps by August 2026.",
+   "sources": [
+    "https://www.microsoft.com/en-us/copilot/blog/2026/05/05/copilot-cowork-from-conversation-to-action-across-skills-integrations-and-devices/",
+    "https://www.thurrott.com/a-i/335689/microsofts-copilot-cowork-agent-mobile-plugins-support",
+    "https://www.humansecurity.com/ai-agent/copilot-actions/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Grok Bot (SpaceXAI with Cursor)",
+   "kind": "product",
+   "description": "A team of always-on agents, each with its own computer environment. They sign into the user's apps and websites and keep running in the cloud when the user's devices are off. Bots can work in parallel with a manager bot and specialists, and can coordinate in group chats. It is a beta for SuperGrok Heavy, Cursor Ultra and Cursor Teams Premium subscribers.",
+   "date": "2026-08",
+   "ios_relevance": "Ships as a separate iOS and macOS app ('Grok Bot' on the App Store, per MacRumors, Aug 11, 2026). Another example of a cloud-sandbox agent controlled from the iPhone.",
+   "sources": [
+    "https://www.macrumors.com/2026/08/11/grok-bot-macos-ios/",
+    "https://apps.apple.com/us/app/grok-bot/id6794501026",
+    "https://alternativeto.net/news/2026/8/spacexai-launches-grok-bot-a-new-ai-agent-app-for-autonomous-tasks-on-iphone-and-mac/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Manus iOS app (now Meta-owned)",
+   "kind": "product",
+   "description": "A general agent that uses its own virtual computer to plan, research, code and deliver finished work, and the iPhone app shows every step as it runs. It launched in March 2025 and reached version 1.6 in December 2025. It claimed about $100M ARR roughly eight months after launch. Meta acquired developer Butterfly Effect in late December 2025, reportedly for $2B+, and keeps Manus running.",
+   "date": "2025-12",
+   "ios_relevance": "One of the first dedicated agent apps on the App Store (iOS 17+, subscriptions from $19 to $199/month). Its technology now feeds Meta's consumer agent push, including Muse.",
+   "sources": [
+    "https://apps.apple.com/us/app/manus-ai-agent-automation/id6740909540",
+    "https://en.wikipedia.org/wiki/Manus_(AI_agent)",
+    "https://www.cnbc.com/2025/12/30/meta-acquires-singapore-ai-agent-firm-manus-china-butterfly-effect-monicai.html"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Genspark Super Agent and 'Call for Me'",
+   "kind": "product",
+   "description": "An all-in-one agent workspace with more than 80 tools covering slides, sheets, docs and phone calling. Call for Me places outbound calls in several languages to book appointments, manage reservations and resolve customer-service issues, then returns structured results. It runs on Twilio Programmable Voice (announced Feb 2026). Genspark reported $250M annualized revenue in March 2026, up from $85M at the end of 2025, and more than 2M monthly active users.",
+   "date": "2026-02",
+   "ios_relevance": "Has an iPhone app (Genspark AI Workspace). The calls happen in the cloud, which sidesteps iOS limits on calling.",
+   "sources": [
+    "https://www.businesswire.com/news/home/20260203556134/en/Genspark-Uses-Twilio-to-Power-Global-AI-Calling-Call-for-Me-Agent",
+    "https://www.genspark.ai/helpcenter/call-for-me",
+    "https://apps.apple.com/us/app/genspark-super-ai-agent/id6739554054",
+    "https://sacra.com/c/genspark/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Poke (The Interaction Company): proactive agent inside iMessage",
+   "kind": "product",
+   "description": "A proactive assistant used entirely by text message. It watches the user's Gmail, Calendar, Outlook, Notion, Slack and GitHub and pushes actionable prompts, such as flight check-ins or rescheduling around conflicts. It also handles planning, smart-home control and photo edits, and routes each task to whichever model fits best. It launched publicly in March 2026, and the company reports about 100M messages relayed.",
+   "date": "2026-06",
+   "ios_relevance": "On June 4, 2026 Apple approved Poke as the first and only AI agent on Messages for Business, so it runs natively in the iPhone Messages app with no app to install. This opens a new channel for agents on iOS.",
+   "sources": [
+    "https://techcrunch.com/2026/06/04/apple-approves-poke-as-the-first-ai-agent-on-its-messages-for-business-platform/",
+    "https://appleinsider.com/articles/26/06/04/first-ai-agent-for-messages-business-chat-approved-by-apple",
+    "https://9to5mac.com/2026/06/04/apples-messages-app-on-iphone-now-has-a-third-party-ai-agent/",
+    "https://techcrunch.com/2026/04/08/poke-makes-ai-agents-as-easy-as-sending-a-text/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "OpenClaw for iOS (open-source self-hosted agent)",
+   "kind": "open_source",
+   "description": "An open-source personal agent by Peter Steinberger that went viral in January 2026. It connects to 29 chat channels, including iMessage, WhatsApp, Telegram and Signal. The iOS, iPadOS and watchOS app launched June 29, 2026. It pairs with a self-hosted OpenClaw Gateway so users can talk to their agent, approve requested actions and let automations use iPhone capabilities with permission.",
+   "date": "2026-06",
+   "ios_relevance": "Described in coverage as among the first agent tools to pass App Store review; treat that as a claim. It shows the pattern of a self-hosted agent with a thin iPhone client for approvals.",
+   "sources": [
+    "https://www.helpnetsecurity.com/2026/06/30/openclaw-ios-app-iphone-ipad/",
+    "https://en.wikipedia.org/wiki/OpenClaw",
+    "https://openclaw.ai/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Siri AI with App Intents (iOS 27)",
+   "kind": "platform_api",
+   "description": "Announced at WWDC on June 8, 2026 and shipped with iOS 27 on Sept 14, 2026. Siri AI is a separate app with a chat interface and synced history. It combines personal context, onscreen awareness and actions across apps through App Intents. Named third-party examples are WhatsApp, Audible, Outlook, Notability and Tripsy, and cross-app chains like pulling a recipe from email into a Reminders grocery list. SiriKit was deprecated, leaving App Intents as the only way Siri calls into apps. Siri AI launched as a beta: there is a waitlist, daily usage caps with a paid 'expanded access' tier still to come, English only, and no iPhone, iPad or Watch release in the EU.",
+   "date": "2026-09",
+   "ios_relevance": "The OS-level agent that every iPhone app now competes or integrates with. It needs an iPhone 15 Pro or newer, and the iPhone 17 series gets a better on-device model. The Extensions framework for picking ChatGPT, Claude or Gemini as the Apple Intelligence model was announced for iOS 27.",
+   "sources": [
+    "https://www.apple.com/newsroom/2026/06/apple-introduces-siri-ai-a-profoundly-more-capable-and-personal-assistant/",
+    "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+    "https://www.cnbc.com/2026/09/14/apple-releases-ios-27-redesigned-siri-ai.html",
+    "https://appleinsider.com/articles/26/09/09/siri-ai-will-launch-in-beta-complicated-by-daily-usage-caps-future-paid-access",
+    "https://www.macrumors.com/2026/09/09/apple-siri-ai-usage-limits/",
+    "https://developer.apple.com/videos/play/wwdc2026/343/",
+    "https://www.macrumors.com/2026/05/05/ios-27-third-party-chatbots-apple-intelligence/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "iOS 26 Call Screening and Hold Assist (native phone agents)",
+   "kind": "platform_api",
+   "description": "Call Screening answers unknown numbers, asks who is calling and why, and shows a live transcript. Hold Assist notices when a call is on hold, offers to wait, mutes the hold music and alerts the user when a person picks up. Both shipped in iOS 26 in 2025.",
+   "date": "2025-09",
+   "ios_relevance": "Built into the iPhone Phone app. These are passive steps toward call agents, but Apple offers no equivalent for third-party apps that want to place and talk through calls.",
+   "sources": [
+    "https://www.macrumors.com/how-to/ios-26-make-your-iphone-wait-on-hold-for-you/",
+    "https://9to5mac.com/2026/05/01/ios-26s-new-phone-app-won-me-over-with-two-excellent-features/",
+    "https://www.fastcompany.com/91349248/ios-26s-best-new-feature-iphone-better-phone-hold-contacts-unkown-number-hold-assist-call-screening"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Pine AI (bill negotiation and customer-service call agent)",
+   "kind": "startup",
+   "description": "Pine Voice places calls, waits on hold and works through phone trees. Pine Assistant sends emails and navigates websites. Together they negotiate bills, cancel subscriptions, file refunds and handle complaints. The company claims $300+ average yearly savings and a 93% negotiation success rate. An independent test saw 2 of 3 tasks succeed within 48 hours.",
+   "date": "ongoing",
+   "ios_relevance": "Native iPhone app (Pine Assistant). It works asynchronously from the cloud, and the iPhone is where users brief it and read results.",
+   "sources": [
+    "https://apps.apple.com/us/app/pine-assistant/id6746403769",
+    "https://www.19pine.ai/",
+    "https://agent-finder.co/reviews/pine-ai"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Amazon Alexa for Shopping (replaced Rufus): Buy for Me and Auto Buy",
+   "kind": "product",
+   "description": "On May 13, 2026 Amazon retired Rufus and put Alexa for Shopping in the Amazon search bar, results and product pages. It uses both Amazon history and Alexa conversations. Auto Buy, first rolled out through Rufus, purchases an item once it reaches a price the user sets (e.g. 'buy when 30% off'). Buy for Me completes purchases on non-Amazon sites using the user's saved address and payment. On iOS, photos of handwritten lists can be turned into cart additions.",
+   "date": "2026-05",
+   "ios_relevance": "Built into the Amazon Shopping iOS app and on by default for signed-in US customers. It is the most widely deployed price-triggered purchasing agent on iPhone.",
+   "sources": [
+    "https://www.cnbc.com/2026/05/13/amazon-ditches-rufus-ai-chatbot-in-favor-of-alexa-shopping-agent.html",
+    "https://www.emarketer.com/content/amazon-edges-deeper-agentic-commerce-rufus-auto-buy",
+    "https://www.aboutamazon.com/news/retail/amazon-rufus-ai-assistant-personalized-shopping-features"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Alexa+ app (home and errands agent)",
+   "kind": "product",
+   "description": "Alexa+ runs on Amazon Nova and Anthropic models. It orders takeout, makes restaurant reservations, books rides and schedules home repairs. Integrations launching through 2026 let it book hotels via Expedia, get quotes and book home services via Yelp and Angi, and book beauty appointments via Square. It became available to everyone in the US in February 2026 and is free with Prime.",
+   "date": "2026-02",
+   "ios_relevance": "Available in the Alexa iPhone app by voice, touch or text, as well as on Echo devices. Consumer Reports called the app 'still a mess'. It competes with Siri AI for smart-home and errand tasks on iPhone.",
+   "sources": [
+    "https://www.aboutamazon.com/news/devices/alexa-plus-available-free-prime-members-us",
+    "https://appleinsider.com/articles/26/02/04/alexa-is-now-available-to-every-us-customer-new-siri-still-absent",
+    "https://www.aboutamazon.com/news/devices/alexa-plus-voice-booking-integrations",
+    "https://www.consumerreports.org/electronics/digital-assistants/amazon-alexa-plus-ai-assistant-review-a1667486499/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Cleo Autopilot (agentic money app)",
+   "kind": "startup",
+   "description": "Launched in February 2026. Autopilot maps out long-term financial goals and then acts within limits the user sets, such as moving money and applying pre-approved decisions automatically. It uses several agents, enriched transaction data and planning models that adapt over time. Planned 2026 actions include negotiating bills and finding cheaper insurance.",
+   "date": "2026-02",
+   "ios_relevance": "Native iPhone app (Cleo AI). It is one of the few consumer finance apps that moves money on its own rather than only giving advice.",
+   "sources": [
+    "https://web.meetcleo.com/blog/introducing-autopilot",
+    "https://www.prnewswire.com/news-releases/cleo-launches-autopilot-automating-your-money-moves-302679691.html",
+    "https://apps.apple.com/us/app/cleo-ai-cash-advance-budget/id1447274646"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Wearable-backed AI health coaches (Google Health/Fitbit Gemini coach, Oura Advisor, WHOOP Coach)",
+   "kind": "trend",
+   "description": "Google's Gemini health coach, which builds training plans that adapt to sleep, heart rate and readiness data, reached iOS in February 2026. The Fitbit app was rebranded as Google Health on May 19, 2026. Oura Advisor and WHOOP Coach give conversational coaching, daily outlooks, targets that adjust and timely nudges. Apple's own AI coach ('Mulberry'/Health+) was shelved in February 2026, reportedly because Eddy Cue judged Oura's and Whoop's offerings more compelling.",
+   "date": "2026-05",
+   "ios_relevance": "These coaches run inside iPhone companion apps and pull from HealthKit or their own sensors. Apple stepping back leaves room for third-party coaches.",
+   "sources": [
+    "https://www.macrumors.com/2026/02/10/google-fitbit-ai-health-coach-ios/",
+    "https://the5krunner.com/2026/02/12/fitbit-gemini-ai-coach-ios/",
+    "https://pasqualepillitteri.it/en/news/2203/google-health-fitbit-air-launch-2026",
+    "https://livity-app.com/en/blog/apple-health-ai-coach-shelved",
+    "https://www.wareable.com/apple/apple-quartz-health-plus-ai-coaching-service-2026-launch-rumor"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Granola for iPhone and Apple Watch",
+   "kind": "product",
+   "description": "An AI notepad for meetings without a meeting bot. The iPhone app, announced in 2025, captures in-person meetings, starts from Lock Screen or Home Screen widgets and creates notes automatically for events on a linked calendar. An Apple Watch app with one-tap capture launched in July 2026.",
+   "date": "2026-07",
+   "ios_relevance": "An iPhone-plus-Watch capture flow that preps notes from calendar events is an early step toward meeting agents that act on what they hear.",
+   "sources": [
+    "https://apps.apple.com/us/app/granola-ai-meeting-notes/id6739429409",
+    "https://x.com/meetgranola/status/1917602840043794584",
+    "https://macdailynews.com/2026/07/30/granola-ai-notepad-launches-on-apple-watch-bringing-one-tap-meeting-notes-to-your-wrist/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "AI note-taking hardware with iPhone companion apps (Plaud NotePin S, Amazon Bee; Limitless discontinued)",
+   "kind": "hardware",
+   "description": "Plaud NotePin S ($179, January 2026) and Plaud Desktop cover in-person, phone and online meetings. Plaud reports more than 2.5M users, up from over 1.5M in January 2026. Amazon bought Bee (July 2025): the $49.99 pendant or wristband records all day, and its app extracts to-dos and builds a searchable memory; usage is now free. Meta bought Limitless (December 2025), stopped sales and has confirmed support only through 2026. Otter's meeting agent answers questions by voice and drafts follow-ups.",
+   "date": "2026-01",
+   "ios_relevance": "Each device depends on an iPhone app for transcription, summaries and action items. With consolidation (Meta took Limitless, Amazon took Bee), there are fewer independent options focused on privacy.",
+   "sources": [
+    "https://www.plaud.ai/blogs/news/plaud-unveils-notepins-and-desktop",
+    "https://apps.apple.com/us/app/plaud-ai-note-taker/id6450364080",
+    "https://www.layer3labs.io/gear/reviews/bee-ai-pendant",
+    "https://legendmemory.ai/blogs/the-archive/limitless-pendant-discontinued-the-best-alternatives-in-2026",
+    "https://otter.ai/blog/otter-meeting-agent-your-new-collaborative-teammate"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Inbox agents: Superhuman Go, Gmail AI Inbox and Gemini-in-Gmail",
+   "kind": "trend",
+   "description": "Email tools in 2026 are moving from drafting help to agents that classify, draft and route email for the user to review. Superhuman Go, from Grammarly's parent after its rebrand to Superhuman, directs first-party and partner agents (Box, Gamma, Wayground) and has an iOS app. Gmail's 'AI Inbox' view (January 2026, trusted testers first) groups mail into summaries, topics and to-dos, and Gemini Spark can act across Gmail.",
+   "date": "2026-02",
+   "ios_relevance": "Many leading inbox agents, including Fyxer and Shortwave's AI features, live on the web or as browser extensions. Fully agentic handling of the inbox on iPhone is still thin.",
+   "sources": [
+    "https://www.grammarly.com/blog/company/superhuman-go-new-partner-agents/",
+    "https://apps.apple.com/us/app/superhuman-go/id6775573226?platform=mac",
+    "https://fortune.com/2026/01/08/google-ai-inbox-gmail-gemini-3-integration-email-new-view-features/",
+    "https://missiveapp.com/blog/ai-email-assistant"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Scheduling agents: Howie and AI calendars (Motion, Reclaim)",
+   "kind": "trend",
+   "description": "Howie is an AI scheduling assistant with its own email address and phone number. Users CC or text it, including over iMessage, and it negotiates times, sends invites and follows up. It raised $6M from Sequoia and a16z and reports 1,000+ paying customers booking 5,000+ meetings a week. On the calendar-app side, Motion's iPhone app can view and edit but actual auto-scheduling needs a laptop, and Reclaim has no native iOS app.",
+   "date": "2025-2026",
+   "ios_relevance": "On iPhone, scheduling agents work mostly through messages or email rather than native apps, which is a gap in the mobile experience.",
+   "sources": [
+    "https://howie.com/",
+    "https://www.usecarly.com/blog/howie-alternatives/",
+    "https://get-alfred.ai/blog/best-ai-calendar-assistants",
+    "https://zapier.com/blog/best-ai-scheduling/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Travel agent apps (Expedia and Layla, Airbnb AI agent, Mindtrip, Sabre/PayPal)",
+   "kind": "trend",
+   "description": "Expedia acquired Layla, a conversational trip planner and booker, in July 2026. It is pursuing a 'multi-agent' design and 'self-healing' trips that suggest rebookings before problems hit. Airbnb's own support agent handled about a third of North American support and resolved more than 40% of inquiries in Q1 2026, with trip search and booking and a voice agent planned. Sabre, PayPal and Mindtrip announced an end-to-end agentic booking system for Q2 2026, and Muse books flights through Duffel.",
+   "date": "2026-07",
+   "ios_relevance": "Most of these run inside iPhone travel apps. Airbnb's summer 2026 iOS update added AI listing insights, a group itinerary builder and a support assistant that loads the user's trip details first.",
+   "sources": [
+    "https://ir.expediagroup.com/news-and-events/news/news-details/2026/Expedia-Group-acquires-Layla-accelerating-its-AI-powered-trip-planning-and-booking-strategy/default.aspx",
+    "https://skift.com/2026/07/31/expedia-acquired-ai-trip-planner-layla-exclusive/",
+    "https://techcrunch.com/2026/02/13/airbnb-says-a-third-of-its-customer-support-is-now-handled-by-ai-in-the-u-s-and-canada/",
+    "https://www.oag.com/blog/march-2026-the-month-agentic-travel-gets-real",
+    "https://smartphones.gadgethacks.com/news/airbnb-app-update-2026-ai-planning-group-trips-and-global-support/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Family logistics agents: Ohai 'O' (live) vs Milo (shut down)",
+   "kind": "startup",
+   "description": "Ohai, founded in January 2024 by Care.com founder Sheila Lirio Marcelo, offers 'O', a household manager used through its app and SMS. It shares schedules and lists, assigns tasks and plans meals, and orders groceries through Instacart for $9.99/month. Milo, an SMS family assistant backed by OpenAI and YC, shut down in January 2026. Its founder said the technology is 'too early to be reliable' and that small mistakes, like pulling the wrong date from a school email, compounded into more work for families.",
+   "date": "2026-01",
+   "ios_relevance": "Ohai is on the App Store. Milo's failure is the clearest public warning about how reliable a family-logistics agent on iPhone has to be.",
+   "sources": [
+    "https://apps.apple.com/us/app/ohai-ai-household-assistant/id6477802468",
+    "https://en.wikipedia.org/wiki/Ohai.ai",
+    "https://getsense.ai/blog/posts/milo-shutting-down-alternative-2026",
+    "https://alphamothers.com/resources/milo-ai-app-shut-down-best-alternative-families"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Phia (AI shopping agent via Safari extension)",
+   "kind": "startup",
+   "description": "Founded by Phoebe Gates and Sophia Kianni. Phia compares prices across 350M+ new and secondhand items on 220K+ sites, judges whether a price is fair, applies coupons automatically and watches for price drops.",
+   "date": "2025-2026",
+   "ios_relevance": "A free iOS app plus a Safari extension that works while the user shops on iPhone. It shows that Safari extensions give agents a way into mobile shopping.",
+   "sources": [
+    "https://apps.apple.com/us/app/phia-shop-smarter-save-money/id6739351340",
+    "https://www.prnewswire.com/news-releases/meet-phia-the-free-ai-shopping-tool-that-instantly-finds-you-the-best-price-on-fashion-founded-by-phoebe-gates-and-sophia-kianni-302436742.html",
+    "https://downtownmagazinenyc.com/2026/06/phia-shopping-app/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "AI language tutors (Duolingo Video Call, Speak)",
+   "kind": "trend",
+   "description": "Duolingo's Video Call with Lily (real-time AI conversation) more than doubled the words spoken per user. In February 2026 it moved from Max into Super, reaching about 10x more learners, and speaking was the top theme in Duolingo's May 2026 shareholder letter. Speak competes directly to replace human tutors. These tutors adapt within the conversation, but they barely plan or act outside the lesson.",
+   "date": "2026-02",
+   "ios_relevance": "iPhone-first consumer apps. They are conversational rather than truly agentic, so they are included for coverage and as whitespace.",
+   "sources": [
+    "https://blog.duolingo.com/video-call/",
+    "https://investors.duolingo.com/news-releases/news-release-details/duolingo-launches-ai-powered-video-call-android",
+    "https://www.forbes.com/sites/rashishrivastava/2025/11/12/this-startup-is-racing-duolingo-to-replace-human-language-tutors-with-ai/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "App Store policy on agents: Guideline 2.5.2 crackdown and 5.1.2(i) consent rule",
+   "kind": "policy",
+   "description": "In March 2026 Apple blocked App Store updates for Replit and Vibecode under Guideline 2.5.2, which bars apps from running code that changes their own features. It then pulled 'Anything', an AI app builder. Reporting cites Apple's worry about agents taking irreversible actions, such as deleting a user's email. Since Nov 13, 2025, Guideline 5.1.2(i) requires explicit consent before an app sends personal data to a third-party AI provider, naming the provider and data, and the consent must be revocable. There are reports that Apple is designing a framework to let agents back in.",
+   "date": "2026-03",
+   "ios_relevance": "This decides which kinds of agents can ship on iPhone. Agents that act on the device must go through App Intents and permission prompts, and agents that generate and run code get pushed to the cloud or the web.",
+   "sources": [
+    "https://www.cnbc.com/2026/03/31/column-apples-crackdown-on-ai-apps-puts-it-wrong-side-of-history.html",
+    "https://mlq.ai/news/apple-blocks-updates-for-ai-vibe-coding-apps-in-app-store/",
+    "https://www.adalo.com/posts/apple-app-store-vibe-coding-guideline-2-5-2/",
+    "https://aintelligencehub.com/articles/apple-app-store-agents"
+   ],
+   "confidence": "likely"
+  }
+ ],
+ "constraints_or_walls": [
+  "iOS gives third-party apps no way to operate other apps' UI. Every heavy consumer agent (Muse, Manus, Grok Bot, Perplexity Computer, ChatGPT agent, Gemini Spark) runs in a cloud sandbox or cloud browser and uses the iPhone as a remote control and approval screen. The only on-device route into other apps is App Intents, which each app must adopt.",
+  "Siri AI (iOS 27) shipped as a beta with a waitlist and daily usage caps, and a paid 'expanded access' tier is coming. It is English only at launch, is not available on iPhone, iPad or Watch in the EU, and needs an iPhone 15 Pro or newer. Third-party agents that build on it inherit these limits.",
+  "Apple deprecated SiriKit at WWDC 2026, so App Intents is now the only way Siri calls into an app. Siri AI can only do as much as each app's App Intents cover, and Apple's own examples are few: WhatsApp, Audible, Outlook, Notability, Tripsy.",
+  "App Store Guideline 2.5.2 (running code that changes the app's own features) was used in March 2026 to block updates for Replit and Vibecode and to pull 'Anything'. Agents that write and run code on the device are effectively banned.",
+  "Guideline 5.1.2(i), in force since Nov 13, 2025: an app must get explicit, revocable consent that names the AI provider and the data shared before sending personal data to a third-party AI.",
+  "Payments hit a trust wall. Gemini Spark stops at checkout and never presses Pay. Muse uses one-time Stripe Link cards. OpenAI dropped ChatGPT Instant Checkout in March 2026 after Walmart saw in-chat checkout convert about 3x worse. Google's agentic checkout runs on Google Pay rather than Apple Pay.",
+  "Calling agents (Pine, Genspark Call for Me, Google agentic calling, Muse calls) all place calls from cloud telephony such as Twilio. Apple's own Hold Assist and Call Screening are built into the Phone app and are not open to third parties.",
+  "Third-party access to iMessage goes only through Apple's Messages for Business, where Poke was the first approved AI agent in June 2026. Claude's iOS integration can create messages and mail but cannot read existing ones.",
+  "CarPlay AI apps (iOS 26.4 and later) are voice-only, have no wake word and cannot control car or iPhone functions.",
+  "Running long jobs in the background pushes work off the phone. Claude Dispatch needs the desktop awake with the app open. ChatGPT scheduled tasks run at most hourly and auto-pause when ignored.",
+  "Many launches are limited by region or plan. Muse is US-only and 18+. ChatGPT Health, finances and medical records are US-only. Claude's Health integration is a US beta for Pro and Max. Gemini Spark needs Pro or Ultra.",
+  "Reliability is still the main blocker for household agents. Milo shut down in January 2026 because small extraction errors made family scheduling more work, not less. CNN's Muse test found a purchase stalled on a store that required a professional license. Siri AI reviews flag weak handling of complex or unavailable actions.",
+  "Sensitive actions (payments, passwords) default to handing control back to the user, so a fully hands-off flow on the phone is rare."
+ ],
+ "whitespace_signals": [
+  "A reliable family-logistics agent is still missing. Milo quit, saying the technology is 'too early', and the survivors (Ohai) mostly handle lists, SMS and groceries. Reliably pulling details from school emails, coordinating co-parents and checking each step is still open.",
+  "No true mobile-first autonomous calendar agent exists. Motion needs a laptop to schedule, Reclaim has no iOS app, and Howie works through email and iMessage rather than a native app.",
+  "iPhone-native inbox agents are thin. The leaders (Fyxer, Shortwave's AI, Superhuman's AI) are mostly web or browser extensions, and Gmail's AI Inbox is still gated to testers.",
+  "Nothing gives users one place to approve and monitor all their agents. Each one (Muse, ChatGPT, Claude Dispatch, Copilot Cowork, Grok Bot, OpenClaw) has its own approvals and notifications, and there is no cross-agent approval inbox or Live Activity or Watch layer.",
+  "No agent payment system is native to Apple Pay. Agents use Stripe Link one-time cards or Google Pay. A way for users to approve agent purchases with Face ID and spending limits looks unclaimed.",
+  "No third-party agent fully handles calls from the iPhone Phone app. Hold Assist only waits, and calling agents live in the cloud. An agent that waits on hold, then talks, and hands off to the user mid-call inside the phone experience is not available to third parties.",
+  "Apple shelved its AI health coach in February 2026, leaving room for a HealthKit-native coach that acts: booking appointments, reordering prescriptions, adjusting plans. It would not need Oura or Whoop hardware.",
+  "Few App Intents are in the wild so far (Apple's own examples are a handful of apps). Tools or services that help developers expose good App Intents or App Schemas for Siri AI are an opportunity.",
+  "Privacy-first, on-device memory for AI note-taking hardware is open after Meta bought and discontinued Limitless and Amazon bought Bee.",
+  "Language tutors adapt within a conversation but don't plan the learner's week, set up real-world practice or schedule sessions with other people. The agentic tutor is unbuilt.",
+  "EU iPhone users are left out of Siri AI and Muse, which is a market gap for agent apps that comply with EU rules.",
+  "Agentic browsing on iPhone is thin. ChatGPT Atlas has no iOS version, and Comet on iOS is mostly voice, search and research, not full task automation inside Safari."
+ ],
+ "open_questions": [
+  "Did the iOS 27 'Extensions' framework, which lets users pick ChatGPT, Claude, Gemini or Grok as the Apple Intelligence model, actually ship in iOS 27.0 on Sept 14, or is it slated for a point release? Sources disagree.",
+  "Is there a real App Store framework, or a 15% commission tier, for 'advanced AI' or agent apps from May 2026? It appears only in secondary sources, so confidence is low.",
+  "Will Muse keep its chart position after launch, and what are its purchase-completion and retention rates? So far there are only download counts (2.5M+).",
+  "Will Apple let third-party agents drive other apps' UI, or open Hold Assist and Call Screening style call handling to them, in iOS 27.x or iOS 28?",
+  "Does Siri AI's paid 'expanded access' tier (pricing not yet announced) change the economics for apps that depend on Siri actions?",
+  "Is ChatGPT Atlas coming to iOS, or has the Work tab and cloud browser replaced that plan?",
+  "How many App Store apps have adopted App Intents 2.0 or App Schemas for Siri AI since the Sept 14 launch?",
+  "Method caveat: WebFetch was blocked by the egress proxy for every domain tried (techcrunch.com, 9to5mac.com, openai.com, blog.google, about.fb.com), so the claims above come from WebSearch result summaries and should be spot-checked against the primary pages before publishing."
+ ]
+}

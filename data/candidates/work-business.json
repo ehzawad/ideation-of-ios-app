@@ -1,0 +1,439 @@
+[
+  {
+    "title": "Insurance Certificate Responder",
+    "tagline": "Answers the general contractor's compliance bot for you: reads each COI demand and gets the right one sent.",
+    "tier": "whitespace",
+    "category": "Work & business",
+    "moment": "You are an electrician with a pay application due Friday, and the general contractor's compliance system has put your payment on hold because your certificate lacks 'additional insured, primary and non-contributory' wording. You are on a ladder. The agent has already read the rejection, knows exactly what your broker must issue, and asks you one yes/no on your Watch.",
+    "what_it_does": [
+      "Gives you a forwarding email address to hand to GCs and property managers. It reads every certificate request or rejection, from compliance portals or plain email, and extracts the exact requirement: limits, additional-insured and waiver-of-subrogation wording, certificate holder, project name.",
+      "Compares each requirement with your real policies (declaration pages you photographed once) and separates paperwork gaps (wrong wording on the certificate) from real coverage gaps (umbrella limit too low).",
+      "For paperwork gaps, emails your insurance broker a precise certificate request with the requirement letter attached. For real coverage gaps it gets a quote and asks you before anything is bought.",
+      "Sends the issued certificate back through the requester's upload link or email, checks until the status turns compliant, and warns you 30 days before any policy, license, bond or W-9 in your kit expires.",
+      "Stops to ask before it sends anything that states your coverage, shares financials, or agrees to a new contract clause."
+    ],
+    "why_now": "General contractors, property managers and enterprises have moved to automated certificate-verification platforms that read a COI in seconds and hold payment until it complies, so the pressure on small subs is now machine-speed. On the sub's side, iOS 27's on-device OCR tool and the free 32K-context PCC model make reading dense insurance documents cheap.",
+    "why_nobody_yet_or_wall": "Compliance software is sold to the party that demands certificates, so vendors built the checker, not the answerer. Brokers issue certificates only when asked and do not read the requirement letters. Small subcontractors are a scattered, low-revenue market that nobody sells to.",
+    "ios_hooks": [
+      "Foundation Models (PrivateCloudComputeLanguageModel, @Generable extraction)",
+      "Foundation Models OCRTool / VisionKit document scanner",
+      "App Intents interactive snippets (approve from Siri or Watch)",
+      "watchOS app with notification actions",
+      "Share extension for forwarding PDFs",
+      "Server-side email ingest address plus APNs push"
+    ],
+    "nearest_existing": [
+      "TrustLayer, GC-side COI verification (https://www.trustlayer.io/pages/coi-for-construction)",
+      "TrustLayer's 'Why am I being asked for a COI' explainer for vendors (https://www.trustlayer.io/resources/why-am-i-being-asked-for-a-coi)",
+      "Insurance brokers' self-serve certificate portals (issue on request, do not read requirements)"
+    ],
+    "unsaid_assumption": "Brokers will act on precise, agent-written certificate requests, and GC portals accept uploads from an address the sub controls.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The customer is the party being checked, not the checker: this is the missing half of a compliance loop where one side is already automated."
+  },
+  {
+    "title": "Bad Lead Refunder",
+    "tagline": "Audits every pay-per-lead charge from Google, Angi and Thumbtack and claws back the bogus ones.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "You paid for 41 leads last month. Nine wanted a trade you don't do, three were outside your area, and two were robocalls that still got billed. You never had time to flag any of them, but the agent did, and the credits land before the next billing cycle.",
+    "what_it_does": [
+      "Pulls every charged lead with its call recording or message thread: Google Local Services leads and conversations through the Google Ads API, and Angi or Thumbtack leads through forwarded lead emails.",
+      "Transcribes calls on the device and sorts each lead into real job, wrong service, out of area, spam or bot caller, duplicate, or unreachable, showing you the reason in one line.",
+      "For Google leads it rates each one through the API's lead-feedback method and then checks whether an automated credit arrived. For Angi and Thumbtack it drafts the dispute with evidence and asks you to approve each weekly batch.",
+      "Tracks dispute windows and credits, and shows your true cost per booked job on each platform so you can cut spend on the worst one (it asks before changing any budget).",
+      "Never files a dispute that accuses a named customer of fraud without your review."
+    ],
+    "why_now": "Google replaced manual Local Services lead disputes with an automated AI credit system in 2024, which leaves feedback ratings as the contractor's main lever. The Google Ads API now exposes lead conversations and a ProvideLeadFeedback method. Cheap AI voice robocalls have increased junk calls that reach paid lines.",
+    "why_nobody_yet_or_wall": "Marketing agencies do this by hand for larger accounts. The lead platforms have no reason to make refunds easy, and most solo tradespeople don't know disputes exist. Angi and Thumbtack have no public dispute API, so part of the loop stays email-assisted and approval-based.",
+    "ios_hooks": [
+      "Speech framework SpeechAnalyzer (on-device transcription)",
+      "Foundation Models on-device classification with @Generable",
+      "BackgroundTasks (BGAppRefreshTask)",
+      "WidgetKit (cost-per-job widget)",
+      "App Intents ('how much did leads cost me this week?')",
+      "UserNotifications with approve actions"
+    ],
+    "nearest_existing": [
+      "Google's automated Local Services lead credits (https://support.google.com/localservices/answer/15100654?hl=en)",
+      "Blue Corona on the end of manual LSA disputes (https://www.bluecorona.com/blog/google-local-service-ads-lead-dispute-deprecation)",
+      "Google Ads API ProvideLeadFeedback (https://developers.google.com/google-ads/api/reference/rpc/v21/LocalServicesLeadService/ProvideLeadFeedback)"
+    ],
+    "unsaid_assumption": "Lead feedback and disputes still change what a contractor is billed, rather than only training the platform's own model.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The platform's AI now decides what counts as a bad lead; this puts an agent on the contractor's side of that decision."
+  },
+  {
+    "title": "Deactivation Defense File",
+    "tagline": "Keeps a gig worker's own evidence ledger and files the appeal when the platform's algorithm cuts them off.",
+    "tier": "whitespace",
+    "category": "Work & business",
+    "moment": "Your delivery account is deactivated at 6 p.m. on a Friday for 'multiple customer reports' you never saw, and rent is due. Your agent already holds 14 months of your own records: drop-off photos, timestamps, ratings, support chats. It has an appeal and a data-access request drafted before you finish reading the email.",
+    "what_it_does": [
+      "Day to day, an Action button or Back Tap shortcut saves a screenshot of each drop-off proof, offer or support chat into a private ledger. Visual Intelligence and the on-device model pull out time, order and address, and CoreLocation adds the route.",
+      "When a deactivation email is forwarded (or you say 'I got deactivated'), it identifies the stated reason, finds the ledger entries that contradict it, and drafts an appeal in the platform's required format and length.",
+      "Drafts a data-access request (CCPA in California, GDPR in Europe) for what the platform holds on you. Where local law gives a right to human review, such as Seattle's app-based worker deactivation rules or the EU Platform Work Directive once transposed, it cites the right and tracks the deadline.",
+      "Hands the packet to human help where it exists (driver guilds, worker centers, legal aid) instead of pretending to be a lawyer.",
+      "Sends nothing without your approval and never contacts customers."
+    ],
+    "why_now": "The EU Platform Work Directive requires human review of automated deactivations and must be transposed by 2 December 2026. Platforms like Uber are adding in-app review centers that accept driver evidence. iOS 26 Visual Intelligence on screenshots and on-device Foundation Models make a private, always-growing evidence ledger cheap.",
+    "why_nobody_yet_or_wall": "A legal FAQ site notes that no dedicated deactivation-appeal product exists. Workers in crisis are a hard market to charge, unauthorized-practice-of-law risk scares builders, and iOS cannot read the driver apps, so capture has to be designed around screenshots and shortcuts rather than scraping.",
+    "ios_hooks": [
+      "Visual Intelligence (IntentValueQuery on screenshots)",
+      "App Intents + Shortcuts (Action button, Back Tap)",
+      "CoreLocation (CLVisit, significant-change)",
+      "Foundation Models on-device plus PCC for long appeals",
+      "Data Protection (complete file protection)",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Gridwise deactivation appeal guide (https://gridwise.io/blog/gig-driver-deactivation-appeal)",
+      "Independent Drivers Guild deactivation representation, NYC (https://driversguild.org/deactivation/)",
+      "terms.law deactivation appeals FAQ (https://terms.law/FAQ/gig-economy/deactivation-appeals-faq.html)"
+    ],
+    "unsaid_assumption": "Workers will capture evidence before they need it, so the ledger must pay off daily (tax mileage, pay checks) and not only in a crisis.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "It is an agent built to argue with another company's AI, and most of its value is created months before the fight starts."
+  },
+  {
+    "title": "Usage Rights Watchdog",
+    "tagline": "Notices when a brand keeps running your sponsored video as a paid ad after the license ends, then bills them.",
+    "tier": "whitespace",
+    "category": "Creativity & media",
+    "moment": "You shot a skincare video in March with 60 days of paid usage. It is now September. The agent finds the same creative still running as a partnership ad, saves dated screenshots, and has an invoice for a 90-day extension waiting for your OK.",
+    "what_it_does": [
+      "Reads each signed deal (shared PDF or forwarded email) and extracts deliverables, the paid-usage window, platforms, partnership-ad or whitelisting permission, exclusivity and payment terms.",
+      "On a schedule, a server-side worker searches Meta's Ad Library for branded content tied to your handle and matches creatives to your deliverables by image similarity, logging first-seen and last-seen dates with screenshots.",
+      "When use runs past the window, drafts a polite notice with the evidence plus an extension invoice at your rate card, and asks you to approve before it goes to the brand or agency.",
+      "Reminds you on the end date to revoke partnership-ad access in the platform's settings (you tap; it cannot do this for you).",
+      "Tracks the extension payment and chases it."
+    ],
+    "why_now": "Partnership and Spark-style ads made a brand's paid use of a creator's post a single permission toggle, and deal terms increasingly separate organic posting from paid usage windows. Meta's Ad Library lets anyone search active branded content, and PCC-class models can read creator contracts reliably.",
+    "why_nobody_yet_or_wall": "Whitelisting and usage-rights tools are sold to brands and agencies. Most creators have no manager auditing old deals. Ad-library coverage outside the EU is uneven and matching a creative to a contract is fuzzy, so this needs careful evidence rather than automation alone.",
+    "ios_hooks": [
+      "Share extension + PDFKit",
+      "Foundation Models (PCC) @Generable contract extraction",
+      "Vision image feature prints (VNGenerateImageFeaturePrintRequest) for creative matching",
+      "Server-side monitor with APNs push",
+      "App Intents interactive snippet to approve the invoice"
+    ],
+    "nearest_existing": [
+      "Meta Ad Library tools (https://transparency.meta.com/researchtools/ad-library-tools/)",
+      "Influencer Marketing Hub on using ad libraries (https://influencermarketinghub.com/meta-google-ads-libraries/)",
+      "Refunnel, brand-side whitelisting tooling (https://www.refunnel.com/blog/whitelisted-meta-ads)"
+    ],
+    "unsaid_assumption": "Brands pay extension invoices when shown dated evidence instead of quietly pausing the ad and moving on.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 3
+    },
+    "surprise": "The leak is not an unpaid invoice but unpaid ongoing use, and nobody on the creator's side is watching for it."
+  },
+  {
+    "title": "Between-Clients Wage Check",
+    "tagline": "For home-care aides: logs the drive between clients and checks each paycheck for unpaid travel time.",
+    "tier": "whitespace",
+    "category": "Work & business",
+    "moment": "You see four clients a day across town, and the agency's visit-verification app clocks you in and out at every door. The 25-minute drives in between never show up on your paystub. At the end of the pay period your phone shows $118 of travel time that looks unpaid, with the log behind it, and asks whether you want to raise it with your coordinator.",
+    "what_it_does": [
+      "Uses your visit schedule (snapped or typed) plus CLVisit arrivals and departures to log the time and miles between one client and the next, and leaves out your commute from home.",
+      "Scans each paystub with the document camera, extracts hours, rates and mileage paid, and compares them with its log, using the federal rule that travel between clients is paid work time plus your state's mileage rules.",
+      "Drafts a calm, factual message to the agency with the log attached, in your language. You choose to send, edit or wait.",
+      "If the gap repeats, it prepares a wage-claim packet for the state labor office or the US Department of Labor and lists free help (worker centers, unions), but never files anything without you.",
+      "Keeps everything on the device by default, because many aides fear retaliation."
+    ],
+    "why_now": "Courts keep confirming the rule: in 2025-2026 coverage, the Third Circuit affirmed that home-care aides must be paid for travel between clients. Electronic visit verification means agencies record every visit, but only on their side. CLVisit, on-device Foundation Models and the Translation framework now make a private, multilingual log cheap to run.",
+    "why_nobody_yet_or_wall": "Visit verification, payroll and GPS mileage tools are all sold to agencies. Aides are low-paid, often immigrants, and worried about retaliation, so nobody builds for them, and agencies will not promote it.",
+    "ios_hooks": [
+      "CoreLocation CLVisit monitoring",
+      "VisionKit document camera",
+      "Foundation Models on-device (no cloud by default)",
+      "Translation framework",
+      "WidgetKit pay-period summary",
+      "Data Protection"
+    ],
+    "nearest_existing": [
+      "Goldberg Segalla on the Third Circuit travel-time ruling (https://www.goldbergsegalla.com/news-and-knowledge/knowledge/third-circuit-affirms-home-health-care-aides-must-be-paid-for-travel-between-clients/)",
+      "Phillips & Garcia, a firm taking aide travel-time cases (https://www.phillipsgarcialaw.com/practice_areas/travel-time-compensation-for-home-health-aides.cfm)",
+      "Agency-side EVV and GPS mileage apps (HHAeXchange, Sandata, Timeero): built for employers"
+    ],
+    "unsaid_assumption": "The aide is an agency employee covered by federal wage law, not a privately hired or live-in worker under different rules.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 5,
+      "impact": 4
+    },
+    "surprise": "The employer's own verification system proves the visits; the worker's phone proves the unpaid gaps between them."
+  },
+  {
+    "title": "Payout Hold Shield",
+    "tagline": "Warns your card processor before a big market day and answers payout holds and chargebacks with evidence.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "You have the county fair on Saturday and expect five times your normal card volume. Two days before, the agent sends your processor a heads-up with the event contract and vendor permit. On Monday a customer disputes a $64 order, and the receipt, the timestamped photo of the pickup line and the evidence submission are ready for your tap.",
+    "what_it_does": [
+      "Reads your event calendar and vendor contracts, estimates volume from past events, and 48 hours ahead drafts a notice to the processor with the contract and permit attached. You approve it.",
+      "Watches payout status and processor emails. When a hold or account review starts, it lists exactly what was asked for, gathers it (supplier invoices, event contract, bank statements) and drafts the reply.",
+      "For chargebacks, pulls the transaction, receipt, item photos and any messages, and submits evidence through the processor's disputes API (Square, Stripe) after you approve.",
+      "Checks that the name on customers' card statements matches the truck name they remember, a common cause of 'I don't recognize this charge' disputes.",
+      "On the day of a freeze, shows the cash-flow hit and walks you through switching to a backup processor you set up earlier."
+    ],
+    "why_now": "Automated processor risk systems freeze payouts on sudden volume spikes, and Square's own community has food trucks losing event spots over held funds. Food trucks and market sellers now run almost entirely on phone card readers and processor APIs, and on-device Foundation Models can sort the email trail cheaply.",
+    "why_nobody_yet_or_wall": "Chargeback tools are built for online stores with rich order data. In-person sellers have fewer disputes but are hurt more by holds, and processors publish no pre-notification API, so the heads-up has to go by email or support ticket. The job spans calendar, email and payments, which no single vendor owns.",
+    "ios_hooks": [
+      "EventKit",
+      "Foundation Models on-device",
+      "OAuth to Square and Stripe APIs (server-side)",
+      "App Intents + interactive snippets for approvals",
+      "UserNotifications with actions",
+      "Live Activities for an open hold"
+    ],
+    "nearest_existing": [
+      "Square Community thread on account-review holds (https://community.squareup.com/t5/Your-Square-Account-Information/Squate-holds-funds-for-account-reviews/m-p/715477)",
+      "PaymentPop guide to Square holds (https://paymentpop.com/payments-guidance/square-holding-funds-do-this/)",
+      "E-commerce chargeback automation (e.g., Chargeflow): online stores only"
+    ],
+    "unsaid_assumption": "A heads-up from the merchant actually changes what the processor's risk model does.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "Most chargeback tools react after the fact; this one talks to the processor's risk system before it fires."
+  },
+  {
+    "title": "Stuck Invoice Detective",
+    "tagline": "Finds out why a client hasn't paid (missing PO, unapproved vendor, wrong portal) and fixes that.",
+    "tier": "whitespace",
+    "category": "Work & business",
+    "moment": "Your invoice to a big media company is 47 days old, and your reminders go to a producer who has left. The agent works out that the client pays only through a supplier portal, your vendor profile was never approved because the W-9 was unsigned, and the invoice needs a PO number only accounts payable can issue. It asks you to sign the W-9 on your phone and sends the rest.",
+    "what_it_does": [
+      "For each invoice, maps the payment path: who approves it, which AP inbox or supplier portal it goes through, which fields they require (PO, vendor ID, cost center) and when their pay runs happen.",
+      "Emails accounts payable, not your creative contact, with a short checklist, reads the replies and updates the map.",
+      "Fixes blockers: fills vendor onboarding forms, prepares W-9 and banking forms for your signature, and resubmits the invoice with the right PO. Portal sign-ins happen through a guided checklist or a cloud browser session you approve step by step.",
+      "Escalates by the book. If the client is covered by NYC's Freelance Isn't Free Act or a similar law, it drafts a notice citing the payment deadline and damages, and prepares a complaint to the city's consumer and worker protection department for you to file.",
+      "Asks before any message that mentions the law, and before contacting anyone above your contact."
+    ],
+    "why_now": "Large companies route invoices through AP automation that rejects anything without a PO or an approved vendor record. Reminder bots such as ChaseAI now exist but chase the wrong person. New York's consumer and worker protection department has been enforcing late-payment rules, including a settlement with BuzzFeed.",
+    "why_nobody_yet_or_wall": "Invoice tools send reminders; none investigate the client's AP process. Supplier portals offer no open API to one-person vendors, and signing in on a user's behalf raises trust and terms-of-service problems, so the design must keep the human on portal steps.",
+    "ios_hooks": [
+      "Foundation Models (PCC) for email and PDF parsing",
+      "PDFKit + PencilKit for signing W-9s on the phone",
+      "AuthenticationServices (ASWebAuthenticationSession) for Gmail or Outlook OAuth",
+      "App Intents interactive snippets",
+      "CarPlay Voice Control template for approvals between jobs",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "ChaseAI, automated invoice reminders (https://chaseai.app/)",
+      "NYC DCWP settlement with BuzzFeed over late freelancer pay (https://www.nyc.gov/site/dca/news/017-25/dcwp-settlement-buzzfeed-late-payments-freelancers)",
+      "Bonsai late-fee guidance (https://www.hellobonsai.com/blog/discover-how-to-charge-late-fees-as-a-freelancer)"
+    ],
+    "unsaid_assumption": "Most 'late' invoices at large clients are stuck on a fixable process step, not held back on purpose.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "The fix is usually a form, not a firmer email, and the right person to email is almost never your client contact."
+  },
+  {
+    "title": "Job-Done Escrow",
+    "tagline": "The homeowner's agent and the plumber's agent settle the bill at the curb against photos and the agreed scope.",
+    "tier": "moonshot",
+    "category": "Money & commerce",
+    "moment": "You finish a water-heater swap at 4:10 p.m. Your agent sends the homeowner's agent a completion packet: before and after photos, the new unit's serial number, the permit number, and each line item matched to the approved quote. Their agent checks it against the spending mandate the homeowner signed at booking and releases payment before you pull out of the driveway.",
+    "what_it_does": [
+      "At booking, the customer signs a spending mandate for the quote plus a small cap for change orders, using Face ID and a Secure Enclave key.",
+      "On completion, your agent maps evidence to every quote line and sends it to the customer's agent as an A2A task.",
+      "The customer's agent verifies the packet, releases payment within the mandate, and pings the customer only for anything over the cap.",
+      "Disputes go into a shared record both sides can see on the day, instead of a chargeback 60 days later.",
+      "You approve the packet before it is sent; the homeowner approves anything outside the mandate."
+    ],
+    "why_now": "Agent payment rails arrived in 2025-2026 (AP2 mandates with a human-not-present flow, Mastercard Agent Pay, Visa Intelligent Commerce), and A2A reached v1.0 in March 2026. Trades still wait weeks to get paid or chase checks.",
+    "why_nobody_yet_or_wall": "Platform and trust wall. Apple Pay has no agent-payment or mandate API in iOS 27, and every Apple Pay authorization needs the user present, so an iPhone agent cannot release funds on its own. Agent rails are tied to Google Pay, Stripe or card networks, and almost no homeowner has an agent. Chargeback rights and state home-improvement rules also make automatic release a liability question. What would have to change: Apple ships a Wallet mandate or agent-token API, consumer agents become common, and card networks accept a standard completion-evidence record in dispute rules.",
+    "ios_hooks": [
+      "CryptoKit + Secure Enclave keys",
+      "LocalAuthentication (Face ID) for mandate signing",
+      "PassKit (Wallet pass for the job)",
+      "Camera and Photos",
+      "Live Activities for payment status",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Google AP2 Agent Payments Protocol (https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol)",
+      "A2A protocol v1.0 (https://github.com/a2aproject/A2A)",
+      "Mastercard Agent Pay (https://www.mastercard.com/us/en/news-and-trends/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai.html)",
+      "WWDC26 Wallet session, no agent API (https://developer.apple.com/videos/play/wwdc2026/209/)"
+    ],
+    "unsaid_assumption": "Homeowners will pre-authorize money to a tradesperson before seeing the work if an agent is checking the evidence for them.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "Agent payments are pitched for shopping, but the bigger leak is the weeks between 'job done' and 'paid' for people who fix things."
+  },
+  {
+    "title": "Worker-Side Dispatch Agent",
+    "tagline": "Works for the driver or per-diem nurse, not the platform: screens every offer and bargains back.",
+    "tier": "moonshot",
+    "category": "Work & business",
+    "moment": "You are logged into three delivery apps and a nurse-shift app at once, and offers flash for 15 seconds each. Your agent sees them all, knows your floor of $1.50 a mile after gas, your hours cap and your kid's 3 p.m. pickup, accepts two, and declines the rest. When your pay per mile drops three days in a row, it asks the platform for the reason.",
+    "what_it_does": [
+      "Receives every offer from every platform as structured data, not screenshots.",
+      "Scores each offer against your rules: net pay after mileage and time, night safety of the area, hours cap, and credential fit for shift work.",
+      "Accepts, declines or counters inside the offer window, and asks you by voice on CarPlay or a Watch tap only for offers near your floor.",
+      "Requests explanations and human review of automated pay changes and deactivations where the law gives that right.",
+      "Pools anonymous offer data with other workers (opt-in) to show real hourly pay by platform and area."
+    ],
+    "why_now": "The EU Platform Work Directive must be transposed by 2 December 2026 and requires transparency about algorithmic management and human review of significant automated decisions. Android workers already use offer-automation tools, while iPhone workers only get snapshot analysis.",
+    "why_nobody_yet_or_wall": "Platform and regulation wall. iOS does not let a third-party app read or tap other apps, which is why tools like Maxymo keep automation on Android. Platforms expose no offer API to worker agents and ban automation in their terms. The EU directive mandates transparency and human review but not a real-time, machine-readable interface, and US law has nothing comparable. What would have to change: a legal duty to offer workers an algorithmic-management API, or iOS letting a user-authorized agent call other apps' App Intents (MCP for App Intents is unshipped groundwork).",
+    "ios_hooks": [
+      "Visual Intelligence on screenshots (stopgap offer capture)",
+      "CarPlay Voice Control template (iOS 27)",
+      "Live Activities on Watch and CarPlay",
+      "App Intents",
+      "Foundation Models on-device for sub-second scoring"
+    ],
+    "nearest_existing": [
+      "Maxymo, offer analysis with automation only on Android (https://maxymoapp.com/)",
+      "Mystro driver app (https://apps.apple.com/us/app/mystro-driver-drive-deliver/id1524407919)",
+      "EU Platform Work Directive transposition status (https://remoteworkeurope.eu/news/2026/platform-work-directive-enforcement-divergence-2026/)"
+    ],
+    "unsaid_assumption": "Platforms would keep working if every worker had an agent enforcing a pay floor, instead of redesigning offers to beat the agents.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 1,
+      "impact": 5
+    },
+    "surprise": "Once workers have agents, the dispatch algorithm is negotiating with software, and offer design becomes an agent-versus-agent game."
+  },
+  {
+    "title": "Inspection by Evidence Packet",
+    "tagline": "Glasses record the rough-in as you work; the agent pre-checks it and hands the city a verified packet.",
+    "tier": "moonshot",
+    "category": "Physical world",
+    "moment": "You are wiring a kitchen remodel and the rough-in inspection window is Tuesday between 8 and noon. Your glasses have captured every box, cable run and bonding point as you worked. The agent flags a missing nail plate before you close the wall, then sends the building department a timestamped, location-verified packet that a reviewer approves that afternoon.",
+    "what_it_does": [
+      "Captures first-person video through smart glasses, tied to the permit number and address.",
+      "Runs a vision check for common failure items (missing nail plates, overfilled boxes, missing GFCI or AFCI protection) and tells you in your ear while you can still fix them.",
+      "Builds a packet mapped to the jurisdiction's inspection checklist, with provenance: time, location and device attestation.",
+      "Requests the inspection and answers reviewer questions from the footage. It asks you before submitting and never tells anyone that work 'passes'."
+    ],
+    "why_now": "Meta's Wearables Device Access Toolkit gives iPhone apps a glasses camera stream and display. iOS 27 Foundation Models accept images and Core AI runs custom vision models on the device, and many building departments got used to video inspections during and after 2020.",
+    "why_nobody_yet_or_wall": "Regulation, liability and research wall. The local authority having jurisdiction decides what counts as an inspection, and most accept live video calls, not packets prepared by an AI. A model that implies 'compliant' creates liability, vision models are unreliable on fine construction detail in poor light, tamper-proof video provenance is immature, and glasses batteries don't last a workday of streaming. What would have to change: building departments adopt an evidence standard (provenance plus a checklist schema) and an intake API, and insurers accept it.",
+    "ios_hooks": [
+      "Meta Wearables Device Access Toolkit (iOS SDK)",
+      "Foundation Models image Attachment input",
+      "Core AI (custom on-device vision model)",
+      "DeviceCheck App Attest for provenance",
+      "CoreLocation",
+      "AirPods audio prompts via AVFoundation"
+    ],
+    "nearest_existing": [
+      "Meta Wearables Device Access Toolkit for iOS (https://github.com/facebook/meta-wearables-dat-ios)",
+      "Municipal remote video inspection programs (live calls, no AI pre-check)"
+    ],
+    "unsaid_assumption": "Inspectors would trust a well-sourced packet more than a 10-minute site visit.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "For small trades the bottleneck is the wait for the inspector, and the fix is better evidence, not replacing the inspector."
+  },
+  {
+    "title": "Cross-Platform Likeness Sentinel",
+    "tagline": "Hunts AI clones of a creator's face and voice in ads across platforms and files the takedowns.",
+    "tier": "moonshot",
+    "category": "Creativity & media",
+    "moment": "Followers start messaging you about a crypto ad where 'you' recommend a trading app. It is not on YouTube, where you would get a likeness alert; it is a Facebook ad and a short-video clip. The agent finds 14 variants, files a report on each platform, and drafts a warning post to your audience for you to approve.",
+    "what_it_does": [
+      "Enrolls your face and voice once, as templates kept on the device.",
+      "Sweeps ad libraries and public video on platforms without their own likeness detection, matches face and voice, and ranks hits by reach and harm (scam, fake endorsement, sexual content).",
+      "Files impersonation and takedown reports on each platform with evidence, tracks outcomes, and prepares right-of-publicity notices for repeat offenders.",
+      "Drafts an audience warning post and asks before publishing."
+    ],
+    "why_now": "Face-clone scam ads grew fast, and YouTube opened its likeness-detection tool to all adult creators in May 2026, which proves the demand but covers only YouTube.",
+    "why_nobody_yet_or_wall": "Platform, regulation and research wall. No cross-platform API lets anyone search ads or videos by face. Biometric privacy laws such as Illinois BIPA restrict face-matching everyone who appears in scanned videos. Platform report flows are web forms that throttle bulk reports, and voice-clone detection is unreliable. What would have to change: platforms expose a likeness-claim API (Content ID for faces), and a law such as the proposed US NO FAKES Act creates a notice-and-takedown duty.",
+    "ios_hooks": [
+      "Core AI (on-device face and voice embeddings)",
+      "Secure Enclave-protected storage",
+      "Server-side crawler with APNs push",
+      "Share extension (followers forward suspected fakes)",
+      "App Intents interactive snippets for approvals"
+    ],
+    "nearest_existing": [
+      "YouTube likeness detection opened to all creators (https://mobilesyrup.com/2026/05/18/youtubes-ai-deepfake-spotting-tool-is-now-available-to-creators/)",
+      "Axios on YouTube expanding deepfake detection (https://www.axios.com/2026/03/10/youtube-deepfake-detection-journalists-politicians)",
+      "Meta Ad Library tools (https://transparency.meta.com/researchtools/ad-library-tools/)"
+    ],
+    "unsaid_assumption": "Platforms will act on a third-party agent's reports at scale instead of rate-limiting them as spam.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "Deepfake ads turn a creator's face into someone else's revenue, so the creator is both the victim and an unwilling endorser."
+  },
+  {
+    "title": "Scope Creep Catcher",
+    "tagline": "Hears 'while you're here, could you also...' on the job and gets a change order signed before you start it.",
+    "tier": "moonshot",
+    "category": "Work & business",
+    "moment": "You are under the sink with wet hands when the homeowner asks if you can also swap the garbage disposal. You say sure. Before you reach for it, your AirPods say: 'Change order: disposal swap, $285 plus part. Send to Dana to sign?' You nod twice, Dana signs on her phone, and the invoice is right when you leave.",
+    "what_it_does": [
+      "In a job-site mode you start at the door, with the customer's spoken consent, listens for scope changes in your conversations with the customer.",
+      "Prices the extra work from your price book and the parts on your truck, and drafts a change order.",
+      "Asks you through AirPods (a head nod via headphone motion) or a Watch tap, then sends the change order for the customer's e-signature before the extra work starts and attaches it to the job.",
+      "Deletes the audio once the change is extracted and keeps only the signed text."
+    ],
+    "why_now": "On-device speech (SpeechAnalyzer in iOS 26) and the iOS 27 on-device model can pull a structured change order out of a short snippet without the cloud. AirPods head-motion data and Watch give hands-free confirmation, and ambient recorders like Plaud have made all-day capture familiar.",
+    "why_nobody_yet_or_wall": "Regulation, trust and research wall. About a dozen US states, California among them, require every party's consent to record a conversation, so ambient capture in someone's home is a legal risk without a clear consent ritual. Some states, California among them, also require written, signed change orders before extra home-improvement work, so a bad extraction creates a wrong legal document. iOS only keeps a microphone session alive in the background if it started in the foreground, with a visible indicator, and hours of capture drain the battery. Speech recognition on noisy job sites with two speakers and trade jargon is still unreliable. What would have to change: a body-cam-style consent norm for job sites, robust on-device diarization in noise, and low-power listening hardware (AirPods or glasses) open to approved apps.",
+    "ios_hooks": [
+      "AVAudioSession background audio",
+      "Speech framework SpeechAnalyzer",
+      "Foundation Models on-device",
+      "CoreMotion CMHeadphoneMotionManager (nod to confirm)",
+      "watchOS app",
+      "PDFKit for the signed change order"
+    ],
+    "nearest_existing": [
+      "Field-service apps' manual change orders (Jobber, Housecall Pro): typed after the fact",
+      "Plaud ambient note-taking hardware (https://www.plaud.ai/blogs/news/plaud-unveils-notepins-and-desktop)"
+    ],
+    "unsaid_assumption": "Homeowners will agree to be recorded in their own home if the tradesperson explains it protects both sides.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "The costliest words on a job are said casually with full hands and never written down, so the agent's job is to catch speech, not do paperwork."
+  }
+]

@@ -1,0 +1,460 @@
+[
+  {
+    "title": "Night-Before Check",
+    "tagline": "A separate checker agent that re-verifies tomorrow's family plans against the source messages each evening.",
+    "tier": "whitespace",
+    "category": "Family & care",
+    "moment": "It's 8:40pm, and your family calendar, filled in by an AI organizer, says picture day is Wednesday. At 3:12pm the teacher sent a correction moving it to Thursday, and nobody noticed. Your phone shows one line: 'Tomorrow: 5 plans checked, 1 changed. Picture day moved to Thursday (teacher, 3:12pm). Fix?'",
+    "what_it_does": [
+      "Each evening it reads tomorrow's events from every family calendar, whoever or whatever created them, and finds the source of each one: the school email, the PDF flyer, the photographed paper note.",
+      "It re-extracts each fact (date, time, place, what to bring, who drives) and compares it with the calendar entry and with any newer message from the same sender that changes it.",
+      "It checks the people side too: does the listed driver's own calendar have a 4pm meeting, is it the co-parent's week, does the person packing lunch know it's a field-trip day.",
+      "Every mismatch or low-confidence reading goes into a short swipe queue that quotes the source sentence. It changes nothing until you tap.",
+      "When two sources disagree, it drafts a one-line question to the teacher for you to send. It also keeps a per-sender error record and asks more often about senders it has misread before."
+    ],
+    "why_now": "AI family organizers (Skylight Sidekick, Ohai, Sense and others) now fill calendars from school email automatically, and 2026 reviews still warn that they misread dates. Milo shut down in January 2026 because small extraction errors made scheduling more work, not less. On-device Foundation Models with guided generation make a second, private re-extraction nearly free, and PCC can handle the harder reconciliation.",
+    "why_nobody_yet_or_wall": "Everyone is competing to extract more, faster. Nobody sells the checker, because a checker's value is invisible when things go right and it undercuts each organizer's own accuracy claims. Because this one only reads your calendar and mail, it can sit on top of whatever organizer a family already uses, which no single organizer app has a reason to build.",
+    "ios_hooks": [
+      "EventKit",
+      "Foundation Models (@Generable extraction on-device)",
+      "PrivateCloudComputeLanguageModel for reconciliation",
+      "Gmail/Outlook OAuth or an email-forwarding address",
+      "VisionKit document scanner for paper flyers",
+      "Actionable notifications and a Live Activity for the evening check",
+      "App Intents ('Is tomorrow checked?' from Siri or Shortcuts)",
+      "Server-side scheduled run with push (BGAppRefreshTask is not guaranteed)"
+    ],
+    "nearest_existing": [
+      "Skylight Sidekick / Magic Import (https://myskylight.com/calendar)",
+      "Ohai (https://www.ohai.ai/)",
+      "Sense (https://getsense.ai/)",
+      "2026 AI family organizer roundup noting date misreads (https://getsense.ai/blog/posts/best-ai-family-organizer-apps-2026)",
+      "Milo (SMS family assistant, shut down January 2026)"
+    ],
+    "unsaid_assumption": "Parents will spend 20 seconds on an evening review if the queue is short and every item shows the exact source sentence.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "The fix for Milo's failure is not a better extractor but a separate, skeptical checker that runs the night before a mistake would cost you."
+  },
+  {
+    "title": "Two-House Handoff",
+    "tagline": "Each co-parent has an agent; the two agents settle swaps, kid gear and cost splits within the parenting plan.",
+    "tier": "whitespace",
+    "category": "Family & care",
+    "moment": "Your ex asks to swap weekends so she can take the kids to a wedding. Instead of a tense text thread, your agent checks the parenting plan, your calendar and the holiday rotation and shows you: 'Swap is allowed, but you'd lose Halloween unless you trade the 14th. Offer the 14th?' You tap yes, and her agent shows her the same neutral offer.",
+    "what_it_does": [
+      "Turns the parenting-plan PDF into rules that both parents confirm once: rotation, holidays, notice periods, cost-split percentages and travel-consent terms.",
+      "When one parent asks for a change, the two agents trade structured offers (dates, trade-backs) and check each one against the plan. Each parent approves before anything is sent, and neither agent shares the reason for a request unless its parent chooses to.",
+      "Keeps a manifest of what travels with the kids (inhaler, retainer, cleats, laptop charger) and shows the sending parent a checklist Live Activity on handoff day.",
+      "Splits shared costs by the order's percentages. It reads the receipt, drafts the reimbursement request with the receipt attached, and tracks payment.",
+      "Keeps a plain, timestamped log of offers and agreements that either parent can export for a mediator. Where a protective order exists, it uses only the channel the order allows and never suggests direct contact."
+    ],
+    "why_now": "Co-parenting apps added AI in 2025-2026, but only to police tone: BestInterest filters hostile messages and OurFamilyWizard's ToneMeter flags them. Agent-to-agent messaging (A2A reached v1.0 in March 2026) and models that can read a PDF plan into rules make it practical for two separate agents to negotiate structured offers, so the parents rarely have to write to each other at all.",
+    "why_nobody_yet_or_wall": "Co-parenting apps sell themselves to courts as neutral record-keepers, so an agent that acts for one parent looks like taking sides. The way around that is symmetry: each parent owns an agent, both agents run the same confirmed rules, and the shared record stays neutral. Nobody has built this two-agent version.",
+    "ios_hooks": [
+      "EventKit",
+      "CloudKit sharing (CKShare) for the shared manifest and log",
+      "Foundation Models for parsing the plan and receipts",
+      "VisionKit document scanner",
+      "Live Activities (handoff-day checklist)",
+      "Actionable notifications for approve/decline",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "OurFamilyWizard (https://www.ourfamilywizard.com/)",
+      "BestInterest (https://bestinterest.app/)",
+      "AppClose, TalkingParents, Custody X Change"
+    ],
+    "unsaid_assumption": "Both parents will install it. If only one does, the app can only draft neutral messages that the other parent gets by text or email.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "For two people who struggle to talk, the less they have to write to each other the better: the agents negotiate, and the parents mostly tap yes or no."
+  },
+  {
+    "title": "Teen Privacy Treaty",
+    "tagline": "Your teen's phone shares agreed facts like 'arrived at school', not a live dot, and rules loosen over time.",
+    "tier": "whitespace",
+    "category": "Family & care",
+    "moment": "Your 15-year-old wants to stop being a moving dot on your map. Together you set terms: you get 'arrived at school' and 'home by curfew', you see live location only if a check-in is 30 minutes late, and the rules loosen a step every three months with no misses. Tonight she walks home from a friend's house and you get one line: 'Home, 10:52pm.'",
+    "what_it_does": [
+      "Walks a parent and teen through writing the treaty: which places trigger arrival notices, curfews, what counts as an emergency, and when each rule expires.",
+      "Runs on the teen's phone. Geofences and schedules are checked on-device, and only the agreed facts (arrived, left, home) go to the parent's app. Raw location stays on the teen's phone.",
+      "Escalates only on agreed triggers, such as a missed check-in or the teen pressing a help button on the Lock Screen or Action Button. Then it shares live location with the named adults and tells the teen it did so.",
+      "Loosens rules on schedule when terms are kept, and asks both people before anything is tightened again.",
+      "Shows the teen exactly what was shared, when and with whom. It never reads messages and never runs hidden from the person it concerns."
+    ],
+    "why_now": "Location sharing is now normal in families (Find My, Life360), and teens push back hard on constant tracking. Core Location's CLMonitor can run geofences on the teen's own device, and the on-device model can turn raw signals into short sentences without sending location to a server. Apple's Check In in Messages already shows that 'tell me when you're home' works for single trips.",
+    "why_nobody_yet_or_wall": "Parents pay for parental-control apps, and those apps sell more visibility, not less. A product the teen has to agree to, one that shrinks over time and ends at 18, is a harder sale to the person holding the credit card. Its consensual design is also what should get it through App Review, where covert monitoring is a problem.",
+    "ios_hooks": [
+      "Core Location (CLMonitor geofences on the teen's device)",
+      "App Intents with Action Button and Lock Screen controls (ControlWidget)",
+      "FamilyControls / DeviceActivity / ManagedSettings for agreed quiet hours",
+      "Foundation Models on-device to summarize events",
+      "Push notifications and a Live Activity for a late walk home",
+      "CloudKit sharing for the treaty document"
+    ],
+    "nearest_existing": [
+      "Life360 place alerts",
+      "Apple Find My and Check In (Messages)",
+      "Bark and Qustodio (parent-side monitoring)"
+    ],
+    "unsaid_assumption": "Parents will accept less visibility in return for a teen who keeps the app running instead of leaving the phone at a friend's house.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "It flips parental control around: the teen's agent holds the data, and the product is built to hand full control to the teen by 18."
+  },
+  {
+    "title": "Really-You Check",
+    "tagline": "One tap during a scary call pings the relative's own phone: 'Did you just call Grandma?'",
+    "tier": "whitespace",
+    "category": "Safety & civic",
+    "moment": "Your grandmother gets a call from 'you', crying, saying you're in jail and need $4,000 in gift cards. She presses the Action Button. Within 20 seconds your phone asks 'Did you just call Grandma?', you tap 'No' with Face ID, and her screen says in large type: 'Jake is safe. This call is not Jake. Hang up.'",
+    "what_it_does": [
+      "Sets up a family circle in advance: each member installs the app, and the elder's phone knows who is who. Nobody has to remember a safe word.",
+      "When the elder presses the button or says 'Is this really Jake?', it sends a Time Sensitive push to Jake's phone asking him to confirm with Face ID whether he called.",
+      "If Jake says no, it tells the elder in large, plain words to hang up. If Jake doesn't answer within 90 seconds, it tries his parents and siblings, then calls the elder back from a known family number through cloud telephony.",
+      "Afterwards it tells the family what happened and, with the elder's OK, drafts a report to the FTC with the caller's number and the story.",
+      "It never listens to the call. It only knows that the elder asked."
+    ],
+    "why_now": "Voice cloning now needs only seconds of audio from a social post, and both the FTC and FCC warn about AI-boosted family-emergency calls. The official advice is to hang up and call back or use a family code word, and frightened people forget both. Push notifications, Face ID confirmation and one-button App Intents make a check that takes seconds and needs no memory.",
+    "why_nobody_yet_or_wall": "Scam tools for seniors focus on screening callers and blocking numbers on one phone. This needs the relatives' phones in the loop, so it is a small-group network product rather than a single-user app. It also has to work in the one minute when the elder is scared, which means a very simple interface tested with older users.",
+    "ios_hooks": [
+      "App Intents (Action Button, Siri phrase, Lock Screen control)",
+      "APNs Time Sensitive notifications",
+      "LocalAuthentication (Face ID on the relative's phone)",
+      "Contacts",
+      "Cloud telephony (for example Twilio) for the callback",
+      "Large Dynamic Type and Assistive Access-friendly layout"
+    ],
+    "nearest_existing": [
+      "FTC family-emergency voice-clone alert (https://consumer.ftc.gov/consumer-alerts/2023/03/scammers-use-ai-enhance-their-family-emergency-schemes)",
+      "FCC grandparent scam alert (https://www.fcc.gov/consumers/scam-alert/grandparent-scams-get-more-sophisticated)",
+      "Carefull (https://getcarefull.com/)",
+      "Apple Call Screening (iOS 26), which screens unknown numbers but can't verify a spoofed relative"
+    ],
+    "unsaid_assumption": "The scammer doesn't also control the relative's phone. A SIM swap alone doesn't defeat it because Face ID runs on the relative's own device, but a stolen phone the thief can open would.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "It doesn't try to detect the fake voice. It asks the real person, who is one push notification away."
+  },
+  {
+    "title": "Ulysses Money Pact",
+    "tagline": "Set money rules for your future self now; the agent holds you to them when a charming stranger asks.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "Your father recorded a short video eight months ago: 'If I ever want to send more than $5,000 to someone I haven't met in person, make me wait two days and tell Ana.' Today his brokerage emails a large-withdrawal confirmation after weeks of chats with a 'crypto mentor'. His phone plays his own video, and Ana gets a message: 'Dad's pact was triggered. He agreed to a 48-hour pause.'",
+    "what_it_does": [
+      "Guides the elder, with a family member if they want one, through writing the pact: thresholds, who gets told, how long to wait, all recorded in the elder's own words.",
+      "Does the unglamorous setup: fills in the trusted-contact form at each brokerage (FINRA Rule 4512), turns on large-transfer and new-payee alerts at each bank and routes them to the agent, and walks through credit freezes at the three bureaus.",
+      "Offers a 'second look' from the share sheet. The elder shares a chat screenshot, a profile photo or an investment site, and the agent checks domain age, regulator lists (FINRA BrokerCheck, SEC), reverse-image matches and known scam stages, then explains what it found in plain words.",
+      "When an alert crosses a pact threshold, it plays the elder's own recording, proposes the agreed pause and tells the named person, exactly as the elder authorized. It cannot block the money and doesn't pretend to.",
+      "The elder can cancel the pact at any time, after a waiting period they chose themselves."
+    ],
+    "why_now": "Romance and investment scams run for months, now with AI-written chat. Research (PreScam, 2026) shows LLMs track scam escalation only moderately well, so watching the conversation is unreliable. The moment money moves is a better checkpoint: FINRA rules already let brokerages contact a trusted person and place temporary holds, and banks send alert emails an agent can read with permission.",
+    "why_nobody_yet_or_wall": "Monitoring services (EverSafe, Carefull) watch accounts and alert trusted advocates, but they are read-only watchers usually set up by family. Nobody builds around the elder's own pre-commitment, which respects adult autonomy and persuades far better in the moment than a child's warning. iOS blocks reading WhatsApp or iMessage, so the design has to work where money moves and through what the elder chooses to share.",
+    "ios_hooks": [
+      "Share extension (screenshots, links, photos)",
+      "Foundation Models and PCC for the second-look analysis",
+      "AVFoundation to record the pact",
+      "Email-forwarding address or Gmail OAuth for bank alerts",
+      "FinanceKit for Apple Card, Apple Cash and Savings; Plaid with consent for other accounts",
+      "Time Sensitive notifications",
+      "Contacts"
+    ],
+    "nearest_existing": [
+      "EverSafe (https://www.eversafe.com/)",
+      "Carefull (https://getcarefull.com/)",
+      "PreScam scam-progression benchmark (https://huggingface.co/papers/2605.12243)"
+    ],
+    "unsaid_assumption": "An older adult will write rules against their own future judgment before any scam starts, which requires a setup moment that feels respectful, not patronizing.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "The strongest voice against a scammer isn't the family's. It's the victim's own, recorded months earlier."
+  },
+  {
+    "title": "Item Up Next",
+    "tagline": "Finds agenda items near your home, helps you comment in time, and pings you when your item comes up.",
+    "tier": "whitespace",
+    "category": "Safety & civic",
+    "moment": "A rezoning 300 feet from your house is item 7B at Tuesday's planning commission, buried in a 400-page packet. Your agent flagged it on Friday, summarized the staff report and turned your 40-second voice memo into a written comment that went in before the deadline. At 9:10pm on Tuesday, a Live Activity says: 'Item 7B is two items away, about 20 minutes. Join the Zoom?'",
+    "what_it_does": [
+      "Pulls agendas and packets for your city council, planning commission, school board and county (Legistar-style APIs, PDFs, RSS) and matches items to a radius around your address and topics you choose.",
+      "Summarizes the staff report and tells you what can still change, the comment deadline and how to comment (eComment form, email to the clerk, speaker sign-up).",
+      "Turns your voice memo into a short, specific comment that cites the item number and page. You edit and approve it before it is sent.",
+      "During the meeting, a server follows the live stream's audio and updates a Live Activity with how far away your item is, so you can join or walk in at the right time.",
+      "Afterwards it reports the vote and the next step (appeal window, second reading) and adds that to your calendar."
+    ],
+    "why_now": "Cities publish agendas and stream meetings, and some now use AI on their own side (Saratoga's Hamlet summaries). Residents still tend to learn about decisions after the comment deadline. Live Activities with push and broadcast updates make 'your item is next' possible, and cheap transcription makes following five-hour meetings affordable.",
+    "why_nobody_yet_or_wall": "Current tools sell agenda monitoring to lobbyists, reporters and businesses (Curate, City Council Watch) or help cities publish summaries (Hamlet). A consumer version means scraping many messy city portals with no obvious revenue. Comment drafting also raises fears of AI comment floods, which this answers by only structuring what the resident actually said.",
+    "ios_hooks": [
+      "Live Activities (push updates, one broadcast channel per meeting)",
+      "Core Location (address radius computed on-device)",
+      "Speech framework for the voice memo",
+      "Foundation Models and PCC for packet summaries",
+      "MessageUI compose or server submission after approval",
+      "EventKit",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Curate by FiscalNote (https://www.curatesolutions.com/)",
+      "City Council Watch on Apify (https://apify.com/m_ctim/city-council-watch)",
+      "Hamlet in Saratoga, CA (https://www.govtech.com/artificial-intelligence/cities-using-ai-for-transparency-resident-engagement)",
+      "Civic IQ (https://blogs.civiciq.com/2026/06/03/how-to-track-government-budget-meetings-with-ai/)"
+    ],
+    "unsaid_assumption": "Meeting progress can be followed from the stream in near real time. Some cities reorder agendas on the fly or stream with long delays.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The hardest part of local democracy is timing, not information: knowing the deadline and the minute your item comes up."
+  },
+  {
+    "title": "Ballot Cure Watch",
+    "tagline": "Watches your mail ballot's status and, if it's flagged, gets the cure form signed and in before the deadline.",
+    "tier": "whitespace",
+    "category": "Safety & civic",
+    "moment": "You mailed your ballot for the November 3 election from college, two states away. Four days later your county flags a signature mismatch in a status email you would never have opened. Your agent has already filled in the state's cure form, and you sign on screen, photograph your ID, and watch a Live Activity count down to the deadline.",
+    "what_it_does": [
+      "Before the election, checks your registration, requests a mail ballot if you want one, and signs you up for your state's ballot tracking with alerts routed to the agent.",
+      "Watches each status change (sent, received, accepted, challenged) and explains it in one line.",
+      "If the ballot is challenged for a missing or mismatched signature, it finds your state's cure process (form, ID rules, allowed return methods, deadline) and pre-fills the form.",
+      "You sign and approve. It sends the form by a channel your state allows (email, fax, upload) or tells you where to drop it off, then keeps checking until the status says counted.",
+      "It is strictly nonpartisan. It never suggests how to vote and never handles anyone else's ballot or form."
+    ],
+    "why_now": "The US general election is November 3, 2026, and cure windows are short: Nevada's closes November 9, Florida's at 5pm on the second day after the election, and California's two days before county certification. States already send status alerts (California's Where's My Ballot, BallotTrax in many states), but voters must notice the alert and work out the form alone.",
+    "why_nobody_yet_or_wall": "Voting apps (Vote.org, Vote411, TurboVote) stop at reminders and registration. Campaigns run cure outreach, but only for their own likely voters. A cure agent needs 50 states' rules, careful legal review and has no obvious business model, so it suits a nonprofit or civic-tech group more than a startup.",
+    "ios_hooks": [
+      "Email-forwarding address for state ballot-status alerts",
+      "PencilKit (signature)",
+      "VisionKit document scanner (ID copy where required)",
+      "Live Activities (deadline countdown)",
+      "Foundation Models and PCC to match state rules",
+      "Time Sensitive notifications",
+      "EventKit"
+    ],
+    "nearest_existing": [
+      "NCSL table of state cure processes (https://www.ncsl.org/elections-and-campaigns/table-15-states-with-signature-cure-processes)",
+      "Nevada Secretary of State signature cure page (https://www.nvsos.gov/elections/election-information/2026-election-information/signature-cure)",
+      "Vote411 (https://www.vote411.org/california)",
+      "California Where's My Ballot and BallotTrax status alerts"
+    ],
+    "unsaid_assumption": "Election offices will accept a cure form sent through an agent-assisted channel as long as the voter personally signed it.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 3
+    },
+    "surprise": "The most useful voting agent works after you've voted, in the week when a flagged ballot quietly stays uncounted."
+  },
+  {
+    "title": "Agent Will",
+    "tagline": "Tells every agent you set loose what to do when you die: stop buying, hand off memory, tell people.",
+    "tier": "moonshot",
+    "category": "Life admin",
+    "moment": "Your father's price watch still auto-buys, his scheduled research task still runs, and a bill-negotiation agent keeps calling to finish a deal he started. Three weeks after the funeral, a package arrives in his name. With an agent will he wrote a year ago, all of it would have stopped the day his death was confirmed.",
+    "what_it_does": [
+      "While you're alive, keeps an inventory of your agents and standing orders: scheduled tasks, auto-buy rules, OAuth grants, recurring payments and agents that message people for you.",
+      "Lets you write instructions per agent: stop, hand memory to a named person, delete memory, send a final note, or keep running (for example, a monthly donation).",
+      "On a confirmed death (two named people plus a death-certificate check and a waiting period), sends stop and handover requests to each platform and revokes every grant it can reach.",
+      "Gives the executor a checklist of agents it couldn't reach, with each company's bereavement process."
+    ],
+    "why_now": "Personal agents now act unattended for weeks: price-triggered Auto Buy (Alexa for Shopping), scheduled tasks (ChatGPT, Gemini Spark), money autopilots (Cleo), and calling agents with calls in progress. When their owner dies, nothing tells them to stop, and families often don't know they exist.",
+    "why_nobody_yet_or_wall": "Wall: platform and legal. No agent platform has a 'principal has died' signal or API. A legacy contact can't use the deceased's credentials: Apple's Digital Legacy leaves out Keychain data, and logging in as the dead person can breach terms of service even where fiduciary-access laws (RUFADAA, adopted in most US states) give executors rights. Confirming a death without false triggers is also hard. What would have to change: A2A or MCP adding an agent-lifecycle 'principal status' that platforms honor, platforms accepting signed pre-death instructions (as Google's Inactive Account Manager does for Google accounts), and Apple extending Digital Legacy to agent grants.",
+    "ios_hooks": [
+      "Apple Digital Legacy (Legacy Contact) as the model",
+      "Passkeys and CryptoKit Secure Enclave keys to sign the will",
+      "VisionKit document scanner for the death certificate",
+      "Server-side trustee with push",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Google Inactive Account Manager",
+      "Apple Digital Legacy",
+      "Afterlife AI Executor Lock (https://www.afterlife.ai/executor-lock/)",
+      "TechPolicy.Press on platforms as executors of the dead (https://www.techpolicy.press/big-tech-is-becoming-the-executor-of-the-dead/)",
+      "Dark Reading on AI agent lifecycles (https://www.darkreading.com/identity-access-management-security/the-lifecycle-crisis-managing-the-birth-life-and-death-of-ai-agents)"
+    ],
+    "unsaid_assumption": "People will keep an agent inventory current, or the app can find most agents on its own from OAuth grants and receipt emails.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "Agents create a new kind of estate item: things that keep acting in your name after you die."
+  },
+  {
+    "title": "Village Protocol",
+    "tagline": "Family agents across households trade signed plans, swaps and RSVPs, so nobody has to parse prose.",
+    "tier": "moonshot",
+    "category": "Social & communication",
+    "moment": "The class trip moves from Friday to Thursday. The school's system sends a signed update to every family's agent, and yours moves the event, sees that your carpool turn now lands on a day you can't drive, asks the other two carpool families' agents who can cover, and shows you one agreed swap. Nobody retyped a date or parsed an email.",
+    "what_it_does": [
+      "Gives each household an agent identity (keys on the phone) and a public card listing what it accepts: events, pickup swaps, carpool turns, meal-train slots, group-trip RSVPs.",
+      "Accepts only signed, structured messages from known senders (school, co-parent, carpool families, trip organizers) and writes them to the family calendar with no text extraction.",
+      "Negotiates with other households' agents inside each family's rules ('we can drive Tue/Thu, never after 6pm') and asks a parent before committing.",
+      "Treats everything from other households as untrusted: it acts only on typed fields and never follows instructions written inside a message.",
+      "For households that don't use it, it drafts a normal email or iMessage instead."
+    ],
+    "why_now": "Milo's shutdown showed that pulling family plans out of messy messages doesn't hold up. A2A reached v1.0 in March 2026 and MCP went stateless in July 2026, so agent-to-agent messaging has real standards, and Apple's agent APIs now support deterministic confirmation before tool calls.",
+    "why_nobody_yet_or_wall": "Wall: adoption and trust. It only works once schools, their messaging vendors, sports clubs and other families all speak it. Districts buy software slowly, and student-data rules (FERPA) make vendors cautious. Agents from different households talking to each other also create a new injection path, where one household's agent poisons another's memory. What would have to change: a large school-messaging vendor or district group publishing signed event feeds, and a way to deliver agent-to-agent messages to phones that doesn't depend on one startup's server.",
+    "ios_hooks": [
+      "CryptoKit (Secure Enclave signing keys)",
+      "EventKit",
+      "APNs for incoming agent messages",
+      "Foundation Models with onToolCall confirmations",
+      "CloudKit sharing",
+      "MessageUI fallback drafts",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "A2A protocol v1.0 (https://github.com/a2aproject/A2A)",
+      "Milo (shut down January 2026)",
+      "School messaging apps (ParentSquare, ClassDojo)",
+      "Carpool and meal-train apps (single-app coordination, no agents)"
+    ],
+    "unsaid_assumption": "Institutions will publish structured data once enough parents' agents ask for it, the way calendar feeds spread once people subscribed to them.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "The reliable fix for family logistics may be getting senders to stop writing prose for machines to read."
+  },
+  {
+    "title": "Blackout Block Roll-Call",
+    "tagline": "After a quake or fire, your block's phones run a roll call and send help to neighbors who can't answer.",
+    "tier": "moonshot",
+    "category": "Physical world",
+    "moment": "The shaking stops and the cell network is jammed. Your phone asks 'Are you OK?' and you tap OK. Minutes later it says: 'Mrs. Park at number 14 hasn't answered and uses an oxygen concentrator. You're closest. Can you check?', and her status passes phone to phone down the street until one reaches a working connection.",
+    "what_it_does": [
+      "Before a disaster, neighbors opt in, and each writes a short needs card (oxygen, mobility, insulin, pets, languages, who has a spare key). The card is encrypted and opened to the block only when a trigger fires.",
+      "On a trigger (an official alert that arrived earlier, a block captain declaring, or a resident opening the app), it asks everyone for status and builds a list: OK, needs help, not home, no answer.",
+      "Picks the nearest able neighbor for each no-answer resident with registered needs and asks them to check. It never sends anyone into a hazard zone it knows about.",
+      "Relays short status messages phone to phone and over carrier satellite where a phone has it, then syncs with the city's CERT team when a connection returns."
+    ],
+    "why_now": "Wildfires and floods keep knocking out cell towers. iOS 26 lets approved apps use carrier satellite links (the carrier-constrained network entitlements, with T-Mobile's T-Satellite as the first carrier), and paper programs such as Washington State's Map Your Neighborhood show that neighbors are the fastest responders.",
+    "why_nobody_yet_or_wall": "Wall: platform and hardware. iOS allows no background phone-to-phone mesh: Multipeer Connectivity and Bluetooth relaying need the app in the foreground. Apple's own satellite messaging is closed to third parties, and carrier satellite covers only some plans and app categories. Getting through Focus needs the Critical Alerts entitlement, and holding neighbors' medical needs brings trust and liability questions. What would have to change: an Apple-approved emergency mode that lets public-safety apps relay small messages in the background and over satellite, and city CERT programs adopting a standard needs card.",
+    "ios_hooks": [
+      "Multipeer Connectivity",
+      "Network framework (NWPath isUltraConstrained) with carrier-constrained entitlements",
+      "Critical Alerts entitlement",
+      "Core Location",
+      "CryptoKit",
+      "Live Activities"
+    ],
+    "nearest_existing": [
+      "T-Satellite apps on iOS 26 (https://9to5mac.com/2025/09/17/on-ios-26-with-a-t-satellite-plan-these-six-iphone-apps-work-via-satellite/)",
+      "Apple carrier-constrained entitlement (https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.networking.carrier-constrained.app-optimized)",
+      "Facebook Crisis Response (Safety Check)",
+      "Bridgefy (Bluetooth mesh messaging)",
+      "Map Your Neighborhood (Washington State, paper-based)"
+    ],
+    "unsaid_assumption": "Enough neighbors on a block will have opted in before the disaster. A roll call covering 3 of 40 houses doesn't help.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "The most useful disaster network may be forty phones on one street, not a citywide app."
+  },
+  {
+    "title": "Resident-Verified Comment",
+    "tagline": "Proves 'I live here' on a public comment without revealing who you are, as AI comment floods grow.",
+    "tier": "moonshot",
+    "category": "Safety & civic",
+    "moment": "Your council receives 4,000 comments on a housing vote, most generated overnight. Yours, dictated in your kitchen, carries a small mark: 'Verified resident of District 4, one comment per person.' The clerk's triage tool groups it with the 600 other verified comments, and your name and address stay private.",
+    "what_it_does": [
+      "Drafts your comment from what you say, keeping your own words and points.",
+      "Asks your Wallet ID for the minimum fact needed (you live in this city or district) and turns it into a one-time token tied to this comment.",
+      "Enforces one verified comment per person per agenda item, so nobody can post 500 'verified' comments.",
+      "Submits the comment with the token. The city can check the token without learning your name or street address.",
+      "Keeps the unverified path open: anyone can still comment without it."
+    ],
+    "why_now": "Public comment systems were flooded with fake comments even before LLMs (the 2017 FCC net-neutrality docket). Now one person can generate thousands of distinct, plausible comments, and cities are starting to use AI to summarize what residents say, so fakes can tilt the summary. Wallet now holds state IDs and a passport-based Digital ID, and Safari supports the web Digital Credentials API.",
+    "why_nobody_yet_or_wall": "Wall: identity standards and regulation. Mobile driver's licenses reveal fields, not facts: there is an 'age over 21' flag but no 'resident of this city' flag, so proving residency today means handing over your address. Zero-knowledge versions exist in research and pilots, not in Wallet. Open-meeting laws generally let anyone comment, so a city can't require ID, and weighting verified comments could disadvantage people without a Wallet ID. What would have to change: a residency predicate in the mDL standard (or ZK proofs over it), Apple exposing it to apps and websites, and legal rules that let cities label comments without excluding anyone.",
+    "ios_hooks": [
+      "Verify with Wallet and the Digital Credentials API in Safari",
+      "CryptoKit",
+      "App Attest",
+      "Speech framework",
+      "Foundation Models"
+    ],
+    "nearest_existing": [
+      "Hamlet, city-side AI meeting summaries (https://www.govtech.com/artificial-intelligence/cities-using-ai-for-transparency-resident-engagement)",
+      "2017 FCC net-neutrality fake-comment episode",
+      "Zero-knowledge age-proof pilots for digital IDs"
+    ],
+    "unsaid_assumption": "Cities want to tell residents from bots and will accept a cryptographic token in place of a name.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 1,
+      "impact": 3
+    },
+    "surprise": "Once agents make comments free to write, proof of personhood and residency becomes the scarce part of local democracy."
+  },
+  {
+    "title": "Sextortion First Responder",
+    "tagline": "A private agent for a teen facing sextortion at 1am: don't pay, keep proof, block the images, find an adult.",
+    "tier": "moonshot",
+    "category": "Safety & civic",
+    "moment": "It's 1:14am. Someone who seemed to be a student at a nearby school now demands $300 in gift cards within 30 minutes or the photos go to all your followers. You open the app instead of paying, and it tells you this is a crime against you, not your fault, then walks you through the next ten minutes one step at a time.",
+    "what_it_does": [
+      "Tells the teen not to pay or reply, and helps record the threat, usernames and payment demands without ever saving, viewing or processing the images themselves.",
+      "Opens NCMEC's Take It Down so the teen can hash the images on their own device, which lets participating platforms block copies.",
+      "Files the platform reports and a CyberTipline report with the facts filled in, after the teen reviews each one.",
+      "Helps the teen choose a trusted adult and drafts the first message. If the teen writes about self-harm, it puts 988 one tap away immediately.",
+      "Contacts no one on its own. The teen decides who is told, and the app shows exactly what it did."
+    ],
+    "why_now": "NCMEC reports receiving over 100 sextortion reports a day in 2025. The scams are scripted and fast, and the first hour decides whether a teen pays, deletes evidence or tells nobody. The tools exist (Take It Down, platform reporting, CyberTipline), but a panicking teen at 1am has to find and chain them alone.",
+    "why_nobody_yet_or_wall": "Wall: legal, trust and platform. Any copy of the images is child sexual abuse material, so the agent must never see, store or send them, not even to an on-device model. Platforms offer no victim-side reporting API, so today the agent can only prepare reports and hand off to each app. A crisis tool for minors carries liability for wrong advice, must not tip off an abuser who may live in the home, and may run into app-store age and parental-consent rules that make a teen afraid to install it. What would have to change: NCMEC offering an on-device hashing SDK and a report intake API, platforms accepting structured victim reports, and a clear safe harbor for crisis tools that follow an approved protocol.",
+    "ios_hooks": [
+      "SFSafariViewController for Take It Down and CyberTipline",
+      "Foundation Models on-device, text only",
+      "Data Protection (complete protection) for evidence notes",
+      "Declared Age Range API",
+      "App Intents and a Lock Screen control for fast opening",
+      "MessageUI (drafted message to a trusted adult)"
+    ],
+    "nearest_existing": [
+      "NCMEC Take It Down and sextortion resources (https://ncmec.org/sextortion)",
+      "NCMEC 2025 sextortion data (https://www.missingkids.org/blog/2026/ncmec-releases-new-sextortion-data-2025)",
+      "Meta teen sextortion protections (https://about.fb.com/news/2024/02/helping-teens-avoid-sextortion-scams/)",
+      "Thorn's NoFiltr youth resources"
+    ],
+    "unsaid_assumption": "A teen in crisis will open an app instead of paying, which means it must already be installed or findable in seconds.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "The agent's most important rule is about what it must never touch: the images themselves."
+  }
+]

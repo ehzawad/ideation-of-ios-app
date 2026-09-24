@@ -1,0 +1,465 @@
+{
+  "angle": "demand-whitespace",
+  "summary": "Demand for agentic help is real but lopsided. Menlo Ventures' July 2026 survey (5,067 US adults) finds AI use flat at 64% while spend tripled to about $40B. 41% of AI users have tried an agent and 24% use one regularly, but only 20% have given an agent access to a financial account, against 36% for email. Agent use is mostly among payers (65% vs 13% of non-payers). Commerce surveys show the same pattern: consumers let AI advise, but most want approval gates, budget caps and easy returns before an agent buys for them. Pew still finds half of Americans more concerned than excited. So the gap is less about capability and more about bounded, auditable delegation in high-stakes, messy, recurring chores. Menlo itself names money, healthcare and family logistics as problems 'people deal with every week, but still haven't handed off to AI.' On iOS, Apple's Siri AI shipped with iOS 27 in September 2026 after an 18-month delay. It launched behind a waitlist, in English only, with daily cloud caps, no EU or China availability, and only a small set of App Intents partners, so third-party vertical agents still have room.\n\nThe clearest whitespace is on the consumer side of systems that already have AI on the institution's side. Prior authorization and appeal AI is sold to providers, not patients, even though only 11.5% of denials are appealed and about 80% of appeals succeed. Immigration AI is sold mostly to lawyers, while consumer apps stop at explaining form fields. Medical-bill tools write letters but leave the calls and follow-up to the patient. Caregiver apps track medications and appointments but do not act. ADHD planners remind but do not do the dreaded admin. Blind and low-vision users get scene description (Be My Eyes, Seeing AI), but research shows computer-use agents fail badly under assistive-tech conditions and override user choices. On iPhone, the sandbox blocks a generic agent that drives other apps: gig-driver auto-accept tools such as Maxymo keep full automation on Android. Winning iOS designs will therefore likely work outside the phone's UI (phone calls, email, portals, messaging-native agents like the OpenClaw pattern) or through App Intents, with explicit approval steps and an action log.",
+  "items": [
+    {
+      "name": "Menlo Ventures 2026 State of Consumer AI",
+      "kind": "research",
+      "description": "Nationally representative survey of 5,067 US adults (July 2026). AI adoption rose only 3 points to 64%, while estimated global consumer AI spend tripled to about $40B. Of AI users, 41% have tried an agent and 24% use one regularly; 36% have given an agent email access and 20% a financial account. 65% of AI payers use an agent vs 13% of non-payers.",
+      "date": "2026-09",
+      "ios_relevance": "Agents are a paid, power-user behavior today. Money and finance delegation lags email, which leaves a large gap for trustworthy, bounded iPhone agents that handle finance and admin.",
+      "sources": [
+        "https://menlovc.com/perspective/2026-the-state-of-consumer-ai/",
+        "https://www.globenewswire.com/news-release/2026/09/16/3363086/0/en/menlo-ventures-report-consumer-ai-spend-tripled-to-40b-this-year-even-as-user-growth-barely-budged.html"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Menlo Ventures 2025 State of Consumer AI (the 'unhanded-off chores' thesis)",
+      "kind": "research",
+      "description": "June 2025 report (5,000+ US adults, April 2025): 61% of Americans use AI, but only about 3% of users pay, and consumer spend was estimated at $12B. Partner Amy Wu Martin said the best startup opportunities are 'messy, recurring problems where general tools break down': managing money, healthcare, and coordinating logistics across the family, which people 'still haven't handed off to AI.'",
+      "date": "2025-06",
+      "ios_relevance": "Names the verticals (money, health, family logistics) where a phone-resident agent with personal context has an edge over general chatbots.",
+      "sources": [
+        "https://menlovc.com/perspective/2025-the-state-of-consumer-ai/",
+        "https://www.globenewswire.com/news-release/2025/06/26/3105905/0/en/menlo-ventures-2025-consumer-ai-report-12b-market-1-8-billion-global-users-signal-ai-s-mainstream-moment.html"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Agentic-commerce consumer trust surveys (Accenture, Visa, Checkout.com, Croud, ACI Worldwide)",
+      "kind": "trend",
+      "description": "2026 survey coverage is mixed. One survey (Croud) reports 69% of Americans open to AI purchases without approving each transaction. Another (ACI Worldwide) finds only 7% of fashion and sportswear shoppers would allow purchases without approval. About 35% prefer a human to review transactions, and 42% of US millennials would let an agent buy within a $250 budget if purchases are returnable within 7 days. CX Dive's headline sums it up: consumers trust AI to advise but don't consent to it purchasing for them.",
+      "date": "2026-09",
+      "ios_relevance": "Approval gates, spend caps and returnability should be first-class UX in any iOS agent that spends money. Apple Pay confirmation fits naturally as the approval step.",
+      "sources": [
+        "https://www.retaildive.com/news/retail-shoppers-warm-up-agentic-ai-purchases/827563/",
+        "https://www.consumeraffairs.com/news/survey-shows-most-americans-would-trust-ai-to-shop-for-them-081326.html",
+        "https://chainstoreage.com/accenture-customers-trust-ai-agents-perform-these-tasks-them",
+        "https://www.crowdfundinsider.com/2026/09/308695-visa-research-consumer-trust-is-enabling-path-to-agentic-commerce/",
+        "https://www.customerexperiencedive.com/news/consumers-trust-ai-advise-do-not-consent-purchasing-them/830941/",
+        "https://www.checkout.com/newsroom/consumer-demand-for-ai-shopping-is-forming-fast-but-trust-for-agentic-commerce-is-still-catching-up"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Pew Research: Americans and AI (2025-2026)",
+      "kind": "research",
+      "description": "Pew's June 2025 survey found 50% of US adults more concerned than excited about AI in daily life, 10% more excited, and 38% equally both. 62% say they interact with AI at least several times a week. A June 2026 Pew report covers chatbots, smart devices and views of AI's impact.",
+      "date": "2026-06",
+      "ios_relevance": "The baseline is skeptical. Mass-market iOS agents need visible controls, undo, and explanations, not just autonomy.",
+      "sources": [
+        "https://www.pewresearch.org/science/2025/09/17/how-americans-view-ai-and-its-impact-on-people-and-society/",
+        "https://www.pewresearch.org/internet/2026/06/17/americans-and-ai-2026-chatbots-smart-devices-and-views-on-impact/",
+        "https://www.pewresearch.org/short-reads/2026/03/12/key-findings-about-how-americans-view-artificial-intelligence/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "a16z Top 100 Gen AI Consumer Apps, 6th edition",
+      "kind": "research",
+      "description": "Ranks consumer AI products by web traffic (SimilarWeb) and mobile MAU (Sensor Tower). It notes that on mobile, consumers generally interact with agents via text messaging rather than dedicated apps. Horizontal agents on the list include Manus (reported acquired by Meta for about $2B in Dec 2025) and Genspark.",
+      "date": "2026-03",
+      "ios_relevance": "Suggests iMessage/SMS-native agent surfaces, not standalone apps, are how mobile users delegate today. That is a design signal for iOS agent builders.",
+      "sources": [
+        "https://a16z.com/100-gen-ai-apps-6/",
+        "https://www.a16z.news/p/top-100-gen-ai-consumer-apps-march",
+        "https://www.theneuron.ai/explainer-articles/a16z-just-ranked-the-100-most-popular-ai-apps-heres-the-full-list-and-what-it-tells-us-/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "OpenClaw (messaging-connected personal agent)",
+      "kind": "open_source",
+      "description": "An open-source, locally run agent by Peter Steinberger that connects to the user's messaging apps and runs multi-step tasks. Coverage says it went from side project to about 68,000 GitHub stars in weeks in January 2026. Setting up and maintaining it requires Terminal knowledge.",
+      "date": "2026-01",
+      "ios_relevance": "Shows strong demand for 'text my agent from my phone'. A zero-setup, privacy-respecting iPhone front end (or a hosted equivalent) for non-technical users is open whitespace.",
+      "sources": [
+        "https://www.theneuron.ai/explainer-articles/a16z-just-ranked-the-100-most-popular-ai-apps-heres-the-full-list-and-what-it-tells-us-/",
+        "https://a16z.com/100-gen-ai-apps-6/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Apple Siri AI in iOS 27 (personal context, on-screen awareness, App Intents actions)",
+      "kind": "platform_api",
+      "description": "Apple delayed 'more personalized Siri' in March 2025 and shipped Siri AI with iOS 27 in September 2026. It launched behind a waitlist, in English only (French, Japanese, Korean, Portuguese and Spanish from October), for iPhone 15 Pro and later, and not in the EU or China. Cloud-backed features have unspecified daily usage caps, with higher limits promised through select iCloud+ plans. Third-party actions at launch are limited (e.g., WhatsApp, Audible; Outlook, Notability and Tripsy announced), and apps without App Intents are left out of Siri's multi-app compositions.",
+      "date": "2026-09",
+      "ios_relevance": "Sets the baseline third-party agents compete with or plug into. Language, region, device and quota limits leave underserved users (non-English speakers, older iPhones, EU) open to third-party agents.",
+      "sources": [
+        "https://www.techrepublic.com/article/news-siri-ai-ios-27-features/",
+        "https://www.techtimes.com/articles/327504/20260914/ios-27-launches-today-siri-ai-requires-waitlist-not-just-compatible-iphone.htm",
+        "https://www.macrumors.com/2026/09/15/ios-27-siri-ai-has-waitlist-how-to-join/",
+        "https://www.engadget.com/2261054/why-siri-ai-ios-27-waitlist/",
+        "https://www.latintimes.com/ios-27s-smarter-siri-live-apple-already-limiting-how-much-you-can-use-it-599240",
+        "https://daringfireball.net/2025/03/apple_is_delaying_the_more_personalized_siri_apple_intelligence_features",
+        "https://medium.com/macoclock/app-intents-is-the-part-of-ios-27-that-explains-why-siri-might-work-this-time-3e69ffa52fb5"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "EFF guide to limiting Siri AI access (on-screen awareness privacy)",
+      "kind": "policy",
+      "description": "EFF published a guide for restricting what Siri AI can read inside apps, opting out of training data, and reverting to 'Siri Classic'. Coverage says neither users nor developers can block on-screen awareness per app, so people in a chat must simply avoid invoking it if they worry about content leaving the device.",
+      "date": "2026-09",
+      "ios_relevance": "Privacy-sensitive groups (caregivers, patients, immigrants) may avoid Siri AI. That opens room for on-device, scoped agents with explicit data boundaries.",
+      "sources": [
+        "https://www.eff.org/deeplinks/2026/09/how-limit-what-apples-new-siri-ai-can-access-ios-27",
+        "https://www.technobezz.com/news/eff-guide-limit-siri-ai-access-ios-27"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Shortcuts opacity critique (Six Colors)",
+      "kind": "trend",
+      "description": "Six Colors argued in March 2026 that it is hard to see how Siri can author or run Shortcuts automations reliably, because Apple lacks a well-documented, inspectable, debuggable automation system. It contrasts this with coding agents that can run and debug what they generate.",
+      "date": "2026-03",
+      "ios_relevance": "Whitespace for iOS tools that make agent-built automations inspectable, testable and reversible, for example a 'dry-run and diff' layer over Shortcuts and App Intents.",
+      "sources": [
+        "https://sixcolors.com/post/2026/03/how-can-siri-automate-shortcuts-when-its-so-opaque/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Pine AI (calls, bills, cancellations, refunds agent)",
+      "kind": "product",
+      "description": "iOS and Android agent that places calls, replies to emails, negotiates bills, cancels subscriptions, handles customer service and files refunds for the user. It markets $300+ average annual savings and a 93% negotiation success rate (self-reported). It works mainly through phone and email with businesses rather than by operating apps on the phone.",
+      "date": "ongoing",
+      "ios_relevance": "Shows the viable iOS pattern: the agent acts through off-device channels (telephony, email), avoiding the sandbox. Its claims are vendor-reported, and coverage of government, medical and landlord disputes looks thin.",
+      "sources": [
+        "https://apps.apple.com/us/app/pine-ai-assistant-agent/id6746403769",
+        "https://www.19pine.ai/",
+        "https://www.19pine.ai/blog/best-management-and-subscription-cancellation-apps"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Rocket Money 'Rowan' finance agent",
+      "kind": "product",
+      "description": "Per PYMNTS (2026), Rocket Money launched Rowan, an AI agent built with Anthropic that monitors a customer's finances and texts them when it spots a savings opportunity. Users can text it instructions such as round-up savings rules. It extends Rocket Money's bill negotiation and cancellation services.",
+      "date": "ongoing",
+      "ios_relevance": "Another text-message-first agent, which supports the a16z observation. Its scope stays within a fintech's own rails and does not cover disputes with landlords, insurers or government agencies.",
+      "sources": [
+        "https://www.pymnts.com/news/artificial-intelligence/2026/this-ai-agent-ends-subscriptions-without-a-phone-call/"
+      ],
+      "confidence": "uncertain"
+    },
+    {
+      "name": "Consumer medical-bill fighting tools (MyMedBill, IQBill, CareRoute, MediSpute)",
+      "kind": "product",
+      "description": "These tools take itemized bills, check them against fair-price benchmarks, and generate dispute letters and phone scripts. IQBill ('Medical Bill Negotiator: IQ') is on the iOS App Store, MyMedBill claims 8,000+ users, and CareRoute works on contingency. A widely covered February 2026 case: a man used Claude to cut a $195,628 hospital bill to about $32,500 by researching Medicare rates.",
+      "date": "2026-02",
+      "ios_relevance": "Most tools stop at the letter. The follow-through (calls, deadline tracking, matching EOBs to bills, escalating to state regulators) is still manual, which is a gap an iPhone agent with Mail and Files access could fill.",
+      "sources": [
+        "https://mymedbill.co/",
+        "https://apps.apple.com/us/app/-/id6757212060",
+        "https://www.careroute.ai/bill-defense",
+        "https://www.medispute.com/",
+        "https://nationaltoday.com/us/ny/dobbs-ferry/news/2026/02/13/ai-helps-patient-negotiate-163-000-off-hospital-bill/",
+        "https://julianhasse.substack.com/p/bill-busted-how-a-195k-hospital-bill"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Provider-side prior-authorization and appeal AI (Insight Health, Develop Health, VocalLabs voice agents)",
+      "kind": "trend",
+      "description": "B2B tools pull clinical evidence from charts, pre-fill payer forms, submit requests and generate appeal letters. Voice agents call payers about denied claims. These products are sold to practices and health systems, not to patients.",
+      "date": "ongoing",
+      "ios_relevance": "The patient side is nearly empty. No mainstream iPhone agent assembles a patient's records (e.g., Health Records in the Health app), tracks a denial, drafts the appeal and chases the insurer.",
+      "sources": [
+        "https://www.insighthealth.ai/blog/prior-authorization-appeal-ai",
+        "https://www.develophealth.ai/blog/ai-prior-authorization",
+        "https://www.vocallabs.ai/blogs/top-ai-voice-agents-prior-authorization-healthcare-2026",
+        "https://www.pymnts.com/healthcare/2026/healthcare-ai-agents-help-patients-get-care-faster/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "CMS Interoperability and Prior Authorization rule and state rules on payer AI",
+      "kind": "policy",
+      "description": "Starting in 2026, most impacted payers must decide urgent prior-auth requests within 72 hours and standard requests within 7 calendar days, and must give a specific denial reason. KFF tracks federal and state consumer protections that regulate insurers' use of AI in prior authorization and claims review.",
+      "date": "2026-01",
+      "ios_relevance": "Mandated timelines and specific denial reasons give a patient-side agent structured hooks: deadline tracking, auto-escalation and reason-specific appeals.",
+      "sources": [
+        "https://www.insighthealth.ai/blog/prior-authorization-appeal-ai",
+        "https://www.kff.org/patient-consumer-protections/regulation-of-ai-in-prior-authorization-and-claims-review-a-look-at-federal-and-state-consumer-protections/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Elder scam-protection apps (Scammer Guardian, SeniorShield.ai, ZoraSafe, CareCircle Voice)",
+      "kind": "product",
+      "description": "Scammer Guardian (founded 2025 in Ohio) says it launched on iPhone and Android in early 2026 to screen scam calls before they reach seniors. SeniorShield.ai, ZoraSafe (phishing and QR scanning, family alerts) and CareCircle Voice (voice-first app with 'Scam Alert AI') also target this group. Coverage stresses that AI voice impersonation can pressure a senior into sending thousands before family knows a call happened.",
+      "date": "ongoing",
+      "ios_relevance": "These apps mostly screen or alert. On iOS, third-party apps generally cannot monitor in-progress cellular calls or read other apps' messages, which limits longitudinal scam detection (romance and investment scams that unfold over weeks).",
+      "sources": [
+        "https://www.scammerguardian.com/about/",
+        "https://apps.apple.com/us/app/seniorshield-ai-scam-blocker/id6738144273",
+        "https://www.zorasafe.com/for-seniors",
+        "https://apps.apple.com/es/app/id6754396502",
+        "https://www.forbes.com/councils/forbestechcouncil/2026/04/30/protecting-older-adults-from-cyber-scams-and-fraud-the-rise-of-ai-based-detection-and-protection/",
+        "https://www.savingadvice.com/articles/2026/05/19/10736148_combatting-elder-fraud-integrated-smart-systems-can-automatically-alert-family-or-911-to-scams-and-emergencies.html"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "ADHD 'AI planner' apps (Shelpful, Zoe/ADHD Manage Time, ClearMindAI, PopTask, Focus One)",
+      "kind": "product",
+      "description": "iOS apps that turn chat, voice or screenshots into task breakdowns, energy-aware reminders and accountability nudges. Shelpful pairs AI with human coaches, and coverage says Sam Altman's fund invested $3M. They help users organize and remember tasks, but they do not carry them out.",
+      "date": "ongoing",
+      "ios_relevance": "The gap is an agent that completes the avoided task itself (the phone call, the form, the refund, the appointment booking), not another planner.",
+      "sources": [
+        "https://apps.apple.com/py/app/shelpful-ai-for-adhd-tasks/id6741499362",
+        "https://apps.apple.com/us/app/-/id6473707647",
+        "https://apps.apple.com/np/app/clearmindai-ai-to-do-tasks/id6744586488",
+        "https://apps.apple.com/us/app/-/id6747689795"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Family caregiver coordination apps (Caring Village, CaringBridge, Hero Health, Medisafe)",
+      "kind": "product",
+      "description": "These apps cover shared calendars, care notes, sibling task division, and medication reminders with missed-dose alerts. 2026 coverage calls administrative complexity (medications, appointments, sibling communication) one of caregiving's most underappreciated stressors. The apps record and remind; they do not act (refill a prescription, reschedule, fight a bill). Related 2026 research (an AI care-companion study in Healthcare, a dementia-caregiver needs taxonomy, CareMirror) documents heavy psychological, physical, social and financial burden with limited access to support.",
+      "date": "ongoing",
+      "ios_relevance": "A caregiver-proxy agent that acts across a parent's pharmacy, insurer and clinic portals with delegated consent, reporting to a family thread, is largely unbuilt.",
+      "sources": [
+        "https://www.careyaya.org/resources/blog/ai-for-caregivers",
+        "https://caringvillage.com/blog/caregiver-tech/elderly-care-apps-for-families/",
+        "https://caringvillage.com/blog/caregiver-tech/apps-for-sandwich-generation-caregivers/",
+        "https://doi.org/10.3390/healthcare14050586",
+        "https://arxiv.org/pdf/2606.19247",
+        "https://arxiv.org/pdf/2609.17434",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12762545/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Immigration form helpers vs. lawyer-side AI (ImmiGuide, Instafill.ai, Filevine ImmigrationAI, eimmigration, Docketwise)",
+      "kind": "product",
+      "description": "ImmiGuide (iOS) explains each field of USCIS forms in plain language in 8 languages, and Instafill.ai maps user data onto multi-page PDF forms. Most AI in this space is sold to law firms: Docketwise reports 66% of immigration lawyers and staff use AI translation tools. Consumer tools explain forms but don't manage the case end to end (deadlines, receipt notices, RFEs, biometrics appointments, address changes).",
+      "date": "ongoing",
+      "ios_relevance": "An iPhone agent that reads a photographed government letter in any language, extracts deadlines into Calendar, pre-fills the next form and drafts the reply is whitespace. This matters more because Siri AI launched English-only.",
+      "sources": [
+        "https://apps.apple.com/us/app/immiguide-uscis-form-helper/id6761538383",
+        "https://www.usecarly.com/blog/best-ai-for-filling-out-forms/",
+        "https://www.filevine.com/platform/immigrationai/",
+        "https://get.eimmigration.com/capabilities/ai-tools",
+        "https://www.docketwise.com/blog/ai-for-immigration-lawyers/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Be My Eyes 'Service AI' and the BLV app landscape (Seeing AI, Envision, VoiceDash, Lazarillo)",
+      "kind": "product",
+      "description": "Be My Eyes supplies 'Service AI' to businesses, e.g., Microsoft's Disability Answer Desk, which reads screenshots and returns step-by-step accessible guidance. Consumer BLV apps focus on scene and text description, navigation and dictation.",
+      "date": "ongoing",
+      "ios_relevance": "Describing a screen is not the same as operating it. No iOS product lets a VoiceOver user say 'finish this checkout in this unlabeled app' and have it done with confirmations, because the sandbox blocks cross-app control.",
+      "sources": [
+        "https://www.bemyeyes.com/business/blog/the-future-of-ai-in-accessible-customer-service-for-blind-and-low%E2%80%91vision-customers/",
+        "https://voicedash.ai/accessible-apps-for-blind-low-vision-people/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "A11y-CUA dataset (University of Michigan, UC Berkeley)",
+      "kind": "research",
+      "description": "Interaction traces from blind and low-vision users and sighted users on 60 everyday tasks (40.4 hours, 158,325 events). A state-of-the-art computer-use agent succeeded on 78.3% of tasks by default, but only 41.67% under keyboard-only and 28.3% under magnifier conditions, and did not reflect how assistive tech is really used.",
+      "date": "2026-02",
+      "ios_relevance": "Current agents are built around sighted interaction and do not work well with assistive tech. A VoiceOver-native agent for iOS is an open research and product gap.",
+      "sources": [
+        "https://huggingface.co/papers/2602.09310",
+        "https://arxiv.org/abs/2602.09310"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Morae: proactively pausing UI agents for user choices (CMU, Adobe, Berkeley)",
+      "kind": "research",
+      "description": "In a field study, a blind participant asked an agent to buy the cheapest sparkling water, and the agent picked one of several equally priced items without mentioning the others. Morae detects decision points, pauses the automation, and presents the options (flavor, rating) so the user chooses.",
+      "date": "2025-08",
+      "ios_relevance": "A concrete UX pattern (pause at decision points) for any iOS agent serving BLV, elderly or cautious users. It also matches consumer survey demand for approval gates.",
+      "sources": [
+        "https://huggingface.co/papers/2508.21456",
+        "https://arxiv.org/abs/2508.21456"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "VIABench: blind-assistance video benchmark",
+      "kind": "research",
+      "description": "Benchmark built from first-person videos recorded or shared by visually impaired people. It covers proactive reminders, visual question answering and vision-guided interaction. Current multimodal LLMs struggle most with proactive reminders, which require anticipating navigation-critical events in real time.",
+      "date": "2026-07",
+      "ios_relevance": "A proactive, always-on iPhone or wearable guide for navigation remains a moonshot. Most current apps are reactive (ask, then answer).",
+      "sources": [
+        "https://huggingface.co/papers/2607.14660",
+        "https://arxiv.org/abs/2607.14660"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "PalmClaw: native on-device agent framework for phones",
+      "kind": "open_source",
+      "description": "Open-source framework (PolyU, July 2026) that runs the agent loop, memory, skills and tools on the phone. It exposes device capabilities as structured tools with explicit arguments and execution boundaries instead of tapping through the GUI. It reports an 11.5% relative gain in task success and a 94.9% cut in completion time over the strongest baseline.",
+      "date": "2026-07",
+      "ios_relevance": "The same design choice (typed device tools over GUI driving) is the only one iOS permits, through App Intents and system frameworks. That validates App-Intents-first agent design.",
+      "sources": [
+        "https://huggingface.co/papers/2607.13027",
+        "https://arxiv.org/abs/2607.13027"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Agent CI Bench: contextual-integrity leakage in computer-use agents",
+      "kind": "research",
+      "description": "Evaluated 15 frontier computer-use agents on three failure modes: pulling in items that sit next to the target in the UI, oversharing on under-specified prompts, and sending content to the wrong recipient. 12 of 15 agents leaked on more than 50% of scenarios, with 67.9% average leakage, and the failures persisted end to end.",
+      "date": "2026-06",
+      "ios_relevance": "An iPhone agent with access to Messages, Mail and Notes could leak personal data into the wrong thread. Scoped context and recipient checks are a design requirement and a differentiator.",
+      "sources": [
+        "https://huggingface.co/papers/2606.23189",
+        "https://arxiv.org/abs/2606.23189"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "How Agents Ask for Permission (survey of agent permission systems)",
+      "kind": "research",
+      "description": "Surveys 21 proposals for agent permission systems and compares five commercial agents. It finds most apply the same product-level policy to every user and lack user-level permission policies, which leaves gaps against prompt injection and unauthorized sensitive actions such as bank transactions.",
+      "date": "2026-07",
+      "ios_relevance": "iOS agents could offer per-user, per-domain permission policies (e.g., 'can pay utilities under $200; never message my boss').",
+      "sources": [
+        "https://huggingface.co/papers/2607.13718",
+        "https://arxiv.org/abs/2607.13718"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Scam-progression and telecom-fraud benchmarks (PreScam, TeleAntiFraud 2.0)",
+      "kind": "research",
+      "description": "PreScam organizes 11,573 real conversational scam instances (from 177,989 reports) along a 'scam kill chain'. Supervised encoders beat zero-shot LLMs at predicting in real time when a scam is nearing its end, and LLMs track escalation only moderately well. TeleAntiFraud 2.0 shows classifiers dropping from perfect to 0.65-0.68 macro-F1 when negatives are near-domain legitimate calls.",
+      "date": "2026-09",
+      "ios_relevance": "A guardian agent for elderly users needs longitudinal, conversation-level modeling and a low false-alarm rate. Simple per-message LLM checks are not enough.",
+      "sources": [
+        "https://huggingface.co/papers/2605.12243",
+        "https://huggingface.co/papers/2609.18748"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Shopping-agent manipulation research (ACES, ShoppingComp)",
+      "kind": "research",
+      "description": "ACES runs AI shopping agents in a mock marketplace and finds they are swayed by listing position, sponsored tags, endorsements, prices, ratings and reviews. ShoppingComp finds large performance and safety gaps for LLM shopping agents on real product retrieval.",
+      "date": "2025-08",
+      "ios_relevance": "Consumers who delegate buying need agents that resist steering by merchants. A user-aligned iOS shopping agent with transparent ranking is a differentiator.",
+      "sources": [
+        "https://huggingface.co/papers/2508.02630",
+        "https://huggingface.co/papers/2511.22978"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Gig-driver multi-app automation (Mystro, Maxymo) and the iOS asymmetry",
+      "kind": "product",
+      "description": "Mystro markets hands-free multi-apping on iPhone, keeping Uber, Lyft and DoorDash online and auto-accepting or rejecting offers by rules. Maxymo offers 'Snapshot' offer analysis on iPhone but reserves automation features for Android. Multi-apping guides cite roughly 15-25% higher hourly earnings from less unpaid waiting.",
+      "date": "ongoing",
+      "ios_relevance": "A clear example of the sandbox wall: full cross-app automation is easier on Android. How Mystro achieves it on iPhone was not verified; it may work through account-level integrations rather than on-screen control.",
+      "sources": [
+        "https://apps.apple.com/us/app/mystro-driver-drive-deliver/id1524407919",
+        "https://mystrodriver.com/blog/best-apps-for-managing-multiple-rideshare-platforms",
+        "https://maxymoapp.com/",
+        "https://therideshareguy.com/how-to-drive-for-multiple-delivery-apps/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Small-business AI adoption vs. willingness to pay",
+      "kind": "trend",
+      "description": "The Intuit QuickBooks 2026 AI Impact Report says 77% of US small and midsize businesses use AI regularly for tasks like invoicing and reporting. Aggregated stats cite 58% of US small businesses using generative AI (US Chamber, 2025) but only 17.7% paying for AI tools (JPMorgan Chase Institute, Dec 2025).",
+      "date": "2026-06",
+      "ios_relevance": "Owners who run their business from an iPhone use AI but rarely pay. An iOS agent must show concrete returns (collected invoices, recovered chargebacks, filed sales-tax returns) to convert.",
+      "sources": [
+        "https://quickbooks.intuit.com/r/small-business-data/ai-impact-report/",
+        "https://receiptsai.com/ai-automation-accounting-statistics-2026"
+      ],
+      "confidence": "uncertain"
+    },
+    {
+      "name": "Hacker News builder signals: hold-waiting and scam-call agents",
+      "kind": "trend",
+      "description": "Show HN posts include 'I got tired of waiting on hold, so I built an AI agent to do it for me' and 'AI Agent That Answers, Analyzes, and Blocks Phone Spam and Scam Calls'. An 'Ask HN: Do you have any AI agent success stories?' thread also exists. Only titles were seen; the threads could not be opened in this pass.",
+      "date": "ongoing",
+      "ios_relevance": "Individual builders are going after telephony chores (hold, spam, scams), which iPhone users cannot automate natively.",
+      "sources": [
+        "https://news.ycombinator.com/item?id=43091953",
+        "https://news.ycombinator.com/item?id=44105465",
+        "https://news.ycombinator.com/item?id=45383148"
+      ],
+      "confidence": "uncertain"
+    }
+  ],
+  "constraints_or_walls": [
+    "iOS sandbox: third-party apps cannot read or drive other apps. Cross-app action is limited to App Intents, Shortcuts, URL schemes, App Groups and system frameworks, so a generic Android-style GUI agent is not possible on iPhone (https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web).",
+    "Siri AI multi-app composition only includes apps that publish App Intents. Non-adopting apps (e.g., Signal in coverage examples) are invisible except through screenshot-style on-screen awareness (https://medium.com/macoclock/app-intents-is-the-part-of-ios-27-that-explains-why-siri-might-work-this-time-3e69ffa52fb5).",
+    "Siri AI launch limits: waitlist, English only until October, iPhone 15 Pro or later, no EU or China, daily cloud usage caps (https://www.techtimes.com/articles/327504/20260914/ios-27-launches-today-siri-ai-requires-waitlist-not-just-compatible-iphone.htm).",
+    "Scam and call agents on iOS: third-party apps generally cannot monitor live cellular call audio or read other apps' messages, so guardian agents must use call forwarding or screening, server-side telephony, or user-shared content. This is general platform knowledge, not re-verified in this pass.",
+    "Long-running autonomous work (hours of hold time, multi-day disputes) must run server-side. iOS background execution is constrained, so 'agentic' iPhone apps are often thin clients over a cloud agent, with privacy and cost implications. General platform knowledge, not re-verified in this pass.",
+    "Trust ceiling on spending: most consumers want per-transaction approval, budget caps and returnability before an agent buys (https://www.customerexperiencedive.com/news/consumers-trust-ai-advise-do-not-consent-purchasing-them/830941/).",
+    "Financial delegation lags: only 20% of AI users have given an agent a financial account vs 36% for email (https://menlovc.com/perspective/2026-the-state-of-consumer-ai/).",
+    "Privacy leakage is common in current agents (67.9% average contextual leakage across 15 frontier agents), which is a major risk for agents with Messages and Mail access (https://huggingface.co/papers/2606.23189).",
+    "Agents built for sighted users break under assistive tech (CUA success falls from 78.3% to 28.3% under magnifier conditions), so BLV agents need purpose-built interaction models (https://huggingface.co/papers/2602.09310).",
+    "Regulated domains (insurer prior authorization, immigration, medical billing) carry liability and unauthorized-practice-of-law risk, and are being regulated at state and federal level (https://www.kff.org/patient-consumer-protections/regulation-of-ai-in-prior-authorization-and-claims-review-a-look-at-federal-and-state-consumer-protections/).",
+    "A CNN headline dated 2026-09-23 reports 'extreme concern' in Australia over an OpenAI agent-related breach of a Medicare health database, described as the first known AI hack of a government system. Details are unverified, but incidents like this may tighten agent access to government and health portals (https://www.cnn.com/2026/09/23/business/australia-openai-agent-hack-intl-hnk).",
+    "Research limits of this pass: Reddit, Hacker News thread bodies, Apple Developer Forums, AppleVis and most publisher sites were blocked by the egress proxy, and the web-search budget ran out. Community quotes were not captured, and survey figures come from search-result summaries, not full reports."
+  ],
+  "whitespace_signals": [
+    "Money, healthcare and family logistics are called out as weekly chores people 'still haven't handed off to AI'. A vertical iPhone agent for these is the named opportunity (https://www.globenewswire.com/news-release/2025/06/26/3105905/0/en/menlo-ventures-2025-consumer-ai-report-12b-market-1-8-billion-global-users-signal-ai-s-mainstream-moment.html)",
+    "Only about 3% of AI users paid for AI in 2025, so general assistants are not monetizing. Outcome-priced agents (pay on savings or recovery) are underexplored on iOS (https://menlovc.com/perspective/2025-the-state-of-consumer-ai/)",
+    "Agents are mainly a paid-user behavior (65% of payers vs 13% of non-payers use one). A free or cheap mass-market agent for everyday admin is missing (https://www.globenewswire.com/news-release/2026/09/16/3363086/0/en/menlo-ventures-report-consumer-ai-spend-tripled-to-40b-this-year-even-as-user-growth-barely-budged.html)",
+    "Only 20% of AI users have let an agent into a financial account. A read-only-first or least-privilege finance agent with a clear audit log is a trust gap to fill (https://menlovc.com/perspective/2026-the-state-of-consumer-ai/)",
+    "Consumers trust AI to advise but don't consent to it purchasing for them. Nobody offers a well-designed 'propose, approve, execute, return' buying loop on iPhone (https://www.customerexperiencedive.com/news/consumers-trust-ai-advise-do-not-consent-purchasing-them/830941/)",
+    "Survey coverage reports 42% of US millennials would allow agent purchases within a $250 budget if returnable within 7 days, and about 35% want a human to review first. Spend caps plus an automatic returns agent is a product primitive; which outlet reported which figure is uncertain (https://www.retaildive.com/news/retail-shoppers-warm-up-agentic-ai-purchases/827563/)",
+    "On mobile, consumers talk to agents through text messaging rather than apps. An iMessage-native agent that runs real errands for non-technical users is thin on the ground (https://a16z.com/100-gen-ai-apps-6/)",
+    "OpenClaw's viral demand for a messaging-connected agent collides with a Terminal-only setup. A zero-setup iPhone equivalent for normal people is whitespace (https://www.theneuron.ai/explainer-articles/a16z-just-ranked-the-100-most-popular-ai-apps-heres-the-full-list-and-what-it-tells-us-/)",
+    "Siri AI cannot see into apps that skip App Intents; coverage uses Signal as an example. Users of those apps get no cross-app personal-context help (https://www.techrepublic.com/article/news-siri-ai-ios-27-features/)",
+    "Siri AI launched English-only, with five more languages from October. Non-English speakers and immigrants are last in line for Apple's agent (https://aicybr.com/blog/siri-ai-ios-27-supported-devices-availability)",
+    "Siri AI is blocked for EU and China users and gated by a waitlist, which leaves a large iPhone population without a first-party agent (https://www.techtimes.com/articles/327504/20260914/ios-27-launches-today-siri-ai-requires-waitlist-not-just-compatible-iphone.htm)",
+    "Siri AI requires an iPhone 15 Pro or later. Older adults on older iPhones, the group most targeted by scams, are excluded (https://www.macrumors.com/2026/09/15/ios-27-siri-ai-has-waitlist-how-to-join/)",
+    "Siri AI cloud features have daily usage caps. Heavy agent users need an alternative or a paid tier (https://www.latintimes.com/ios-27s-smarter-siri-live-apple-already-limiting-how-much-you-can-use-it-599240)",
+    "Neither users nor developers can block Siri AI on-screen awareness per app. Privacy-sensitive users want an agent with explicit, scoped data boundaries (https://www.eff.org/deeplinks/2026/09/how-limit-what-apples-new-siri-ai-can-access-ios-27)",
+    "Shortcuts lacks an inspectable, debuggable automation system, so agent-authored automations can't be verified. A 'test, diff and roll back' layer for iOS automations is missing (https://sixcolors.com/post/2026/03/how-can-siri-automate-shortcuts-when-its-so-opaque/)",
+    "Gig drivers get full multi-app offer automation on Android but only snapshot analysis on iPhone (Maxymo). iPhone drivers juggle apps by hand (https://maxymoapp.com/)",
+    "Multi-apping reportedly lifts hourly earnings 15-25% by cutting unpaid wait time, but running it safely on iPhone (declining double-accepts, tracking mileage and taxes across apps) is still manual (https://therideshareguy.com/how-to-drive-for-multiple-delivery-apps/)",
+    "ADHD AI apps break down and remind but do not do the task. An agent that makes the dreaded phone call or submits the form is what these apps are missing (https://apps.apple.com/py/app/shelpful-ai-for-adhd-tasks/id6741499362)",
+    "Caregivers are overloaded by admin: medications, appointments, sibling coordination, and an 'invisible load' on one person. Current apps track but don't act for the parent (https://www.careyaya.org/resources/blog/ai-for-caregivers)",
+    "Family caregivers face heavy psychological, physical, social and financial burden with limited access to support. A proxy agent with delegated consent for a parent's pharmacy, insurer and clinic accounts is largely unbuilt (https://doi.org/10.3390/healthcare14050586)",
+    "AI voice-cloned 'grandchild in distress' calls can extract thousands before family knows a call happened. Real-time family escalation plus a verification ritual is unmet on iPhone (https://www.forbes.com/councils/forbestechcouncil/2026/04/30/protecting-older-adults-from-cyber-scams-and-fraud-the-rise-of-ai-based-detection-and-protection/)",
+    "Romance and investment scams unfold across many turns, and LLMs track escalation poorly. A longitudinal 'scam trajectory' guardian for an elder's message threads does not exist (https://huggingface.co/papers/2605.12243)",
+    "Only 11.5% of insurance denials are appealed even though about 80.7% of appeals are fully or partly overturned. A patient-side appeal agent is a large gap (https://www.insighthealth.ai/blog/prior-authorization-appeal-ai)",
+    "Prior-authorization AI and payer-calling voice agents are sold to providers. Patients have no agent tracking their own prior auths and denials (https://www.vocallabs.ai/blogs/top-ai-voice-agents-prior-authorization-healthcare-2026)",
+    "From 2026, payers must give specific denial reasons and decide within 72 hours (urgent) or 7 days (standard). No consumer app uses these deadlines to auto-escalate (https://www.kff.org/patient-consumer-protections/regulation-of-ai-in-prior-authorization-and-claims-review-a-look-at-federal-and-state-consumer-protections/)",
+    "Cutting a $195,628 hospital bill to about $32,500 took a family member hours of manual work with Claude. Productizing that end to end (itemized bill request, Medicare-rate comparison, calls, follow-ups) is open (https://nationaltoday.com/us/ny/dobbs-ferry/news/2026/02/13/ai-helps-patient-negotiate-163-000-off-hospital-bill/)",
+    "Medical-bill apps generate dispute letters and phone scripts, but the patient still makes the calls and tracks responses; this is inferred from product descriptions (https://apps.apple.com/us/app/-/id6757212060)",
+    "Immigration AI is mostly sold to law firms (66% of immigration lawyers use AI translation). Consumer tools explain form fields but don't manage deadlines, RFEs or appointments (https://www.docketwise.com/blog/ai-for-immigration-lawyers/)",
+    "Consumer immigration helpers stop at explaining USCIS form fields in 8 languages. Photographing a government letter and getting a tracked, calendared action plan with a pre-filled reply is missing (https://apps.apple.com/us/app/immiguide-uscis-form-helper/id6761538383)",
+    "Blind users can't delegate to computer-use agents: success falls from 78.3% to 41.67% (keyboard-only) and 28.3% (magnifier). A VoiceOver-native task agent is missing (https://huggingface.co/papers/2602.09310)",
+    "In a field study, a UI agent silently chose among equal-price products for a blind user. BLV users want agents that pause and present choices, which consumer products lack (https://huggingface.co/papers/2508.21456)",
+    "Multimodal LLMs struggle to proactively warn blind users about upcoming navigation hazards in real time. Current apps answer when asked but don't anticipate (https://huggingface.co/papers/2607.14660)",
+    "Accessible AI customer service exists on the business side (Be My Eyes Service AI at Microsoft). A consumer-side agent that handles inaccessible support flows, portals and chatbots for a blind user is missing (https://www.bemyeyes.com/business/blog/the-future-of-ai-in-accessible-customer-service-for-blind-and-low%E2%80%91vision-customers/)",
+    "Waiting on hold costs people hours a year. Builders are hacking together hold-waiting agents, but nothing on iPhone takes over a live call from the dialer (https://news.ycombinator.com/item?id=43091953)",
+    "Bill negotiation and cancellation agents (Pine, Rocket Money) focus on telecom and subscriptions. Landlord disputes, security deposits, government agencies and utility hardship programs are largely unserved; this is an inference from the products' marketed scope (https://www.19pine.ai/)",
+    "Small businesses adopt AI (58% use genAI) but few pay (17.7%). An iPhone agent that measurably collects overdue invoices or recovers chargebacks for owner-operators is open (https://receiptsai.com/ai-automation-accounting-statistics-2026)",
+    "Commercial agents lack user-level permission policies (e.g., 'pay utilities under $200, never message my boss'), a trust feature consumers would value (https://huggingface.co/papers/2607.13718)",
+    "Frontier agents leak personal context into the wrong recipient or thread in most scenarios. A 'recipient-aware' iPhone agent that guarantees no cross-context leakage is a differentiator (https://huggingface.co/papers/2606.23189)",
+    "AI shopping agents are swayed by listing position and sponsored tags. A user-aligned iOS buying agent with transparent, manipulation-resistant ranking is missing (https://huggingface.co/papers/2508.02630)",
+    "Half of Americans are more concerned than excited about AI in daily life, so agent UX that shows its plan, asks before acting and supports undo is a requirement, not a nice-to-have (https://www.pewresearch.org/science/2025/09/17/how-americans-view-ai-and-its-impact-on-people-and-society/)"
+  ],
+  "open_questions": [
+    "Will Apple let a third-party agent become the default system assistant, or open deeper cross-app APIs, especially in the EU where Siri AI is unavailable and DMA pressure applies?",
+    "How does Mystro deliver auto-accept multi-apping on iPhone despite the sandbox (account-level API, companion device, or something else)? Is that pattern generalizable or fragile?",
+    "What is the legal envelope for agents that phone businesses, insurers or agencies on a user's behalf (AI-disclosure laws, call-recording consent, authorized-representative rules for HIPAA and immigration)?",
+    "Will consumers pay for outcome-based vertical agents (contingency on savings or recoveries) when only about 3% paid for AI in 2025 but spend tripled to about $40B in 2026?",
+    "Can a caregiver-proxy agent get durable, auditable delegated access to an aging parent's pharmacy, insurer and bank accounts without breaking those services' terms?",
+    "What do r/Blind, r/ADHD, r/AgingParents, r/caregivers and r/immigration users actually ask for? Those forums were unreachable in this pass and should be mined directly to validate these signals.",
+    "Will Siri AI's App Intents ecosystem grow fast enough that vertical agents should build as intent providers to Siri rather than as standalone apps?",
+    "How reliable are vendor claims (Pine's 93% negotiation success, MyMedBill's 8,000+ users, medical-bill savings rates) under independent evaluation?"
+  ]
+}
