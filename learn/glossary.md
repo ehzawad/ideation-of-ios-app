@@ -400,7 +400,7 @@ Terms used across the seven days, with the day that teaches each one.
 
 **Structured concurrency** — Child tasks (`async let`, task groups) that live inside a scope and can't outlive it. Cancellation flows down to the children, and results and errors flow up to the parent. *[Day 1](day1-swift-and-concurrency.md)*
 
-**Suspended** — The app state after a short time in the background: still in memory, but with no CPU time. The system can end a suspended app to reclaim memory without running any of your code, so "save on quit" never works. *[Day 3](day3-data-lifecycle-system.md)*
+**Suspended** — The app state after a short time in the background: still in memory, but with no CPU time. The system can end a suspended app to reclaim memory without running any of your code, so "save on quit" isn't a strategy: save when data changes. *[Day 3](day3-data-lifecycle-system.md)*
 
 **Swift 6 language mode** — The Swift language mode with complete data-race checking, where every violation is a compile error. Set it with Swift Language Version in Xcode or `swiftLanguageModes: [.v6]` in a package. *[Day 1](day1-swift-and-concurrency.md)*
 
@@ -430,7 +430,7 @@ Terms used across the seven days, with the day that teaches each one.
 
 **Threadgroup** — A group of compute threads scheduled together that can share threadgroup memory; inside it, a SIMD group runs in lockstep. Size threadgroups as the SIMD-group width (`threadExecutionWidth`) times as many rows as fit, and let `dispatchThreads` trim the edges. *[Day 6](day6-metal4-graphics-and-compute.md)*
 
-**Tile memory** — The small, fast memory on an Apple GPU where a render pass's pixels live while each tile is shaded. It has many times the bandwidth and far lower latency than device memory, and uses much less energy; the cheapest pixel is one that never leaves it. *[Day 6](day6-metal4-graphics-and-compute.md)*
+**Tile memory** — The small, fast memory on an Apple GPU where a render pass's pixels live while each tile is shaded. Apple says it has many times the bandwidth and many times lower latency than device memory, and uses significantly less energy; the cheapest pixel is one that never leaves it. *[Day 6](day6-metal4-graphics-and-compute.md)*
 
 **Timeline (widget)** — The series of entries a widget's provider produces; the system archives the views and renders them later in its own process. A frequently viewed widget gets about 40–70 reloads a day, requested with `WidgetCenter.shared.reloadTimelines(ofKind:)`, with entries at least about 5 minutes apart. *[Day 4](day4-app-intents-siri-system-surfaces.md)*
 
