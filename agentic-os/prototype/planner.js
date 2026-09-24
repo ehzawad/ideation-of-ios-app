@@ -65,7 +65,7 @@ const Planner = (() => {
     const first = OS.state.calendar.filter(e => e.day === 'Fri').sort((a, b) => a.time.localeCompare(b.time))[0];
     const [h, m] = (first ? first.time : '09:00').split(':').map(Number);
     const wake = hhmm(h * 60 + m - 120);
-    return { say: first ? `Your first thing tomorrow is ${first.title} at ${OS.fmtTime(first.time)}, so I set ${OS.fmtTime(wake)}: two hours before. Sleep Focus is on until then.` : `I set ${OS.fmtTime(wake)} and turned on Sleep Focus.`,
+    return { say: first ? `Your first thing tomorrow is ${first.title} at ${OS.fmtTime(first.time)}, so I set the alarm for ${OS.fmtTime(wake)}, two hours before. Sleep Focus stays on until then.` : `I set the alarm for ${OS.fmtTime(wake)} and turned on Sleep Focus.`,
       steps: [step('calendar.list', { day: 'Fri' }, 'Check what tomorrow starts with'), step('alarms.create', { time: wake, label: 'Wake up' }, 'Two hours before the first event'), step('focus.set', { mode: 'sleep', until: wake }, 'Silence notifications until the alarm')],
       chips: ['Make it 6:30', 'Make it 8:00', 'Undo'] };
   });
@@ -122,7 +122,7 @@ const Planner = (() => {
   intent('bt.disconnect', t => /\bdisconnect\b|\bunpair\b/.test(t), t => { const d = OS.findDevice(t.replace(/.*disconnect\s*(from\s*)?(my\s*|the\s*)?/, '')); return { steps: [step('bluetooth.disconnect', { device: d ? d.id : undefined })] }; });
   intent('bt.connect', t => /\b(connect|pair|switch (audio|sound) to|play on|use my)\b/.test(t) || (/\bbluetooth\b/.test(t) && !/\boff\b/.test(t)), t => {
     const rest = t.replace(/.*?\b(connect|pair|switch (audio|sound) to|play on|use my)\b\s*(to|with)?\s*(my|the)?\s*/, '');
-    const d = OS.findDevice(rest) || (/\bjbl|flip\b/.test(t) ? OS.findDevice('jbl') : null) || (/new (speaker|device)/.test(t) ? OS.findDevice('jbl') : null);
+    const d = (/\bjbl|flip\b|\bnew (speaker|device)\b/.test(t) ? OS.findDevice('jbl') : null) || OS.findDevice(rest);
     // "connect to Bluetooth" names no device: show what's around rather than guessing.
     if (!d) return { say: 'Which one?', steps: [step('bluetooth.list', {}, 'No device named, so show what’s around')] };
     return { steps: [step('bluetooth.connect', { device: d.id })] };
@@ -138,7 +138,7 @@ const Planner = (() => {
   // People
   intent('message', t => /^(text|message|tell|send( a)? (message|text) to|let)\b/.test(t) && !!contactOf(t) && !/\$|\bdollars?\b|\bpay\b/.test(t), (t, raw) => {
     const to = contactOf(t);
-    let body = raw.replace(/^(text|message|tell|send( a)? (message|text) to|let)\s+/i, '').replace(new RegExp('^(my )?' + CONTACT_RE.source.slice(3, -3) + '\\s*', 'i'), '').replace(/^(know\s+)?(that|saying|:)\s*/i, '');
+    let body = raw.replace(/^(text|message|tell|send( a)? (message|text) to|let)\s+/i, '').replace(new RegExp('^(my )?(?:' + CONTACT_RE.source.slice(3, -3) + ')\\s*', 'i'), '').replace(/^(know\s+)?((that|saying)\s+|:\s*)?/i, '');
     body = body.replace(/\bi'?m\b/gi, 'I’m').replace(/\bi\b/g, 'I'); body = cap1(body.trim()) || 'On my way';
     return { steps: [step('messages.send', { to, body: /[.!?]$/.test(body) ? body : body + '.' })] };
   });
@@ -165,12 +165,16 @@ const Planner = (() => {
   intent('status', t => /\b(status|battery|what'?s (connected|playing)|how much battery|settings)\b/.test(t), () => ({ steps: [step('device.status', {})] }));
 
   // ------------------------------------------------------------ splitting compound requests
+  // Separators are captured so a clause that doesn't parse can be glued back exactly as typed.
+  const SEP = /(\s*,\s*(?:and\s+|then\s+)?|\s*;\s*|\s+and then\s+|\s+then\s+|\s+and\s+(?=(?:also\s+)?(?:set|turn|put|connect|disconnect|play|pause|text|message|tell|call|pay|send|remind|add|start|make|mute|dim|open|switch|wake|lower|raise)\b)|\s+also\s+)/i;
   function splitClauses(text) {
-    const parts = text.split(/\s*(?:,\s*(?:and\s+|then\s+)?|;\s*|\s+and then\s+|\s+then\s+|\s+and\s+(?=(?:also\s+)?(?:set|turn|put|connect|disconnect|play|pause|text|message|tell|call|pay|send|remind|add|start|make|mute|dim|open|switch|wake)\b)|\s+also\s+)/i).filter(Boolean);
-    return parts;
+    const parts = text.split(SEP); const out = [];
+    for (let i = 0; i < parts.length; i += 2) out.push({ text: parts[i], sep: i > 0 ? parts[i - 1] : '' });
+    return out.filter(p => p.text && p.text.trim());
   }
 
   function matchIntent(clause) {
+    clause = clause.replace(/[\u2018\u2019]/g, "'");
     const t = clause.toLowerCase().trim().replace(/^(hey|ok|okay|please|can you|could you|would you|i want to|i'?d like to)\s+/g, '').replace(/^(please|can you|could you)\s+/, '').replace(/[?!.]+$/, '');
     for (const it of intents) if (it.test(t)) return { it, t, raw: clause.replace(/^(hey|ok|okay|please|can you|could you|would you)\s+/i, '').replace(/[?!]+$/, '') };
     return null;
@@ -179,13 +183,14 @@ const Planner = (() => {
   /** Offline plan. Returns { steps, say, clarify, chips, unknown } */
   function planOffline(text) {
     const clauses = splitClauses(text.trim());
-    // Merge clauses that don't parse into the previous one ("text mom I'm late and sorry").
+    // Glue clauses that don't parse back onto the previous one ("text mom I'm late, sorry").
     const merged = [];
-    for (const c of clauses) { if (merged.length && !matchIntent(c)) merged[merged.length - 1] += ' and ' + c; else merged.push(c); }
-    const out = { steps: [], say: [], clarify: null, chips: null, unknown: [] };
+    for (const c of clauses) { if (merged.length && !matchIntent(c.text)) merged[merged.length - 1] += c.sep + c.text; else merged.push(c.text); }
+    const out = { steps: [], say: [], clarify: null, chips: null, unknown: [], clauses: [] };
     for (const c of merged) {
       const m = matchIntent(c);
-      if (!m) { out.unknown.push(c); continue; }
+      out.clauses.push({ text: c.trim(), intent: m ? m.it.name : null });
+      if (!m) { out.unknown.push(c.trim()); continue; }
       const p = m.it.plan(m.t, m.raw) || {};
       out.steps.push(...(p.steps || []).map(s => ({ ...s, intent: m.it.name })));
       if (p.say) out.say.push(p.say); if (p.clarify) out.clarify = p.clarify; if (p.chips) out.chips = p.chips;

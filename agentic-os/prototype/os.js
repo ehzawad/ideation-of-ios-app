@@ -325,6 +325,13 @@ const OS = (() => {
     autopilot: { label: 'Autopilot', autoUpTo: RISK.consequential },
   };
   let mode = 'auto';
+  // Grants: standing permissions the person gave for this session ("always allow messages to Mom").
+  const grants = [];
+  function grantFor(capId, args) {
+    return grants.find(g => g.cap === capId && Object.entries(g.match || {}).every(([k, v]) => String(args[k] || '').toLowerCase() === String(v).toLowerCase()));
+  }
+  function addGrant(capId, match, label) { if (!grantFor(capId, match)) grants.push({ id: uid('g'), cap: capId, match, label }); emit(); }
+  function revokeGrant(id) { const i = grants.findIndex(g => g.id === id); if (i >= 0) grants.splice(i, 1); emit(); }
   function riskOf(capId, args) { const c = capabilities[capId]; return c.riskFor ? c.riskFor(args) : c.risk; }
   /** Deterministic: the model never decides whether its own action is safe. */
   function decide(capId, args) {
@@ -333,12 +340,14 @@ const OS = (() => {
     const risk = riskOf(capId, args);
     if (risk === 'irreversible') return { verdict: 'ask', faceId: true, risk, reason: (c.whyRisky && c.whyRisky(args)) || 'This can’t be undone.' };
     if (RISK[risk] <= MODES[mode].autoUpTo) return { verdict: 'allow', risk, reason: `${risk} · allowed in ${MODES[mode].label} mode` };
+    const g = risk === 'consequential' && grantFor(capId, args);
+    if (g) return { verdict: 'allow', risk, reason: `${risk} · you allowed “${g.label}” for this session` };
     return { verdict: 'ask', risk, reason: (c.whyRisky && c.whyRisky(args)) || `${risk} action` };
   }
 
   // ---------------------------------------------------------------- ledger
   const ledger = [];
-  function record(entry) { ledger.unshift({ id: uid('l'), at: state.clock.time, undone: false, ...entry }); }
+  function record(entry) { const e = { id: uid('l'), at: state.clock.time, undone: false, ...entry }; ledger.unshift(e); return e; }
   function undo(id) {
     const e = id ? ledger.find(x => x.id === id) : ledger.find(x => x.undo && !x.undone);
     if (!e) return { ok: false, summary: 'Nothing to undo' };
@@ -347,14 +356,22 @@ const OS = (() => {
     e.undo(); e.undone = true; emit();
     return { ok: true, summary: `Undid: ${e.summary}` };
   }
+  // Undo everything one run did, newest first: a checkpoint per request.
+  function undoRun(runId) {
+    const entries = ledger.filter(x => x.runId === runId && x.undo && !x.undone);
+    entries.forEach(x => { x.undo(); x.undone = true; });
+    emit();
+    return entries.map(x => x.summary);
+  }
 
   // Run a capability after the policy gate has allowed it. `who` is 'agent' or 'you' (direct manipulation).
-  function execute(capId, args, who = 'agent') {
+  function execute(capId, args, who = 'agent', runId = null) {
     const c = capabilities[capId];
     const out = c.run(args || {});
-    record({ who, cap: capId, args: args || {}, summary: out.summary, undo: out.undo || null, risk: riskOf(capId, args || {}) });
+    const entry = record({ who, cap: capId, args: args || {}, runId, summary: out.summary, undo: out.undo || null, risk: riskOf(capId, args || {}) });
+    if (out.undoWindowSec && entry.undo) setTimeout(() => { if (!entry.undone) { entry.undo = null; entry.expired = true; emit(); } }, out.undoWindowSec * 1000);
     emit();
-    return out;
+    return { ...out, entry };
   }
 
   function catalog() {
@@ -362,9 +379,9 @@ const OS = (() => {
   }
 
   return {
-    get state() { return state; }, reset() { state = initialState(); ledger.length = 0; emit(); },
+    get state() { return state; }, reset() { state = initialState(); ledger.length = 0; grants.length = 0; emit(); },
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-    capabilities, catalog, decide, execute, undo, ledger, RISK, MODES,
+    capabilities, catalog, decide, execute, undo, undoRun, ledger, grants, addGrant, revokeGrant, riskOf, RISK, MODES,
     get mode() { return mode; }, setMode(m) { if (MODES[m]) { mode = m; emit(); } },
     findDevice, findContact, fmtTime, emit,
   };
