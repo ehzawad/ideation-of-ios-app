@@ -72,6 +72,9 @@ function renderMarkdown(md, file) {
   });
   // drop the "← Learning hub" breadcrumb lines
   md = md.replace(/^\[← [^\]]+\]\([^)]*\)\s*$/gm, '');
+  // the per-chapter "Verified APIs" lists are for checking, not studying: point to the online copy instead
+  md = md.replace(/<details>\s*<summary>\s*Verified APIs[^<]*<\/summary>[\s\S]*?<\/details>/gi,
+    `<p class="verified-note">Every API in this chapter was checked against Apple's documentation. The full list with iOS versions is at the end of the online chapter: <a href="${REPO_URL}learn/${file}">learn/${file}</a>.</p>`);
   return marked.parse(md);
 }
 
@@ -114,6 +117,7 @@ img { max-width: 100%; }
 .cover .sub { font-size: 14pt; color: var(--ink2); max-width: 150mm; }
 .cover .meta { font-size: 9.5pt; color: var(--muted); }
 .cover .bar { height: 6pt; width: 60mm; background: linear-gradient(90deg, #2a78d6, #eb6834, #1baf7a); border-radius: 3pt; margin: 14pt 0; }
+.verified-note { font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6pt; margin-top: 14pt; }
 .toc { break-before: page; }
 .toc ol { list-style: none; padding: 0; }
 .toc li { margin: 3pt 0; }

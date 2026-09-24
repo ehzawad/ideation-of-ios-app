@@ -299,9 +299,8 @@ import Foundation
 public struct ErrandStep: Identifiable, Hashable, Sendable {
     public let id = UUID()
     public var title: String
-    public var hasSideEffect = false
+    public var hasSideEffect: Bool
     public var isDone = false
-
     public init(title: String, hasSideEffect: Bool = false) {
         self.title = title
         self.hasSideEffect = hasSideEffect
@@ -323,15 +322,13 @@ public struct StubPlanner: ErrandPlanning {
 public struct ErrandRunner: Sendable {
     let askApproval: @Sendable (ErrandStep) async -> Bool
     let perform: @Sendable (ErrandStep) async throws -> Void
-
     public init(askApproval: @escaping @Sendable (ErrandStep) async -> Bool,
                 perform: @escaping @Sendable (ErrandStep) async throws -> Void) {
         self.askApproval = askApproval
         self.perform = perform
     }
 
-    /// Returns false when the person says no. A side effect never runs without a yes.
-    @discardableResult
+    @discardableResult  // false when the person says no: no side effect without a yes
     public func run(_ step: ErrandStep) async throws -> Bool {
         if step.hasSideEffect, await askApproval(step) == false { return false }
         try await perform(step)

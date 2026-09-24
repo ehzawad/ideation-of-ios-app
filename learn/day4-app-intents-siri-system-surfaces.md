@@ -80,13 +80,13 @@ This is also why queries matter more than intents. Most "Siri didn't understand 
 When you build, the compiler extracts a description of every intent, entity, query, enum and App Shortcut and puts it in your bundle. The system reads that description without launching your app. That's why App Shortcuts work "as soon as someone installs your app, and you don't have to register them yourself," in Apple's words. It also explains the rules that feel strange at first:
 
 - Titles, phrases and parameter titles are static. The system needs them before your code ever runs.
-- Your type names are identifiers. `AppIntent` inherits `PersistentlyIdentifiable`, and people's saved shortcuts refer to your intents by that identity. Rename an intent or change its parameters and you can break their shortcuts.
+- Your types have persistent identities. Intents, entities, enums and queries all adopt `PersistentlyIdentifiable`, and people's saved shortcuts refer to that identity. It defaults to the type name, so a rename changes it unless you implement `persistentIdentifier` with the old name. Changing parameters can break saved shortcuts too.
 - Code in a shared framework is invisible until you point at it with an `AppIntentsPackage` type, because the metadata lands in the framework's bundle, not the app's.
 - Schema conformance is checked by the compiler. If an intent claims a schema and is missing a required property, Xcode reports an error with a Fix-It.
 
 Apple's migration advice follows from this. When a new schema-based intent would conflict with an old one, keep the old intent for existing shortcuts, add the new one, and hide it from the Shortcuts app with `isAssistantOnly` until you can retire the old one.
 
-**Senior tell:** they treat intent types like a public API: never renamed, parameters only added as optional, and old versions retired on purpose.
+**Senior tell:** they treat intent types like a public API: stable identities, parameters only added as optional, and old versions retired on purpose.
 
 **3. `perform()` runs in someone else's context: any process, any time, maybe more than once, often with no screen.**
 
@@ -151,7 +151,7 @@ Widgets, Live Activities, Controls and snippets all render SwiftUI, but none of 
 | Live Activity | `Activity.update(_:)` from the app, or ActivityKit push from your server | `Button(intent:)`, usually a `LiveActivityIntent` | Active up to 8 hours, then up to 4 more on the Lock Screen; static plus dynamic data at most 4 KB; no network or location access |
 | Control | `ControlValueProvider.currentValue()` on load; `ControlCenter.reloadControls(ofKind:)`; push | `ControlWidgetButton` or `ControlWidgetToggle` with an `AppIntent`, `OpenIntent` or `SetValueIntent` | Lives in the widget extension; an `OpenIntent` must be in both the app and the extension; a configurable control uses `AppIntentControlConfiguration` with a `ControlConfigurationIntent` |
 | Snippet | `SnippetIntent.perform()` re-runs after each interaction; `reload()` | `Button(intent:)` inside the snippet view | `perform()` may run many times; no side effects |
-| Action button | Runs an App Shortcut or a control | The shortcut's intent | Each app can offer up to 10 App Shortcuts |
+| Action button | Nothing to update; the person assigns an App Shortcut or a control | That shortcut's or control's intent | Each app can offer up to 10 App Shortcuts |
 
 Widgets also never resolve parameters: an intent you pass to a widget button must arrive with every value already set.
 
@@ -529,7 +529,7 @@ What old tutorials get wrong: `static var title = ...` (fails under Swift 6), `o
 ## Pitfalls you only learn by shipping
 
 - **Siri says it can't find the thing → the query only implements `entities(for:)`, the entity isn't indexed, or its display title is vague → add `EntityStringQuery` and `suggestedEntities()`, adopt `IndexedEntity`, and give entities short, familiar titles.**
-- **People's shortcuts break after a refactor → you renamed an intent or changed a parameter; the system identifies intents persistently → never rename; add a new intent next to the old one, hide it with `isAssistantOnly` during a schema migration, and mark the old one with `DeprecatedAppIntent` when you retire it.**
+- **People's shortcuts break after a refactor → you renamed an intent (its persistent identifier defaults to the type name) or changed a parameter → keep `persistentIdentifier` stable across renames; for incompatible changes, add a new intent next to the old one, hide it with `isAssistantOnly` during a schema migration, and mark the old one with `DeprecatedAppIntent` when you retire it.**
 - **Swift 6 errors on intent, entity or query conformances in the app target → the target's default isolation is `MainActor`, but the App Intents protocols are nonisolated and `Sendable` → mark those types `nonisolated`, or move them into a framework that keeps nonisolated defaults (and list it in an `AppIntentsPackage`).**
 - **A snippet button fires the action twice, or the snippet shows stale data → the system re-runs the snippet's `perform()` after every interaction → keep snippet `perform()` read-only, fetch fresh state, and call `reload()` when data changes while it's visible.**
 - **A background intent dies around the 30-second mark → the standard background limit → adopt `LongRunningIntent`, wrap the work in `performBackgroundTask`, and update `progress` regularly, or the system cancels with `.timeout`.**
@@ -704,178 +704,164 @@ Define App Shortcuts with an `AppShortcutsProvider`. Every phrase must include y
 
 <details><summary>Verified APIs</summary>
 
-AppIntent — iOS 16.0
-AppIntent.perform() — iOS 16.0
-AppIntent.systemContext — iOS 16.0
-AppIntent.authenticationPolicy — iOS 16.0
-AppIntent.isDiscoverable — iOS 17.0
-AppIntent.supportedModes — iOS 26.0
-AppIntent.allowedExecutionTargets — iOS 27.0
-AppIntent.continueInForeground(_:alwaysConfirm:) — iOS 26.0
-AppIntent.requestConfirmation() — iOS 16.0
-AppIntent.requestConfirmation(conditions:actionName:dialog:) — iOS 18.0
-AppIntent.requestConfirmation(conditions:actionName:dialog:showDialogAsPrompt:snippetIntent:) — iOS 26.0
-AppIntent.donate() — iOS 16.0
-AppIntent.openAppWhenRun (deprecated) — iOS 16.0, deprecated 26.0
-IntentParameter (@Parameter) — iOS 16.0
-IntentParameter.needsValueError(_:) — iOS 16.0
-IntentResult — iOS 16.0
-IntentResult.result(value:dialog:) — iOS 16.0
-IntentResult.result(dialog:) — iOS 16.0
-IntentResult.result(view:) — iOS 16.0
-IntentResult.result(dialog:snippetIntent:) — iOS 26.0
-ReturnsValue — iOS 16.0
-ProvidesDialog — iOS 16.0
-ShowsSnippetView — iOS 16.0
-ShowsSnippetIntent — iOS 26.0
-IntentDialog — iOS 16.0
-IntentDialog.init(full:supporting:) — iOS 16.0
-IntentDescription — iOS 16.0
-IntentModes — iOS 26.0
-IntentModes.Current — iOS 26.0
-IntentSystemContext.currentMode — iOS 26.0
-IntentExecutionTargets — iOS 27.0
-IntentAuthenticationPolicy — iOS 16.0
-ConfirmationConditions — iOS 18.0
-ConfirmationConditions.lowConfidenceSource — iOS 18.0
-ConfirmationActionName.custom(acceptLabel:acceptAlternatives:denyLabel:denyAlternatives:destructive:) — iOS 16.0
-AppIntentError — iOS 16.0
-AppIntentError.init(description:) — iOS 27.0
-AppEntity — iOS 16.0
-AppEntity.defaultQuery — iOS 16.0
-AppEntity.Property (EntityProperty) — iOS 16.0
-EntityProperty.init(title:indexingKey:) — iOS 18.4
-ComputedProperty() — iOS 26.0
-ComputedProperty(title:) — iOS 26.0
-ComputedProperty(indexingKey:) — iOS 26.0
-DeferredProperty() — iOS 26.0
-DisplayRepresentation — iOS 16.0
-DisplayRepresentation.init(title:subtitle:image:) — iOS 16.0
-TypeDisplayRepresentation — iOS 16.0
-EntityIdentifier.init(for:identifier:) — iOS 16.0
-EntityQuery — iOS 16.0
-EntityQuery.entities(for:) — iOS 16.0
-EntityQuery.suggestedEntities() — iOS 16.0
-EntityQuery.allowedExecutionTargets — iOS 27.0
-EntityStringQuery — iOS 16.0
-EntityStringQuery.entities(matching:) — iOS 16.0
-EnumerableEntityQuery — iOS 17.0
-EntityPropertyQuery — iOS 16.0
-IndexedEntity — iOS 18.0
-IndexedEntity.attributeSet — iOS 18.0
-IndexedEntityQuery — iOS 27.0
-IndexedEntityQuery.reindexEntities(for:indexDescription:) — iOS 27.0
-IndexedEntityQuery.reindexAllEntities(indexDescription:) — iOS 27.0
-SyncableEntity — iOS 27.0
-SyncableEntityIdentifier — iOS 27.0
-OwnershipProvidingEntity — iOS 27.0
-EntityOwnership — iOS 27.0
-EntityCollection — iOS 27.0
-AppUnionValue — iOS 27.0
-UnionValue() — iOS 18.0
-RelevantEntities — iOS 27.0
-IntentValueRepresentation — iOS 26.4
-AppEnum — iOS 16.0
-CaseDisplayRepresentable.caseDisplayRepresentations — iOS 16.0
-AppShortcutsProvider — iOS 16.0
-AppShortcutsProvider.appShortcuts — iOS 16.0
-AppShortcut — iOS 16.0
-AppShortcut.init(intent:phrases:shortTitle:systemImageName:) — iOS 17.0
-AppShortcutPhraseToken.applicationName — iOS 16.0
-AppDependencyManager — iOS 16.0
-AppDependencyManager.add(key:dependency:) — iOS 16.0
-AppDependency (@Dependency) — iOS 16.0
-AppIntentsPackage — iOS 17.0
-OpenIntent — iOS 16.0
-TargetContentProvidingIntent — iOS 26.0
-SnippetIntent — iOS 26.0
-SnippetIntent.reload() — iOS 26.0
-LongRunningIntent — iOS 27.0
-LongRunningIntent.performBackgroundTask(options:operation:) — iOS 27.0
-LongRunningIntent.performBackgroundTask(options:operation:onCancel:) — iOS 27.0
-LongRunningTaskOptions — iOS 27.0
-ProgressReportingIntent — iOS 17.0
-CancellableIntent — iOS 26.4
-IntentCancellationReason — iOS 26.4
-UndoableIntent — iOS 26.0
-UndoableIntent.undoManager — iOS 26.0
-LiveActivityIntent — iOS 17.0
-LiveActivityStartingIntent (deprecated) — iOS 16.1, deprecated 17.0
-ForegroundContinuableIntent (deprecated) — iOS 16.4, deprecated 26.0
-SetValueIntent — iOS 18.0
-ControlConfigurationIntent — iOS 18.0
-WidgetConfigurationIntent — iOS 17.0
-RunSystemShortcutIntent — iOS 27.0
-SystemShortcut — iOS 27.0
-DeprecatedAppIntent — iOS 17.0
-CustomIntentMigratedAppIntent — iOS 16.0
-AssistantSchemaIntent.isAssistantOnly — iOS 18.0
-AppIntent(schema:) — iOS 18.0
-AppEntity(schema:) — iOS 18.0
-AppEnum(schema:) — iOS 18.0
-AppSchema.RemindersIntent — iOS 27.0
-AppSchema.CalendarIntent — iOS 27.0
-AppSchema.MessagesIntent — iOS 27.0
-AppSchema.NotesIntent — iOS 27.0
-AppSchema.ClockIntent — iOS 27.0
-AppSchema.AudioIntent — iOS 27.0
-AppSchema.MapsIntent — iOS 27.0
-AppSchema.PhoneIntent — iOS 27.0
-AppSchema.AssistantIntent — iOS 26.2
-AppSchema.VisualIntelligenceIntent — iOS 26.0
-IntentDonationManager — iOS 16.0
-IntentDonationManager.donate(intent:) — iOS 16.0
-PredictableIntent — iOS 16.0
-IntentValueQuery — iOS 26.0
-SemanticContentDescriptor (Visual Intelligence) — iOS 26.0
-View.appEntityIdentifier(_:) (SwiftUI) — iOS 18.4
-View.appEntityUIElements(_:) (SwiftUI) — iOS 18.4
-View.onAppIntentExecution(_:perform:) (SwiftUI) — iOS 26.0
-NSUserActivity.appEntityIdentifier — iOS 18.2
-CSSearchableIndex.init(name:) — iOS 9.0
-CSSearchableIndex.indexAppEntities(_:priority:) — iOS 18.0
-CSSearchableIndex.deleteAppEntities(identifiedBy:ofType:) — iOS 18.0
-CSSearchableIndexDescription — iOS 27.0
-SpotlightSearchTool (Core Spotlight) — iOS 27.0
-Button.init(intent:label:) (SwiftUI) — iOS 17.0
-Button.init(_:intent:) (SwiftUI) — iOS 17.0
-Toggle.init(isOn:intent:label:) (SwiftUI) — iOS 17.0
-Label.init(title:icon:) (SwiftUI) — iOS 14.0
-ProgressView.init(value:total:) (SwiftUI) — iOS 14.0
-Widget — iOS 14.0
-WidgetBundle — iOS 14.0
-WidgetCenter.reloadTimelines(ofKind:) — iOS 14.0
-AppIntentTimelineProvider — iOS 17.0
-AppIntentConfiguration — iOS 17.0
-IntentConfiguration (legacy) — iOS 14.0
-IntentTimelineProvider (legacy) — iOS 14.0
-WidgetPushHandler — iOS 26.0
-WidgetAccentedRenderingMode — iOS 18.0
-ControlWidget — iOS 18.0
-ControlWidgetButton — iOS 18.0
-ControlWidgetToggle — iOS 18.0
-StaticControlConfiguration — iOS 18.0
-AppIntentControlConfiguration — iOS 18.0
-ControlValueProvider — iOS 18.0
-ControlCenter.reloadControls(ofKind:) — iOS 18.0
-ActivityAttributes — iOS 16.1
-Activity — iOS 16.1
-Activity.request(attributes:content:pushType:) — iOS 16.2
-Activity.request(attributes:content:pushType:style:alertConfiguration:start:) — iOS 26.0
-Activity.update(_:) — iOS 16.2
-Activity.end(_:dismissalPolicy:) — iOS 16.2
-Activity.activities — iOS 16.1
-Activity.attributes — iOS 16.1
-Activity.pushTokenUpdates — iOS 16.1
-Activity.pushToStartTokenUpdates — iOS 17.2
-ActivityContent.init(state:staleDate:relevanceScore:) — iOS 16.2
-ActivityAuthorizationInfo.areActivitiesEnabled — iOS 16.1
-ActivityUIDismissalPolicy — iOS 16.1
-ActivityConfiguration.init(for:content:dynamicIsland:) — iOS 16.1
-DynamicIsland.init(expanded:compactLeading:compactTrailing:minimal:) — iOS 16.1
-DynamicIslandExpandedRegion.init(_:priority:content:) — iOS 16.1
-NSSupportsLiveActivities (Info.plist) — iOS 16.1
-IntentDefinitions (App Intents Testing) — iOS 27.0
-INExtension, INInteraction (SiriKit, legacy) — iOS 10.0
+- AppIntent — iOS 16.0
+- AppIntent.perform() — iOS 16.0
+- AppIntent.systemContext — iOS 16.0
+- AppIntent.authenticationPolicy — iOS 16.0
+- AppIntent.isDiscoverable — iOS 17.0
+- AppIntent.supportedModes — iOS 26.0
+- AppIntent.allowedExecutionTargets — iOS 27.0
+- AppIntent.continueInForeground(_:alwaysConfirm:) — iOS 26.0
+- AppIntent.requestConfirmation(conditions:actionName:dialog:) — iOS 18.0
+- AppIntent.requestConfirmation(conditions:actionName:dialog:showDialogAsPrompt:snippetIntent:) — iOS 26.0
+- AppIntent.donate() — iOS 16.0
+- AppIntent.openAppWhenRun (deprecated) — iOS 16.0, deprecated 26.0
+- IntentParameter (@Parameter) — iOS 16.0
+- IntentResult — iOS 16.0
+- IntentResult.result(value:dialog:) — iOS 16.0
+- IntentResult.result(dialog:) — iOS 16.0
+- IntentResult.result(view:) — iOS 16.0
+- ReturnsValue — iOS 16.0
+- ProvidesDialog — iOS 16.0
+- ShowsSnippetView — iOS 16.0
+- IntentDialog — iOS 16.0
+- IntentDialog.init(full:supporting:) — iOS 16.0
+- IntentDescription — iOS 16.0
+- IntentModes — iOS 26.0
+- IntentModes.Current — iOS 26.0
+- IntentSystemContext.currentMode — iOS 26.0
+- IntentExecutionTargets — iOS 27.0
+- IntentAuthenticationPolicy — iOS 16.0
+- ConfirmationConditions — iOS 18.0
+- ConfirmationConditions.lowConfidenceSource — iOS 18.0
+- AppIntentError — iOS 16.0
+- AppIntentError.init(description:) — iOS 27.0
+- AppEntity — iOS 16.0
+- AppEntity.defaultQuery — iOS 16.0
+- ComputedProperty() — iOS 26.0
+- ComputedProperty(title:) — iOS 26.0
+- ComputedProperty(indexingKey:) — iOS 26.0
+- DisplayRepresentation — iOS 16.0
+- DisplayRepresentation.init(title:subtitle:image:) — iOS 16.0
+- TypeDisplayRepresentation — iOS 16.0
+- EntityIdentifier.init(for:identifier:) — iOS 16.0
+- EntityQuery — iOS 16.0
+- EntityQuery.entities(for:) — iOS 16.0
+- EntityQuery.suggestedEntities() — iOS 16.0
+- EntityQuery.allowedExecutionTargets — iOS 27.0
+- EntityStringQuery — iOS 16.0
+- EntityStringQuery.entities(matching:) — iOS 16.0
+- IndexedEntity — iOS 18.0
+- IndexedEntityQuery — iOS 27.0
+- IndexedEntityQuery.reindexEntities(for:indexDescription:) — iOS 27.0
+- IndexedEntityQuery.reindexAllEntities(indexDescription:) — iOS 27.0
+- SyncableEntity — iOS 27.0
+- SyncableEntityIdentifier — iOS 27.0
+- OwnershipProvidingEntity — iOS 27.0
+- EntityOwnership — iOS 27.0
+- EntityCollection — iOS 27.0
+- AppUnionValue — iOS 27.0
+- UnionValue() — iOS 18.0
+- RelevantEntities — iOS 27.0
+- IntentValueRepresentation — iOS 26.4
+- AppEnum — iOS 16.0
+- CaseDisplayRepresentable.caseDisplayRepresentations — iOS 16.0
+- AppShortcutsProvider — iOS 16.0
+- AppShortcutsProvider.appShortcuts — iOS 16.0
+- AppShortcut — iOS 16.0
+- AppShortcut.init(intent:phrases:shortTitle:systemImageName:) — iOS 17.0
+- AppShortcutPhraseToken.applicationName — iOS 16.0
+- AppDependencyManager — iOS 16.0
+- AppDependencyManager.add(key:dependency:) — iOS 16.0
+- AppDependency (@Dependency) — iOS 16.0
+- AppIntentsPackage — iOS 17.0
+- PersistentlyIdentifiable — iOS 16.0
+- OpenIntent — iOS 16.0
+- TargetContentProvidingIntent — iOS 26.0
+- SnippetIntent — iOS 26.0
+- SnippetIntent.reload() — iOS 26.0
+- LongRunningIntent — iOS 27.0
+- LongRunningIntent.performBackgroundTask(options:operation:) — iOS 27.0
+- LongRunningIntent.performBackgroundTask(options:operation:onCancel:) — iOS 27.0
+- LongRunningTaskOptions — iOS 27.0
+- ProgressReportingIntent — iOS 17.0
+- CancellableIntent — iOS 26.4
+- IntentCancellationReason — iOS 26.4
+- UndoableIntent — iOS 26.0
+- UndoableIntent.undoManager — iOS 26.0
+- LiveActivityIntent — iOS 17.0
+- LiveActivityStartingIntent (deprecated) — iOS 16.1, deprecated 17.0
+- ForegroundContinuableIntent (deprecated) — iOS 16.4, deprecated 26.0
+- SetValueIntent — iOS 18.0
+- ControlConfigurationIntent — iOS 18.0
+- WidgetConfigurationIntent — iOS 17.0
+- RunSystemShortcutIntent — iOS 27.0
+- SystemShortcut — iOS 27.0
+- DeprecatedAppIntent — iOS 17.0
+- CustomIntentMigratedAppIntent — iOS 16.0
+- AssistantSchemaIntent.isAssistantOnly — iOS 18.0
+- AppIntent(schema:) — iOS 18.0
+- AppEntity(schema:) — iOS 18.0
+- AppEnum(schema:) — iOS 18.0
+- AppSchema.RemindersIntent — iOS 27.0
+- AppSchema.CalendarIntent — iOS 27.0
+- AppSchema.MessagesIntent — iOS 27.0
+- AppSchema.NotesIntent — iOS 27.0
+- AppSchema.ClockIntent — iOS 27.0
+- AppSchema.AudioIntent — iOS 27.0
+- AppSchema.MapsIntent — iOS 27.0
+- AppSchema.PhoneIntent — iOS 27.0
+- IntentDonationManager — iOS 16.0
+- IntentDonationManager.donate(intent:) — iOS 16.0
+- IntentValueQuery — iOS 26.0
+- SemanticContentDescriptor (Visual Intelligence) — iOS 26.0
+- View.appEntityIdentifier(_:) (SwiftUI) — iOS 18.4
+- View.onAppIntentExecution(_:perform:) (SwiftUI) — iOS 26.0
+- NSUserActivity.appEntityIdentifier — iOS 18.2
+- CSSearchableIndex.init(name:) — iOS 9.0
+- CSSearchableIndex.indexAppEntities(_:priority:) — iOS 18.0
+- CSSearchableIndex.deleteAppEntities(identifiedBy:ofType:) — iOS 18.0
+- CSSearchableIndexDescription — iOS 27.0
+- SpotlightSearchTool (Core Spotlight) — iOS 27.0
+- Button.init(intent:label:) (SwiftUI) — iOS 17.0
+- Button.init(_:intent:) (SwiftUI) — iOS 17.0
+- Toggle.init(isOn:intent:label:) (SwiftUI) — iOS 17.0
+- Label.init(title:icon:) (SwiftUI) — iOS 14.0
+- ProgressView.init(value:total:) (SwiftUI) — iOS 14.0
+- Widget (SwiftUI) — iOS 14.0
+- WidgetBundle — iOS 14.0
+- WidgetCenter.reloadTimelines(ofKind:) — iOS 14.0
+- AppIntentTimelineProvider — iOS 17.0
+- AppIntentConfiguration — iOS 17.0
+- IntentConfiguration (legacy) — iOS 14.0
+- IntentTimelineProvider (legacy) — iOS 14.0
+- WidgetPushHandler — iOS 26.0
+- WidgetAccentedRenderingMode — iOS 18.0
+- ControlWidget — iOS 18.0
+- ControlWidgetButton — iOS 18.0
+- ControlWidgetToggle — iOS 18.0
+- StaticControlConfiguration — iOS 18.0
+- AppIntentControlConfiguration — iOS 18.0
+- ControlValueProvider — iOS 18.0
+- ControlCenter.reloadControls(ofKind:) — iOS 18.0
+- ActivityAttributes — iOS 16.1
+- Activity — iOS 16.1
+- Activity.request(attributes:content:pushType:) — iOS 16.2
+- Activity.request(attributes:content:pushType:style:alertConfiguration:start:) — iOS 26.0
+- Activity.update(_:) — iOS 16.2
+- Activity.end(_:dismissalPolicy:) — iOS 16.2
+- Activity.activities — iOS 16.1
+- Activity.attributes — iOS 16.1
+- Activity.pushTokenUpdates — iOS 16.1
+- Activity.pushToStartTokenUpdates — iOS 17.2
+- ActivityContent.init(state:staleDate:relevanceScore:) — iOS 16.2
+- ActivityAuthorizationInfo.areActivitiesEnabled — iOS 16.1
+- ActivityUIDismissalPolicy — iOS 16.1
+- ActivityConfiguration.init(for:content:dynamicIsland:) — iOS 16.1
+- DynamicIsland.init(expanded:compactLeading:compactTrailing:minimal:) — iOS 16.1
+- DynamicIslandExpandedRegion.init(_:priority:content:) — iOS 16.1
+- NSSupportsLiveActivities (Info.plist) — iOS 16.1
+- IntentDefinitions (App Intents Testing) — iOS 27.0
+- INExtension, INInteraction (SiriKit, legacy) — iOS 10.0
 
 </details>

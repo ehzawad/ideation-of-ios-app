@@ -588,15 +588,19 @@ What older tutorials get wrong:
 ## Practice
 
 **1. Token budget lab (45 min).** In a Swift file, add `import Playgrounds` and a `#Playground` that runs the planner prompt from pattern 3 on five errands, from "buy milk" to a pasted 1,000-word email. Then print `tokenCount(for:)` for the prompt, the tool array and `ErrandPlan.generationSchema`.
+
 *Done when:* you can state the fixed overhead of the planner in tokens, and you've cut the instructions by at least 30% without the canvas output getting worse.
 
 **2. Shape lab (30 min).** Make three versions of `ErrandPlan`: no `@Guide` at all; the version from pattern 2; and one with `title` moved to the end. Run each on the same five errands with `GenerationOptions(sampling: .greedy)`.
+
 *Done when:* you can explain, with examples, what declaration order and guides changed, and what each version costs in schema tokens.
 
 **3. Your first evaluation (45 min).** Create an `Evaluation` with ten `ModelSample`s (errands with an expected number of steps, or an expected `StepKind` for the first step). Add one `Evaluator` that passes when the step count is within ±1, and aggregate with `computeMean(of:)`. Attach it to a test with `@Test(.evaluates(...))`.
+
 *Done when:* the test runs on a device with Apple Intelligence, `#expect`s a mean above 0.8, and you've recorded the `SystemLanguageModel.variant` next to the score.
 
 **4. Input without an LLM (30 min).** Add a "From voice memo" and a "From photo" button that fill the errand field using pattern 7. Detect the language of the result with `NLLanguageRecognizer.dominantLanguage(for:)` and check `SystemLanguageModel.default.supportsLocale(_:)` before planning.
+
 *Done when:* a photo of a library notice and a 20-second memo both produce editable text, and an unsupported language shows a clear message instead of a bad plan.
 
 **5. Capstone: Errand, Day 5, the planner (about 1.5 hours).** Turn a typed errand into typed, streamed steps, with a calendar tool, a route to PCC for long inputs, and a consent screen that gates any third-party model.
