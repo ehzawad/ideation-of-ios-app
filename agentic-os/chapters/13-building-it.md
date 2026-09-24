@@ -141,7 +141,7 @@ The bridge is fragile. The person can rename or delete a shortcut. The app gives
 
 **What it is.** One ordinary app that asks the person to make it both the home screen and the default assistant. Android's [`RoleManager`](https://developer.android.com/reference/android/app/role/RoleManager) exposes `ROLE_HOME` and `ROLE_ASSISTANT`, both added in API 29. The assistant role runs through `VoiceInteractionService` and [`VoiceInteractionSession`](https://developer.android.com/reference/android/service/voice/VoiceInteractionSession). When the person triggers the assist gesture, the session can receive the foreground app's structure in `onHandleAssist`. It may also receive a screenshot in `onHandleScreenshot`, which "may be null if screenshots are disabled by the user, policy, or application". This is the cheapest way to put the Line on real phones as the thing you see when you unlock.
 
-**What works and what doesn't.** Here are the capabilities from [Chapter 3](03-a-day.md)'s day, checked against Android's permission model:
+**What works and what doesn't.** Here are the system capabilities the Line uses most, checked against Android's permission model:
 
 | Capability | Android API | Works for a normal app? |
 |---|---|---|

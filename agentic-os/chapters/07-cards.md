@@ -59,7 +59,7 @@ In the agentic phone, every card comes from one of three sources, in order of pr
 2. **Composed cards.** When no template fits, for example when the answer combines three capabilities, the planner model composes a card from catalog components, A2UI-style. The OS validates the tree against the catalog schema before drawing anything, and a malformed tree falls back to text.
 3. **Sandboxed code.** Two kinds, both labeled. A remote service's declared MCP Apps template renders in a framed, sandboxed card, so existing MCP services work. And for a task worth the wait, such as a trip planner or a study aid, the agent can offer to build a small generated app, which opens as a surface. Either can call only the capabilities routed to it, every call goes through the Gate, and neither can draw system chrome.
 
-The Line also decides whether a turn needs UI at all. The Chen study found that generating an interface for every query is a mistake. A short factual answer or a simple how-to should stay as text or speech.
+The Line also decides whether a turn needs UI at all. The Chen study lists generating an interface for every query as a limitation. A short factual answer or a simple how-to should stay as text or speech.
 
 ```mermaid
 flowchart TD
@@ -75,7 +75,7 @@ flowchart TD
     F -- Invalid tree --> T
 ```
 
-What this costs. The catalog must be designed and governed by someone, and anything the catalog can't express either waits for a new component or falls into the slow, less safe generated tier. Nobody knows yet whether a catalog can cover the large majority of turns (charts, maps, editors, simulations) well enough to make code generation rare; the architecture research lists this as an open question. What could go wrong: the catalog becomes a bottleneck and developers push everything into generated surfaces to escape it, or the platform owner uses catalog control to favor its own services. [Chapter 12](12-developers.md) takes up that second risk.
+What this costs: someone must design and govern the catalog, and anything it can't express waits for a new component or falls into the slow, less safe generated tier. What could go wrong: the catalog becomes a bottleneck that developers escape through generated surfaces, or the platform owner uses it to favor its own services ([Chapter 12](12-developers.md)).
 
 ## The component catalog
 
@@ -126,11 +126,11 @@ Every card has the same five parts, whichever tier produced it.
    5 (not drawn) accessibility label, spoken summary, earcon, lifetime
 ```
 
-1. **Header.** An icon and a title that names the object, not the action ("Volume · AirPods Pro", not "I changed your volume").
-2. **Body.** One or more catalog components, each bound to a piece of live state.
-3. **Controls.** Direct-manipulation controls. Every control maps to a capability call and nothing else.
-4. **Provenance and receipt.** Who produced the card (the OS, which capability pack, or "Generated"), who made the change (the agent or you), when, the effect class if something changed, and the Undo. The book's architecture research makes this a principle: visible provenance lets people calibrate trust and spot phishing inside generated UI. The simulator's capabilities carry a `provider` field ("System · Audio", "Weather (capability pack)") for this line.
-5. **Metadata you don't see.** An accessibility label and value, a one-sentence spoken summary for voice and screen readers, an earcon, and a lifetime.
+1. **Header.** An icon and a title that names the object ("Volume · AirPods Pro"), not the action.
+2. **Body.** Catalog components, each bound to live state.
+3. **Controls.** Each maps to a capability call and nothing else.
+4. **Provenance and receipt.** Who produced the card (the OS, a capability pack, or "Generated"), who made the change, when, the effect class, and the Undo. Visible provenance lets people calibrate trust and spot phishing inside generated UI. The simulator's capabilities carry a `provider` field ("System · Audio", "Weather (capability pack)") for this line.
+5. **Metadata you don't see.** An accessibility label and value, a one-sentence spoken summary, an earcon, and a lifetime.
 
 Here is what a template for the volume card might look like on the wire. It is illustrative, written in the spirit of A2UI's flat component lists; it is not the A2UI schema.
 
@@ -194,7 +194,7 @@ What this costs: the card renderer becomes a privileged OS component holding liv
 
 ## Hand back the control
 
-The most common card is not an answer. It is a control set to the agent's best guess. The interaction research turns the Shneiderman–Maes debate into a rule: use language for discrete, high-level delegation, and direct manipulation for continuous values, spatial selection and fine adjustment. The agent does the coarse step, then hands back a control that already reflects its guess ([Shneiderman and Maes](https://www.cs.umd.edu/users/ben/papers/Shn-Maes-v4n6-1997.pdf)).
+The most common card is a control set to the agent's best guess. The interaction research turns the Shneiderman–Maes debate into a rule: language for discrete, high-level delegation, direct manipulation for continuous values, spatial selection and fine adjustment ([Shneiderman and Maes](https://www.cs.umd.edu/users/ben/papers/Shn-Maes-v4n6-1997.pdf)).
 
 ```
 › it's too bright
@@ -205,7 +205,7 @@ The most common card is not an answer. It is a control set to the agent's best g
   └ System · Display ──────────────────────────────┘
 ```
 
-The agent took a step and showed the slider, so "a bit more" costs one drag, not another sentence. When there is no sensible default, the agent asks with a card. In the simulator, "set a timer" returns three chips ("5 minutes", "10 minutes", "25 minutes") instead of a question you have to answer in words.
+The agent took a step and showed the slider, so "a bit more" costs one drag, not another sentence. With no sensible default, the agent asks with a card: in the simulator, "set a timer" returns three chips (5, 10 and 25 minutes).
 
 Real decision points get the same treatment. The Morae study found that in real tasks, 13% presented multiple options and 19% were underspecified, and that agents otherwise "pick an arbitrary option" ([Peng et al., UIST 2025](https://arxiv.org/abs/2508.21456)). In the agentic phone, the agent stops when options tie on the criterion you stated, when a required field is missing, or when the choice is a matter of taste, and shows a compact choice card. You can say "just pick" for a category, and that becomes a visible rule.
 
