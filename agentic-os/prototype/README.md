@@ -62,7 +62,7 @@ flowchart LR
 
 | File | What's in it |
 |---|---|
-| `os.js` | Device state (volume, Bluetooth, alarms, calendar, contacts, wallet...), the **capability registry** (28 capabilities, each with an effect class, parameters and an undo), the **Gate** (`decide()`), grants, and the **ledger** with per-action and per-request undo. |
+| `os.js` | Device state (volume, Bluetooth, alarms, calendar, contacts, wallet...), the **capability registry** (26 capabilities, each with an effect class, parameters and an undo), the **Gate** (`decide()`), grants, and the **ledger** with per-action and per-request undo. |
 | `planner.js` | The offline rule planner and the live planner. The live planner builds a tool per capability (or one router tool if the view allows fewer tools), and adds a system prompt with device state and quarantined notifications. |
 | `ui.js` | The Line (turns, step lines, cards, approval cards with Face ID and grants), voice, slash commands, simulated events, and the inspector. |
 | `index.html` | Layout and styles. The phone keeps one dark look; the page follows the system theme. |
