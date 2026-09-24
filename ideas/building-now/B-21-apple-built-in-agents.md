@@ -68,7 +68,7 @@ _What this idea quietly depends on being true. Check these before you build._
 _Open questions nobody has good answers to yet._
 
 - When will the reported Apple Intelligence 'Extensions' let Claude or Gemini power Siri, and with what access to App Intents? Press reports say only ChatGPT is live so far.
-- Will Apple ever let a third-party agent call other apps' App Intents, for example through MCP? So far Apple shipped MCP only as an Xcode 27 developer bridge.
+- Will Apple ever let a third-party agent call other apps' App Intents, for example through MCP? So far Apple shipped MCP only in Xcode, as a bridge for coding agents (from Xcode 26.3).
 - How much will waitlists, daily caps and the English-only launch slow real use of Siri AI in its first year?
 
 ## Prior art and who's building

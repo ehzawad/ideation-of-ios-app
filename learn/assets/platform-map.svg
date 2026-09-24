@@ -118,7 +118,7 @@
     <g transform="translate(888 28)">
       <rect width="212" height="268" rx="14" fill="var(--o-t)"/><rect width="212" height="5" rx="2.5" fill="var(--o)"/>
       <text x="16" y="30" class="lh" fill="var(--o)">APPLE INTELLIGENCE</text>
-      <text x="16" y="60" class="fw">Foundation Models</text><text x="16" y="77" class="fs">on-device LLM, 4K context</text>
+      <text x="16" y="60" class="fw">Foundation Models</text><text x="16" y="77" class="fs">on-device LLM, small context</text>
       <text x="16" y="106" class="fw">Private Cloud Compute</text><rect x="16" y="130" width="0" height="0"/><rect x="170" y="80" width="36" height="16" rx="8" fill="var(--new)"/><text x="188" y="92" class="newt" text-anchor="middle">NEW</text><text x="16" y="123" class="fs">Apple's server model, 32K</text>
       <text x="16" y="152" class="fw">LanguageModel</text><rect x="130" y="139" width="36" height="16" rx="8" fill="var(--new)"/><text x="148" y="151" class="newt" text-anchor="middle">NEW</text><text x="16" y="169" class="fs">plug in any model</text>
       <text x="16" y="198" class="fw">Guided generation</text><text x="16" y="215" class="fs">@Generable typed output</text>

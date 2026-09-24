@@ -16,7 +16,7 @@ You tell an agent to 'send Sam the notes from today.' You know two Sams: your ma
 
 ## The problem
 
-Agents now read your mail, notes and health records, and they also send things. The failure that matters most is often not a hack but a wrong flow: biopsy results to your manager, a private thread pasted into a group chat, a salary figure in a vendor email. Agent CI Bench found 12 of 15 frontier computer-use agents leaked context in more than half its scenarios, 67.9% on average. iOS permissions answer 'may this app read Health?' but never 'may this fact go to this person?'
+Agents now read your mail, notes and health records, and they also send things. The failure that matters most is often not a hack but a wrong flow: biopsy results to your manager, a private thread pasted into a group chat, a salary figure in a vendor email. Agent CI Bench found most of 15 frontier computer-use agents leaked context in more than half its scenarios, 67.9% on average. iOS permissions answer 'may this app read Health?' but never 'may this fact go to this person?'
 
 ## How the agent works
 

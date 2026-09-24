@@ -2097,7 +2097,7 @@
    ],
    "unknowns": [
     "When will the reported Apple Intelligence 'Extensions' let Claude or Gemini power Siri, and with what access to App Intents? Press reports say only ChatGPT is live so far.",
-    "Will Apple ever let a third-party agent call other apps' App Intents, for example through MCP? So far Apple shipped MCP only as an Xcode 27 developer bridge.",
+    "Will Apple ever let a third-party agent call other apps' App Intents, for example through MCP? So far Apple shipped MCP only in Xcode, as a bridge for coding agents (from Xcode 26.3).",
     "How much will waitlists, daily caps and the English-only launch slow real use of Siri AI in its first year?"
    ],
    "prior_art": [
@@ -6918,7 +6918,7 @@
    "tier": "moonshot",
    "category": "Social & communication",
    "moment": "You tell an agent to 'send Sam the notes from today.' You know two Sams: your manager and the nurse at your oncologist's office. Before anything leaves, the phone sees the notes include biopsy results from a clinic email, blocks the send to your manager, and asks which Sam you meant.",
-   "problem": "Agents now read your mail, notes and health records, and they also send things. The failure that matters most is often not a hack but a wrong flow: biopsy results to your manager, a private thread pasted into a group chat, a salary figure in a vendor email. Agent CI Bench found 12 of 15 frontier computer-use agents leaked context in more than half its scenarios, 67.9% on average. iOS permissions answer 'may this app read Health?' but never 'may this fact go to this person?'",
+   "problem": "Agents now read your mail, notes and health records, and they also send things. The failure that matters most is often not a hack but a wrong flow: biopsy results to your manager, a private thread pasted into a group chat, a salary figure in a vendor email. Agent CI Bench found most of 15 frontier computer-use agents leaked context in more than half its scenarios, 67.9% on average. iOS permissions answer 'may this app read Health?' but never 'may this fact go to this person?'",
    "loop": {
     "trigger": "Any agent tries to send or save something",
     "senses": "Where each piece of the content came from",

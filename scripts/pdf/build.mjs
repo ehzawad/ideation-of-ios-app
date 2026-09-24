@@ -1,7 +1,7 @@
-// Build the learning hub PDF: markdown -> HTML (Mermaid diagrams, highlighted code) -> PDF via headless Chromium.
-// Usage: cd scripts/pdf && npm install && node build.mjs
-// Output: learn/ios27-in-7-days.pdf
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+// Build the repo's books: markdown -> HTML (Mermaid diagrams, highlighted code) -> PDF via headless Chromium.
+// Usage: cd scripts/pdf && npm install && node build.mjs [learn|atlas|agentos|all]   (default: all)
+// Outputs are listed in BOOKS below. Missing chapter files are skipped with a warning so partial builds work.
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Marked } from 'marked';
@@ -10,71 +10,92 @@ import hljs from 'highlight.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
-const learn = path.join(root, 'learn');
 const nm = path.join(here, 'node_modules');
-
-// Chapter order. Missing files are skipped with a warning so partial builds still work.
-const PARTS = [
-  { title: 'Start here', files: ['README.md'] },
-  { title: 'The seven days', files: [
-    '00-mental-models.md',
-    'day1-swift-and-concurrency.md',
-    'day2-swiftui-liquid-glass-design.md',
-    'day3-data-lifecycle-system.md',
-    'day4-app-intents-siri-system-surfaces.md',
-    'day5-apple-intelligence-and-ml.md',
-    'day6-metal4-graphics-and-compute.md',
-    'day7-ship-like-a-senior.md',
-  ] },
-  { title: 'Capstone', files: ['capstone-errand.md'] },
-  { title: 'Cheat sheets', files: [
-    'cheatsheets/swift-concurrency.md',
-    'cheatsheets/swiftui-and-design.md',
-    'cheatsheets/app-intents-and-siri.md',
-    'cheatsheets/ai-and-ml.md',
-    'cheatsheets/metal4.md',
-  ] },
-  { title: 'Reference', files: ['glossary.md'] },
-];
-
 const REPO_URL = 'https://github.com/ehzawad/ideation-of-ios-app/blob/main/';
+const ls = (dir) => existsSync(path.join(root, dir)) ? readdirSync(path.join(root, dir)).filter(f => f.endsWith('.md') && f !== 'README.md').sort().map(f => `${dir}/${f}`) : [];
+
+const BOOKS = {
+  learn: {
+    out: 'learn/ios27-in-7-days.pdf',
+    title: 'iOS 27 in 7 Days',
+    kicker: 'A SEVEN-DAY MENTAL-MODEL BOOTCAMP',
+    sub: 'The mental model a five-year iOS developer carries: Swift 6.4, SwiftUI and Liquid Glass, App Intents and Siri AI, Foundation Models and on-device ML, Metal 4, and shipping. iOS 27 only.',
+    meta: 'APIs verified against developer.apple.com.',
+    parts: [
+      { title: 'Start here', files: ['learn/README.md'], partPage: false },
+      { title: 'The seven days', files: ['learn/00-mental-models.md', 'learn/day1-swift-and-concurrency.md', 'learn/day2-swiftui-liquid-glass-design.md', 'learn/day3-data-lifecycle-system.md', 'learn/day4-app-intents-siri-system-surfaces.md', 'learn/day5-apple-intelligence-and-ml.md', 'learn/day6-metal4-graphics-and-compute.md', 'learn/day7-ship-like-a-senior.md'] },
+      { title: 'Capstone', files: ['learn/capstone-errand.md'] },
+      { title: 'Cheat sheets', files: ['learn/cheatsheets/swift-concurrency.md', 'learn/cheatsheets/swiftui-and-design.md', 'learn/cheatsheets/app-intents-and-siri.md', 'learn/cheatsheets/ai-and-ml.md', 'learn/cheatsheets/metal4.md'] },
+      { title: 'Reference', files: ['learn/glossary.md'] },
+    ],
+  },
+  atlas: {
+    out: 'books/agentic-ios-idea-atlas.pdf',
+    title: 'Agentic iOS',
+    kicker: 'AN IDEA ATLAS · SEPTEMBER 2026',
+    sub: '85 iPhone apps that plan and act for you: what is being built now, what almost nobody is building yet, and the moonshots that are still genuinely hard. With the walls iOS puts in the way and how to build inside them.',
+    meta: 'Snapshot of iOS 27, a week after Siri AI’s beta launch.',
+    parts: [
+      { title: 'Start here', files: ['books/atlas/introduction.md'], partPage: false },
+      { title: 'The terrain', blurb: 'Who is building what, the walls iOS puts in the way, how to build inside them, and the assumptions that sink agent products.', files: ['docs/landscape-2026.md', 'docs/the-walls.md', 'docs/reference-architecture.md', 'docs/assumptions.md', 'docs/ui-patterns.md'] },
+      { title: 'Being built now', blurb: 'Shipping or in active development in 2025–2026. Proven demand; the race is on execution.', files: ls('ideas/building-now') },
+      { title: 'Whitespace', blurb: 'Feasible on today’s iPhone, but almost nobody is building it. The unclaimed ground.', files: ls('ideas/whitespace') },
+      { title: 'Moonshots', blurb: 'Worth wanting, genuinely hard. Each card names the wall and what would have to change.', files: ls('ideas/moonshot') },
+      { title: 'Appendix', files: ['ideas/README.md', 'docs/method.md'] },
+    ],
+  },
+  agentos: {
+    out: 'books/the-agentic-phone.pdf',
+    title: 'The Agentic Phone',
+    kicker: 'A DESIGN FOR WHAT COMES AFTER APPS',
+    sub: 'A ground-up mobile operating system where the home screen is a conversation. You speak or type; an agent plans, calls typed capabilities, asks before it acts, and shows small generated interfaces. How it would work, and how to try it today.',
+    meta: 'A design study. Apple has not announced anything like it.',
+    parts: [
+      { title: 'Start here', files: ['agentic-os/README.md'], partPage: false },
+      { title: 'The book', files: ls('agentic-os/chapters') },
+      { title: 'The prototype', files: ['agentic-os/prototype/README.md'] },
+    ],
+  },
+};
 
 function slugPrefix(file) { return file.replace(/[^a-z0-9]+/gi, '-').replace(/-md$/, '').toLowerCase(); }
 
-function renderMarkdown(md, file) {
-  const prefix = slugPrefix(file);
-  const marked = new Marked(gfmHeadingId({ prefix: prefix + '--' }));
+function renderMarkdown(md, file, inBook) {
+  const dir = path.dirname(file);
+  const marked = new Marked(gfmHeadingId({ prefix: slugPrefix(file) + '--' }));
   marked.use({
     renderer: {
       code({ text, lang }) {
         if (lang === 'mermaid') return `<pre class="mermaid">${text.replace(/</g, '&lt;')}</pre>`;
         const language = lang && hljs.getLanguage(lang) ? lang : (lang === 'metal' || lang === 'msl' ? 'cpp' : 'plaintext');
-        const html = hljs.highlight(text, { language }).value;
-        return `<pre class="code"><code class="hljs language-${language}">${html}</code></pre>`;
+        return `<pre class="code"><code class="hljs language-${language}">${hljs.highlight(text, { language }).value}</code></pre>`;
       },
       link({ href, title, tokens }) {
         const text = this.parser.parseInline(tokens);
         let h = href || '';
         if (!/^(https?:|mailto:|#)/.test(h)) {
-          // relative link inside the repo: point at the chapter anchor if it's in the book, else GitHub
-          const target = path.normalize(path.join(path.dirname(file), h.split('#')[0]));
-          const inBook = PARTS.some(p => p.files.includes(target));
-          h = inBook ? '#chapter-' + slugPrefix(target) : REPO_URL + path.normalize(path.join('learn', path.dirname(file), h));
+          const target = path.normalize(path.join(dir, h.split('#')[0]));
+          h = inBook.has(target) ? '#chapter-' + slugPrefix(target) : REPO_URL + target;
         }
         return `<a href="${h}"${title ? ` title="${title}"` : ''}>${text}</a>`;
       },
       image({ href, text }) {
         if (/^https?:/.test(href)) return `<img src="${href}" alt="${text}">`;
-        const abs = path.resolve(learn, path.dirname(file), href);
+        const abs = path.resolve(root, dir, href);
         return existsSync(abs) ? `<img src="file://${abs}" alt="${text}">` : '';
+      },
+      html({ text }) {
+        // inline <img src="relative"> used in the atlas: make paths absolute
+        return text.replace(/src="(?!https?:|file:)([^"]+)"/g, (m, src) => {
+          const abs = path.resolve(root, dir, src);
+          return existsSync(abs) ? `src="file://${abs}"` : m;
+        });
       },
     },
   });
-  // drop the "← Learning hub" breadcrumb lines
-  md = md.replace(/^\[← [^\]]+\]\([^)]*\)\s*$/gm, '');
-  // the per-chapter "Verified APIs" lists are for checking, not studying: point to the online copy instead
+  md = md.replace(/^\[← [^\]]+\]\([^)]*\).*$/gm, '');
   md = md.replace(/<details>\s*<summary>\s*Verified APIs[^<]*<\/summary>[\s\S]*?<\/details>/gi,
-    `<p class="verified-note">Every API in this chapter was checked against Apple's documentation. The full list with iOS versions is at the end of the online chapter: <a href="${REPO_URL}learn/${file}">learn/${file}</a>.</p>`);
+    `<p class="verified-note">Every API in this chapter was checked against Apple's documentation. The full list with iOS versions is at the end of the online chapter: <a href="${REPO_URL}${file}">${file}</a>.</p>`);
   return marked.parse(md);
 }
 
@@ -108,76 +129,78 @@ tr { break-inside: avoid; }
 details { margin: 4pt 0 8pt; padding: 4pt 8pt; border: 1px solid var(--line); border-radius: 6px; background: #fbfbfc; }
 details > summary { font-weight: 600; color: var(--ink2); }
 img { max-width: 100%; }
+p[align="center"] img { max-height: 200mm; }
+.verified-note { font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6pt; margin-top: 14pt; }
 .chapter { break-before: page; }
 .part { break-before: page; display: flex; flex-direction: column; justify-content: center; height: 240mm; }
 .part h1 { font-size: 30pt; color: var(--accent); border: none; }
+.part p { font-size: 13pt; color: var(--ink2); max-width: 140mm; }
 .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
 .cover .kicker { font-size: 10pt; letter-spacing: 3pt; color: var(--muted); font-weight: 600; margin-top: 30mm; }
 .cover h1 { font-size: 40pt; letter-spacing: -1pt; margin: 6pt 0 10pt; }
 .cover .sub { font-size: 14pt; color: var(--ink2); max-width: 150mm; }
 .cover .meta { font-size: 9.5pt; color: var(--muted); }
 .cover .bar { height: 6pt; width: 60mm; background: linear-gradient(90deg, #2a78d6, #eb6834, #1baf7a); border-radius: 3pt; margin: 14pt 0; }
-.verified-note { font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6pt; margin-top: 14pt; }
 .toc { break-before: page; }
-.toc ol { list-style: none; padding: 0; }
-.toc li { margin: 3pt 0; }
+.toc ol { list-style: none; padding: 0; columns: 1; }
+.toc li { margin: 2.5pt 0; }
 .toc .p { font-weight: 700; margin-top: 10pt; color: var(--accent); }
 .toc a { color: var(--ink); }
 `;
 
-const date = new Date().toISOString().slice(0, 10);
-let body = `<section class="cover"><div>
-  <div class="kicker">A SEVEN-DAY MENTAL-MODEL BOOTCAMP</div>
-  <h1>iOS 27 in 7 Days</h1>
-  <div class="bar"></div>
-  <div class="sub">The mental model a five-year iOS developer carries: Swift 6.4, SwiftUI and Liquid Glass, App Intents and Siri AI, Foundation Models and on-device ML, Metal 4, and shipping. iOS 27 only.</div>
-  </div>
-  <div class="meta">Built ${date} from the learning hub in github.com/ehzawad/ideation-of-ios-app. APIs verified against developer.apple.com.<br>Text licensed CC BY 4.0.</div>
-</section>`;
-
-let toc = '<section class="toc"><h1>Contents</h1><ol>';
-let chapters = '';
-for (const part of PARTS) {
-  const present = part.files.filter(f => existsSync(path.join(learn, f)));
-  for (const f of part.files) if (!present.includes(f)) console.warn('skip (missing):', f);
-  if (!present.length) continue;
-  toc += `<li class="p">${part.title}</li>`;
-  if (part.title !== 'Start here') chapters += `<section class="part"><h1>${part.title}</h1></section>`;
-  for (const f of present) {
-    const md = readFileSync(path.join(learn, f), 'utf8');
-    const title = (md.match(/^#\s+(.+)$/m) || [, f])[1];
-    const id = 'chapter-' + slugPrefix(f);
-    toc += `<li><a href="#${id}">${title}</a></li>`;
-    chapters += `<section class="chapter" id="${id}">${renderMarkdown(md, f)}</section>`;
+async function build(key) {
+  const book = BOOKS[key];
+  const date = new Date().toISOString().slice(0, 10);
+  const parts = book.parts.map(p => ({ ...p, present: p.files.filter(f => existsSync(path.join(root, f))) }));
+  for (const p of parts) for (const f of p.files) if (!p.present.includes(f)) console.warn(`[${key}] skip (missing): ${f}`);
+  const inBook = new Set(parts.flatMap(p => p.present));
+  let toc = '<section class="toc"><h1>Contents</h1><ol>';
+  let chapters = '';
+  for (const part of parts) {
+    if (!part.present.length) continue;
+    toc += `<li class="p">${part.title}</li>`;
+    if (part.partPage !== false) chapters += `<section class="part"><h1>${part.title}</h1>${part.blurb ? `<p>${part.blurb}</p>` : ''}</section>`;
+    for (const f of part.present) {
+      const md = readFileSync(path.join(root, f), 'utf8');
+      const title = (md.match(/^#\s+(.+)$/m) || [, f])[1].replace(/`/g, '');
+      const id = 'chapter-' + slugPrefix(f);
+      toc += `<li><a href="#${id}">${title}</a></li>`;
+      chapters += `<section class="chapter" id="${id}">${renderMarkdown(md, f, inBook)}</section>`;
+    }
   }
-}
-toc += '</ol></section>';
-
-const html = `<!doctype html><html><head><meta charset="utf-8"><title>iOS 27 in 7 Days</title>
+  toc += '</ol></section>';
+  const cover = `<section class="cover"><div><div class="kicker">${book.kicker}</div><h1>${book.title}</h1><div class="bar"></div><div class="sub">${book.sub}</div></div>
+    <div class="meta">Built ${date} from github.com/ehzawad/ideation-of-ios-app. ${book.meta}<br>Text licensed CC BY 4.0.</div></section>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${book.title}</title>
 <link rel="stylesheet" href="file://${nm}/highlight.js/styles/github.css"><style>${css}</style></head>
-<body>${body}${toc}${chapters}
+<body>${cover}${toc}${chapters}
 <script src="file://${nm}/mermaid/dist/mermaid.min.js"></script>
 <script>
   document.querySelectorAll('details').forEach(d => d.open = true);
   mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose', fontFamily: 'Inter', flowchart: { htmlLabels: true, useMaxWidth: true }, sequence: { useMaxWidth: true } });
   window.__mermaidDone = mermaid.run({ querySelector: 'pre.mermaid', suppressErrors: true }).then(() => 'ok', e => 'err:' + e);
 </script></body></html>`;
+  const outDir = path.join(here, 'out');
+  mkdirSync(outDir, { recursive: true });
+  const htmlPath = path.join(outDir, `${key}.html`);
+  writeFileSync(htmlPath, html);
+  const { chromium } = await import('/opt/node22/lib/node_modules/playwright/index.mjs').catch(() => import('playwright'));
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.goto('file://' + htmlPath, { waitUntil: 'load', timeout: 180000 });
+  const status = await page.evaluate(() => window.__mermaidDone);
+  const failed = await page.evaluate(() => [...document.querySelectorAll('pre.mermaid')].filter(p => !p.querySelector('svg')).length);
+  await page.evaluate(() => document.fonts.ready);
+  const footer = `<div style="font-family:Inter,sans-serif;font-size:7.5pt;color:#8a8a93;width:100%;padding:0 16mm;display:flex;justify-content:space-between"><span>${book.title}</span><span class="pageNumber"></span></div>`;
+  const out = path.join(root, book.out);
+  mkdirSync(path.dirname(out), { recursive: true });
+  await page.pdf({ path: out, format: 'A4', printBackground: true, displayHeaderFooter: true, headerTemplate: '<span></span>', footerTemplate: footer, margin: { top: '16mm', bottom: '18mm', left: '16mm', right: '16mm' }, timeout: 300000 });
+  await browser.close();
+  console.log(`[${key}] mermaid: ${status}, failed diagrams: ${failed}; wrote ${book.out}`);
+}
 
-const outDir = path.join(root, 'scripts', 'pdf', 'out');
-mkdirSync(outDir, { recursive: true });
-const htmlPath = path.join(outDir, 'book.html');
-writeFileSync(htmlPath, html);
-
-const { chromium } = await import('/opt/node22/lib/node_modules/playwright/index.mjs').catch(() => import('playwright'));
-const browser = await chromium.launch();
-const page = await browser.newPage();
-await page.goto('file://' + htmlPath, { waitUntil: 'load' });
-const status = await page.evaluate(() => window.__mermaidDone);
-const failed = await page.evaluate(() => [...document.querySelectorAll('pre.mermaid')].filter(p => !p.querySelector('svg') || p.textContent.includes('Syntax error')).length);
-await page.evaluate(() => document.fonts.ready);
-const footer = `<div style="font-family:Inter,sans-serif;font-size:7.5pt;color:#8a8a93;width:100%;padding:0 16mm;display:flex;justify-content:space-between"><span>iOS 27 in 7 Days</span><span class="pageNumber"></span></div>`;
-const out = path.join(learn, 'ios27-in-7-days.pdf');
-await page.pdf({ path: out, format: 'A4', printBackground: true, displayHeaderFooter: true, headerTemplate: '<span></span>', footerTemplate: footer, margin: { top: '16mm', bottom: '18mm', left: '16mm', right: '16mm' } });
-await browser.close();
-console.log(`mermaid: ${status}, failed diagrams: ${failed}`);
-console.log('wrote', path.relative(root, out));
+const which = process.argv[2] || 'all';
+for (const key of which === 'all' ? Object.keys(BOOKS) : [which]) {
+  if (!BOOKS[key]) { console.error('unknown book', key); process.exit(1); }
+  await build(key);
+}
