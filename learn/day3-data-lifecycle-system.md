@@ -86,7 +86,7 @@ One iOS 27 change matters if you inherit UIKit code: apps built with the iOS 27 
 
 `UserDefaults` deserves a warning. Apple's docs say it stores data unencrypted and tell you to put personal or sensitive information in the Keychain instead. It's also a **required-reason API**: every app that touches it, including through `@AppStorage`, must declare why in its privacy manifest (more in model 5).
 
-**Files.** Your app lives in a sandbox. Use `URL.applicationSupportDirectory` for app-managed files, `URL.documentsDirectory` for files the person creates, and `URL.cachesDirectory` for anything you can rebuild. Files outside the sandbox come to you through the system: `fileImporter(isPresented:allowedContentTypes:allowsMultipleSelection:onCompletion:)` returns **security-scoped URLs**. You must call `startAccessingSecurityScopedResource()` before reading, `stopAccessingSecurityScopedResource()` after, and save `bookmarkData(options:includingResourceValuesForKeys:relativeTo:)` (not the path) if you need the file again next launch. For writes that must stay private while the phone is locked, pass a file-protection option such as `.completeFileProtection` when writing data. Document-based apps got a new model in iOS 27: `ReadableDocument` and `WritableDocument` read directly from a file URL, and the older `FileDocument` and `ReferenceFileDocument` are marked deprecated as of 27.2.
+**Files.** Your app lives in a sandbox. Use `URL.applicationSupportDirectory` for app-managed files, `URL.documentsDirectory` for files the person creates, and `URL.cachesDirectory` for anything you can rebuild. Files outside the sandbox come to you through the system: `fileImporter(isPresented:allowedContentTypes:allowsMultipleSelection:onCompletion:)` returns **security-scoped URLs**. You must call `startAccessingSecurityScopedResource()` before reading, `stopAccessingSecurityScopedResource()` after, and save `bookmarkData(options:includingResourceValuesForKeys:relativeTo:)` (not the path) if you need the file again next launch. Resolve it with `URL(resolvingBookmarkData:options:relativeTo:bookmarkDataIsStale:)`, and save a fresh bookmark when it reports stale. For writes that must stay private while the phone is locked, pass a file-protection option such as `.completeFileProtection` when writing data. Document-based apps got a new model in iOS 27: `ReadableDocument` and `WritableDocument` read directly from a file URL, and the older `FileDocument` and `ReferenceFileDocument` are marked deprecated as of 27.2.
 
 **Secrets and identity.** The Keychain (`SecItemAdd`, `SecItemCopyMatching`, `SecItemUpdate`, `SecItemDelete`) stores small secrets. Its most important attribute is `kSecAttrAccessible`. The default is `kSecAttrAccessibleWhenUnlocked`, which means a background task can't read the item while the phone is locked. Apple recommends `kSecAttrAccessibleAfterFirstUnlock` for items that background work needs. For sign-in, prefer **passkeys**: create an `ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier:)`, ask it for a registration or assertion request with a server-issued challenge, and run it with SwiftUI's `@Environment(\.authorizationController)` and its async `performRequest(_:)`. The result comes back as an `ASAuthorizationResult` case such as `.passkeyRegistration` or `.passkeyAssertion`; your server verifies it. Passkeys need the Associated Domains entitlement with a `webcredentials` entry. iOS 26 added account creation with passkeys (`ASAuthorizationAccountCreationProvider`), and iOS 26.2 added `ASCredentialDataManager` to tell password managers when credentials change. For Sign in with Apple, use `SignInWithAppleButton` and check `credentialState(forUserID:)` at launch, because people can revoke it from Settings.
 
@@ -98,7 +98,9 @@ One iOS 27 change matters if you inherit UIKit code: apps built with the iOS 27 
 
 A `ModelContainer` holds the schema and the store configuration. It's `Sendable`, you create it once, and the app, widgets, and extensions can all open the same store through an App Group (`ModelConfiguration(groupContainer:)`). A `ModelContext` tracks inserted, changed, and deleted models in memory until you save. The container's `mainContext` is bound to the main actor, and SwiftData turns on `autosaveEnabled` for it. Every other context, including the one inside a `@ModelActor`, starts with autosave **off**, so background code must call `save()` itself.
 
-Model objects belong to the context that fetched them. To hand work to another actor, pass the model's `persistentModelID` (a `PersistentIdentifier`, which is `Sendable`) and fetch it again on the other side. In views, `@Query` keeps results live. New in iOS 27: `@Query` can return `SectionedResults` grouped by a string key path, and `ResultsObserver` gives you the same live, `Observable` results outside a view. Apple documents it as reacting to changes from the same context, other contexts in the container, and other processes or CloudKit. `HistoryObserver` (also iOS 27) watches for changes written elsewhere and bumps an `eventCounter`, which is your cue to read persistent history.
+Model objects belong to the context that fetched them. To hand work to another actor, pass the model's `persistentModelID` (a `PersistentIdentifier`, which is `Sendable`) and fetch it again on the other side. Errand goes one step further: only the store actor writes records, and it hands everything outside Day 1's `Sendable` value snapshots. Read-only screens can still use `@Query` on the main context. In views, `@Query` keeps results live. New in iOS 27: `@Query` can return `SectionedResults` grouped by a string key path, and `ResultsObserver` gives you the same live, `Observable` results outside a view. Apple documents it as reacting to changes from the same context, other contexts in the container, and other processes or CloudKit. `HistoryObserver` (also iOS 27) watches for changes written elsewhere and bumps an `eventCounter`, which is your cue to read persistent history.
+
+Extensions are other processes. A widget, an App Intents extension, or a notification service extension shares nothing with your app except what you put in the App Group: the SwiftData store, a `UserDefaults(suiteName:)` suite, files under `containerURL(forSecurityApplicationGroupIdentifier:)`, and Keychain items with a shared `kSecAttrAccessGroup`. After the app writes something a widget shows, call `WidgetCenter.shared.reloadTimelines(ofKind:)`; when an extension writes, `HistoryObserver` tells the app. An extension can schedule a background task, but only the main app can register it, and an extension that needs a moment to finish uses `ProcessInfo.performExpiringActivity(withReason:using:)`.
 
 Schemas change, and people's data doesn't reset when you ship an update. Wrap every shipped schema in a `VersionedSchema`, list the versions in a `SchemaMigrationPlan`, and describe each hop as a lightweight or custom `MigrationStage`. If you'll sync with CloudKit, design for its limits from the first version: Apple's docs say CloudKit can't enforce unique constraints, requires all relationships to be optional, can't support the `.deny` delete rule, and treats the production schema as additive only.
 
@@ -122,7 +124,7 @@ Requests are one-shot and scarce. Only one refresh request and ten processing re
 
 `BGContinuedProcessingTask` is the one agentic apps care about most. It starts in the foreground from a person's action. If they leave the app, the system keeps the job alive and shows its title, subtitle, and progress in a Live Activity, where they can cancel it. Report progress honestly: when resources get tight, the system ends tasks that show little progress first. If the person swipes your app away in the app switcher, the task is cancelled and your app gets no signal. GPU use in the background needs the Background GPU Access entitlement; iOS 27 adds a Background Inference entitlement, which the system requires for any Neural Engine use while your app is in the background.
 
-Background pushes are hints, not a channel. Apple says to send no more than two or three per hour, the system may hold them and keep only the newest, and it discards held ones if the person force-quits the app. Energy sits behind all of this. In Low Power Mode the system pauses discretionary and background activity; check `ProcessInfo.processInfo.isLowPowerModeEnabled`, and at a `.serious` or `.critical` `thermalState` cut optional work.
+Background pushes are hints, not a channel. Apple says to send no more than two or three per hour, the system may hold them and keep only the newest, and it discards held ones if the person force-quits the app. Energy sits behind all of this. In Low Power Mode the system pauses discretionary and background activity; check `ProcessInfo.processInfo.isLowPowerModeEnabled`, and at a `.serious` or `.critical` `thermalState` cut optional work. Both can change while you run: observe `thermalStateDidChangeNotification` and `NSProcessInfoPowerStateDidChange` through `NotificationCenter.default.notifications(named:)`.
 
 **Senior tell:** They design background work as resumable batches with checkpoints and honest progress, so being killed halfway loses one item, not the whole job.
 
@@ -144,9 +146,9 @@ Privacy has a paperwork side too. A `PrivacyInfo.xcprivacy` file declares the da
 
 Checking reachability before a request is a race: the answer can change a moment later. Instead, set `waitsForConnectivity = true` on the session configuration. When there's no route, the session waits for one instead of failing at once. Then set `timeoutIntervalForResource` to something you can live with, because the default is seven days. `URLSession` throws for transport errors only. An HTTP 404 or 500 comes back as a normal response, so check `statusCode` yourself. Create one session per configuration and reuse it; Apple warns against creating more sessions than you need.
 
-`NWPathMonitor` is an `AsyncSequence` of `NWPath` values. Use it for hints in the UI (an offline banner, pausing prefetch), not as a gate. `isExpensive` means cellular or a hotspot, `isConstrained` means Low Data Mode, and iOS 26 added `isUltraConstrained` and `linkQuality`.
+`NWPathMonitor` is an `AsyncSequence` of `NWPath` values. Use it for hints in the UI (an offline banner, pausing prefetch), not as a gate. `isExpensive` means cellular or a hotspot, `isConstrained` means Low Data Mode, and iOS 26 added `isUltraConstrained` and `linkQuality`. For prefetching and other optional traffic, Apple suggests a session with `allowsConstrainedNetworkAccess` and `allowsExpensiveNetworkAccess` set to `false` plus `waitsForConnectivity`, so tasks wait for a better network instead of spending the person's data.
 
-Background `URLSession` transfers run in a separate system process, so they survive your app being suspended or ended. That comes with rules: HTTP and HTTPS only, uploads only from files, redirects always followed, a delegate is required, and relaunch delays grow each time the system wakes you for a new transfer. If the app was ended, recreate the session with the same identifier at launch so the system can reconnect it. For protocols other than HTTP (TCP, UDP, QUIC, Bonjour), use the Network framework; iOS 26 added Swift-first `NetworkConnection`, `NetworkListener`, and `NetworkBrowser`. Local-network access needs `NSLocalNetworkUsageDescription`.
+Background `URLSession` transfers run in a separate system process, so they survive your app being suspended or ended. That comes with rules: HTTP and HTTPS only, uploads only from files, redirects always followed, a delegate is required, and relaunch delays grow each time the system wakes you for a new transfer. If the app was ended, recreate the session with the same identifier at launch so the system can reconnect it. `sessionSendsLaunchEvents` (on by default) is what wakes the app when transfers finish, and `isDiscretionary` lets the system wait for good conditions such as Wi-Fi and power. For protocols other than HTTP (TCP, UDP, QUIC, Bonjour), use the Network framework; iOS 26 added Swift-first `NetworkConnection`, `NetworkListener`, and `NetworkBrowser`. Local-network access needs `NSLocalNetworkUsageDescription`.
 
 **Senior tell:** They never ask "are we online?" before a request. They ask "what does the person see while we wait, and when do we give up?"
 
@@ -210,25 +212,29 @@ What the person is entitled to right now is `Transaction.currentEntitlements`. C
 
 ## Core patterns in code
 
-The snippets build Errand's data layer with Swift 6 strict concurrency. They assume the compiler's default isolation (nonisolated). If your target sets **Default Actor Isolation** (`SWIFT_DEFAULT_ACTOR_ISOLATION`) to `MainActor`, types that run off the main actor must opt out; the helper types below already say `nonisolated`.
+The snippets extend the Errand project from Days 1 and 2. That project sets **Default Actor Isolation** to `MainActor`, so every type that runs off the main actor says `nonisolated`, just like Day 1's `Errand`, `Step` and `Status`. The architecture stays the same: `ErrandStore` is still the one writer, now backed by SwiftData. Inside the store, data lives in `@Model` *records*; outside, the store hands out Day 1's `Sendable` value snapshots, never records. Day 4 relies on that.
 
-**1. The app's wiring: one container, scene phases, and a background refresh.**
+**1. The app's wiring: one container, one store, scene phases, and a background refresh.**
 
 ```swift
 import SwiftUI
 import SwiftData
-import BackgroundTasks
 
 @main
 struct ErrandApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @Environment(\.scenePhase) private var scenePhase      // in App: the aggregate of all scenes
+    @Environment(\.scenePhase) private var scenePhase                 // in App: all scenes combined
+    @State private var board = ErrandBoard(store: Persistence.store)   // Day 2's board, new store
 
     var body: some Scene {
-        WindowGroup { RootView() }
-            .modelContainer(Persistence.container)
+        WindowGroup { ErrandListView().environment(board) }
+            .modelContainer(Persistence.container)                     // for read-only @Query screens
             .onChange(of: scenePhase) {
-                if scenePhase == .background { Task.detached { await Refresh.schedule() } }
+                switch scenePhase {
+                case .active: Task { await board.load() }             // pick up background changes
+                case .background: Task.detached { await Refresh.schedule() }
+                default: break
+                }
             }
             .backgroundTask(.appRefresh(Refresh.identifier)) {
                 await Refresh.schedule()   // requests are one-shot: queue the next one first
@@ -237,157 +243,148 @@ struct ErrandApp: App {
     }
 }
 
-nonisolated enum Refresh {
-    static let identifier = "com.example.errand.refresh"   // also in BGTaskSchedulerPermittedIdentifiers
-
-    static func schedule() async {
-        let request = BGAppRefreshTaskRequest(identifier: identifier)
-        request.earliestBeginDate = .now.addingTimeInterval(60 * 60)
-        try? await BGTaskScheduler.shared.submitTaskRequest(request)   // iOS 27 replacement for submit(_:)
-    }
-}
-
 nonisolated enum Persistence {
     static let container: ModelContainer = {
         let config = ModelConfiguration(groupContainer: .identifier("group.com.example.errand"),
-                                        cloudKitDatabase: .none)   // turn sync on deliberately, later
+                                        cloudKitDatabase: .none)       // turn sync on deliberately, later
         do {
-            return try ModelContainer(for: Errand.self, Step.self,
+            return try ModelContainer(for: ErrandRecord.self, StepRecord.self,
                                       migrationPlan: ErrandMigrationPlan.self, configurations: config)
         } catch { fatalError("Could not open the Errand store: \(error)") }
     }()
+    static let store = ErrandStore(modelContainer: container)         // the one writer, shared by everyone
 }
 ```
 
-- `.modelContainer(_:)` on the scene puts one main-actor context in every window's environment. `Persistence.container` is shared so the app delegate, background tasks, and a widget (same App Group) open the same store.
-- SwiftUI registers the refresh handler for you. You still add the identifier to `BGTaskSchedulerPermittedIdentifiers` and turn on the Background fetch mode.
-- `submitTaskRequest(_:)` runs from a detached task because Apple's docs say not to call it on the main thread. `AppDelegate` appears in today's Practice.
+- `Persistence` holds one container and one store actor. The app, the notification delegate, and background jobs all write through the same `ErrandStore`, and a widget in the same App Group opens the same file.
+- Coming back to `.active` reloads the board, because a notification action or a batch job may have changed data while the UI was away.
+- SwiftUI registers the refresh handler for you (`Refresh` is in pattern 7). You still list the identifier in `BGTaskSchedulerPermittedIdentifiers` and turn on the Background fetch mode. `Refresh.schedule()` runs in a detached task because Apple's docs say not to submit from the main thread.
 
-**2. Models with an index, a cascade, and an iOS 27 `Codable` attribute.**
+**2. Records: `@Model` classes with an index, a rename, a cascade, and an iOS 27 `Codable` attribute.**
 
 ```swift
 import Foundation
 import SwiftData
 
-extension ErrandSchemaV2 {                      // the version enum lives in pattern 4
-    @Model
-    final class Errand {
-        #Index<Errand>([\.dueDate], [\.stage, \.dueDate])
-
+extension ErrandSchemaV2 {                                   // the version enums are in pattern 4
+    @Model nonisolated final class ErrandRecord {
+        #Index<ErrandRecord>([\.createdAt], [\.due, \.title])
         var id: UUID = UUID()
         var title: String = ""
-        var dueDate: Date = Date.now
-        var stage: String = "Planning"           // "Planning", "Needs you", "Overdue", "Done"
-        @Attribute(.codable) var reminder: DateComponents?   // a Codable type you don't own
-        @Relationship(deleteRule: .cascade, inverse: \Step.errand)
-        var steps: [Step] = []
+        @Attribute(originalName: "dueDate") var due: Date?   // renamed since V1
+        var createdAt: Date = Date.now
+        @Attribute(.codable) var reminder: DateComponents?    // iOS 27: a Codable type you don't own
+        @Relationship(deleteRule: .cascade, inverse: \StepRecord.errand)
+        var steps: [StepRecord] = []
 
-        init(title: String, dueDate: Date) {
-            self.title = title
-            self.dueDate = dueDate
+        init(id: UUID, title: String, due: Date?, createdAt: Date) {
+            self.id = id; self.title = title; self.due = due; self.createdAt = createdAt
         }
     }
 
-    @Model
-    final class Step {
+    @Model nonisolated final class StepRecord {
+        var id: UUID = UUID()
         var title: String = ""
-        var order: Int = 0
-        var isDone: Bool = false
-        var needsApproval: Bool = false          // side effects wait for a tap (Days 4–5)
-        var preparedNote: String?                // filled in by today's batch job
-        var errand: Errand?
+        var statusRaw: String = Status.pending.rawValue       // Day 1's Status, stored as its raw value
+        var needsApproval: Bool = false
+        var order: Int = 0                                    // store the step order explicitly
+        var preparedNote: String?                             // new in V2: filled in by the batch job
+        var errand: ErrandRecord?
 
-        init(title: String, order: Int) {
-            self.title = title
-            self.order = order
+        init(id: UUID, title: String, statusRaw: String, needsApproval: Bool, order: Int) {
+            self.id = id; self.title = title; self.statusRaw = statusRaw
+            self.needsApproval = needsApproval; self.order = order
         }
     }
 }
 ```
 
-- Every property has a default and the to-one relationship is optional. That keeps the door open for CloudKit, which also rules out `#Unique` here.
-- `#Index` lists one single-column and one compound index, matching the list's sort and the "overdue" filter. Indexes speed up reads and cost a little on every write.
-- `.cascade` deletes an errand's steps with it. The default rule, `.nullify`, would leave orphaned steps behind.
+- The records keep Day 1's IDs, so a `UUID` in a notification, a URL, or an App Intent finds the same errand everywhere.
+- Every property has a default and the to-one relationship is optional, which keeps the door open for CloudKit (and rules out `#Unique`). `.cascade` deletes an errand's steps with it; the default, `.nullify`, would leave orphaned steps.
+- `#Index` declares a single-column index (the store's sort) and a compound one (a "due soon" list sorted by title). `@Attribute(originalName:)` tells the migration that `due` used to be called `dueDate`.
 
-**3. A sectioned, restorable, linkable list.**
+**3. A read-only, sectioned, restorable screen.**
 
 ```swift
 import SwiftUI
 import SwiftData
 
-struct RootView: View {
-    @SceneStorage("openErrand") private var openErrandID: String?   // per window, system-restored
-    @Query(sort: \Errand.dueDate, sectionBy: \Errand.stage)          // iOS 27
-    private var errands: SectionedResults<Errand, String>
+struct StepsOverview: View {                                          // reads only; writes go through ErrandStore
+    @SceneStorage("overview.showDone") private var showDone = false   // per window, restored by the system
+    @Query(sort: \StepRecord.order, sectionBy: \StepRecord.statusRaw)  // iOS 27
+    private var steps: SectionedResults<StepRecord, String>
 
     var body: some View {
-        NavigationStack {
-            List(errands) { section in
-                Section(section.title) {
-                    ForEach(section) { errand in
-                        Button(errand.title) { openErrandID = errand.id.uuidString }
+        List(steps) { section in
+            if showDone || section.title != Status.done.rawValue {
+                Section(section.title) {                              // map raw values to labels in real UI
+                    ForEach(section) { step in
+                        LabeledContent(step.title, value: step.errand?.title ?? "")
                     }
                 }
             }
-            .navigationTitle("Errands")
-            .navigationDestination(item: $openErrandID) { id in
-                ErrandDetailView(errandID: id)                       // your Day 2 screen
-            }
         }
-        .onOpenURL { url in                                          // errand://open/<uuid> or a universal link
-            if let id = UUID(uuidString: url.lastPathComponent) { openErrandID = id.uuidString }
-        }
+        .navigationTitle("All steps")
+        .toolbar { Toggle("Show done", isOn: $showDone) }
     }
 }
 ```
 
-- `SectionedResults` is a collection of `ResultsSection`s; each section has a `title` and is itself a collection of models.
-- The scene stores only an ID string, never the model. On relaunch the system restores the string, and the view looks the errand up again.
-- The URL handler parses and validates before it acts, because anything can send your app a URL.
+- `SectionedResults` is a collection of `ResultsSection`s. Each section has a `title` and is itself a collection of records.
+- `@Query` reads through the main context in the environment (pattern 1's `.modelContainer`). Reading records directly in a view is fine; writing stays in the store, so there is one place that enforces Day 1's state machine.
+- Deep links go where the navigation state lives. In Day 2's `ErrandListView`, add `.onOpenURL { url in if let id = UUID(uuidString: url.lastPathComponent) { path = [id] } }`, which handles both a custom scheme and a universal link.
 
-**4. Versioned schemas and a migration that fixes up data.**
+**4. Versioned schemas and a migration that repairs data.**
 
 ```swift
 import Foundation
 import SwiftData
 
-enum ErrandSchemaV1: VersionedSchema {          // what Day 1 shipped; never edit it again
+nonisolated enum ErrandSchemaV1: VersionedSchema {       // the first schema you ship; frozen from then on
     static var versionIdentifier: Schema.Version { Schema.Version(1, 0, 0) }
-    static var models: [any PersistentModel.Type] { [Errand.self] }
+    static var models: [any PersistentModel.Type] { [ErrandRecord.self, StepRecord.self] }
 
-    @Model final class Errand {
+    @Model nonisolated final class ErrandRecord {
         var id: UUID = UUID()
         var title: String = ""
-        var dueDate: Date = Date.now
-        init(title: String, dueDate: Date) { self.title = title; self.dueDate = dueDate }
+        var dueDate: Date?
+        var createdAt: Date = Date.now
+        @Relationship(deleteRule: .cascade, inverse: \StepRecord.errand) var steps: [StepRecord] = []
+        init() {}
+    }
+    @Model nonisolated final class StepRecord {
+        var id: UUID = UUID()
+        var title: String = ""
+        var statusRaw: String = "pending"
+        var needsApproval: Bool = false
+        var errand: ErrandRecord?
+        init() {}
     }
 }
 
-enum ErrandSchemaV2: VersionedSchema {
+nonisolated enum ErrandSchemaV2: VersionedSchema {
     static var versionIdentifier: Schema.Version { Schema.Version(2, 0, 0) }
-    static var models: [any PersistentModel.Type] { [Errand.self, Step.self] }
+    static var models: [any PersistentModel.Type] { [ErrandRecord.self, StepRecord.self] }
 }
+typealias ErrandRecord = ErrandSchemaV2.ErrandRecord    // the rest of the app sees only the latest version
+typealias StepRecord = ErrandSchemaV2.StepRecord
 
-typealias Errand = ErrandSchemaV2.Errand       // the rest of the app sees only the latest version
-typealias Step = ErrandSchemaV2.Step
-
-enum ErrandMigrationPlan: SchemaMigrationPlan {
+nonisolated enum ErrandMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] { [ErrandSchemaV1.self, ErrandSchemaV2.self] }
     static var stages: [MigrationStage] {
         [.custom(fromVersion: ErrandSchemaV1.self, toVersion: ErrandSchemaV2.self, willMigrate: nil,
                  didMigrate: { context in
-                     for errand in try context.fetch(FetchDescriptor<Errand>()) where errand.dueDate < .now {
-                         errand.stage = "Overdue"
-                     }
+                     let stuck = FetchDescriptor<StepRecord>(predicate: #Predicate<StepRecord> { $0.statusRaw == "running" })
+                     for step in try context.fetch(stuck) { step.statusRaw = "pending" }
                      try context.save()
                  })]
     }
 }
 ```
 
-- Adding properties with defaults and a new model is the kind of change a `.lightweight` stage is for. The `.custom` stage is here for the data fix-up in `didMigrate`, which runs after the store has the new shape.
+- V2 renames a property and adds some with defaults, the kind of change a `.lightweight` stage is for. The `.custom` stage is here for the repair in `didMigrate`, which runs after the store has the new shape: a step still marked `running` was interrupted when the process ended, so it starts over.
 - Test a migration by installing a V1 build, adding data, then installing V2 over it. A fresh simulator only ever tests the latest schema.
-- The typealiases keep the rest of the code version-free. Next time you change the models, copy V2 into V3 and move the aliases.
+- The typealiases keep the rest of the code version-free. Next time, copy V2 into V3 and move the aliases.
 
 **5. Networking with a token from the Keychain.**
 
@@ -395,7 +392,7 @@ enum ErrandMigrationPlan: SchemaMigrationPlan {
 import Foundation
 import Security
 
-struct PlaceHours: Decodable, Sendable { let name: String; let opensAt: Date; let closesAt: Date }
+nonisolated struct PlaceHours: Decodable, Sendable { let name: String; let opensAt: Date; let closesAt: Date }
 
 nonisolated enum PlacesAPI {
     private static let session: URLSession = {
@@ -431,7 +428,7 @@ nonisolated enum PlacesAPI {
 }
 ```
 
-- One `static` session, reused for every call. `PlaceHours` is `Sendable`, so results can cross actors freely.
+- One `static` session, reused for every call. `PlaceHours` is `nonisolated`, so its `Decodable` conformance isn't tied to the main actor (Day 1's isolated-conformance trap), and `Sendable`, so results cross actors freely.
 - The thrown errors are transport problems (no route, TLS failure, timeout). Server errors are responses, so the status check is part of the pattern.
 - Keychain calls are synchronous and cheap. When you write the token with `SecItemAdd`, set `kSecAttrAccessible` explicitly.
 
@@ -479,29 +476,37 @@ nonisolated enum Reminders {
 - `.timeSensitive` can break through Focus and scheduled summaries. The HIG reserves it for events happening now or within an hour, and never for marketing.
 - The notification carries an ID, not the errand. Whoever handles the action looks the errand up again, possibly in a freshly launched process.
 
-**7. A user-started batch job that survives leaving the app.**
+**7. Background work: a refresh the system schedules, and a batch job the person starts.**
 
 ```swift
 import BackgroundTasks
-import SwiftData
+import Foundation
+
+nonisolated enum Refresh {
+    static let identifier = "com.example.errand.refresh"          // also in BGTaskSchedulerPermittedIdentifiers
+    static func schedule() async {                                // call off the main thread
+        let request = BGAppRefreshTaskRequest(identifier: identifier)
+        request.earliestBeginDate = .now.addingTimeInterval(60 * 60)
+        try? await BGTaskScheduler.shared.submitTaskRequest(request)   // iOS 27 replacement for submit(_:)
+    }
+}
 
 nonisolated enum StepBatch {
     // Info.plist BGTaskSchedulerPermittedIdentifiers must contain "com.example.errand.steps.*"
     private static let prefix = "com.example.errand.steps"
-    private struct Handle: @unchecked Sendable { let task: BGContinuedProcessingTask }  // BGTask isn't Sendable
+    private struct Handle: @unchecked Sendable { let task: BGContinuedProcessingTask }   // BGTask isn't Sendable
 
     /// Call from a button action: this kind of task must start from a person's tap, in the foreground.
-    static func start(pendingCount: Int, container: ModelContainer) {
+    static func start(pendingCount: Int, store: ErrandStore) {
         let identifier = "\(prefix).\(UUID().uuidString)"
         let registered = BGTaskScheduler.shared.register(forTaskWithIdentifier: identifier, using: nil) { task in
             guard let task = task as? BGContinuedProcessingTask else { return }
             let handle = Handle(task: task)
             let progress = task.progress                          // Progress is Sendable
             let work = Task {
-                let finished = await ErrandWorker(modelContainer: container)
-                    .prepareAllPending(progress: progress) { done, total in
-                        handle.task.updateTitle("Preparing steps", subtitle: "\(done) of \(total) done")
-                    }
+                let finished = await store.prepareAllPending(progress: progress) { done, total in
+                    handle.task.updateTitle("Preparing steps", subtitle: "\(done) of \(total) done")
+                }
                 handle.task.setTaskCompleted(success: finished)
             }
             task.expirationHandler = { work.cancel() }            // person cancelled it, or the system needs resources
@@ -518,9 +523,9 @@ nonisolated enum StepBatch {
 }
 ```
 
-- The identifier uses Apple's wildcard scheme: Info.plist permits `prefix.*`, and each job submits a unique `prefix.<suffix>`. Each concrete identifier is registered exactly once.
+- Continued tasks use Apple's wildcard scheme: Info.plist permits `prefix.*`, and each job registers and submits a unique `prefix.<suffix>`, so no identifier is registered twice.
 - The system shows the title, subtitle, and `progress` in a Live Activity. `updateTitle(_:subtitle:)` keeps that text honest while the job runs.
-- `Handle` is the one `@unchecked Sendable` in the chapter. `BGTask` isn't `Sendable`; the promise we make by hand is that, apart from setting the expiration handler, only the job's own `Task` touches it.
+- `Handle` is the one `@unchecked Sendable` in the chapter. `BGTask` isn't `Sendable`; the promise we make by hand is that, apart from setting the expiration handler, only the job's own `Task` touches it. The job itself runs inside `ErrandStore` (today's Practice), so the store stays the only writer.
 
 ## What's new in iOS 27 (and what old tutorials get wrong)
 
@@ -572,8 +577,8 @@ nonisolated enum StepBatch {
 
 ## Practice
 
-1. **Watch the life cycle.** Log every `scenePhase` change from a view and from the `App`. Open two windows on an iPad simulator, background the app, then stop it from Xcode while it's suspended and relaunch it.
-   *Done when:* you can explain why the view-level and app-level logs differ, and your selected errand comes back after relaunch through `@SceneStorage`, but not after you remove the window from the app switcher.
+1. **Watch the life cycle.** Log every `scenePhase` change from a view and from the `App`. Make Day 2's list restore the open errand: keep the last ID from `path` in `@SceneStorage` and rebuild `path` from it on appear. Open two windows on an iPad simulator, background the app, then stop it from Xcode while it's suspended and relaunch it.
+   *Done when:* you can explain why the view-level and app-level logs differ, and each window reopens its own errand after relaunch, but not after you remove that window from the app switcher.
 
 2. **Audit Errand's storage.** Make a table with every value Errand stores today: model data, preferences, UI state, the API token, cached place hours. Put each in the right tier from mental model 2, and add a `PrivacyInfo.xcprivacy` that declares your `UserDefaults` use.
    *Done when:* nothing sensitive is in `UserDefaults` or `@SceneStorage`, the token is in the Keychain with `kSecAttrAccessibleAfterFirstUnlock`, and the privacy manifest lists `NSPrivacyAccessedAPICategoryUserDefaults` with `CA92.1`.
@@ -617,51 +622,37 @@ nonisolated enum StepBatch {
    *Done when:* in Airplane Mode the screen shows "Waiting for network" instead of an instant error, turning Airplane Mode off completes the request without a retry button, and a 500 from the server shows a different message than no network.
 
 5. **Capstone step: Errand remembers, reminds, and works while you're away** (about 1.5 hours).
-   - Persist errands and steps with the SwiftData models and migration plan from patterns 2 and 4, shared through an App Group.
-   - When the person saves their first errand, call `Reminders.requestPermission()`. Then schedule a reminder two hours before each due date with `Reminders.schedule(...)`.
-   - Handle the actions. Add this app delegate and router, plus the worker below.
-   - Add a "Prepare all steps" button that calls `StepBatch.start(pendingCount:container:)` (pattern 7).
+   - Add the records, schemas, and migration plan (patterns 2 and 4) and `Persistence` (pattern 1). Turn on App Groups with `group.com.example.errand`.
+   - Rewrite Day 1's `ErrandStore` as a `@ModelActor` with the same method signatures, so Day 2's `ErrandBoard` compiles unchanged. It maps records to snapshots at the boundary. Write `add(_:)` yourself (insert an `ErrandRecord` with one `StepRecord` per step, `order` set, then save), `errand(withID:)` as a fetch by `id` that returns a snapshot, and Day 2's `remove(_:)` as fetch, delete, save (the cascade removes the steps). In Day 1's tests, build the store with a container that uses `ModelConfiguration(isStoredInMemoryOnly: true)`.
+   - When the person saves their first errand, call `Reminders.requestPermission()`. Then, from the board, after each `store.add(_:)`, schedule a reminder two hours before the due date with `Reminders.schedule(...)`.
+   - Handle the notification actions with the app delegate and router below.
+   - Add a "Prepare all steps" button that calls `StepBatch.start(pendingCount:store:)` with `Persistence.store` (pattern 7).
 
    ```swift
-   import SwiftData
-   import UIKit
-   import UserNotifications
+   import Foundation
 
-   final class AppDelegate: NSObject, UIApplicationDelegate {
-       private let router = NotificationRouter(container: Persistence.container)   // delegate is weak
-
-       func application(_ application: UIApplication,
-                        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-           UNUserNotificationCenter.current().delegate = router                     // before launch finishes
-           Reminders.registerCategories()
-           return true
+   nonisolated extension ErrandRecord {
+       var snapshot: Errand {
+           Errand(id: id, title: title, due: due, createdAt: createdAt,
+                  steps: steps.sorted { $0.order < $1.order }.map(\.snapshot))
        }
    }
 
-   nonisolated final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
-       private let container: ModelContainer
-       init(container: ModelContainer) { self.container = container }
-
-       func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                   didReceive response: UNNotificationResponse) async {
-           let original = response.notification.request
-           guard let raw = original.content.userInfo["errandID"] as? String,
-                 let errandID = UUID(uuidString: raw) else { return }
-           switch response.actionIdentifier {
-           case Reminders.markDone:
-               await ErrandWorker(modelContainer: container).completeNextStep(of: errandID)
-           case Reminders.snooze:
-               let again = UNNotificationRequest(identifier: original.identifier, content: original.content,
-                                                 trigger: UNTimeIntervalNotificationTrigger(timeInterval: 3600, repeats: false))
-               try? await center.add(again)
-           default:
-               break                                  // a plain tap opens the app; route it like a deep link
-           }
+   nonisolated extension StepRecord {
+       var snapshot: Step {
+           Step(id: id, title: title, status: Status(rawValue: statusRaw) ?? .pending, needsApproval: needsApproval)
        }
+   }
 
-       func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                   willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-           [.banner, .list, .sound]
+   nonisolated extension Errand {             // Day 1's init makes new IDs; this one keeps stored ones
+       init(id: UUID, title: String, due: Date?, createdAt: Date, steps: [Step]) {
+           self.id = id; self.title = title; self.due = due; self.createdAt = createdAt; self.steps = steps
+       }
+   }
+
+   nonisolated extension Step {
+       init(id: UUID, title: String, status: Status, needsApproval: Bool) {
+           self.id = id; self.title = title; self.status = status; self.needsApproval = needsApproval
        }
    }
    ```
@@ -671,35 +662,106 @@ nonisolated enum StepBatch {
    import SwiftData
 
    @ModelActor
-   actor ErrandWorker {
-       /// Prepares every unfinished step that has no note yet. Returns false if cancelled.
+   actor ErrandStore {                                    // Day 1's API, now backed by SwiftData
+       var all: [Errand] {
+           let byDate = FetchDescriptor<ErrandRecord>(sortBy: [SortDescriptor(\ErrandRecord.createdAt)])
+           return ((try? modelContext.fetch(byDate)) ?? []).map(\.snapshot)
+       }
+
+       func move(step stepID: Step.ID, in errandID: Errand.ID, to next: Status) throws(StoreError) {
+           var byID = FetchDescriptor<StepRecord>(predicate: #Predicate<StepRecord> { $0.id == stepID })
+           byID.fetchLimit = 1
+           guard let record = try? modelContext.fetch(byID).first else { throw .stepNotFound(stepID) }
+           guard record.errand?.id == errandID else { throw .errandNotFound(errandID) }
+           let current = Status(rawValue: record.statusRaw) ?? .pending
+           guard current.canMove(to: next) else { throw .invalidMove(from: current, to: next) }
+           record.statusRaw = next.rawValue
+           try? modelContext.save()                       // this context doesn't autosave
+       }
+
+       /// The notification's "Mark next step done". A step that needs approval is never completed here.
+       func completeNextStep(of errandID: Errand.ID) {
+           let pending = Status.pending.rawValue
+           var next = FetchDescriptor<StepRecord>(
+               predicate: #Predicate<StepRecord> { $0.errand?.id == errandID && $0.statusRaw == pending },
+               sortBy: [SortDescriptor(\StepRecord.order)])
+           next.fetchLimit = 1
+           guard let step = try? modelContext.fetch(next).first, !step.needsApproval else { return }
+           try? move(step: step.id, in: errandID, to: .running)   // Day 1's state machine still decides
+           try? move(step: step.id, in: errandID, to: .done)
+       }
+   }
+   ```
+
+   ```swift
+   import Foundation
+   import SwiftData
+
+   extension ErrandStore {
+       /// Today's batch job. Returns false if cancelled.
        func prepareAllPending(progress: Progress, report: @Sendable (Int, Int) -> Void) async -> Bool {
-           let pending = FetchDescriptor<Step>(predicate: #Predicate<Step> { $0.preparedNote == nil && !$0.isDone },
-                                               sortBy: [SortDescriptor(\Step.order)])
-           guard let steps = try? modelContext.fetch(pending) else { return false }
+           let pending = Status.pending.rawValue
+           let todo = FetchDescriptor<StepRecord>(
+               predicate: #Predicate<StepRecord> { $0.statusRaw == pending && $0.preparedNote == nil },
+               sortBy: [SortDescriptor(\StepRecord.order)])
+           guard let steps = try? modelContext.fetch(todo) else { return false }
            progress.totalUnitCount = Int64(steps.count)
            for (index, step) in steps.enumerated() {
                if Task.isCancelled { return false }
                try? await Task.sleep(for: .milliseconds(500))   // stand-in for real work; Day 5 plugs in the planner
                step.preparedNote = "Checked \(Date.now.formatted(date: .omitted, time: .shortened))"
-               try? modelContext.save()                         // this context doesn't autosave
+               try? modelContext.save()                         // save per item: a swipe-away gives no warning
                progress.completedUnitCount = Int64(index + 1)
                report(index + 1, steps.count)
            }
            return true
        }
+   }
+   ```
 
-       func completeNextStep(of errandID: UUID) {
-           var next = FetchDescriptor<Step>(predicate: #Predicate<Step> { $0.errand?.id == errandID && !$0.isDone },
-                                            sortBy: [SortDescriptor(\Step.order)])
-           next.fetchLimit = 1
-           guard let step = try? modelContext.fetch(next).first else { return }
-           step.isDone = true
-           try? modelContext.save()
+   ```swift
+   import UIKit
+   import UserNotifications
+
+   final class AppDelegate: NSObject, UIApplicationDelegate {
+       private let router = NotificationRouter(store: Persistence.store)    // the delegate property is weak
+
+       func application(_ application: UIApplication,
+                        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+           UNUserNotificationCenter.current().delegate = router              // before launch finishes
+           Reminders.registerCategories()
+           return true
+       }
+   }
+
+   nonisolated final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
+       private let store: ErrandStore
+       init(store: ErrandStore) { self.store = store }
+
+       func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                   didReceive response: UNNotificationResponse) async {
+           let original = response.notification.request
+           guard let raw = original.content.userInfo["errandID"] as? String,
+                 let errandID = UUID(uuidString: raw) else { return }
+           switch response.actionIdentifier {
+           case Reminders.markDone:
+               await store.completeNextStep(of: errandID)
+           case Reminders.snooze:
+               let again = UNNotificationRequest(identifier: original.identifier, content: original.content,
+                                                 trigger: UNTimeIntervalNotificationTrigger(timeInterval: 3600, repeats: false))
+               try? await center.add(again)
+           default:
+               break                                   // a plain tap opens the app; route it like a deep link
+           }
+       }
+
+       func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                   willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+           [.banner, .list, .sound]
        }
    }
    ```
-   *Done when:* errands survive a relaunch; a reminder with both actions arrives on a locked device; "Mark next step done" updates the store without opening the app, even after you stopped the app from Xcode first; "Prepare all steps" keeps running with a system progress Live Activity after you go to the Home Screen, and cancelling it from the Live Activity stops it with the finished steps saved. If your list doesn't refresh after the worker saves, drive it with a `ResultsObserver`, which is documented to see changes from other contexts.
+   *Done when:* errands survive a relaunch; a reminder with both actions arrives on a locked device; "Mark next step done" completes a harmless step without opening the app, even after you stopped the app from Xcode first, and leaves a step that needs approval alone; "Prepare all steps" keeps running with a system progress Live Activity after you go to the Home Screen, and cancelling it from the Live Activity stops it with the finished steps saved; returning to the app shows every change, because the board reloads on `.active`.
 
 ## Check yourself
 
@@ -750,11 +812,11 @@ SceneStorage — iOS 14.0<br>
 AppStorage — iOS 14.0<br>
 UIApplicationDelegateAdaptor — iOS 14.0<br>
 Scene.onChange(of:initial:_:) — iOS 17.0<br>
+LabeledContent.init(_:value:) — iOS 16.0<br>
 Scene.backgroundTask(_:action:) — iOS 16.0<br>
 BackgroundTask.appRefresh(_:) — iOS 16.0<br>
 View.onOpenURL(perform:) — iOS 14.0<br>
 View.onContinueUserActivity(_:perform:) — iOS 14.0<br>
-View.navigationDestination(item:destination:) — iOS 17.0<br>
 State() macro — iOS 13.0 (macro form when building with Xcode 27)<br>
 Scene.modelContainer(_:) — iOS 17.0<br>
 Model() — iOS 17.0<br>
@@ -771,6 +833,7 @@ ModelConfiguration, init(_:schema:isStoredInMemoryOnly:allowsSave:groupContainer
 ModelConfiguration.GroupContainer.identifier(_:) — iOS 17.0<br>
 ModelConfiguration.CloudKitDatabase (automatic, private(_:), none) — iOS 17.0<br>
 ModelContext, fetch(_:), save(), autosaveEnabled — iOS 17.0<br>
+ModelConfiguration.init(isStoredInMemoryOnly:) — iOS 17.0<br>
 ModelActor() macro — iOS 17.0<br>
 PersistentIdentifier — iOS 16.0 (as reported)<br>
 FetchDescriptor, init(predicate:sortBy:), fetchLimit — iOS 17.0<br>
@@ -781,7 +844,6 @@ SectionedResults — iOS 27.0<br>
 ResultsSection — iOS 27.0<br>
 ResultsObserver, init(filterBy:sortBy:modelContext:isolation:) — iOS 27.0<br>
 HistoryObserver, init(historyTokens:observedModels:authors:modelContainer:isolation:), eventCounter — iOS 27.0<br>
-HistoryDescriptor — iOS 18.0<br>
 VersionedSchema — iOS 17.0<br>
 SchemaMigrationPlan — iOS 17.0<br>
 MigrationStage.lightweight / .custom — iOS 17.0<br>
@@ -811,7 +873,7 @@ ASCredentialDataManager — iOS 26.2<br>
 ASCredentialUpdater — iOS 26.0, deprecated 26.2<br>
 SignInWithAppleButton — iOS 14.0<br>
 ASAuthorizationAppleIDProvider.credentialState(forUserID:) — iOS 13.0<br>
-URLSession.data(for:delegate:) / bytes(for:delegate:) / download(for:delegate:) — iOS 15.0<br>
+URLSession.data(for:delegate:) — iOS 15.0<br>
 URLSessionConfiguration.background(withIdentifier:) — iOS 8.0<br>
 URLSessionConfiguration.waitsForConnectivity — iOS 11.0<br>
 URLSessionConfiguration.timeoutIntervalForResource — iOS 7.0<br>
@@ -837,6 +899,8 @@ BGContinuedProcessingTaskRequest, init(identifier:title:subtitle:), strategy —
 Background GPU Access entitlement — iOS 26.0<br>
 Background Inference entitlement — iOS 27.0<br>
 UIApplication.beginBackgroundTask(withName:expirationHandler:) — iOS 7.0<br>
+ProcessInfo.performExpiringActivity(withReason:using:) — iOS 8.2<br>
+NSProcessInfoPowerStateDidChange — iOS 9.0<br>
 UIApplicationDelegate.applicationWillTerminate(_:) — iOS 2.0<br>
 Progress (Sendable) — iOS 7.0<br>
 LongRunningIntent — iOS 27.0<br>
@@ -851,16 +915,15 @@ UNTimeIntervalNotificationTrigger.init(timeInterval:repeats:) — iOS 10.0<br>
 UNMutableNotificationContent.interruptionLevel — iOS 15.0<br>
 UNNotificationInterruptionLevel — iOS 15.0<br>
 UNMutableNotificationContent.appEntityIdentifiers — iOS 27.0<br>
+EntityIdentifier (App Intents) — iOS 16.0<br>
 UNUserNotificationCenterDelegate userNotificationCenter(_:didReceive:) async / userNotificationCenter(_:willPresent:) async — iOS 10.0<br>
 UNNotificationPresentationOptions.banner / .list — iOS 14.0<br>
 UNNotificationServiceExtension, didReceive(_:withContentHandler:) — iOS 10.0<br>
 PHAuthorizationStatus.limited — iOS 14.0<br>
-PHPhotoLibrary.requestAuthorization(for:) — iOS 14.0<br>
 PhotosPicker — iOS 16.0<br>
 CNAuthorizationStatus.limited — iOS 18.0<br>
 ContactAccessButton — iOS 18.0<br>
 CLServiceSession — iOS 18.0<br>
-CLLocationUpdate.liveUpdates(_:) — iOS 17.0<br>
 NSPrivacyAccessedAPITypes — iOS 17.0<br>
 Product.products(for:) — iOS 15.0<br>
 PurchaseAction / EnvironmentValues.purchase — iOS 17.0<br>

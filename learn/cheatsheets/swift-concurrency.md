@@ -11,7 +11,7 @@ Swift 6.4 · Xcode 27 · iOS 27. Lowercase function names such as `refresh()` or
 | Swift Language Version = 6 | `SWIFT_VERSION` | `swiftLanguageModes: [.v6]` | Complete data-race checking. Violations are errors. |
 | Default Actor Isolation = MainActor | `SWIFT_DEFAULT_ACTOR_ISOLATION` | `.defaultIsolation(MainActor.self)` | Unannotated code in the module is `@MainActor`. Use it for app targets. |
 | Approachable Concurrency = Yes | `SWIFT_APPROACHABLE_CONCURRENCY` | `.enableUpcomingFeature("NonisolatedNonsendingByDefault")` and friends | A nonisolated `async` function runs on the caller's actor unless marked `@concurrent`. Also infers isolated conformances. |
-| Strict Concurrency Checking | `SWIFT_STRICT_CONCURRENCY` | — | Only matters in Swift 5 mode (Minimal → Complete, as warnings). Always complete in Swift 6. |
+| Strict Concurrency Checking | `SWIFT_STRICT_CONCURRENCY` | `.enableUpcomingFeature("StrictConcurrency")` (Complete) | Only matters in Swift 5 mode (Minimal → Complete, as warnings). Always complete in Swift 6. |
 
 ## Where does this code run?
 
@@ -22,7 +22,7 @@ Swift 6.4 · Xcode 27 · iOS 27. Lowercase function names such as `refresh()` or
 | `nonisolated func f()` (sync) | None | On the caller's thread |
 | `nonisolated func f() async` with approachable concurrency, or `nonisolated(nonsending)` | Caller's | On the caller's actor |
 | `@concurrent func f() async` | None | On the global concurrent pool |
-| `Task { }` | Inherits the enclosing actor | Same actor. Inherits priority and task-locals. |
+| `Task { }` | Inherits the enclosing actor (an actor instance only if the closure captures `self`) | Same actor. Inherits priority and task-locals. |
 | `Task.detached { }` | None | Global pool. No actor, no task-locals, not cancelled with its creator. |
 | `async let`, `group.addTask { }` | Child task | Concurrently. Cancelled with the parent. |
 
@@ -182,7 +182,7 @@ try await Trace.$id.withValue("req-42") { try await refresh() }  // children see
 | `main actor-isolated conformance of 'T' to 'P' cannot be used in nonisolated context` | Default isolation made `T` and its conformance `@MainActor` | Mark `T` `nonisolated` |
 | `conformance of 'T' to protocol 'P' crosses into main actor-isolated code and can cause data races` | Main-actor members satisfy a nonisolated protocol | Write an isolated conformance (`T: @MainActor P`) or make the members `nonisolated` |
 | `explicit use of 'self' is required when 'self' is optional, to make control flow explicit` | You captured `[weak self]` | `guard let self else { return }` |
-| `Unstructured throwing task created by 'init(priority:operation:)' is unused` (warning, 6.4) | The task's error would be dropped | Store the task and await `.value`, or catch inside |
+| `unstructured throwing task created by 'init(name:priority:operation:)' is not used, which may accidentally ignore errors thrown inside the task` (warning, 6.4) | The task's error would be dropped | Store the task and await `.value`, catch inside, or write `_ = Task { … }` if dropping it is deliberate |
 
 Many diagnostics end with a group name in brackets, such as `[#NoUseUnstructuredThrowingTask]`. Pass that name to `@diagnose(Group, as: …)` (Swift 6.4) or SwiftPM's `.treatWarning(_:as:)` to change its severity.
 
@@ -208,7 +208,7 @@ struct StatusTests {
 }
 ```
 
-`#require(x)` unwraps an optional or stops the test. `confirmation { confirm in … }` checks that an event fires. Tests run in parallel by default; `.serialized` opts out.
+`try #require(x)` unwraps an optional or stops the test. `confirmation { confirm in … }` checks that an event fires. Tests run in parallel by default; `.serialized` opts out.
 
 ## Debugging concurrency
 
@@ -268,6 +268,6 @@ struct StatusTests {
 - `SwiftSetting.enableUpcomingFeature(_:_:)` — SwiftPM 5.8
 - `SwiftSetting.treatWarning(_:as:_:)` — SwiftPM 6.2
 
-Build settings (`SWIFT_VERSION`, `SWIFT_DEFAULT_ACTOR_ISOLATION`, `SWIFT_APPROACHABLE_CONCURRENCY`, `SWIFT_STRICT_CONCURRENCY`) come from Xcode's build settings reference. Diagnostic wording comes from the Swift compiler's diagnostic definitions and the Swift changelog. `@concurrent`, `nonisolated(nonsending)`, `isolated deinit`, async `defer`, `~Sendable` and `@diagnose` come from the Swift changelog and Swift Evolution (SE-0461, SE-0371, SE-0493, SE-0518, SE-0522).
+Build settings (`SWIFT_VERSION`, `SWIFT_DEFAULT_ACTOR_ISOLATION`, `SWIFT_APPROACHABLE_CONCURRENCY`, `SWIFT_STRICT_CONCURRENCY`) come from Xcode's build settings reference. Diagnostic wording was checked against the Swift 6.4.0 compiler's diagnostic definitions (`DiagnosticsSema.def`, `DiagnosticsSIL.def`); `'x'`, `'T'` and similar are placeholders. `@concurrent`, `nonisolated(nonsending)`, `isolated deinit`, `Task { }` isolation inheritance, async `defer`, `~Sendable` and `@diagnose` come from the Swift changelog and Swift Evolution (SE-0461, SE-0371, SE-0420, SE-0493, SE-0518, SE-0522).
 
 </details>

@@ -83,7 +83,7 @@ Swift leans on protocols more than on inheritance. A class can inherit from one 
 - An **associated type** lets a protocol mention a type that each conformer picks. `Identifiable.ID` and `Collection.Element` are associated types.
 - **Constraints** (`where T: Hashable`, `some Collection<Int>`) narrow a generic to the types it can handle.
 
-`some View` in SwiftUI's `var body: some View` means "one specific type that conforms to `View`, which the compiler knows but you don't have to spell." `any View` would mean "a box holding a value of some conforming type, found out at runtime." A box costs an allocation and dynamic dispatch, and it loses information such as associated types. Default to generics and `some`. Use `any` when you truly need a mixed collection or a stored property that can hold different types. Swift 6.4 tidied the syntax: an optional opaque type is now `some Rocket?` instead of `(some Rocket)?`.
+`some View` in SwiftUI's `var body: some View` means "one specific type that conforms to `View`, which the compiler knows but you don't have to spell." `any View` would mean "a box holding a value of some conforming type, found out at runtime." A box always uses dynamic dispatch, can cost a heap allocation (when the value is too big to store inline), and loses information such as associated types. Default to generics and `some`. Use `any` when you truly need a mixed collection or a stored property that can hold different types. Swift 6.4 tidied the syntax: an optional opaque type is now `some Rocket?` instead of `(some Rocket)?`.
 
 The other boundary in Swift is the **module**. A module is a target: your app, a framework, or a package target. Access control works at module level:
 
@@ -198,7 +198,7 @@ The pieces:
 | Setting | Build setting name | Effect |
 |---|---|---|
 | Default Actor Isolation = `MainActor` | `SWIFT_DEFAULT_ACTOR_ISOLATION` | Unannotated code in the module is inferred `@MainActor`. Your app starts single-threaded. |
-| Approachable Concurrency = Yes | `SWIFT_APPROACHABLE_CONCURRENCY` | Turns on five upcoming features, including `NonisolatedNonsendingByDefault`: a nonisolated `async` function runs on the *caller's* actor unless you mark it `@concurrent`. |
+| Approachable Concurrency = Yes | `SWIFT_APPROACHABLE_CONCURRENCY` | Turns on five upcoming features. Three are already on in the Swift 6 language mode. The two that change behavior are `NonisolatedNonsendingByDefault` (a nonisolated `async` function runs on the *caller's* actor unless you mark it `@concurrent`) and `InferIsolatedConformances` (a main-actor type's conformances become main-actor-isolated). |
 
 Together they flip the old default. You write sequential code on the main actor and opt into parallelism explicitly, with `@concurrent` functions or actors. `nonisolated(nonsending)` spells the new behavior on a single function. Under main-actor default isolation, some declarations are left alone: actors and their members, anything you mark `nonisolated`, and types whose primary declaration conforms to a protocol that inherits `SendableMetatype` (`Sendable` does, so do `Error` and `CodingKey`). Swift packages get the same option through `.defaultIsolation(MainActor.self)`. A package without it stays nonisolated by default.
 
@@ -225,7 +225,7 @@ flowchart TB
 - **`async let`** starts a fixed number of children in parallel. The parent awaits them by name.
 - **Task groups** (`withTaskGroup`, `withThrowingTaskGroup`) handle a dynamic number of children. **Discarding task groups** are for side effects only: finished children are thrown away, so memory doesn't grow in long-running loops. A throwing discarding group cancels itself on the first error and rethrows it.
 - **Cancellation is cooperative.** `cancel()` only sets a flag. Your code checks `Task.isCancelled` or calls `try Task.checkCancellation()`. Many async APIs, including `Task.sleep`, throw `CancellationError` when cancelled. `withTaskCancellationHandler` reacts immediately. New in Swift 6.4, `withTaskCancellationShield` protects cleanup that must finish.
-- **Unstructured tasks.** `Task { }` inherits the current actor, priority and task-local values. `Task.detached` inherits neither the actor nor task-local values. Dropping the handle does *not* cancel the task, and a thrown error stays inside until someone awaits `.value`. `Task.immediate` (iOS 26) starts running right away in the caller's context, when the isolation matches, instead of waiting to be scheduled.
+- **Unstructured tasks.** `Task { }` inherits the current actor (for an actor instance, only if the closure uses `self`), priority and task-local values. `Task.detached` inherits neither the actor nor task-local values. Dropping the handle does *not* cancel the task, and a thrown error stays inside until someone awaits `.value`. `Task.immediate` (iOS 26) starts running right away in the caller's context, when the isolation matches, instead of waiting to be scheduled.
 - **Values over time** are `AsyncSequence`s, consumed with `for await`. `AsyncStream` bridges callback-based code. `Observations` (iOS 26) turns reads of `@Observable` properties into a stream of changes:
 
 ```swift
@@ -235,7 +235,7 @@ final class ErrandListModel { var errands: [Errand] = [] }
 @MainActor
 func logErrandCount(_ model: ErrandListModel) async {
     for await count in Observations({ model.errands.count }) {
-        print("Errands: \(count)")   // current value first, then once per change
+        print("Errands: \(count)")   // current value first, then the latest value after changes
     }
 }
 ```
@@ -279,7 +279,7 @@ func logErrandCount(_ model: ErrandListModel) async {
 | `Regex` | Type-checked regular expressions | iOS 16.0 | [doc](https://developer.apple.com/documentation/swift/regex) |
 | **Advanced** | | | |
 | `withTaskCancellationShield(operation:)` | Let cleanup run even in a cancelled task | iOS 27.0 | [doc](https://developer.apple.com/documentation/swift/withtaskcancellationshield(operation:)-8zlgh) |
-| `Continuation`, `withContinuation(of:throwing:_:)` | A noncopyable continuation: resume-exactly-once is checked at compile time | iOS 27.0 | [doc](https://developer.apple.com/documentation/swift/continuation) |
+| `Continuation`, `withContinuation(of:throwing:_:)` | A noncopyable continuation: the compiler rejects a second resume, and dropping it unresumed traps | iOS 27.0 | [doc](https://developer.apple.com/documentation/swift/continuation) |
 | `withContinuousObservation(options:apply:)` | Callbacks for every `willSet`/`didSet` of observed properties | iOS 27.0 | [doc](https://developer.apple.com/documentation/observation/withcontinuousobservation(options:apply:)) |
 | `Atomic` | Lock-free counters and flags | iOS 18.0 | [doc](https://developer.apple.com/documentation/synchronization/atomic) |
 | `InlineArray` | Fixed-size array stored inline, with no heap allocation | iOS 26.0 | [doc](https://developer.apple.com/documentation/swift/inlinearray) |
@@ -476,7 +476,7 @@ nonisolated enum LinkChecker {
 ```
 
 - An error thrown out of the group's body cancels every remaining child. That's why `try await group.next()` is the line that makes "first failure stops everything" work.
-- `nonisolated` keeps this networking code off the main actor, even in an app target whose default isolation is `MainActor`.
+- `nonisolated` stops these types from being inferred `@MainActor` in an app target whose default isolation is `MainActor`. With approachable concurrency, `check` itself still runs on its caller's actor, but every `probe` runs in a child task on the concurrent pool. Mark `check` `@concurrent` if the loop itself does heavy work.
 - For a fixed number of calls, `async let a = f(); async let b = g(); let (x, y) = try await (a, b)` is simpler.
 
 **7. Main actor by default, `@concurrent` for heavy work.** This is the shape most app code takes with approachable concurrency turned on. (`Errand` is the model type you'll write in today's capstone.)
@@ -510,10 +510,10 @@ nonisolated enum Summarizer {
 
 - **Xcode 27 includes Swift 6.4** and the iOS 27 SDK ([release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes)). Swift.org's [Swift 6.4 release post](https://www.swift.org/blog/swift-6.4-released/) has the full language list. The items below are the ones that matter on day one.
 - **Cleanup that survives cancellation.** `defer` blocks can now contain `await`, and `withTaskCancellationShield(operation:)` (iOS 27) runs a closure as if the task weren't cancelled. Use both together for "always flush, always close" cleanup.
-- **Swallowed task errors now warn.** Creating a throwing `Task { try … }` without storing its result now produces a warning, because the error would otherwise disappear.
+- **Swallowed task errors now warn.** Creating a throwing `Task { try … }` without storing its result now produces a warning, because the error would otherwise disappear. Handle the error inside the task, keep the handle, or write `_ = Task { … }` when dropping it is deliberate.
 - **`~Sendable`.** You can now state explicitly that a type is *not* `Sendable`. This stops automatic inference without affecting subclasses.
-- **Smaller syntax fixes.** `some P?` without parentheses. Module selectors (`SwiftUI::View`) when two imported modules use the same name. A `@diagnose(Group, as: error|warning|ignored)` attribute to control a warning group for one declaration.
-- **Continuations.** The new noncopyable `Continuation` with `withContinuation(of:throwing:_:)` (iOS 27) makes "resume exactly once" a compile-time rule. `withCheckedContinuation(function:_:)` replaces the older `isolation:` overloads, which the docs now list as deprecated.
+- **Smaller syntax fixes.** `some P?` without parentheses. Module selectors (`SwiftUI::View`) when two imported modules use the same name (these arrived a little earlier, in Swift 6.3 with Xcode 26.4). A `@diagnose(Group, as: error|warning|ignored)` attribute to control a warning group for one declaration.
+- **Continuations.** The new noncopyable `Continuation` with `withContinuation(of:throwing:_:)` (iOS 27) makes "resume at most once" a compile-time rule, and traps at runtime if a continuation is dropped without being resumed. `withCheckedContinuation(function:_:)` replaces the older `isolation:` overloads, which the docs now list as deprecated.
 - **Observation.** `withContinuousObservation(options:apply:)` and `withObservationTracking(options:_:onChange:)` (iOS 27) report `willSet`, `didSet` and `deinit` events. `Observations` (iOS 26) is the async-sequence form.
 - **Ownership types** for performance-critical code: `UniqueArray`, `UniqueBox`, `Ref`/`MutableRef` and the `Iterable` protocol (all iOS 27). Recognize them. You won't need them this week.
 - **Swift Testing and XCTest interoperate.** You can call `XCTAssert…` inside a `@Test` and `#expect` inside an `XCTestCase`. Xcode 27 adds a test-plan setting that controls how such cross-framework failures are reported. `CustomTestReflectable` customizes failure output. `swift test --repeat-until fail --maximum-repetitions 50` hunts flaky tests.
@@ -536,7 +536,7 @@ nonisolated enum Summarizer {
 - **Memory climbs and `deinit` never runs** → a task that loops forever, or iterates an endless async sequence, captures `self` strongly → capture `[weak self]` and unwrap once per iteration, or cancel the task.
 - **The app freezes under load** → a semaphore, `DispatchQueue.sync` or a lock is waiting for async work on the cooperative thread pool, which has a limited number of threads → never block inside async code. Bridge with continuations. Keep `Mutex` sections short and free of `await`.
 - **"main actor-isolated conformance of 'Errand' to 'Decodable' cannot be used in nonisolated context"** → with default `MainActor` isolation, your model struct and its conformances became main-actor-isolated → mark model types `nonisolated` (the explicit fix), or move them into a package whose default isolation is nonisolated.
-- **A continuation hangs or crashes** → one code path never resumes (the caller waits forever), or two paths both resume (crash) → resume exactly once on every path. `CheckedContinuation` logs misuse at runtime. iOS 27's `Continuation` catches it at compile time.
+- **A continuation hangs or crashes** → one code path never resumes (the caller waits forever), or two paths both resume (crash) → resume exactly once on every path. `CheckedContinuation` reports misuse at runtime. iOS 27's `Continuation` rejects a double resume at compile time and traps with the creation site if it's never resumed.
 
 ## Legacy you'll still meet
 
@@ -743,7 +743,7 @@ struct ErrandStoreTests {
 }
 ```
 
-The module and the struct are both called `Errand`. That's legal. If you ever need to tell them apart, Swift 6.4's module selector syntax is `Errand::Errand`.
+The module and the struct are both called `Errand`. That's legal. If you ever need to tell them apart, the module selector syntax (Swift 6.3 and later) is `Errand::Errand`.
 
 *Done when:* ⌘U runs all tests green (the last one runs once per status). The project builds in the Swift 6 language mode with zero warnings. You can say why `Errand` is a `struct` but `ErrandStore` is an `actor`, and what `nonisolated` on the model types protects you from. Stretch: add a `@Test` for an invalid move that expects `StoreError.invalidMove(from: .pending, to: .done)`.
 
@@ -759,7 +759,7 @@ Assigning the struct copies its fields, but the array field still points to the 
 2. `func f(_ x: some Trackable)` versus `func f(_ x: any Trackable)`: what's the difference, and when must you use `any`?
 <details><summary>Answer</summary>
 
-`some` is a generic parameter: each call site has one concrete type that the compiler knows, so calls are statically dispatched and can be specialized. `any` is a box whose contents are only known at runtime. It costs an allocation and dynamic dispatch, and it hides associated types. You need `any` when one variable or collection must hold values of different conforming types.
+`some` is a generic parameter: each call site has one concrete type that the compiler knows, so calls are statically dispatched and can be specialized. `any` is a box whose contents are only known at runtime. It always uses dynamic dispatch, can cost a heap allocation, and hides associated types. You need `any` when one variable or collection must hold values of different conforming types.
 
 </details>
 
@@ -826,7 +826,7 @@ Swift standard library and concurrency
 - `Task.init(name:priority:operation:)` — iOS 13.0
 - `Task.detached(name:priority:operation:)` — iOS 13.0
 - `Task.immediate(name:priority:executorPreference:operation:)` — iOS 26.0
-- `Task.name` — iOS 26.0
+- `Task.name` (static, the current task's name) — iOS 26.0; instance `name` — iOS 27.0
 - `Task.value` — iOS 13.0
 - `Task.cancel()` — iOS 13.0
 - `Task.isCancelled` — iOS 13.0
@@ -947,9 +947,9 @@ Foundation, SwiftUI, SwiftData
 PackageDescription (versioned by SwiftPM)
 
 - `SupportedPlatform.IOSVersion.v27` — SwiftPM 6.4
-- `SupportedPlatform.MacOSVersion.v27` — listed, no version shown
+- `SupportedPlatform.MacOSVersion.v27` — SwiftPM 6.4
 - `SwiftSetting.defaultIsolation(_:_:)` — SwiftPM 6.2
-- `SwiftLanguageMode.v6` — listed
+- `SwiftLanguageMode.v6` — SwiftPM 6.0
 
 Legacy (for recognition only)
 
@@ -960,6 +960,6 @@ Legacy (for recognition only)
 - `DispatchQueue`, `DispatchGroup`, `DispatchSemaphore` — listed, no iOS version shown
 - `XCTestCase`, `XCTAssertEqual(_:_:_:file:line:)` — listed, no iOS version shown
 
-Language features checked against the Swift 6.4 changelog, Swift Evolution proposals and Xcode's build settings reference rather than a symbol page: typed throws (SE-0413), region-based isolation and `sending` (SE-0414, SE-0430), `nonisolated` on types (SE-0449, Swift 6.1), default actor isolation (SE-0466, Swift 6.2), `nonisolated(nonsending)` and `@concurrent` (SE-0461, Swift 6.2), async `defer` (SE-0493), `~Sendable` (SE-0518), `some P?` (SE-0521), `@diagnose` (SE-0522), module selectors (SE-0491).
+Language features checked against the Swift 6.4 changelog, Swift Evolution proposals and Xcode's build settings reference rather than a symbol page: typed throws (SE-0413), region-based isolation and `sending` (SE-0414, SE-0430), `nonisolated` on types (SE-0449, Swift 6.1), default actor isolation (SE-0466, Swift 6.2), `nonisolated(nonsending)` and `@concurrent` (SE-0461, Swift 6.2), `Task { }` isolation inheritance (SE-0420), async `defer` (SE-0493), cancellation shields (SE-0504), `~Sendable` (SE-0518), `some P?` (SE-0521), `@diagnose` (SE-0522), module selectors (SE-0491, Swift 6.3).
 
 </details>

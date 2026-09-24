@@ -9,7 +9,7 @@ One page to keep open while you build. Every symbol was checked with `scripts/ap
 | You want to… | Use | Since |
 |---|---|---|
 | Check the on-device model | `SystemLanguageModel.default.availability` (`.available`, `.unavailable(.deviceNotEligible / .appleIntelligenceNotEnabled / .modelNotReady)`) | 26.0 |
-| Start a context | `LanguageModelSession(instructions:)`, `init(model:tools:instructions:)` | 26.0 |
+| Start a context | `LanguageModelSession(instructions:)` (a `String`, `Instructions`, or a builder closure), `init(model:tools:instructions:)`; `model:` takes any `LanguageModel` from 27.0 | 26.0 / 27.0 |
 | Resume from history | `init(model:tools:transcript:)`, `Transcript(entries:)` | 26.0 |
 | Load before a known request (≥ 1 s ahead) | `prewarm(promptPrefix:)` | 26.0 |
 | Get text | `respond(to:options:)` → `Response<String>.content` | 26.0 |
@@ -20,7 +20,7 @@ One page to keep open while you build. Every symbol was checked with `scripts/ap
 | Force or forbid tools | `GenerationOptions(toolCallingMode: .required / .allowed / .disallowed)` | 27.0 |
 | Ask for reasoning (PCC) | `respond(to:options:contextOptions:metadata:)` with `ContextOptions(reasoningLevel: .light / .moderate / .deep)` | 27.0 |
 | Count tokens | `SystemLanguageModel.tokenCount(for:)` (prompt, `Instructions`, `[any Tool]`, `GenerationSchema`, transcript entries) | 26.4 |
-| Know the limit | `SystemLanguageModel.contextSize` (4,096 on device); `PrivateCloudComputeLanguageModel.contextSize` (async) | 26.0 / 27.0 |
+| Know the limit | `SystemLanguageModel.default.contextSize`, read at runtime (docs: 4,096; WWDC26 iOS 27 sample: 8,192; design for 4K); `PrivateCloudComputeLanguageModel.contextSize` (`async throws`) | 26.0 / 27.0 |
 | See tokens used | `Response.usage`, `LanguageModelSession.usage` | 27.0 |
 | One request at a time | `isResponding`; else `LanguageModelSession.Error.concurrentRequests` | 26.0 / 27.0 |
 | Server model | `PrivateCloudComputeLanguageModel()` + entitlement | 27.0 |
@@ -39,7 +39,7 @@ One page to keep open while you build. Every symbol was checked with `scripts/ap
 |---|---|---|---|
 | Data leaves the device? | No | Yes, to Apple's PCC (Apple: "Preserves privacy") | Yes, to the provider |
 | Offline? | Yes | No | No |
-| Context | 4K (4,096) | 32K | Provider |
+| Context | `contextSize` at runtime (docs: 4,096; iOS 27 WWDC26 sample: 8,192) | 32K | Provider |
 | Reasoning levels | Not supported | Light, moderate, deep | Provider |
 | Limits | Unlimited (watch for `rateLimited`) | Daily quota per person; iCloud+ raises it | Your bill |
 | Your setup | Availability check | Managed entitlement `com.apple.developer.private-cloud-compute`; Small Business Program; < 2M first-time downloads | Package, key server, consent UI |
@@ -95,7 +95,7 @@ enum Kind {                               // enums bound the output: a safety to
 |---|---|
 | `.range(a...b)`, `.minimum(_:)`, `.maximum(_:)` | numbers |
 | `.count(_:)`, `.minimumCount(_:)`, `.maximumCount(_:)`, `.element(_:)` | arrays |
-| `.anyOf(_:)`, `.constant(_:)`, `.pattern(_:)`, or a `Regex` | strings |
+| `.anyOf(_:)`, `.constant(_:)`, `.pattern(_:)` (takes a `Regex`), or a `Regex` passed straight to `@Guide` | strings |
 
 ```swift
 // Scalars work too
@@ -146,8 +146,9 @@ struct LookupTool: Tool {
 }
 
 let session = LanguageModelSession(tools: [LookupTool(places: store)], instructions: "…")
-let r = try await session.respond(to: "When does the library open?",
-                                  options: GenerationOptions(toolCallingMode: .required))
+let r = try await session.respond(to: "When does the library open?")   // default .allowed: the model decides
+let s = try await session.respond(to: "Say that in one short sentence.",
+                                  options: GenerationOptions(toolCallingMode: .disallowed))
 ```
 
 - **3–5 tools per request, max** (Apple). Every definition is tokens.
@@ -160,7 +161,7 @@ let r = try await session.respond(to: "When does the library open?",
 
 | Fact | Number or API |
 |---|---|
-| On-device window | 4,096 tokens per session (everything counts) |
+| On-device window | Read `contextSize` at runtime (docs: 4,096 per session; WWDC26 iOS 27 sample: 8,192). Design for 4,096; everything counts |
 | PCC window | 32K |
 | English | ~3–4 characters per token |
 | Chinese, Japanese, Korean | ~1 character per token |
@@ -352,13 +353,13 @@ SystemLanguageModel, .default, .availability, .isAvailable — iOS 26.0
 SystemLanguageModel.Availability.UnavailableReason — iOS 26.0
 SystemLanguageModel.init(useCase:guardrails:), UseCase.contentTagging — iOS 26.0
 SystemLanguageModel.Guardrails.permissiveContentTransformations — iOS 26.0
-SystemLanguageModel.contextSize — iOS 26.0 (back-deployed)
+SystemLanguageModel.contextSize — iOS 26.0 (back-deployed); docs say 4,096, WWDC26 session 241 sample prints 8,192 on iOS 27
 SystemLanguageModel.tokenCount(for:) (all five overloads) — iOS 26.4
 SystemLanguageModel.supportsLocale(_:) — iOS 26.0
 SystemLanguageModel.variant, Variant (.core3, .coreAdvanced3) — iOS 27.0
 SystemLanguageModel.Error (.assetsUnavailable) — iOS 27.0
 LanguageModelSession — iOS 26.0
-LanguageModelSession.init(model:tools:instructions:), init(model:tools:transcript:) — iOS 26.0
+LanguageModelSession.init(model:tools:instructions:) (String?, Instructions? or builder), init(model:tools:transcript:) — iOS 26.0; model: some LanguageModel overloads — iOS 27.0
 LanguageModelSession.init(model:dynamicInstructions:history:), init(profile:history:) — iOS 27.0
 LanguageModelSession.prewarm(promptPrefix:), isResponding, transcript — iOS 26.0
 LanguageModelSession.respond(to:options:), respond(to:generating:includeSchemaInPrompt:options:) — iOS 26.0
@@ -383,7 +384,7 @@ GenerationGuide (.range, .minimum, .maximum, .count, .minimumCount, .maximumCoun
 GenerationID — iOS 26.0
 DynamicGenerationSchema, DynamicGenerationSchema.Property, GenerationSchema.init(root:dependencies:) — iOS 26.0
 GeneratedContent.value(_:forProperty:) — iOS 26.0
-Tool — iOS 26.0
+Tool (Sendable; @concurrent call(arguments:) async throws -> Output: PromptRepresentable) — iOS 26.0
 GenerationOptions, init(samplingMode:temperature:maximumResponseTokens:), SamplingMode.greedy — iOS 26.0
 GenerationOptions.ToolCallingMode, init(samplingMode:temperature:maximumResponseTokens:toolCallingMode:) — iOS 27.0
 ContextOptions, ContextOptions.ReasoningLevel — iOS 27.0
