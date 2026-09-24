@@ -99,7 +99,7 @@ The *process* and the *UI* have separate lifecycles. The process launches once; 
 
 **4. The main thread owns the UI, and anything slow on it is a bug people can feel.**
 
-All UI work happens on the main thread, which Swift models as the **main actor**. SwiftUI's `View` protocol and UIKit's `UIView` are both marked `@MainActor`. Apple's guidance: a delay under 100 ms is rarely noticeable, but "even a few hundred milliseconds can make people feel that an app is unresponsive." That pause is a **hang**. Block the main thread long enough, especially at launch, and the system's watchdog ends the app; the crash report shows the code `0x8badf00d`.
+All UI work happens on the main thread, which Swift models as the **main actor**. SwiftUI's `View` protocol and UIKit's `UIView` are both marked `@MainActor`. Apple's guidance: a delay under 100 ms is rarely noticeable, but "even a few hundred milliseconds can make people feel that an app is unresponsive." That pause is a **hang**; most of Apple's tools start reporting one when the main run loop is unresponsive for more than 250 ms. Block the main thread long enough, especially at launch, and the system's watchdog ends the app; the crash report shows the code `0x8badf00d`.
 
 **Senior tell:** nothing that touches disk, network or a model runs synchronously on the main actor, and they check with Instruments, not by feel.
 
@@ -188,7 +188,7 @@ struct ErrandList: View {
 
 **9. `@Observable` tracks exactly what each `body` reads.**
 
-Mark a class `@Observable` (Observation framework, iOS 17). The macro rewrites its stored properties so that reading one inside `body` records a dependency. When that property changes, only the views that read it update. In Apple's example, a subview that reads `book.title` updates when the title changes "but not when `isAvailable` changes." No `@Published`, no manual notifications. Pass the object to subviews as a plain property; use `@Bindable` when a child needs bindings to its properties, and `@Environment(Store.self)` to share it widely. UIKit understands it too: since iOS 26, reading an observable object in `layoutSubviews()` makes UIKit update the view when it changes.
+Mark a class `@Observable` (Observation framework, iOS 17). The macro adds tracking accessors to its stored properties so that reading one inside `body` records a dependency. When that property changes, only the views that read it update. In Apple's example, a subview that reads `book.title` updates when the title changes "but not when `isAvailable` changes." No `@Published`, no manual notifications. Pass the object to subviews as a plain property; use `@Bindable` when a child needs bindings to its properties, and `@Environment(Store.self)` to share it widely. UIKit understands it too: since iOS 26 (opt-in in iOS 18), reading an observable object in `updateProperties()` or `layoutSubviews()` makes UIKit update the view when it changes.
 
 **Senior tell:** they give each subview only the data it renders, so a change updates as few views as possible.
 
@@ -208,7 +208,7 @@ Structs and enums are *value types*: assigning one makes a copy, so nobody can c
 
 **12. Optionals make absence honest. `throws` makes failure part of the signature.**
 
-A `String?` might be `nil`; a `String` never is. The compiler makes you unwrap with `if let`, `guard let` or `??`. Errors work the same way: a function marked `throws` (or `async throws`) must be called with `try`, and the caller must handle the error or pass it on. Task cancellation, a model refusal and a full context window all reach you as thrown errors, not silent failures.
+A `String?` might be `nil`; a `String` never is. The compiler makes you unwrap with `if let`, `guard let` or `??`. Errors work the same way: a function marked `throws` (or `async throws`) must be called with `try`, and the caller must handle the error or pass it on. A cancelled task (in any API that checks for cancellation, which is cooperative), a model refusal and a full context window all reach you as thrown errors, not silent failures.
 
 **Senior tell:** a `!` force-unwrap in shipping code is a scheduled crash. They allow it only where `nil` would mean a programmer error.
 
@@ -223,7 +223,7 @@ A `String?` might be `nil`; a `String` never is. The compiler makes you unwrap w
 A data race is two threads touching the same mutable memory at once, with at least one writing. It causes crashes and corrupted data that are almost impossible to reproduce. The Swift 6 language mode checks for them at compile time, with three ideas:
 
 - An **isolation domain** runs one piece of work at a time. The main actor is one; each `actor` instance is another; `nonisolated` code belongs to neither.
-- An **actor** is a reference type that protects its own mutable state. Other code reaches it with `await`.
+- An **actor** is a reference type that protects its own mutable state. Other code reaches it with `await`. Actors are reentrant: while one of its methods is suspended at an `await`, other calls can run on it, so re-check state after every `await`.
 - **`Sendable`** marks a type whose values are safe to hand to another isolation domain.
 
 ```mermaid
@@ -306,14 +306,14 @@ The Foundation Models framework puts one API over several models. Apple's own co
 | Works offline | Yes | No |
 | Usage limits | Unlimited | A daily limit per person |
 | Reasoning | Not supported | Multiple levels |
-| Context size | 4K tokens | 32K tokens |
+| Context size | 4K tokens (see model 21) | 32K tokens |
 
 Both preserve privacy, and switching is "a single line of code" when you create the session. PCC needs a managed entitlement with eligibility requirements. Beyond those two, any server model can sit behind the same API (model 23), but then guideline 5.1.2(i) applies: name the provider and get explicit permission first.
 
 ```mermaid
 flowchart TB
   Q["A feature needs a language model"] --> A{"Does the on-device model pass your evaluations?"}
-  A -->|"yes"| D["SystemLanguageModel: free, offline, 4K context"]
+  A -->|"yes"| D["SystemLanguageModel: free, offline, small context"]
   A -->|"no: needs reasoning or long context"| P{"Is your app eligible for PCC?"}
   P -->|"yes"| PCC["PrivateCloudComputeLanguageModel: 32K context, daily quota"]
   P -->|"no, or still not enough"| T["Another provider behind the LanguageModel protocol"]
@@ -328,9 +328,9 @@ The on-device model ships inside iOS. Apple updated it in iOS 26.4 and again in 
 
 **Senior tell:** they keep prompts under version control with an evaluation set and rerun it on every OS beta.
 
-**21. 4,096 tokens is a small room.**
+**21. The on-device context window is a small room.**
 
-The on-device model's context window is 4,096 tokens per session; in English a token is roughly three to four characters. *Everything* counts: instructions, every prompt, tool definitions, the schema of each `@Generable` type, tool outputs, and every response. When the session is full, it throws `LanguageModelError.contextSizeExceeded` and stops responding. `tokenCount(for:)` (iOS 26.4) and Xcode's Foundation Models instrument show where tokens go.
+The on-device model's context window is small, and Apple's own numbers disagree: the "Managing the context window" article says 4,096 tokens per session, while the iOS 27 sample in WWDC26 session 241 prints 8,192 from `SystemLanguageModel.contextSize`. Read `contextSize` at runtime instead of hard-coding either. In English a token is roughly three to four characters. *Everything* counts: instructions, every prompt, tool definitions, the schema of each `@Generable` type, tool outputs, and every response. When the session is full, it throws `LanguageModelError.contextSizeExceeded` and stops responding. `tokenCount(for:)` (iOS 26.4) and Xcode's Foundation Models instrument show where tokens go.
 
 **Senior tell:** they give each task its own short session with only the facts it needs, instead of piling history into one long chat.
 
@@ -407,7 +407,7 @@ flowchart TB
 
 **25. Apple GPUs render in tiles and share memory with the CPU. Metal 4 gives you explicit control over both.**
 
-Apple GPUs use **tile-based deferred rendering**: the GPU splits the render target into tiles, works out what's visible in each tile first, and shades only that, in fast on-chip *tile memory*. Writing results out to system memory is the expensive part, so a texture needed only during one pass can be `memoryless` and never leave the tile. Apple GPUs also have **unified memory**: the CPU and GPU share system memory, and both can read shared storage directly. Metal 4 (the `MTL4` types, iOS 26) hands you more of the bookkeeping: command buffers you reuse, command allocators you reset each frame, argument tables for bindings, and explicit barriers. Its command buffers no longer keep your resources alive for you.
+Apple GPUs use **tile-based deferred rendering**: the GPU splits the render target into tiles, works out what's visible in each tile first, and shades only that, in fast on-chip *tile memory*. Moving data between tile memory and system memory is the expensive part. Each pass's load and store actions decide what moves: use `.clear` or `.dontCare` rather than `.load` when you don't need the old pixels, and `.dontCare` for results nothing reads later. A texture needed only during one pass can be `memoryless` and never leave the tile. Apple GPUs also have **unified memory**: the CPU and GPU share system memory, and both can read shared storage directly. Metal 4 (the `MTL4` types, iOS 26) hands you more of the bookkeeping: command buffers you reuse, command allocators you reset each frame, argument tables for bindings, residency sets that list the resources the GPU may touch, and explicit barriers. Its command buffers no longer keep your resources alive for you.
 
 **Senior tell:** they think in memory bandwidth. The cheapest pixel is one that never leaves tile memory.
 
@@ -453,7 +453,7 @@ Once your app has saved data on people's phones, every change to its shape needs
 
 People feel a hang or a stuttering scroll long before they report it. The system also ends apps that use too much memory: you get an `EXC_RESOURCE` report as you approach the limit, and past it the app is terminated. In the foreground, it simply disappears. Your tools:
 
-- **Instruments**, on a real device: Time Profiler, the SwiftUI instrument, Allocations, Power Profiler, and in Xcode 27 a Foundation Models instrument.
+- **Instruments**, on a real device: Time Profiler, the SwiftUI instrument, Allocations, Power Profiler, and the Foundation Models instrument (new in Xcode 26, expanded in Xcode 27 to show prompts, responses and token usage).
 - **Xcode Organizer**: crashes and hangs, plus (Xcode 27) a Hitches metric for all animations and an Insights overview of regressions.
 - **MetricKit**: daily metrics and diagnostics from real devices. iOS 27's `MetricManager` delivers reports as async sequences and replaces `MXMetricManager`.
 
@@ -483,7 +483,7 @@ Use the built-in text styles and **Dynamic Type** comes with them, including the
 
 iPhone Duo is a foldable iPhone with a compact outer display and a large inner one. On the outer display, the system moves toolbars and tab bars to the side. Partly folded, the fold divides the inner display. Apple's advice: use size classes, safe areas and system containers; size views relative to their container, not the screen; don't branch on device type. Build with Xcode 27, or your app won't extend under the status bar and camera. The fold-specific APIs (`ArrangementView`, `ReservedRegion`, hinge state) are in the iOS 27.1 beta as of this writing, so don't depend on them yet.
 
-**Senior tell:** they check each screen in every iPhone Duo pose in Device Hub before shipping a layout.
+**Senior tell:** they check each screen in every iPhone Duo pose in Device Hub before shipping a layout (the iPhone Duo simulator comes with the Xcode 27.1 beta).
 
 ### J · How Apple evolves the platform
 
@@ -568,7 +568,7 @@ The frameworks that matter in 2026. "Since" is the iOS version that introduced t
 | [ActivityKit](https://developer.apple.com/documentation/activitykit) | Live Activities | A task happening now, with a clear end | iOS 16.1 |
 | [User Notifications](https://developer.apple.com/documentation/usernotifications) | Local and push notifications | Time-sensitive information | iOS 10 |
 | [Background Tasks](https://developer.apple.com/documentation/backgroundtasks) | Scheduled and continued background work | Refresh, cleanup, finishing a started job | iOS 13 |
-| [Core Spotlight](https://developer.apple.com/documentation/corespotlight) | Index content; `SpotlightSearchTool` hands it to a model | Your content should appear in system search | iOS 9 |
+| [Core Spotlight](https://developer.apple.com/documentation/corespotlight) | Index content; `SpotlightSearchTool` (iOS 27) hands it to a model | Your content should appear in system search | iOS 9 |
 | **Intelligence and ML** | | | |
 | [Foundation Models](https://developer.apple.com/documentation/foundationmodels) | One session API for on-device, PCC and other language models | Text understanding, typed generation, tool calling | iOS 26 |
 | [Core AI](https://developer.apple.com/documentation/coreai) | Run your own neural networks on Apple silicon | A domain model no system API covers | iOS 27 |
@@ -612,8 +612,8 @@ The frameworks that matter in 2026. "Since" is the iOS version that introduced t
 - **Two new AI frameworks:** Core AI runs your own neural networks; Evaluations measures AI features.
 - **App Intents grew for agents:** `LongRunningIntent`, schemas that connect to Apple Intelligence and Siri AI, `SyncableEntity`, and an App Intents Testing framework.
 - **Core Spotlight can feed a model** through `SpotlightSearchTool`. **SwiftData can observe** with `ResultsObserver` and `HistoryObserver`. **MetricKit** moved to `MetricManager`.
-- **Xcode 27** needs an Apple silicon Mac on macOS Tahoe 26.6 or later. Its new Device Hub runs simulators and devices in one place and pairs an iPhone over Wi-Fi, and agents in Xcode can build, run and check your app.
-- **iPhone Duo** (September 2026) makes resizable layouts non-negotiable; its own APIs are in the iOS 27.1 beta.
+- **Xcode 27** needs an Apple silicon Mac on macOS Tahoe 26.6 or later. Its new Device Hub runs simulators and devices in one place and pairs an iPhone over Wi-Fi. Agentic coding arrived earlier, in Xcode 26.3 (Claude Agent and Codex built in, and Xcode's tools exposed to other agents over the Model Context Protocol); Xcode 27 builds on it, so agents can build, run and check your app.
+- **iPhone Duo** (September 2026) makes resizable layouts non-negotiable; its own APIs are in the iOS 27.1 beta, and its simulator ships with the Xcode 27.1 beta.
 - **Old tutorials still teach** `ObservableObject`, `NavigationView`, completion handlers, SiriKit intents and hand-wired LLM runtimes. See the legacy table.
 
 ## Pitfalls you only learn by shipping
@@ -622,7 +622,7 @@ The frameworks that matter in 2026. "Since" is the iOS version that introduced t
 - **The app vanishes when people come back to it.** Cause: it exceeded its memory limit, often from full-size images or a model loaded twice. Fix: downsample images, keep one model instance, free caches in the background.
 - **A text field loses focus whenever the list refreshes.** Cause: view identity changes, for example IDs generated in `body`. Fix: stable IDs stored in the model.
 - **The AI feature is blank for many users.** Cause: device not eligible, Apple Intelligence off, or model not ready. Fix: check `availability` and ship a path without the model.
-- **The assistant stops answering after a few turns.** Cause: the 4,096-token window filled and threw `contextSizeExceeded`. Fix: short sessions per task, fewer tools, summaries instead of history.
+- **The assistant stops answering after a few turns.** Cause: the small on-device context window (read `contextSize`) filled and threw `contextSizeExceeded`. Fix: short sessions per task, fewer tools, summaries instead of history.
 - **Rejected under guideline 5.1.2(i).** Cause: data went to a third-party AI service without explicit permission. Fix: a consent screen naming the provider, before the first request.
 - **Background sync "never runs" for users.** Cause: relying on `BGAppRefreshTask` timing. Fix: a server push when data changes, or a user-started `BGContinuedProcessingTask` with visible progress.
 - **Swift 6 migration produces hundreds of `Sendable` errors.** Cause: shared mutable state reached from everywhere. Fix: main-actor default isolation, shared state in an `actor`, values across boundaries.
@@ -657,10 +657,10 @@ The frameworks that matter in 2026. "Since" is the iOS version that introduced t
 | Privacy manifest | `PrivacyInfo.xcprivacy`: data you collect and required-reason APIs you call. |
 | Scene | One instance of your UI, like a window, with its own lifecycle. |
 | Main actor | The isolation domain for UI work; in practice, the main thread. |
-| Actor | A reference type that works on its own state one task at a time. |
+| Actor | A reference type that runs one piece of work on its state at a time; other calls can interleave at each `await`. |
 | `Sendable` | Safe to pass between isolation domains. |
-| Default actor isolation | Build setting that makes unannotated code `@MainActor`. |
-| `@concurrent` | Runs an async function off its caller's actor. |
+| Default actor isolation | Build setting that, set to MainActor, makes unannotated code `@MainActor`. |
+| `@concurrent` | Makes a nonisolated async function run on the concurrent thread pool, off its caller's actor. |
 | Hang | A noticeable delay after a tap, almost always from main-thread work. |
 | Hitch | A frame that arrives late during an animation or scroll. |
 | Watchdog | The system monitor that ends unresponsive apps (`0x8badf00d`). |
@@ -674,14 +674,14 @@ The frameworks that matter in 2026. "Since" is the iOS version that introduced t
 | App intent | One action your app exposes to the system. |
 | App entity | A lightweight, identifiable version of your data for the system. |
 | App Shortcut | A preconfigured shortcut for one of your intents, with phrases for Siri. |
-| App schema | An Apple-defined shape for a common action that Apple Intelligence understands. |
+| App schema | An Apple-defined shape for a common action or kind of content that Apple Intelligence understands. |
 | Live Activity | Live status on the Lock Screen and in the Dynamic Island. |
 | Control | A button or toggle for Control Center, the Lock Screen or the Action button. |
 | Siri AI | iOS 27's cross-app assistant; reaches your app through App Intents. |
 | Foundation Models | The framework for language models, one session API for all of them. |
 | Guided generation | Output as your own `@Generable` Swift type. |
 | Tool calling | The model asking your `Tool` to fetch data or act. |
-| Private Cloud Compute | Apple's private server model: 32K context, daily quota. |
+| Private Cloud Compute | Apple's privacy-preserving servers; `PrivateCloudComputeLanguageModel` runs there with 32K context and a daily quota. |
 | Core AI | iOS 27 framework for running your own neural networks. |
 | Metal 4 | The `MTL4` generation of Metal, with explicit command and memory control. |
 | TBDR | Tile-based deferred rendering, how Apple GPUs draw. |
@@ -738,7 +738,7 @@ The on-device model is part of the OS and Apple updated it in iOS 27 (model 20).
 **4.** Why use `@Generable` instead of asking for JSON, and what does it cost?
 <details><summary>Answer</summary>
 
-Constrained sampling guarantees a valid instance of your type, so there's nothing to parse or repair (model 22). The cost is tokens: the schema and every `@Guide` description go into the 4,096-token context.
+Constrained sampling guarantees a valid instance of your type, so there's nothing to parse or repair (model 22). The cost is tokens: the schema and every `@Guide` description go into the on-device model's small context window (4,096 tokens in Apple's docs, 8,192 in the iOS 27 WWDC26 sample; read `contextSize`).
 </details>
 
 **5.** When may your app send someone's data to a third-party AI model?
@@ -797,7 +797,7 @@ Checked with `scripts/appledoc.py` on 2026-09-24. The version is the iOS release
 - `NavigationStack`, `NavigationSplitView` — iOS 16.0
 - `UIViewRepresentable`, `UIViewControllerRepresentable`, `UIHostingController` — iOS 13.0
 - `UIHostingSceneDelegate` — iOS 26.0
-- `UIView` — iOS 2.0 (`@MainActor`); `UIView.layoutSubviews()` (Observable tracking since iOS 26)
+- `UIView` — iOS 2.0 (`@MainActor`); `UIView.layoutSubviews()` (Observable tracking on by default since iOS 26, opt-in with `UIObservationTrackingEnabled` in iOS 18); `UIView.updateProperties()` — iOS 26.0
 - `glassEffect(_:in:)`, `GlassEffectContainer`, `PrimitiveButtonStyle.glass` — iOS 26.0
 - `Shader` — iOS 17.0; `colorEffect(_:isEnabled:)`, `layerEffect(_:maxSampleOffset:isEnabled:)` — iOS 17.0
 - `ArrangementView`, `DeviceHinge`, `ReservedRegion` — iOS 27.1 (beta; mentioned, not used)
@@ -826,16 +826,17 @@ Checked with `scripts/appledoc.py` on 2026-09-24. The version is the iOS release
 - `respond(to:generating:includeSchemaInPrompt:options:)`, `LanguageModelSession.Response.content` — iOS 26.0
 - `Generable`, `Generable(description:)`, `Guide(description:)` — iOS 26.0
 - `Tool`, `Tool.call(arguments:)` — iOS 26.0
-- `SystemLanguageModel.tokenCount(for:)` — iOS 26.4
+- `SystemLanguageModel.tokenCount(for:)` — iOS 26.4; `SystemLanguageModel.contextSize` — iOS 26.0 (`@backDeployed`, added in the iOS 26.4 SDK; the docs say 4,096 tokens, WWDC26 session 241's iOS 27 sample prints 8,192)
 - `LanguageModel`, `PrivateCloudComputeLanguageModel`, `LanguageModelError.contextSizeExceeded(_:)` — iOS 27.0
-- `LanguageModelSession.DynamicProfile`, `GenerationOptions.ToolCallingMode` — iOS 27.0
+- `LanguageModelSession.DynamicProfile`, `GenerationOptions.ToolCallingMode` (`allowed`, `required`, `disallowed`) — iOS 27.0
 - Evaluations framework — iOS 27.0
 - Core AI framework, `AIModel` — iOS 27.0
 - `RecognizeTextRequest` — iOS 18.0; `RecognizeDocumentsRequest` — iOS 26.0
 - `SpeechAnalyzer` — iOS 26.0
 - `TranslationSession` — iOS 18.0
 - `NLTagger` — iOS 12.0
-- `MTLStorageMode.memoryless` — iOS 10.0
+- `MTLStorageMode.memoryless` — iOS 10.0; `MTLLoadAction` (`.clear`, `.dontCare`, `.load`), `MTLStoreAction` (`.dontCare`) — iOS 8.0
+- `MTLResidencySet` — iOS 18.0
 - `MTL4CommandQueue`, `MTL4CommandAllocator`, `MTL4ArgumentTable`, `MTL4MachineLearningCommandEncoder` — iOS 26.0
 - `RealityView` — iOS 18.0
 - `Model()` macro, `ModelContainer`, `Query`, `VersionedSchema`, `SchemaMigrationPlan` — iOS 17.0
