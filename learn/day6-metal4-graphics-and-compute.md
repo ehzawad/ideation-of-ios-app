@@ -633,7 +633,8 @@ Checked with `scripts/appledoc.py` against Apple's documentation on 2026-09-24. 
 - `Shape.fill(_:style:)` — iOS 17.0
 - `TimelineView`, `TimelineView.init(_:content:)` — iOS 15.0
 - `TimelineSchedule.animation(minimumInterval:paused:)` — iOS 15.0
-- `Animatable`, `Animatable.animatableData` — iOS 13.0
+- `Animatable`, `Animatable.animatableData` — iOS 13.0 (the requirement is not main-actor isolated)
+- `Animatable()` and `AnimatableIgnored()` macros — listed as iOS 13.0 (back-deployed macros)
 - `EnvironmentValues.accessibilityReduceMotion` — iOS 13.0
 - `View.accessibilityElement(children:)` — iOS 13.0
 - `View.accessibilityLabel(_:)`, `View.accessibilityValue(_:)` — iOS 16.0
@@ -641,7 +642,9 @@ Checked with `scripts/appledoc.py` against Apple's documentation on 2026-09-24. 
 - `MTKView`, `MTKView.init(frame:device:)`, `delegate`, `device`, `colorPixelFormat`, `clearColor`, `currentDrawable`, `drawableSize`, `preferredFramesPerSecond`, `isPaused`, `enableSetNeedsDisplay`, `depthStencilStorageMode` (iOS 16.0) — iOS 9.0
 - `MTKView.currentMTL4RenderPassDescriptor` — iOS 26.0
 - `MTKView.residencySet` — iOS 26.4
-- `MTKViewDelegate.draw(in:)`, `mtkView(_:drawableSizeWillChange:)` — iOS 9.0
+- `MTKViewDelegate.draw(in:)`, `mtkView(_:drawableSizeWillChange:)` — iOS 9.0; both declared `@MainActor`
+- `MTKView.currentRenderPassDescriptor` (Metal 3; documented as `.clear`/`.store` for color) — iOS 9.0
+- `MTLRenderPassAttachmentDescriptor.loadAction`, `storeAction` — iOS 8.0
 - `CAMetalLayer` — iOS 8.0
 - `CAMetalLayer.residencySet` — iOS 26.0
 - `CAMetalLayer.wantsExtendedDynamicRangeContent` — iOS 16.0
