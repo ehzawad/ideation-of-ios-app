@@ -80,7 +80,7 @@ flowchart LR
 Three practical rules fall out of this:
 
 - **Load and store actions are bandwidth decisions.** `MTLLoadAction.load` copies the old image from memory into tile memory at the start of a pass; `.clear` just fills tiles with a color; `.dontCare` does nothing. `MTLStoreAction.store` writes the tile back; `.dontCare` throws it away. Loading or storing what you don't need is pure wasted bandwidth.
-- **Memoryless textures are free.** A depth buffer or multisample buffer you never read after the pass can use `MTLStorageMode.memoryless`: it exists only in tile memory, and never gets system memory at all.
+- **Memoryless textures are free.** A depth buffer or multisample buffer you never read after the pass can use `MTLStorageMode.memoryless`: it exists only in tile memory, and never gets system memory at all. On an `MTKView`, that's one line: `view.depthStencilStorageMode = .memoryless`.
 - **Unified memory means no copies, not no synchronization.** Apple GPUs have a unified memory model: CPU and GPU share system memory. A `.shared` buffer written by the CPU is visible to the GPU without an upload. But "same memory" doesn't mean "safe at the same time". Model 2 still applies.
 
 **Senior tell:** the first question about a slow pass is "what does it load and store, and at what resolution?", not "how many triangles?"
@@ -89,7 +89,7 @@ Three practical rules fall out of this:
 
 **A pipeline state object is your shaders *plus* fixed decisions, compiled into GPU machine code ahead of time.**
 
-A render pipeline state bundles a vertex function, a fragment function, the pixel format of each output, blending and more. The GPU driver compiles all of that into one executable. That's expensive, from milliseconds to much longer for big shaders, and it's why "the first time this screen appears, it hitches" is a classic Metal bug. Changing a baked-in property (like the output pixel format) means a different pipeline.
+A render pipeline state bundles a vertex function, a fragment function, the pixel format of each output, blending and more. The GPU driver compiles all of that into one executable. That's expensive, and Apple's compilation guide warns it can take an unpredictable amount of time. It's why "the first time this screen appears, it hitches" is a classic Metal bug. Changing a baked-in property (like the output pixel format) means a different pipeline.
 
 Metal 4 gives compilation its own object, `MTL4Compiler`, so you decide *when* and *at what priority* compilation runs. Apple's compilation guide recommends asynchronous compilation for anything non-trivial, and describes three ways to compile less: *unspecialized* pipelines you specialize later without recompiling the shader body, *color attachment mapping* so one pipeline works with differently laid-out render passes, and *harvesting* compiled pipelines into archives you ship with the app. Function constants (`MTLFunctionConstantValues`) still let one shader source produce specialized variants.
 
@@ -99,7 +99,7 @@ Metal 4 gives compilation its own object, `MTL4Compiler`, so you decide *when* a
 
 **Metal 4 stops guessing. You declare what's resident, where shaders find resources, and what must finish before what.**
 
-Earlier Metal did a lot of bookkeeping for you. It tracked which passes wrote which textures and inserted waits (hazard tracking), made resources resident when you bound them, and kept them alive while command buffers used them. That bookkeeping costs CPU time on every call. Metal 4, designed to make porting from DirectX 12 and Vulkan easier, moves it to you:
+Earlier Metal did a lot of bookkeeping for you. It tracked which passes wrote which textures and inserted waits (hazard tracking), made resources resident when you bound them, and kept them alive while command buffers used them. That bookkeeping costs CPU time on every call. Metal 4, which Apple also designed to make porting from DirectX and Vulkan easier, moves it to you:
 
 | Concern | Before Metal 4 | Metal 4 |
 |---|---|---|
@@ -256,7 +256,7 @@ struct ErrandProgressRing: View, Animatable {
 }
 ```
 
-- `ShaderLibrary.errandRing(...)` is dynamic member lookup plus `@dynamicCallable`: the name must match the MSL function exactly, and a typo fails at run time, not compile time.
+- `ShaderLibrary.errandRing(...)` is dynamic member lookup plus `@dynamicCallable`: the name must match the MSL function exactly, and the Swift compiler can't catch a typo.
 - Conforming to `Animatable` makes `withAnimation { ring.progress = 0.8 }` interpolate the value frame by frame. Shader arguments don't animate by themselves.
 - A shader is invisible to VoiceOver. The label and value make the ring an accessible element, and Reduce Motion pauses the timeline.
 
@@ -395,7 +395,7 @@ extension RingRenderer {
 
 - `setArgumentTable` doesn't copy anything yet. Metal takes a *snapshot* of the table when you encode the draw, so you can point slot 0 at a different buffer next frame without disturbing this one.
 - The wait-for-drawable and signal-drawable calls are *queue* operations on the GPU timeline. The CPU doesn't block on them. The only CPU wait is the shared event, and ideally it returns at once.
-- The render pass descriptor from `MTKView` clears at the start and stores at the end, because the display needs the result. That's the load and store actions from mental model 3.
+- The render pass descriptor from `MTKView` is built from the view's clear values, so the color attachment is cleared at the start rather than loaded, and the result is stored for the display. Those are the load and store actions from mental model 3.
 
 **6. The shaders for the render pass.** It's the same ring math as block 1, now in a fragment function with a full-screen triangle.
 
@@ -480,7 +480,7 @@ struct StylizePasses {
 
 ## What's new in iOS 27 (and what old tutorials get wrong)
 
-Apple doesn't publish a separate "Metal updates" page, so these come from the API reference (symbols marked as introduced in iOS 27), the Metal Shading Language 4.1 specification dated June 2026, and the Xcode 27 release notes.
+Apple's "Updates" pages don't cover Metal, so these come from the API reference (symbols marked as introduced in iOS 27), the Metal Shading Language 4.1 specification dated June 2026, and the Xcode 27 release notes.
 
 - **Metal Shading Language 4.1** (`MTLLanguageVersion.version4_1`). The spec lists placement `new`, an option to round float-to-float conversions toward zero (exposed as `MTLCompileOptions.floatingPointConversionRoundingMode`), `function_id` in ray intersection results, packed block-scaling types, multiplane tensors and `tensor_blockwise`, interleave and deinterleave, acquire and release memory order on barriers and atomics, and new texture reads (clamp-to-edge, integer coordinates with offsets, multi-pixel reads).
 - **Multi-plane tensors for quantized models.** A tensor can now carry an auxiliary `scales` plane next to its data plane: `MTLTensorAuxiliaryPlaneDescriptor`, `MTLTensorPlaneType`, `MTLTensorBufferAttachments`, and `makeTensor(descriptor:attachments:)` to back each plane with your own buffer. New `MTLTensorDataType` cases add 8-bit and 4-bit floats (`metalFloat8e4m3`, `metalFloat8e5m2`, `metalFloat4e2m1`), an 8-bit scale type (`metalFloat8ue8m0`), and 2-bit integers. 4-bit integers arrived in iOS 26.4.
@@ -498,7 +498,7 @@ What old tutorials get wrong, now:
 - They bind with `setVertexBuffer`/`setFragmentTexture`. Metal 4 encoders have no binding methods; you use argument tables.
 - They rely on Metal to order passes. Metal 4 ignores `hazardTrackingMode` for work on an `MTL4CommandQueue`.
 - They pace frames with `DispatchSemaphore(value: 3)` and `addCompletedHandler`. Metal 4's samples use `MTLSharedEvent` and queue-level `signalEvent(_:value:)`.
-- They say "Metal needs a Mac GPU to debug". The Metal debugger captures directly from an iPhone, and `gpudebug` replays traces from the terminal.
+- They draw with `currentRenderPassDescriptor` and `MTLRenderCommandEncoder`. That's still valid Metal 3 code, but a Metal 4 renderer uses `currentMTL4RenderPassDescriptor` and `MTL4RenderCommandEncoder`, and the two families of types don't mix inside one command buffer.
 
 ## Pitfalls you only learn by shipping
 
@@ -537,7 +537,7 @@ What old tutorials get wrong, now:
    *Done when:* you have seen each failure, written one sentence per failure explaining it in terms of the mental models, and put everything back.
 
 3. **A compute kernel on a photo.** Write a grayscale kernel (Apple's "Creating threads and threadgroups" article has one), run it with an `MTL4ComputeCommandEncoder` into a second texture, then draw that texture in a render pass with a consumer barrier from `.dispatch` to `.fragment`.
-   *Done when:* the grayscale image shows on screen, the GPU capture shows the barrier between the passes, and removing the barrier makes the capture's dependency view show the hazard.
+   *Done when:* the grayscale image shows on screen, and in a GPU capture the Dependencies viewer shows the compute pass feeding the render pass, with your barrier highlighted as a synchronization between them.
 
 4. **Profile, don't guess.** Profile the ring with the Game Performance template in Instruments (it includes Metal System Trace), then with the Metal Performance HUD.
    *Done when:* you can state the CPU encode time and GPU time per frame, and whether the ring is CPU-bound, GPU-bound or neither at 120 Hz.

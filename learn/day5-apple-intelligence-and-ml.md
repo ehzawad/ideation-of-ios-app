@@ -664,28 +664,36 @@ struct CloudModelConsentSheet: View {
 
 ## Check yourself
 
-1. What counts toward the on-device context window, and what happens when you exceed it?
+**1. What counts toward the on-device context window, and what happens when you exceed it?**
+
 <details><summary>Answer</summary>Everything in the session: instructions, every prompt, every response, tool definitions, tool arguments and outputs, and the JSON schema of each <code>@Generable</code> type. The on-device limit is 4,096 tokens per session. Over the limit, the session throws <code>LanguageModelError.contextSizeExceeded(_:)</code>. Recover with a new session (optionally seeded with a condensed transcript), by splitting the task, or by routing to a model with a larger context.</details>
 
-2. What does guided generation guarantee, and what doesn't it?
+**2. What does guided generation guarantee, and what doesn't it?**
+
 <details><summary>Answer</summary>It guarantees the output parses as your type, because constrained sampling only allows tokens that fit the schema and your guides. It doesn't guarantee the content is correct or safe. A refusal can't fit your type, so it's thrown as <code>LanguageModelError.refusal(_:)</code>.</details>
 
-3. Why must the person's text never go into `Instructions`?
+**3. Why must the person's text never go into `Instructions`?**
+
 <details><summary>Answer</summary>The model follows instructions over prompts. Untrusted text in instructions gets that higher priority, which is exactly what prompt injection wants. Keep instructions to text you wrote, and put the person's input in the prompt, labelled as data.</details>
 
-4. Name three differences between `SystemLanguageModel` and `PrivateCloudComputeLanguageModel`, and what a developer needs before using PCC.
+**4. Name three differences between `SystemLanguageModel` and `PrivateCloudComputeLanguageModel`, and what a developer needs before using PCC.**
+
 <details><summary>Answer</summary>PCC needs a network, has a 32K context instead of 4K, supports reasoning levels, and has a per-person daily quota (on-device usage is unlimited). Both require a device that supports Apple Intelligence. To use PCC, a developer needs the managed <code>com.apple.developer.private-cloud-compute</code> entitlement and must meet Apple's eligibility rules (Small Business Program, fewer than 2 million first-time downloads).</details>
 
-5. In Errand, when exactly does guideline 5.1.2(i) apply, and what must the consent screen do?
+**5. In Errand, when exactly does guideline 5.1.2(i) apply, and what must the consent screen do?**
+
 <details><summary>Answer</summary>Before any personal data (the errand text, calendar-derived times, a photo) is sent to a third-party AI provider. The screen must clearly say which provider gets which data, and get explicit permission before the first request. It should name the provider, list what's sent, and allow "Not now" and later withdrawal. Apple's HIG also asks you to disclose server-side processing for any server model.</details>
 
-6. You set `toolCallingMode` to `.required` and the request never finishes. Why, and what are two fixes?
+**6. You set `toolCallingMode` to `.required` and the request never finishes. Why, and what are two fixes?**
+
 <details><summary>Answer</summary>With <code>.required</code> the model must call a tool on every turn, so it never produces a final answer. Either switch the mode to <code>.allowed</code> after the first call (a dynamic profile with a <code>@SessionProperty</code> counter and <code>onToolCall</code>), or throw an error from the tool's <code>call(arguments:)</code> to exit.</details>
 
-7. Your planner scored 0.92 on iOS 26.4 and 0.71 on iOS 27. Nothing in your code changed. What happened, and what do you do?
+**7. Your planner scored 0.92 on iOS 26.4 and 0.71 on iOS 27. Nothing in your code changed. What happened, and what do you do?**
+
 <details><summary>Answer</summary>The on-device model changed with the OS update (Apple lists separate model versions for 26.4 and 27.0). Compare outputs across versions, adjust the prompt or types, and version the prompt with <code>#available</code> or a server-delivered config. Keep the evaluation in your test suite and record <code>SystemLanguageModel.variant</code>.</details>
 
-8. A photo shows "Books due Friday 5 PM". Which framework should read it, and what is the LLM's job?
+**8. A photo shows "Books due Friday 5 PM". Which framework should read it, and what is the LLM's job?**
+
 <details><summary>Answer</summary>Vision reads it: <code>RecognizeTextRequest</code>, fast, on device and deterministic. The LLM's job is to turn the recognized text into a typed plan. If the model should look at the image itself, attach it with <code>Attachment</code> and give the session <code>OCRTool</code>.</details>
 
 ## Go deeper

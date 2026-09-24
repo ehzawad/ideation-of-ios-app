@@ -652,7 +652,7 @@ The frameworks that matter in 2026. "Since" is the iOS version that introduced t
 | Term | Meaning |
 |---|---|
 | Sandbox | The private container and limits every app runs inside. |
-| Entitlement | A signed claim that unlocks a capability, like iCloud or PCC. |
+| Entitlement | A signed claim that grants a capability, like iCloud or PCC. |
 | Purpose string | The `Info.plist` text in a permission prompt, like `NSCameraUsageDescription`. |
 | Privacy manifest | `PrivacyInfo.xcprivacy`: data you collect and required-reason APIs you call. |
 | Scene | One instance of your UI, like a window, with its own lifecycle. |

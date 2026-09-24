@@ -43,7 +43,7 @@ One page to keep open while you build. Every symbol was checked with `scripts/ap
 | Reasoning levels | Not supported | Light, moderate, deep | Provider |
 | Limits | Unlimited (watch for `rateLimited`) | Daily quota per person; iCloud+ raises it | Your bill |
 | Your setup | Availability check | Managed entitlement `com.apple.developer.private-cloud-compute`; Small Business Program; < 2M first-time downloads | Package, key server, consent UI |
-| Consent | Not required | Disclose server use (HIG) | **5.1.2(i): disclose the provider and get explicit permission first** |
+| Consent | No sharing, normal permission rules | Disclose server use (HIG) | **5.1.2(i): disclose the provider and get explicit permission first** |
 | Typical Errand use | Plan a short errand; classify; extract | Long email or document; multi-turn planning | Only what Apple's models can't do, after consent |
 
 **Rule of thumb (Apple's words):** "Start with the on-device model and evaluate it with the `Evaluations` framework. If you determine your feature needs more reasoning capability or context size, then use PCC."
@@ -58,7 +58,7 @@ let needed = try await local.tokenCount(for: prompt)
 let useCloud = needed + 900 > local.contextSize         // 900 = instructions + answer, tune it
     && cloud.isAvailable && !cloud.quotaUsage.isLimitReached
 let session = useCloud
-    ? LanguageModelSession(model: cloud, dynamicInstructions: MyInstructions())
+    ? LanguageModelSession(model: cloud, dynamicInstructions: MyInstructions())   // your DynamicInstructions type
     : LanguageModelSession(model: local, dynamicInstructions: MyInstructions())
 ```
 
@@ -133,7 +133,7 @@ let soup = try content.value(String.self, forProperty: "soup")
 struct LookupTool: Tool {
     let name = "lookupOpeningHours"                       // short, unique
     let description = "Returns opening hours for a saved place."
-    let places: PlaceStore                                // an actor: tools must be Sendable
+    let places: PlaceStore                                // your actor: tools must be Sendable
 
     @Generable
     struct Arguments {
@@ -204,7 +204,7 @@ Other levers: one-shot sessions; chunk long text into separate sessions and summ
 let pcc = PrivateCloudComputeLanguageModel()
 switch pcc.availability {
 case .available: break
-case .unavailable(.deviceNotEligible): useOnDeviceOnly()   // your fallback
+case .unavailable(.deviceNotEligible): useOnDeviceOnly()   // your own functions
 case .unavailable(.systemNotReady): retryLater()
 case .unavailable: useOnDeviceOnly()
 }
@@ -296,6 +296,7 @@ let codes = try await DetectBarcodesRequest().perform(on: cgImage).compactMap(\.
 
 // Natural Language
 let language = NLLanguageRecognizer.dominantLanguage(for: text)
+var places: [String] = []
 let tagger = NLTagger(tagSchemes: [.nameType])
 tagger.string = text
 tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word,
