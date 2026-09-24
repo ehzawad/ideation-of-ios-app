@@ -260,7 +260,7 @@ struct ErrandProgressRing: View, Animatable {
 - Conforming to `Animatable` makes `withAnimation { ring.progress = 0.8 }` interpolate the value frame by frame. Shader arguments don't animate by themselves.
 - A shader is invisible to VoiceOver. The label and value make the ring an accessible element, and Reduce Motion pauses the timeline.
 
-**3. The Metal 4 renderer's long-lived objects.** Everything here is created once. This follows Apple's "Drawing a triangle with Metal 4" sample, in Swift.
+**3. The Metal 4 renderer's long-lived objects.** Everything here is created once. This follows Apple's "Drawing a triangle with Metal 4" sample, in Swift. Put blocks 3 to 5 in one file, `RingRenderer.swift`, because the extensions touch private state.
 
 ```swift
 import MetalKit
@@ -279,8 +279,7 @@ final class RingRenderer: NSObject, MTKViewDelegate {
     var progress: Float = 0
 
     init?(view: MTKView) {
-        let n = Self.framesInFlight
-        let tableDescriptor = MTL4ArgumentTableDescriptor()
+        let n = Self.framesInFlight, tableDescriptor = MTL4ArgumentTableDescriptor()
         tableDescriptor.maxBufferBindCount = 1               // only as many slots as you use
         guard let device = view.device, device.supportsFamily(.metal4),
               let queue = device.makeMTL4CommandQueue(),
@@ -293,20 +292,15 @@ final class RingRenderer: NSObject, MTKViewDelegate {
         let uniforms = (0..<n).compactMap { _ in
             device.makeBuffer(length: MemoryLayout<RingUniforms>.stride, options: .storageModeShared) }
         guard allocators.count == n, uniforms.count == n else { return nil }
-
         uniforms.forEach { resident.addAllocation($0) }
         resident.commit()                                    // staged changes apply only now
         queue.addResidencySet(resident)                      // our buffers
         queue.addResidencySet(view.residencySet)             // textures MetalKit creates
         if let layer = view.layer as? CAMetalLayer { queue.addResidencySet(layer.residencySet) }
-
         self.queue = queue; self.commandBuffer = commandBuffer; self.table = table
         self.allocators = allocators; self.uniforms = uniforms; self.frameDone = frameDone
         super.init()
-        let format = view.colorPixelFormat
-        Task { [weak self] in                                // compile off the main thread
-            self?.pipeline = try? await RingRenderer.makePipeline(device: device, pixelFormat: format)
-        }
+        compilePipeline(device: device, pixelFormat: view.colorPixelFormat)   // block 4
     }
 }
 ```
@@ -321,6 +315,14 @@ final class RingRenderer: NSObject, MTKViewDelegate {
 enum RingError: Error { case noShaderLibrary }
 
 extension RingRenderer {
+    /// Compiles in the background; draw(in:) skips frames until the pipeline exists.
+    func compilePipeline(device: any MTLDevice, pixelFormat: MTLPixelFormat) {
+        Task { [weak self] in
+            let compiled = try? await RingRenderer.makePipeline(device: device, pixelFormat: pixelFormat)
+            self?.pipeline = compiled
+        }
+    }
+
     /// Builds the render pipeline once, off the main thread. Never call this per frame.
     nonisolated static func makePipeline(device: any MTLDevice, pixelFormat: MTLPixelFormat)
         async throws -> any MTLRenderPipelineState {
@@ -546,6 +548,9 @@ What old tutorials get wrong, now:
    Required: add `ErrandProgressRing` (blocks 1–2) to the errand detail screen and the list rows, driven by your Day 1 model's completed-steps fraction. Animate changes with `withAnimation`. Stretch: add the Metal 4 version (blocks 3–6) behind a debug toggle, hosted in SwiftUI like this:
 
    ```swift
+   import MetalKit
+   import SwiftUI
+
    struct MetalErrandRing: UIViewRepresentable {
        var progress: Double
 
@@ -569,7 +574,7 @@ What old tutorials get wrong, now:
    }
    ```
 
-   *Done when:* completing a step animates the ring smoothly; VoiceOver reads "Errand progress, 60 percent"; the highlight stops moving when Reduce Motion is on; and there are zero validation errors. For the stretch: both rings look the same side by side, a GPU capture shows one render pass labeled "Errand ring" with a clear load action, and on a device without Metal 4 the app shows the SwiftUI ring instead.
+   *Done when:* completing a step animates the ring smoothly; VoiceOver reads "Errand progress, 60 percent"; the highlight stops moving when Reduce Motion is on; and there are zero validation errors. For the stretch: both rings look alike side by side, the Metal one carries the same accessibility label and value, a GPU capture shows one render pass labeled "Errand ring" with a clear load action, and on a device without Metal 4 the app shows the SwiftUI ring instead.
 
 ## Check yourself
 
@@ -604,10 +609,9 @@ What old tutorials get wrong, now:
 - [Resource synchronization](https://developer.apple.com/documentation/metal/resource-synchronization): barriers, fences and events, with worked examples for each.
 - [Tailor your apps for Apple GPUs and tile-based deferred rendering](https://developer.apple.com/documentation/metal/tailor-your-apps-for-apple-gpus-and-tile-based-deferred-rendering): tile memory, imageblocks, tile shaders.
 - [Using the Metal 4 compilation API](https://developer.apple.com/documentation/metal/using-the-metal-4-compilation-api): scheduling, unspecialized pipelines, harvesting.
-- [Machine learning passes](https://developer.apple.com/documentation/metal/machine-learning-passes) and [Running inline ML operations in a shader with Metal 4](https://developer.apple.com/documentation/metal/running-inline-ml-operations-in-a-shader-with-metal-4).
+- [Machine learning passes](https://developer.apple.com/documentation/metal/machine-learning-passes): converting Core ML models, tensors, and synchronizing ML with other passes.
 - [Metal debugger](https://developer.apple.com/documentation/xcode/metal-debugger) and [Metal developer workflows](https://developer.apple.com/documentation/xcode/metal-developer-workflows): capture, validation, HUD, Instruments.
 - [Logging shader debug messages](https://developer.apple.com/documentation/metal/logging-shader-debug-messages): `os_log` from inside a shader.
-- [MetalFX](https://developer.apple.com/documentation/metalfx): upscaling and frame interpolation.
 - [Metal Shading Language Specification](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf) (PDF, version 4.1).
 
 Cheat sheet for today: [Metal 4](cheatsheets/metal4.md).
@@ -686,6 +690,8 @@ Checked with `scripts/appledoc.py` against Apple's documentation on 2026-09-24. 
 - `MTLStorageMode.memoryless` — iOS 10.0
 - `MTLLoadAction.clear`, `.load`, `.dontCare`; `MTLStoreAction.store`, `.dontCare` — iOS 8.0
 - `MTLPrimitiveType.triangle` — iOS 8.0
+- `MTLPixelFormat.bgra8Unorm` — iOS 8.0
+- `MTLClearColor.init(red:green:blue:alpha:)`, `MTLSize.init(width:height:depth:)`, `UIView.isOpaque` — exist; Apple's page lists no introduction version
 - `MTLTensor`, `MTLTensor.gpuResourceID`, `MTLTensorDescriptor` — iOS 26.0
 - `MTLTensorAuxiliaryPlaneDescriptor`, `MTLTensorPlaneType`, `MTLTensorBufferAttachments` — iOS 27.0
 - `MTLTensorDataType.metalFloat8e4m3`, `.metalFloat8e5m2`, `.metalFloat4e2m1`, `.metalFloat8ue8m0`, `.int2` — iOS 27.0

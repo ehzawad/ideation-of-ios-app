@@ -143,7 +143,7 @@ Two rules make this concrete. First, **no parameter may choose whether a gate ap
 
 **6. System surfaces show snapshots. Interactivity always goes through an intent.**
 
-Widgets, Live Activities, Controls and snippets all render SwiftUI, but none of them runs your view code live the way your app does. A widget extension produces a **timeline** of entries; the system archives the views and renders them later in its own process. When someone taps a `Button(intent:)` in a widget, the system runs the intent, then reloads the timeline. Live Activities have no timeline at all: your app or your server pushes new state with ActivityKit. Controls ask a value provider for their current state when they load or reload.
+Widgets, Live Activities, Controls and snippets all render SwiftUI, but none of them runs your view code live the way your app does. A widget extension produces a **timeline** of entries; the system archives the views and renders them later in its own process. When someone taps a `Button(intent:)` in a widget, the system runs the intent, then reloads the timeline. Live Activities have no timeline at all: your app or your server pushes new state with ActivityKit. With a token from `Activity.pushToStartTokenUpdates`, your server can even start one; that start payload must include an alert. Controls ask a value provider for their current state when they load or reload.
 
 | Surface | How content updates | What a tap runs | Limits worth knowing |
 |---|---|---|---|
@@ -164,11 +164,9 @@ Widgets also never resolve parameters: an intent you pass to a widget button mus
 | **Everyday** | | | |
 | `AppIntent` | A verb the system can run: `title`, `@Parameter`s, `perform()` | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/appintent) |
 | `IntentParameter` (`@Parameter`) | An input the system resolves before `perform()` | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/intentparameter) |
-| `IntentResult`, `ReturnsValue`, `ProvidesDialog` | What `perform()` hands back: value, spoken or shown text | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/intentresult) |
-| `IntentDialog` | Text for prompts and results, with `full` and `supporting` variants | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/intentdialog) |
+| `IntentResult`, `ReturnsValue`, `ProvidesDialog`, `IntentDialog` | What `perform()` hands back: a value, and text with `full` and `supporting` variants | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/intentresult) |
 | `AppEntity` | A noun with a stable `id` and a display representation | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/appentity) |
-| `EntityQuery` | Find entities by ID; `suggestedEntities()` for pickers | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/entityquery) |
-| `EntityStringQuery` | Find entities from words people say or type | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/entitystringquery) |
+| `EntityQuery`, `EntityStringQuery` | Find entities by ID, by the words people say or type, or as suggestions for pickers | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/entitystringquery) |
 | `AppEnum` | A fixed set of values as a parameter type | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/appenum) |
 | `AppShortcutsProvider`, `AppShortcut` | Zero-setup phrases for Siri, Spotlight and the Action button | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/appshortcutsprovider) |
 | `OpenIntent` | An intent that opens your app to an entity or screen | iOS 16.0 | [Doc](https://developer.apple.com/documentation/appintents/openintent) |
@@ -190,7 +188,6 @@ Widgets also never resolve parameters: an intent you pass to a widget button mus
 | `ActivityConfiguration`, `DynamicIsland` | Live Activity views for the Lock Screen and Dynamic Island | iOS 16.1 | [Doc](https://developer.apple.com/documentation/widgetkit/activityconfiguration) |
 | `LiveActivityIntent` | An intent that may start or change a Live Activity from the background | iOS 17.0 | [Doc](https://developer.apple.com/documentation/appintents/liveactivityintent) |
 | `ControlWidget`, `ControlWidgetButton`, `StaticControlConfiguration` | A Control Center, Lock Screen or Action button control | iOS 18.0 | [Doc](https://developer.apple.com/documentation/widgetkit/controlwidgetbutton) |
-| `AppIntentTimelineProvider`, `WidgetConfigurationIntent` | A configurable widget with an async timeline | iOS 17.0 | [Doc](https://developer.apple.com/documentation/widgetkit/appintenttimelineprovider) |
 | **Advanced** | | | |
 | `@AppIntent(schema:)`, `@AppEntity(schema:)` | Conform to an Apple Intelligence schema | iOS 18.0 | [Doc](https://developer.apple.com/documentation/appintents/app-schema-domains) |
 | `LongRunningIntent`, `performBackgroundTask(options:operation:)` | Run past 30 seconds while reporting progress | iOS 27.0 | [Doc](https://developer.apple.com/documentation/appintents/longrunningintent) |
@@ -843,6 +840,9 @@ Define App Shortcuts with an `AppShortcutsProvider`. Every phrase must include y
 - ControlWidgetButton — iOS 18.0
 - ControlWidgetToggle — iOS 18.0
 - StaticControlConfiguration — iOS 18.0
+- StaticControlConfiguration.init(kind:content:) — iOS 18.0
+- ControlWidgetButton.init(action:label:) (OpenIntent action) — iOS 18.0
+- ControlWidgetConfiguration.displayName(_:) (SwiftUI) — iOS 18.0
 - AppIntentControlConfiguration — iOS 18.0
 - ControlValueProvider — iOS 18.0
 - ControlCenter.reloadControls(ofKind:) — iOS 18.0

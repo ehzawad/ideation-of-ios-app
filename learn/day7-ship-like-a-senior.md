@@ -168,11 +168,9 @@ Apple's numbers ([Understanding user interface responsiveness](https://developer
 | Preferences | `UserDefaults` | Never secrets. It's a plain property list. |
 | Network traffic | HTTPS, enforced by App Transport Security | Exceptions weaken ATS, and [some need a justification](https://developer.apple.com/documentation/security/preventing-insecure-network-connections) at App Store submission. Fix the server instead. |
 
-**App Attest** (`DCAppAttestService`) lets your server check that a request comes from a genuine copy of your app on a real Apple device. The app generates a key in the Secure Enclave, asks Apple to attest it against a one-time challenge from your server, and then signs later requests with assertions. Use it to protect anything that costs you money, such as a proxy to a cloud model. `DCDevice` gives you per-device tokens for simpler fraud checks.
+**App Attest** (`DCAppAttestService`) lets your server check that a request comes from a genuine copy of your app on a real Apple device. The app generates a key in the Secure Enclave, asks Apple to attest it against a one-time challenge from your server, then signs later requests with assertions. Use it in front of anything that costs you money, such as a proxy to a cloud model. `DCDevice` gives per-device tokens for simpler fraud checks. High-risk apps can add the **Enhanced Security** capability (Xcode 26) for pointer authentication and other hardening ([Enabling enhanced security](https://developer.apple.com/documentation/xcode/enabling-enhanced-security-for-your-app)).
 
-For high-risk apps, Xcode 26 added the **Enhanced Security** capability: pointer authentication, typed allocation and other hardening ([Enabling enhanced security](https://developer.apple.com/documentation/xcode/enabling-enhanced-security-for-your-app)). Xcode 27 ships a coding-intelligence skill that audits your security build settings.
-
-Agents add one more rule: **untrusted text must never trigger a side effect directly.** Email, web pages and calendar invites can carry instructions. Errand's approval gate is a security control, and it deserves a test proving that "no" means nothing happens.
+Agents add one rule: **untrusted text must never trigger a side effect directly.** Email, web pages and calendar invites can carry instructions. Errand's approval gate is a security control, and it deserves a test proving that "no" means nothing happens.
 
 **Senior tell:** for every secret and every file, they can say what happens when the phone is locked, restored to a new phone, or when a script calls the API without the app.
 
@@ -196,9 +194,9 @@ flowchart LR
   AR --> AS["App Store re-signs<br/>no profile inside"]
 ```
 
-Your app *claims* entitlements in its code signature, and each claim must appear in the profile's allowlist. App Store distribution profiles have no device list, because you can't run an App Store-signed build locally. The App Store re-signs your app after checking it, so the final app contains no profile. Most signing errors are one of those five things not matching. Xcode's automatic signing with cloud-managed certificates handles the rest.
+Your app *claims* entitlements in its code signature, and each claim must appear in the profile's allowlist. App Store distribution profiles have no device list, and the App Store re-signs your app after checking it, so the final app contains no profile. Most signing errors are one of the five things not matching.
 
-**The release path.** Archive, Validate, upload to App Store Connect. TestFlight takes up to 100 internal testers and up to 10,000 external testers. The first build you add to an external group goes through App Review, and builds stop working for testers after 90 days ([TestFlight overview](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/)). After approval, a **phased release** ships an update to users with automatic updates over 7 days (1%, 2%, 5%, 10%, 20%, 50%, 100%). You can pause it for up to 30 days in total, and anyone can still download the update manually ([Release a version update in phases](https://developer.apple.com/help/app-store-connect/update-your-app/release-a-version-update-in-phases/)).
+**The release path.** Archive, Validate, upload to App Store Connect. TestFlight takes up to 100 internal and 10,000 external testers. The first build you add to an external group goes through App Review, and builds expire for testers after 90 days ([TestFlight overview](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/)). After approval, a **phased release** ships an update to people with automatic updates over 7 days (1%, 2%, 5%, 10%, 20%, 50%, 100%). You can pause it for up to 30 days in total, and anyone can still download it manually ([Release a version update in phases](https://developer.apple.com/help/app-store-connect/update-your-app/release-a-version-update-in-phases/)).
 
 **Privacy has three layers, and they must agree:**
 

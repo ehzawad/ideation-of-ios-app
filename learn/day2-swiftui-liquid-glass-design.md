@@ -231,7 +231,7 @@ There is no opting out anymore. The `UIDesignRequiresCompatibility` Info.plist k
 
 ## Core patterns in code
 
-These patterns build the Errand screens you'll assemble in today's capstone. `Errand`, `ErrandStep`, and the `ErrandStore` actor come from Day 1; `allErrands()` stands for whatever read method your store has.
+These patterns build the Errand screens you'll assemble in today's capstone. `Errand`, `Step`, `Status`, and the `ErrandStore` actor come from Day 1. Day 1's project sets Default Actor Isolation to `MainActor`, so the explicit `@MainActor` below is a reminder, not a requirement.
 
 **1. One owner, many borrowers.** The app owns one UI model, puts it in the environment, and views borrow it.
 
@@ -242,22 +242,18 @@ import SwiftUI
 final class ErrandBoard {
     var errands: [Errand] = []
     var filter = ""
+    var lastError: (any Error)?
     private let store: ErrandStore              // the Day 1 actor
 
     init(store: ErrandStore) { self.store = store }
-
     var visible: [Errand] {
         filter.isEmpty ? errands
             : errands.filter { $0.title.localizedStandardContains(filter) }
     }
 
     func load() async {
-        errands = await store.allErrands()      // hop to the actor, publish on main
+        errands = await store.all               // hop to the actor, publish on main
     }
-}
-
-extension EnvironmentValues {
-    @Entry var showsStepCounts: Bool = true
 }
 
 @main
@@ -320,7 +316,7 @@ struct ErrandListView: View {
 }
 ```
 
-- If `Errand.ID` is a `UUID`, it's `Hashable` and `Codable`, so it works with `NavigationLink(value:label:)` and the path can be saved for state restoration.
+- `Errand.ID` is a `UUID` (Day 1), which is `Hashable` and `Codable`, so it works with `NavigationLink(value:label:)` and the path can be saved for state restoration.
 - Opening an errand from a notification or an App Intent is `path = [id]`. No view needs to be "active."
 - `.task` is tied to the list's lifetime: it starts before the list appears, and SwiftUI can cancel it when the list goes away. Cancellation is cooperative (Day 1), so long loops should check for it.
 
@@ -359,8 +355,8 @@ struct ErrandListView: View {
 struct ApprovalBar: View {
     let done: Int
     let total: Int
-    let pending: ErrandStep?
-    let approve: (ErrandStep) -> Void
+    let pending: Step?
+    let approve: (Step) -> Void
     @Namespace private var glass
 
     var body: some View {
@@ -392,6 +388,14 @@ struct ApprovalBar: View {
 **5. A row that survives Dynamic Type.** Switch from a row to a stack at accessibility sizes without losing identity.
 
 ```swift
+extension Errand {
+    var doneCount: Int { steps.count(where: { $0.status == .done }) }
+}
+
+extension EnvironmentValues {
+    @Entry var showsStepCounts: Bool = true
+}
+
 struct ErrandRow: View {
     let errand: Errand
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -421,42 +425,54 @@ struct ErrandRow: View {
 - `AnyLayout` changes the arrangement while the children keep their identity, so nothing resets and the change can animate.
 - Text styles (`.headline`, `.subheadline`) scale with Dynamic Type. No fixed frames means no clipping at large sizes.
 - `.accessibilityElement(children: .combine)` makes the row one VoiceOver stop that reads the title and the count together.
+- `@Entry` declares a custom environment value in one line. A parent turns counts off with `.environment(\.showsStepCounts, false)`.
 
-**6. An accessible step row.** Label, value, trait, feedback, and respect for Reduce Motion.
+**6. An accessible step row.** Symbol, spoken state, feedback, and respect for Reduce Motion, driven by Day 1's `Status`.
 
 ```swift
+extension Status {
+    var display: (symbol: String, spoken: LocalizedStringResource) {
+        switch self {
+        case .pending: ("circle", "Not started")
+        case .running: ("circle.dotted", "In progress")
+        case .waitingForApproval: ("hand.raised.circle", "Waiting for approval")
+        case .done: ("checkmark.circle.fill", "Done")
+        case .failed: ("exclamationmark.circle", "Failed")
+        }
+    }
+}
+
 struct StepRow: View {
-    let step: ErrandStep
-    let toggle: () -> Void
+    let step: Step
+    let advance: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button {
-            withAnimation(reduceMotion ? nil : .snappy) { toggle() }
+            withAnimation(reduceMotion ? nil : .snappy) { advance() }
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: step.isDone ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(step.isDone ? Color.accentColor : Color.secondary)
+                Image(systemName: step.status.display.symbol)
+                    .foregroundStyle(step.status == .done ? Color.accentColor : Color.secondary)
                     .contentTransition(.symbolEffect(.replace))
-                    .imageScale(.large)
                     .accessibilityHidden(true)
                 Text(step.title)
-                    .strikethrough(step.isDone)
+                    .strikethrough(step.status == .done)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .accessibilityValue(step.isDone ? "Done" : "Not done")
-        .accessibilityAddTraits(.isToggle)
-        .sensoryFeedback(.success, trigger: step.isDone)
+        .disabled(step.status == .done || step.status == .waitingForApproval)
+        .accessibilityValue(step.status.display.spoken)
+        .sensoryFeedback(.success, trigger: step.status == .done)
     }
 }
 ```
 
-- The icon is hidden from VoiceOver because the value already says "Done." Meaning never rides on the icon or color alone.
+- The symbol is hidden from VoiceOver because the value already speaks the state ("Waiting for approval"). Meaning never rides on the icon or color alone.
 - `.contentTransition(.symbolEffect(.replace))` animates the symbol swap; `withAnimation(nil)` turns motion off when Reduce Motion is on.
-- `.contentShape(.rect)` makes the whole row tappable, not just the glyph and text.
+- `.contentShape(.rect)` makes the whole row tappable. The row is disabled when tapping can't move the step: nothing leaves `.done` in Day 1's state machine, and a waiting step moves only through the Approve button.
 
 **7. When you still need UIKit.** Wrap a UIKit view with `UIViewRepresentable`; use a coordinator for delegate callbacks.
 
@@ -561,7 +577,7 @@ using namespace metal;
 }
 ```
 
-Then apply it to a blocked step's background: `RoundedRectangle(cornerRadius: 12).fill(.orange).colorEffect(ShaderLibrary.stripes(.float(8)))`.
+Then apply it to a failed step's background: `RoundedRectangle(cornerRadius: 12).fill(.orange).colorEffect(ShaderLibrary.stripes(.float(8)))`.
 *Done when:* the stripes render in the preview, and you can say what `colorEffect`, `layerEffect`, and `distortionEffect` each let a shader read and return.
 
 **4. Glass audit (20 min).** Turn on Reduce Transparency, then Increase Contrast, then Reduce Motion (Settings > Accessibility), and look at your toolbar and `ApprovalBar`.
@@ -571,17 +587,47 @@ Then apply it to a blocked step's background: `RoundedRectangle(cornerRadius: 12
 
 Build the list and detail screens on top of Day 1's model and store:
 
-- `ErrandApp` owns one `ErrandBoard` with `@State` and injects it (pattern 1).
-- `ErrandListView`: `NavigationStack(path:)`, rows from pattern 5, zoom transition, an empty state, and the toolbar from pattern 3. Deletes use `.onDelete` on the `ForEach`.
+- `ErrandApp` (replace the one Xcode's template made on Day 1) owns one `ErrandBoard` with `@State` and injects it (pattern 1). Seed the store with two sample errands on first launch so there's something to see; SwiftData replaces this on Day 3.
+- `ErrandListView`: `NavigationStack(path:)`, rows from pattern 5, zoom transition, an empty state (`ContentUnavailableView`), and the toolbar from pattern 3. For delete, add a `remove(_:)` method to the Day 1 store and call it from `.onDelete` on the `ForEach`.
 - `ErrandDetailView`: the steps as `StepRow`s (pattern 6) and the `ApprovalBar` (pattern 4) in a `safeAreaBar`.
-- Add to `ErrandBoard`: `errand(_:)`, `toggle(_:in:)`, and `approve(_:in:)`. Update `errands` right away so the UI responds, then save through the Day 1 actor in a `Task`. If `ErrandStep` has no approval flag yet, add `var needsApproval: Bool`.
+- Add three methods to `ErrandBoard`, in the same file so they can reach the private `store`. The actor stays the source of truth: each method moves the step through Day 1's state machine, then reloads. A step with `needsApproval` stops at `.waitingForApproval` until the person taps Approve. That's Errand's rule, "ask before any side effect," showing up in the UI for the first time.
 
 ```swift
-extension Errand {
-    var doneCount: Int { steps.filter(\.isDone).count }
-    var nextApproval: ErrandStep? { steps.first { $0.needsApproval && !$0.isDone } }
+extension ErrandBoard {
+    func errand(_ id: Errand.ID) -> Errand? { errands.first { $0.id == id } }
+
+    func advance(_ step: Step, in errand: Errand) {
+        Task {
+            do {
+                if step.status == .pending {
+                    try await store.move(step: step.id, in: errand.id, to: .running)
+                }
+                let next: Status = step.needsApproval ? .waitingForApproval : .done
+                try await store.move(step: step.id, in: errand.id, to: next)
+            } catch { lastError = error }
+            await load()
+        }
+    }
+
+    func approve(_ step: Step, in errand: Errand) {
+        Task {
+            do {
+                try await store.move(step: step.id, in: errand.id, to: .running)
+                try await store.move(step: step.id, in: errand.id, to: .done)
+            } catch { lastError = error }
+            await load()
+        }
+    }
 }
 
+extension Errand {
+    var nextApproval: Step? { steps.first { $0.status == .waitingForApproval } }
+}
+```
+
+The detail screen puts the pieces together:
+
+```swift
 struct ErrandDetailView: View {
     let errandID: Errand.ID
     @Environment(ErrandBoard.self) private var board
@@ -591,7 +637,7 @@ struct ErrandDetailView: View {
             List {
                 Section("Steps") {
                     ForEach(errand.steps) { step in
-                        StepRow(step: step) { board.toggle(step.id, in: errand.id) }
+                        StepRow(step: step) { board.advance(step, in: errand) }
                     }
                 }
             }
@@ -599,7 +645,7 @@ struct ErrandDetailView: View {
             .toolbarTitleDisplayMode(.inline)
             .safeAreaBar(edge: .bottom) {
                 ApprovalBar(done: errand.doneCount, total: errand.steps.count,
-                            pending: errand.nextApproval) { board.approve($0.id, in: errand.id) }
+                            pending: errand.nextApproval) { board.approve($0, in: errand) }
                     .padding(.bottom, 8)
             }
         } else {
@@ -640,7 +686,7 @@ final class ErrandAccessibilityTests: XCTestCase {
 *Done when:*
 - Tapping a row zooms into its detail, and setting `path = [someID]` from a debug button opens that errand directly.
 - The toolbar shows one tinted primary action; at a narrow width, Edit stays and the overflow menu holds the secondary actions.
-- Toggling a step animates its symbol, and with Reduce Motion on it changes without animation.
+- Tapping a step advances it and animates its symbol (with Reduce Motion on, it changes without animation). A step with `needsApproval` stops at "Waiting for approval", and the Approve button morphs out of the progress pill.
 - At `.accessibility3`, rows stack and nothing truncates. In Dark Mode with Increase Contrast, everything stays readable.
 - With VoiceOver on, each errand row and each step is a single stop that reads its title and state, and both UI tests pass.
 
@@ -775,6 +821,7 @@ Versions are the iOS "introduced" versions that `appledoc.py` reported. Some Swi
 - accessibilityAddTraits(_:) — iOS 14.0; AccessibilityTraits.isToggle — iOS 17.0
 - accessibilityElement(children:) — iOS 13.0; accessibilityHidden(_:) — iOS 14.0
 - preferredColorScheme(_:) — iOS 13.0
+- disabled(_:) — iOS 13.0; LocalizedStringResource (Foundation) — iOS 16.0; Sequence.count(where:) (Swift) — reported iOS 8.0
 - Preview(_:body:) — iOS 13.0; Preview(_:traits:arguments:body:) — iOS 26.0; PreviewProvider — deprecated 27.0
 - UIViewRepresentable, makeUIView(context:), updateUIView(_:context:), makeCoordinator() — iOS 13.0
 - UIHostingController, init(rootView:) — iOS 13.0
