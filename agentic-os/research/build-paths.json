@@ -1,0 +1,484 @@
+{
+  "summary": "There are five realistic ways to build and try an agent-first phone OS in 2026, in rising order of fidelity and cost. (1) A web/desktop simulator with mocked typed system tools, for design research in weeks. (2) An iOS companion app, limited to App Intents, Foundation Models/PCC, AlarmKit and a Shortcuts bridge. It cannot own the home screen, set volume, toggle radios or touch other apps. (3) An Android launcher plus default-assistant app on stock phones. This gives a real chat/voice home screen, alarms, media, notifications and volume, but radio toggles fail for normal apps targeting API 33+ (Bluetooth) and API 29+ (Wi-Fi), and accessibility is increasingly policed (Play declarations, Android 17 Advanced Protection). (4) Device Owner fleets or an AOSP fork (LineageOS or GrapheneOS on Pixels) with the agent as a privileged system app. This is the only way to get the powers Google now reserves for OEM assistants, such as the preview Computer Control API (virtual display, up to six apps, consent dialog) and the AppFunctions caller allowlist. (5) Linux phones, where every service is an open D-Bus tool. This is ideal as a reference architecture but not for testing with users. Hardware startups (Rabbit, Humane) and ByteDance's Doubao-on-nubia show that pixels are easy once you are the OEM; the hard walls are app platforms' anti-automation defenses and reliability. MobileWorld's best cross-app score is 51.7%. The model stack is now practical: Gemma 4 E2B decodes at about 52 tok/s with a 0.3 s first token on a Galaxy S26 Ultra GPU (56 tok/s on iPhone 17 Pro), and Apple's ~3B on-device model has a 4K context. Hybrid routing is built into the platforms (Firebase AI Logic Hybrid, ADK for Android, Apple Dynamic Profiles plus PCC). Cloud costs range from about $1 to $40 per active user per month depending on model and usage, so on-device routing and typed tools (AppFunctions, App Intents schemas, MCP) decide the economics, while A2UI and MCP Apps supply the UI half of the app model.",
+  "items": [
+    {
+      "name": "Build path A1: Android launcher + default assistant app on stock phones",
+      "kind": "build_path",
+      "facts": "Android's RoleManager exposes ROLE_HOME ('android.app.role.HOME') and ROLE_ASSISTANT ('android.app.role.ASSISTANT'), both added in API 29, so one ordinary app can ask the user to become both the home screen and the default assistant. The assistant role is backed by VoiceInteractionService/VoiceInteractionSession; when invoked with SHOW_WITH_ASSIST/SHOW_WITH_SCREENSHOT the session receives onHandleAssist (AssistStructure of the foreground app) and onHandleScreenshot (a screenshot that 'may be null if screenshots are disabled by the user, policy, or application'). Normal-permission system tools are available to such an app: AudioManager.setStreamVolume (MODIFY_AUDIO_SETTINGS is protection level normal; changes that would toggle Do Not Disturb need notification-policy access), alarm intents (com.android.alarm.permission.SET_ALARM is normal), exact alarms via SCHEDULE_EXACT_ALARM/USE_EXACT_ALARM, and notification reading via a user-granted NotificationListenerService. But BluetoothAdapter.enable()/disable() 'will always fail and return false' for apps targeting API 33+, and WifiManager.setWifiEnabled() always fails for apps targeting API 29+; both list 'Device Owner (DO), Profile Owner (PO) and system apps' as the only exemptions. Cross-app actions are limited to intents/deep links, AppFunctions (if the caller is allowlisted) or an AccessibilityService (policy-constrained, see separate item).",
+      "implication": "Fastest way to put a real chat-and-voice home screen on real phones and test daily use. Treat Bluetooth/Wi-Fi toggles as 'open the system panel and ask the user to confirm' in this tier; reserve silent toggles for the privileged tiers (Device Owner or an AOSP fork).",
+      "sources": [
+        "https://developer.android.com/reference/android/app/role/RoleManager",
+        "https://developer.android.com/reference/android/service/voice/VoiceInteractionSession",
+        "https://developer.android.com/reference/android/media/AudioManager",
+        "https://developer.android.com/reference/android/bluetooth/BluetoothAdapter",
+        "https://developer.android.com/reference/android/net/wifi/WifiManager",
+        "https://developer.android.com/reference/android/Manifest.permission"
+      ],
+      "confidence": "verified",
+      "pros": "Runs on any recent Android phone; Play-distributable (with policy care); weeks to a first prototype; real notifications, contacts, calendar, alarms, media.",
+      "cons": "Cannot silently toggle Bluetooth/Wi-Fi or secure settings; cross-app actions are thin without accessibility; OEM skins may kill background services; cannot replace lock screen or system UI.",
+      "effort": "1-3 engineers, 4-8 weeks to a daily-drivable prototype."
+    },
+    {
+      "name": "Android capability matrix for system services as typed tools",
+      "kind": "platform_api",
+      "facts": "Audio: AudioManager.setStreamVolume works for normal apps (no effect on fixed-volume devices; SecurityException if the change would toggle DND without notification-policy access; ACCESS_NOTIFICATION_POLICY is a normal 'marker' permission plus a user grant). Alarms: SET_ALARM (normal) for handing an alarm to the clock app; SCHEDULE_EXACT_ALARM is a revocable special access, USE_EXACT_ALARM is for apps whose core function is alarms. Notifications: NotificationListenerService must be protected by BIND_NOTIFICATION_LISTENER_SERVICE (signature) and is enabled by the user in settings. Bluetooth: toggling blocked for API 33+ targets except DO/PO/system apps; BLUETOOTH_PRIVILEGED ('pair bluetooth devices without user interaction') is 'Not for use by third-party applications'. BLUETOOTH_SCAN is a dangerous runtime permission for discovery and pairing with user interaction. Wi-Fi: setWifiEnabled blocked for API 29+ targets except DO/PO/system apps; CHANGE_WIFI_STATE is normal (network suggestions). Settings/phone: WRITE_SECURE_SETTINGS and MODIFY_PHONE_STATE are 'Not for use by third-party applications'; WRITE_SETTINGS needs an explicit user grant; MANAGE_ONGOING_CALLS is signature|appop. Agent tools: EXECUTE_APP_FUNCTIONS (API 36) is protection level normal, but 'allowlist checks for AppFunctions API access are enforced at runtime'.",
+      "implication": "Model every OS capability as a typed tool with a declared tier: (1) normal-permission tools any app can run, (2) user-granted special access (notification listener, DND, exact alarms), (3) privileged/system-only tools (radio toggles, silent pairing, secure settings) that exist only on a Device Owner device or an AOSP fork. The tier doubles as the confirmation policy.",
+      "sources": [
+        "https://developer.android.com/reference/android/Manifest.permission",
+        "https://developer.android.com/reference/android/media/AudioManager",
+        "https://developer.android.com/reference/android/bluetooth/BluetoothAdapter",
+        "https://developer.android.com/reference/android/net/wifi/WifiManager"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Device Owner (device admin) as a middle path for research fleets",
+      "kind": "platform_api",
+      "facts": "The Bluetooth and Wi-Fi toggle deprecations both exempt Device Owner (DO) and Profile Owner (PO) apps, and from Android 13 a DO (or PO of an organization-owned device) can set DISALLOW_CHANGE_WIFI_STATE so only DO/PO may toggle Wi-Fi. Device Owner is normally provisioned on a fresh/factory-reset device (QR/NFC enrollment, or adb 'dpm set-device-owner' on a device without accounts).",
+      "implication": "For a pilot of 10-100 dedicated test phones, provisioning the agent as Device Owner unlocks radio toggles and policy control without building a ROM, keeping stock security updates and Play services. Not a consumer path.",
+      "sources": [
+        "https://developer.android.com/reference/android/bluetooth/BluetoothAdapter",
+        "https://developer.android.com/reference/android/net/wifi/WifiManager",
+        "https://developer.android.com/work/dpc/dedicated-devices"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "AccessibilityService as the universal actuator, and its 2026 walls",
+      "kind": "policy",
+      "facts": "AccessibilityService lets an app read screen content and perform gestures in any app; open-source phone agents (DroidRun/Mobilerun Portal, blurr, Lumenberg-style launchers) rely on it. Google Play only allows apps that help people with disabilities to declare isAccessibilityTool=true; everyone else must file an accessibility declaration, show prominent in-app disclosure and get affirmative consent; a 2026 policy update clarifies user-data rules also cover third-party AI integrations. Android 17 (Beta 2 onward) ties Advanced Protection Mode to accessibility: when enabled, apps not flagged as accessibility tools lose the permission and users cannot grant it; per reporting, Google lists 'automation tools, assistants... and launchers' as not accessibility tools. BIND_ACCESSIBILITY_SERVICE is a signature permission so only the system binds the service.",
+      "implication": "Use accessibility as a fallback actuator in prototypes and sideloaded builds, not as the product's backbone. Design the primary path around typed APIs (intents, AppFunctions, MCP) and budget for users (Advanced Protection, enterprise) who cannot grant it.",
+      "sources": [
+        "https://support.google.com/googleplay/android-developer/answer/10964491?hl=en",
+        "https://support.google.com/googleplay/android-developer/answer/17134731?hl=en-GB",
+        "https://www.androidauthority.com/android-17-beta-2-advanced-protection-mode-accessibility-apps-3648860/",
+        "https://thehackernews.com/2026/03/android-17-blocks-non-accessibility.html",
+        "https://developer.android.com/reference/android/Manifest.permission"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Android AppFunctions: apps as on-device MCP-style tool servers",
+      "kind": "app_model",
+      "facts": "Google describes AppFunctions as 'an Android platform API with an accompanying Jetpack library to simplify Android MCP integration' that lets apps 'behave like on device MCP servers'; available on Android 16 (API 36)+. Developers annotate Kotlin functions with @AppFunction (and @AppFunctionSerializable data classes, described by KDoc); the Jetpack compiler 'generates an XML schema file that lists all the declared AppFunctions' which the OS indexes. Callers need EXECUTE_APP_FUNCTIONS; the docs say callers 'can include agents, apps, and AI assistants like Gemini', but 'only a limited number of apps and system agents can access the entire pipeline' during the experimental preview; Gemini integration was a private preview with trusted testers as of May 2026. Library status: androidx.appfunctions 1.0.0-alpha12 released September 23, 2026 (no beta/stable yet). Testing via 'adb shell cmd app_function'; samples at github.com/android/appfunctions (~200 stars, created May 2026). Google positions remote MCP servers as the cross-platform alternative ('good option for coverage across Android and other platforms').",
+      "implication": "AppFunctions is the closest shipping template for the agent OS app model (typed, KDoc-described, OS-indexed, locally executed). On stock Android a third-party agent may not be allowlisted as a caller; on your own AOSP fork you control the allowlist, so the agent OS can be the caller and every AppFunctions-enabled app becomes a tool for free.",
+      "sources": [
+        "https://developer.android.com/ai/appfunctions",
+        "https://developer.android.com/ai/intelligence-system",
+        "https://developer.android.com/jetpack/androidx/releases/appfunctions",
+        "https://github.com/android/appfunctions",
+        "https://developer.android.com/reference/android/Manifest.permission"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Android Computer Control API (OEM assistants) and Gemini screen automation",
+      "kind": "platform_api",
+      "facts": "Preview docs: Computer Control 'allows OEM-preloaded AI assistants to perform task automation on selected apps'; the assistant needs the privileged ACCESS_COMPUTER_CONTROL permission (not listed in the public Manifest.permission reference). Mechanics: 'The system runs target apps on a virtual device, similar to casting'; a session covers 'up to six target apps for sequential execution'; 'one active session at a given time'; requesting a session triggers a system consent dialog; the assistant can launch apps, capture screen content and inject taps, swipes and text, and can hand control back to the user. Target apps need no code changes, but 'at this time, the Computer Control framework can interact with a limited set of target apps'. Shipping example: Gemini screen automation launched on Galaxy S26 (US/Korea, Feb-Mar 2026) and Pixel 10 (March 2026 Pixel Drop); it runs apps in a 'secure, virtual window', the virtual screen is processed in the cloud, supports apps such as Uber, Lyft, DoorDash, Grubhub, Uber Eats and Starbucks, and stops before checkout to hand back to the user.",
+      "implication": "This is exactly the long-tail actuator an agent OS needs (virtual display, consent, hand-off), and it is reserved for OEM-preloaded assistants. A third party gets equivalent power only by being the OEM (AOSP fork or OEM partnership). The Gemini UX (virtual window, stop before payment, notification hand-back) is a validated pattern to copy.",
+      "sources": [
+        "https://developer.android.com/ai/computer-control",
+        "https://developer.android.com/ai/intelligence-system",
+        "https://9to5google.com/2026/02/25/gemini-automation-android/",
+        "https://www.androidauthority.com/gemini-screen-task-automation-pixel-10-rollout-3649980/",
+        "https://www.androidcentral.com/apps-software/gemini-screen-automation-rolling-out-for-galaxy-s26"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Build path A2: AOSP fork with the agent as a privileged system app",
+      "kind": "build_path",
+      "facts": "System/privileged apps are exempt from the Bluetooth and Wi-Fi toggle restrictions and can hold permissions documented as 'Not for use by third-party applications' (BLUETOOTH_PRIVILEGED, WRITE_SECURE_SETTINGS, MODIFY_PHONE_STATE). Privileged permissions must be allowlisted for apps in priv-app partitions via privapp-permissions XML (AOSP docs; not fetched this session). Precedent: ZTE's nubia M153 granted ByteDance's Doubao assistant INJECT_EVENTS, 'typically reserved for system components', letting it read screens and simulate touches system-wide. From 2026 Google publishes AOSP source only twice a year (Q2 major, Q4 minor); Android 17 released June 16, 2026. Monthly security patches continue on a security-only branch. Custom builds ship without Google Mobile Services unless licensed; hardware-attested integrity checks used by banking and some super-apps can fail on unlocked or uncertified builds.",
+      "implication": "The only path that delivers the full thesis (agent owns home, lock, notifications, radios, cross-app automation via virtual displays) outside Google/Apple. Start from an existing ROM on Pixels rather than raw AOSP, keep the agent as a single privileged system app plus a thin SystemUI patch, and expect app-compatibility and update cadence to be the main costs.",
+      "sources": [
+        "https://developer.android.com/reference/android/Manifest.permission",
+        "https://developer.android.com/reference/android/bluetooth/BluetoothAdapter",
+        "https://source.android.com/docs/core/permissions/perms-allowlist",
+        "https://www.yicaiglobal.com/news/wechat-some-chinese-banking-apps-reportedly-restrict-devices-with-bytedances-new-ai-voice-assistant",
+        "https://www.androidauthority.com/aosp-source-code-schedule-3630018/",
+        "https://www.heise.de/en/news/Android-Google-halves-release-cycle-for-AOSP-source-code-11132493.html"
+      ],
+      "confidence": "likely",
+      "pros": "Full control over permissions, AppFunctions caller allowlist, virtual displays and input injection, SystemUI, lock screen, boot-to-agent; can be demoed on real phones.",
+      "cons": "Per-device bring-up and OTA pipeline; AOSP lag (twice-yearly drops); no Google Play services without a license; integrity-checking apps may refuse to run; user must unlock the bootloader and flash.",
+      "effort": "3-6 engineers for 6-12 months to a stable Pixel-only build; ongoing 1-2 engineers per supported device family."
+    },
+    {
+      "name": "GrapheneOS and LineageOS as bases",
+      "kind": "build_path",
+      "facts": "LineageOS 23 (Android 16, based on QPR0 because later QPR source was not public) shipped in October 2025 for 100+ devices; LineageOS 23.2 followed. GrapheneOS supports Google Pixels today; at MWC (March 2, 2026) Motorola announced a long-term GrapheneOS partnership, with GrapheneOS saying 2026 Motorola devices do not meet its requirements and '2027 devices' are being prepared. The AOSP twice-yearly release schedule means ROMs now rebase on Q2/Q4 drops only (reported impact on LineageOS).",
+      "implication": "LineageOS gives device breadth and an easy hacking culture (good for demos on cheap phones); GrapheneOS gives a strong security story (hardened, sandboxed Play) that fits a privacy-first agent, but its threat model is hostile to an all-powerful agent, so expect to fork rather than upstream. For a book-grade prototype: Pixel + GrapheneOS or LineageOS fork + privileged agent app.",
+      "sources": [
+        "https://lineageos.org/Changelog-30/",
+        "https://www.howtogeek.com/lineageos-23-based-on-android-16-is-finally-here/",
+        "https://9to5google.com/2026/03/01/motorola-confirms-grapheneos-partnership-for-a-future-smartphone-porting-features/",
+        "https://www.androidauthority.com/aosp-source-code-schedule-3630018/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Android distribution in 2026: developer verification and two-flavor builds",
+      "kind": "policy",
+      "facts": "From September 30, 2026, certified Android devices in Brazil, Indonesia, Singapore and Thailand block normal installs of apps from developers who have not verified their identity with Google, including sideloaded apps; ADB and an 'advanced' flow remain; Google plans global expansion in 2027. OpenClaw's Android node ships as a Google Play app plus a separate third-party build, because SMS, call log, photo and background-location capabilities are only in the non-Play flavor.",
+      "implication": "Plan for two artifacts from day one: a Play-compliant launcher/assistant (limited tools) and a sideload or ROM build with full capabilities, both signed by a verified developer identity.",
+      "sources": [
+        "https://developer.android.com/developer-verification",
+        "https://thehackernews.com/2026/06/google-sets-sept-30-deadline-for.html",
+        "https://github.com/openclaw/openclaw/tree/main/apps/android"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Build path B: Linux phones (postmarketOS, Phosh, Plasma Mobile, Ubuntu Touch)",
+      "kind": "build_path",
+      "facts": "postmarketOS 26.06 released June 21, 2026 and packages Plasma Mobile 6.7; Phosh 0.57.0 (Aug 19, 2026) and Plasma Mobile 6.7.4 (Aug 4, 2026) are current; Ubuntu Touch is at 24.04-2.0. No integrated LLM assistant was found in these projects' 2026 release notes; community offline voice stacks combine whisper.cpp, a local LLM and Piper TTS. Everything is scriptable as root and system services speak D-Bus (see D-Bus item).",
+      "implication": "Best platform for a clean 'OS services as introspectable tools' reference implementation and for the book's architecture diagrams, since nothing is policy-gated. Weak as a user test bed: few supported phones, weak modem/camera support, and no WhatsApp/banking/ride-hailing apps.",
+      "sources": [
+        "https://postmarketos.org/blog/2026/07/06/pmOS-update-2026-06/",
+        "https://en.wikipedia.org/wiki/Phosh",
+        "https://en.wikipedia.org/wiki/Plasma_Mobile",
+        "https://linmob.net/weekly-update-30-2026/"
+      ],
+      "confidence": "likely",
+      "pros": "Root access, open D-Bus services, no store policy, can run llama.cpp/whisper.cpp natively, reproducible.",
+      "cons": "Tiny hardware list and user base; no mainstream apps; power management and camera immature; results do not generalize to consumer behavior.",
+      "effort": "1-2 engineers, 2-3 months for a D-Bus tool broker plus chat shell on one device (e.g. a PinePhone Pro or a mainlined Pixel/OnePlus)."
+    },
+    {
+      "name": "Linux D-Bus services as the capability layer",
+      "kind": "platform_api",
+      "facts": "BlueZ exposes Bluetooth on the system bus as service org.bluez, interface org.bluez.Adapter1 (read-write Powered property, StartDiscovery method) and org.bluez.Device1 (Connect/Pair). Other standard system services on Linux phones are also D-Bus: NetworkManager (Wi-Fi), ModemManager (cellular/SMS), GeoClue (location) and the org.freedesktop.Notifications spec. xdg-desktop-portal exposes org.freedesktop.portal.* D-Bus interfaces so 'Flatpak apps, and other desktop containment frameworks' reach system resources through mediated, permissioned portals.",
+      "implication": "D-Bus introspection XML can be converted mechanically into typed tool schemas; portals show how to put a consent broker between a sandboxed caller and a system service. The same pattern (introspect, type, gate with consent) maps onto Android Binder services on a fork.",
+      "sources": [
+        "https://github.com/bluez/bluez/blob/master/doc/org.bluez.Adapter.rst",
+        "https://github.com/flatpak/xdg-desktop-portal"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Build path C: iOS within today's walls (what a third-party agent app can do)",
+      "kind": "build_path",
+      "facts": "App Intents app schemas cover primary domains Audio, Calendar, Camera, Clock, Mail, Maps, Messages, Notes, Phone, Photos, Reminders and System/in-app search, applied with AppIntent(schema:), AppEntity(schema:) and AppEnum(schema:) macros; Siri AI (iOS 27) is the orchestrator that calls them. Single-purpose 'Assistant' domain: 'Enable people in Japan to launch your voice-based conversational app from the side button of iPhone.' AlarmKit (iOS 26) lets an app schedule, snooze, pause and cancel its own alarms and countdowns after requestAuthorization(). Volume: AVAudioSession.outputVolume is read-only and Apple states 'Only the user can directly set the system volume. Provide a volume control in your app, using MPVolumeView'; MPVolumeView is a user-operated slider plus route button; MPVolumeSettingsAlertShow() is deprecated since iOS 11.3; AVRoutePickerView presents AirPlay receivers. Bluetooth/Wi-Fi: AccessorySetupKit (iOS 18) discovers and pairs the app's own Bluetooth or Wi-Fi accessories; there is no API to toggle system radios. The Shortcuts app has 'Set Bluetooth', 'Set Wi-Fi' and 'Set Volume' actions, and an app can run a user-installed shortcut via shortcuts://x-callback-url/run-shortcut. Models: Foundation Models on-device (~3B, 4,096-token context) and, for eligible developers, PrivateCloudComputeLanguageModel (32K context) behind one LanguageModelSession API; SpeechAnalyzer (iOS 26) for on-device transcription.",
+      "implication": "An iOS 'agent OS' prototype is an app: chat/voice UI, Foundation Models or PCC as the brain, App Intents for being called by Siri, AlarmKit and a Shortcuts bridge for settings. Good for validating conversation design and tool UX with iPhone users; cannot validate any claim about owning the home screen or other apps.",
+      "sources": [
+        "https://developer.apple.com/documentation/appintents/app-schema-domains",
+        "https://developer.apple.com/documentation/alarmkit",
+        "https://developer.apple.com/documentation/alarmkit/alarmmanager",
+        "https://developer.apple.com/documentation/avfaudio/avaudiosession/outputvolume",
+        "https://developer.apple.com/documentation/mediaplayer/mpvolumeview",
+        "https://developer.apple.com/documentation/accessorysetupkit",
+        "https://developer.apple.com/documentation/foundationmodels/adding-server-side-intelligence-with-private-cloud-compute",
+        "https://developer.apple.com/documentation/speech/speechanalyzer",
+        "https://support.apple.com/en-au/guide/shortcuts/use-x-callback-url-apdcd7f20a6f/8.0/ios/18.0"
+      ],
+      "confidence": "verified",
+      "pros": "Largest premium user base; strong on-device model and free PCC tier for small developers; App Intents give sanctioned hooks into Siri.",
+      "cons": "Cannot be the home screen or default assistant (except Japan side button); cannot read or drive other apps; cannot set volume or radios programmatically; App Review 2.5.2/4.7 limit self-extending agents.",
+      "effort": "1-2 engineers, 3-6 weeks."
+    },
+    {
+      "name": "iOS hard walls for an agent OS",
+      "kind": "policy",
+      "facts": "Only the user can set system volume (Apple docs); no public API toggles Bluetooth or Wi-Fi; UIApplication.openSettingsURLString only deep-links to 'your app's custom settings'. No AccessibilityService equivalent: third-party apps cannot read or operate other apps' UI; apps are sandboxed to their container (App Review 2.5.2). Siri AI is the planner and third-party apps are tools; there is no public API for one app's agent to call another app's App Intents (per this project's earlier Apple research).",
+      "implication": "On iOS, the book's design can only be simulated or approximated. Any 'try it' path for iPhone users must be a companion app plus Shortcuts, with the OS-level experience demonstrated on Android or a simulator.",
+      "sources": [
+        "https://developer.apple.com/documentation/avfaudio/avaudiosession/outputvolume",
+        "https://developer.apple.com/documentation/uikit/uiapplication/opensettingsurlstring",
+        "https://developer.apple.com/app-store/review/guidelines/",
+        "https://developer.apple.com/documentation/appintents/app-schema-domains"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Build path D: web/desktop simulator for design research",
+      "kind": "build_path",
+      "facts": "Gemma 4 E2B runs in the browser via LiteRT-LM on WebGPU (reported 73 tokens/s decode, 4,853 tokens/s prefill on a MacBook Pro M4 Max). A2UI (a2ui.org, spec v0.9.1) and MCP Apps (first official MCP extension, live Jan 26, 2026) both standardize agent-rendered UI that a simulator can display. mobile-mcp lets a desktop agent drive Android emulators and iOS simulators through accessibility trees, and AndroidWorld/MobileWorld provide scripted task environments.",
+      "implication": "Build the 'phone' as a web app first: a chat/voice home screen, a mocked typed-tool registry for system services (volume, Bluetooth, alarms, notifications) with realistic latencies and failures, A2UI cards, and a Wizard-of-Oz console. Design questions (confirmation, interruption, recovery, trust) can be tested in days; later swap mocks for Android bindings with the same schemas.",
+      "sources": [
+        "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm",
+        "https://developer.android.com/develop/ui/compose/agentic",
+        "https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/",
+        "https://github.com/mobile-next/mobile-mcp",
+        "https://tongyi-mai.github.io/MobileWorld/"
+      ],
+      "confidence": "verified",
+      "pros": "Cheapest and fastest; runs anywhere; perfect instrumentation; safe for testing destructive actions.",
+      "cons": "No real notifications, sensors, battery, or social pressure of daily use; model latency on laptop is not phone latency.",
+      "effort": "1-2 engineers, 2-4 weeks."
+    },
+    {
+      "name": "Build path E: hardware startups (Rabbit, Humane) as cautionary precedent",
+      "kind": "hardware_precedent",
+      "facts": "Rabbit r1 runs rabbitOS, which is based on AOSP; reporters showed its launcher APK runs on stock Android phones; rabbitOS 2 (September 2025) added a card UI and on-device 'creations'; the device remains on sale for $199. Humane's AI Pin ran CosmOS; HP bought Humane's assets (CosmOS, 300+ patents, staff) for $116 million and the Pin stopped working on February 28, 2025.",
+      "implication": "Custom hardware adds cost and risk without solving the hard parts (app access, reliability). The practical lesson: an agent OS is software; prove it as an Android launcher or ROM on commodity phones before any hardware.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Rabbit_r1",
+        "https://www.androidauthority.com/rabbit-r1-is-an-android-app-3438805/",
+        "https://www.axios.com/2025/02/18/humane-ai-pin-shut-down-hp",
+        "https://www.tomsguide.com/ai/the-humane-ai-pin-is-officially-dead-and-hp-is-picking-up-humanes-leftovers"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Doubao Phone Assistant on nubia: the OEM-level GUI agent precedent",
+      "kind": "hardware_precedent",
+      "facts": "On December 1, 2025 ByteDance launched Doubao Phone Assistant on ZTE's nubia M153, an engineering phone where the assistant holds INJECT_EVENTS and can read screens and simulate touches across apps by voice command. WeChat users were force-logged out ('abnormality in the login environment') and some banking apps restricted the device; Doubao then disabled operating WeChat, and banned accounts were gradually restored. Reports say a mass-market nubia phone with Doubao 'driving the whole phone' (NaviX Ultra) launched in China on September 16, 2026 (not independently verified).",
+      "implication": "Once you are the OEM, system-level GUI control is easy; the binding constraint becomes other platforms' risk controls and business interests. An agent OS needs negotiated APIs (AppFunctions/MCP/partner deals) and a courteous automation identity, not only pixel-level control.",
+      "sources": [
+        "https://www.yicaiglobal.com/news/wechat-some-chinese-banking-apps-reportedly-restrict-devices-with-bytedances-new-ai-voice-assistant",
+        "https://www.folio3.ai/ai-pulse/bytedances-ai-smartphone-sparks-industry-backlash-in-china/",
+        "https://news.aibase.com/news/23342",
+        "https://tech-ish.com/2026/09/08/nubia-launches-navix-ultra-16-september-china/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Apple Foundation Models (on-device, ~3B)",
+      "kind": "model",
+      "facts": "Apple's on-device model is ~3B parameters with 2-bit quantization-aware training and a 4,096-token context per LanguageModelSession (instructions, tool schemas, tool outputs and responses all count). Apple's 2024 report measured ~0.6 ms per prompt token time-to-first-token and ~30 tokens/s generation on iPhone 15 Pro, before speculative decoding. iOS 27 adds image input, built-in OCR/barcode/Spotlight-search tools, Dynamic Profiles that switch model (on-device or PCC) and tools per state, and a public LanguageModel protocol so Claude, Gemini, Core AI and MLX models plug into the same session API.",
+      "implication": "On iPhone, use the system model as the free local router, slot-filler and redactor; send multi-step planning to PCC or a cloud model. The 4K window forces a tool-registry design where only relevant tool schemas are loaded per turn.",
+      "sources": [
+        "https://developer.apple.com/documentation/foundationmodels/systemlanguagemodel",
+        "https://developer.apple.com/documentation/technotes/tn3193-managing-the-on-device-foundation-model-s-context-window",
+        "https://machinelearning.apple.com/research/introducing-apple-foundation-models",
+        "https://developer.apple.com/videos/play/wwdc2026/241/",
+        "https://developer.apple.com/videos/play/wwdc2026/339/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Apple Private Cloud Compute: third-party access and design",
+      "kind": "infrastructure",
+      "facts": "PrivateCloudComputeLanguageModel (iOS 27) gives a 32K-token context and multiple reasoning levels with 'a daily request limit'; users can upgrade iCloud+ for more; it conforms to the same LanguageModel protocol as the on-device model. Eligibility: App Store Small Business Program, fewer than 2 million first-time downloads, and the PCC entitlement; such developers use it 'with no cloud API cost', and must 'migrate to an alternative solution within 6 months' after crossing the threshold. PCC's published design requirements: stateless computation (no retention, including logging), enforceable guarantees, no privileged runtime access, non-targetability, and verifiable transparency (images researchers can inspect). Apple reportedly extended PCC to Google Cloud data centers in June 2026.",
+      "implication": "PCC is both a free cloud tier for small iOS teams and the reference design for any agent OS's cloud tier: attested stateless inference nodes, no operator access, and public binaries. A startup cloud should at least adopt stateless inference and TEE attestation (e.g. confidential GPUs).",
+      "sources": [
+        "https://developer.apple.com/documentation/foundationmodels/adding-server-side-intelligence-with-private-cloud-compute",
+        "https://developer.apple.com/private-cloud-compute/",
+        "https://security.apple.com/blog/private-cloud-compute/",
+        "https://www.infoq.com/news/2026/07/apple-pcc-google-cloud/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Google Private AI Compute",
+      "kind": "infrastructure",
+      "facts": "Announced November 11, 2025: Gemini models run on TPUs inside Titanium Intelligence Enclaves, with remote attestation and encryption between device and enclave; Google claims data is accessible 'only to you... not even Google'. First uses were Pixel features (Magic Cue on Pixel 10, Recorder summaries in more languages).",
+      "implication": "Both platform owners now converge on 'on-device first, attested private cloud second'. An independent agent OS will be compared against this bar; it cannot use either service outside its owner's platform features.",
+      "sources": [
+        "https://blog.google/innovation-and-ai/products/google-private-ai-compute/",
+        "https://www.androidauthority.com/google-private-ai-compute-pixel-3614573/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Gemini Nano, AICore, ML Kit GenAI and ADK for Android",
+      "kind": "runtime",
+      "facts": "Gemini Nano 'runs in Android's AICore system service'; developers reach it through ML Kit GenAI APIs (Prompt, Summarization, Proofreading, Rewriting, Image Description, Speech Recognition). AICore is isolated: no direct internet access, with downloads routed through the open-source Private Compute Services APK, and it does not store inputs or outputs. The LiteRT-LM Gemma 4 model card says that on supported Android devices 'Gemma 4 is available through Android AI Core as Gemini Nano', the recommended production path. ADK for Android (com.google.adk:google-adk-kotlin-core-android:0.1.0) runs agents on-device with Gemini Nano via ML Kit and supports mixing a cloud Gemini root agent with on-device sub-agents for 'privacy-sensitive tasks'; tools are @Tool-annotated Kotlin functions. Firebase AI Logic Hybrid API routes with PREFER_ON_DEVICE, PREFER_IN_CLOUD, ONLY_ON_DEVICE or ONLY_IN_CLOUD.",
+      "implication": "On stock Android, Gemini Nano is the zero-cost local model where available (device-gated). On a non-GMS fork, AICore is not present, so ship your own runtime (LiteRT-LM plus Gemma 4 weights) behind the same router interface.",
+      "sources": [
+        "https://developer.android.com/ai/gemini-nano",
+        "https://developer.android.com/ai/adk",
+        "https://developer.android.com/ai/hybrid",
+        "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Gemma 4 E2B / E4B: measured phone performance",
+      "kind": "model",
+      "facts": "E2B: 2.3B effective parameters (5.1B with per-layer embeddings); E4B: 4.5B effective (8B with embeddings); 128K context; text, image and audio input; configurable thinking; native function calling and system role; Apache 2.0. LiteRT-LM benchmarks (1,024 prefill / 256 decode tokens, 2,048 context): E2B on Galaxy S26 Ultra GPU 3,808 tok/s prefill, 52.1 tok/s decode, 0.3 s TTFT, 676 MB CPU memory; CPU 46.9 tok/s decode. iPhone 17 Pro GPU 56.5 tok/s decode, CPU 25.0 tok/s. E4B on S26 Ultra GPU 22.1 tok/s decode; iPhone 17 Pro GPU 25.1 tok/s. Speculative decoding (available since May 2026) raises E2B on S26 Ultra GPU to 66.5-91.7 tok/s depending on task. Model files: 2,583 MB (E2B), 3,654 MB (E4B); mixed 2/4/8-bit weights with memory-mapped embeddings. Quality: MMLU-Pro 60.0% (E2B) and 69.4% (E4B) per Google's model card.",
+      "implication": "E2B is fast enough to be an always-available local router and simple tool-caller on 2026 flagships (sub-second first token, 50+ tok/s); E4B suits harder local steps. Budget roughly 0.7-3.4 GB of RAM depending on backend, and measure sustained thermals, since these are short-burst benchmarks.",
+      "sources": [
+        "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm",
+        "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm",
+        "https://huggingface.co/google/gemma-4-E2B-it"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Qwen3.5 small models and Phi-4-mini",
+      "kind": "model",
+      "facts": "Qwen3.5 ships 0.8B, 2B, 4B and 9B vision-language models (Apache 2.0, updated March 2026) with a hybrid Gated DeltaNet plus gated-attention architecture, 262,144-token native context and 201 languages; Qwen3.5-2B scores 55.3 MMLU-Pro (non-thinking) vs 40.2 for Qwen3-1.7B. Qwen's card says the small sizes are intended for 'prototyping, task-specific fine-tuning, and other research or development purposes'. Microsoft's Phi-4-mini-instruct and Phi-4-mini-reasoning (~3.8B) are available on Hugging Face; LiteRT-LM lists Phi-4 and Qwen among supported models.",
+      "implication": "Good candidates for fine-tuning a device-specific tool router (your exact tool schemas, your languages). Check runtime support for Qwen3.5's linear-attention layers in LiteRT-LM, llama.cpp or MLX before committing.",
+      "sources": [
+        "https://huggingface.co/Qwen/Qwen3.5-2B",
+        "https://huggingface.co/microsoft/Phi-4-mini-instruct",
+        "https://github.com/google-ai-edge/LiteRT-LM"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "On-device runtimes: LiteRT-LM, Core AI/MLX, llama.cpp, MLC, ExecuTorch, vendor NPUs",
+      "kind": "runtime",
+      "facts": "LiteRT-LM (google-ai-edge, ~6.5k stars) targets Android, iOS, web, desktop and IoT with GPU and NPU acceleration and 'function calling support for agentic workflows'; Kotlin/Python/C++ bindings are stable and Swift/JS are in preview; it powers GenAI in Chrome, Chromebook Plus and Pixel Watch. Community reports warn that NPU backends can crash natively on some Android devices due to driver fragmentation, so GPU-then-CPU fallback is the safe default. Apple side: Core AI (iOS 27, successor to Core ML for generative models) with CoreAILanguageModel, and MLX Swift LM (~800 stars) bridging MLX models into Foundation Models sessions. Portable engines: llama.cpp (~129k stars), MLC LLM (~23k), ExecuTorch (~5k), Cactus (~6k, mobile/wearable focus). Google AI Edge Gallery (~25k stars) is the reference Android app.",
+      "implication": "Android: LiteRT-LM with Gemma 4 on GPU as default, NPU (Qualcomm/MediaTek vendor delegates) as a later optimization. iOS: Foundation Models, then Core AI or MLX for custom models. Keep llama.cpp as the escape hatch for Linux phones and odd devices.",
+      "sources": [
+        "https://github.com/google-ai-edge/LiteRT-LM",
+        "https://dev.to/samdude/gemma-4-on-android-tricks-for-faster-on-device-inference-3kj5",
+        "https://github.com/apple/coreai-models",
+        "https://github.com/ml-explore/mlx-swift-lm",
+        "https://github.com/ggml-org/llama.cpp",
+        "https://github.com/mlc-ai/mlc-llm",
+        "https://github.com/pytorch/executorch",
+        "https://github.com/google-ai-edge/gallery"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Hybrid on-device/cloud routing patterns",
+      "kind": "architecture",
+      "facts": "Android: Firebase AI Logic Hybrid API offers four routing modes, and ADK for Android supports a cloud root orchestrator with on-device sub-agents for privacy-sensitive work. Apple: Foundation Models Dynamic Profiles switch instructions, tools, model (on-device or PCC) and reasoning level per app state; the PCC guide says to start on-device, evaluate, and move to PCC only when context or reasoning is insufficient. Gemini screen automation shows a third pattern: the GUI runs locally in a virtual display but screen understanding is processed in the cloud.",
+      "implication": "Route by task class, not by model size: on-device for wake/intent classification, entity resolution, settings/alarm/media tools, PII redaction and offline fallback; cloud for multi-app planning, GUI vision steps and long context. Log every routing decision for evals.",
+      "sources": [
+        "https://developer.android.com/ai/hybrid",
+        "https://developer.android.com/ai/adk",
+        "https://developer.apple.com/videos/play/wwdc2026/242/",
+        "https://developer.apple.com/documentation/foundationmodels/adding-server-side-intelligence-with-private-cloud-compute",
+        "https://9to5google.com/2026/02/25/gemini-automation-android/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Cloud inference cost per user (estimate)",
+      "kind": "cost",
+      "facts": "Prices: Claude Haiku 4.5 $1/$5 per million input/output tokens and Claude Sonnet 5 $2/$10, with cache reads billed at 0.1x input (Anthropic pricing page, read 2026-09-24; the Sonnet 5 $2/$10 introductory price is now standard). Gemini 3.1 Flash-Lite is reported at $0.25/$1.50 and Gemini 2.5 Flash-Lite at $0.10/$0.40 (retiring Oct 16, 2026), from secondary pricing trackers. Apple PCC has no API cost for eligible small developers. Light user (20 agent turns/day, 2 model calls/turn, 4K input tokens with 75% cache hits, 200 output tokens): about $2.76/month on Haiku 4.5, $5.52 on Sonnet 5, $1.56 on Flash-Lite 3.1 without caching. Heavy user (60 turns/day, 3 calls/turn, 6K input with 75% cache hits, 300 output): about $18.63/month on Haiku 4.5, $37.26 on Sonnet 5, $10.53 on Flash-Lite 3.1. A 15-step screen-reading GUI task at ~5K input tokens/step costs about $0.086 on Haiku 4.5, versus a fraction of a cent for one typed AppFunction call. Estimates exclude cache-write premiums, speech APIs, and thinking tokens.",
+      "implication": "Cloud cost ranges from about $1 to $40 per active user per month depending on model and usage. Every turn moved on-device cuts it proportionally, and typed tools beat screen-reading by 1-2 orders of magnitude. A subscription of roughly $10-20/month or an on-device-first design is needed; PCC-style free tiers only work inside a platform owner's business model.",
+      "sources": [
+        "https://platform.claude.com/docs/en/about-claude/pricing",
+        "https://ai.google.dev/gemini-api/docs/pricing",
+        "https://www.cloudzero.com/blog/gemini-pricing/",
+        "https://developer.apple.com/private-cloud-compute/"
+      ],
+      "confidence": "estimate"
+    },
+    {
+      "name": "Apple App Intents and app schema domains as the typed-capability model",
+      "kind": "app_model",
+      "facts": "Apps declare intents, entities and enums conforming to system-defined schemas (e.g. an email app's intent conforming to .mail.createDraft) so 'the system knows it can invoke that intent to create a new email draft in that app'. Domains group schemas (Audio, Calendar, Camera, Clock, Mail, Maps, Messages, Notes, Phone, Photos, Reminders, search; plus single-purpose Assistant and Visual Intelligence); iOS 27 adds ownership-based confirmation for side-effecting intents, undoable intents and onscreen entity annotations (earlier project research). Distribution and review stay with the App Store (guidelines 2.5.2 and 4.7 govern downloaded code, mini-apps and plug-ins).",
+      "implication": "Copy the domain-schema idea: the agent OS should define standard verbs (message.send, alarm.create, ride.request) that many apps implement, so the agent can pick a provider, rather than learning each app's bespoke functions.",
+      "sources": [
+        "https://developer.apple.com/documentation/appintents/app-schema-domains",
+        "https://developer.apple.com/videos/play/wwdc2026/240/",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "A2UI: agent-generated native UI through component catalogs",
+      "kind": "app_model",
+      "facts": "A2UI is an open protocol (a2ui.org, spec v0.9.1) for agents to generate interfaces; Android ships a Jetpack Compose renderer (androidx.a2ui.compose:compose-runtime, compose-ui, compose-ui-testing; androidx.a2ui:a2ui-model and a2ui-engine; androidx.compose.material3:material3-a2ui). A component catalog 'acts as a contract that defines the specific UI elements, properties, and functions available to the agent'; UIs render native components 'without executing arbitrary code', with schema validation to 'intercept malformed payloads' and two-way data binding back to the agent.",
+      "implication": "This is the missing third leg of the app model: apps (and the OS) contribute catalog components; the agent composes them into cards in the chat. It keeps the OS visually coherent and safe, because no model-generated code runs.",
+      "sources": [
+        "https://developer.android.com/develop/ui/compose/agentic",
+        "https://a2ui.org/specification/v0.9.1-a2ui/",
+        "https://developer.android.com/ai/intelligence-system"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MCP Apps and remote MCP servers: portable tools plus sandboxed UI",
+      "kind": "app_model",
+      "facts": "MCP Apps became MCP's first official extension on January 26, 2026, co-authored by OpenAI and Anthropic maintainers with MCP-UI; tools reference ui:// resources of type text/html;profile=mcp-app rendered in mandatory sandboxed iframes, talking to the host over JSON-RPC; ChatGPT, Claude, Goose and VS Code support it. The spec and SDK live at modelcontextprotocol/ext-apps (~2.9k stars). Google's Android guidance lists remote MCP servers alongside AppFunctions as a way for apps to expose capabilities 'across Android and other platforms'.",
+      "implication": "For services without an on-device app (or for iOS/web reach), a remote MCP server plus MCP Apps UI is the portable package. An agent OS should accept three capability sources: local typed functions (AppFunctions-like), remote MCP, and GUI automation as a last resort.",
+      "sources": [
+        "https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/",
+        "https://modelcontextprotocol.io/seps/1865-mcp-apps-interactive-user-interfaces-for-mcp",
+        "https://github.com/modelcontextprotocol/ext-apps",
+        "https://developer.android.com/ai/intelligence-system"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Open-source GUI phone agents and models",
+      "kind": "open_source",
+      "facts": "Open-AutoGLM (zai-org, ~26.3k stars, Apache-2.0, Dec 2025): AutoGLM-Phone-9B (same structure as GLM-4.1V-9B-Thinking) plus a framework that controls Android over ADB from a host; 50+ mainstream Chinese Android apps and 60+ HarmonyOS apps; serving recommends a 24GB+ VRAM GPU. UI-TARS (bytedance, ~11.5k stars) native GUI agent models, and UI-TARS-desktop (~39.1k stars) agent stack with MCP. Mobile-Agent family (X-PLUG/Alibaba, ~9.2k stars) and AppAgent (Tencent, ~6.9k stars, 'multimodal agents as smartphone users').",
+      "implication": "These supply perception and action models for the long-tail fallback, not an OS: all assume a host driving the phone. Porting means moving actuation into an on-device privileged service (virtual display plus input injection on a fork) and keeping the 9B-class VLM in the cloud or distilling a small one.",
+      "sources": [
+        "https://github.com/zai-org/Open-AutoGLM",
+        "https://github.com/bytedance/UI-TARS",
+        "https://github.com/bytedance/UI-TARS-desktop",
+        "https://github.com/X-PLUG/MobileAgent",
+        "https://github.com/TencentQQGYLab/AppAgent"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Mobile agent frameworks and phone MCP servers",
+      "kind": "open_source",
+      "facts": "DroidRun, now branded Mobilerun (droidrun/mobilerun, ~9.5k stars, MIT): LLM-agnostic agent (OpenAI, Anthropic, Gemini, Ollama, DeepSeek and others) that drives Android through a 'Portal' app with an accessibility service, run from a host CLI/Python or its cloud; displays a 91.4% benchmark badge. mobile-mcp (mobile-next, ~6.8k stars, Apache-2.0): MCP server with tools such as mobile_list_elements_on_screen, mobile_click_on_screen_at_coordinates, mobile_launch_app and mobile_type_keys; 'accessibility-first', screenshot fallback; iOS simulators and real devices plus Android. mobile-use (minitap, ~3.2k stars) and Android-MCP (CursorTouch, ~870 stars) are similar host-side drivers.",
+      "implication": "Useful as the test harness (drive emulators from evals) and as a quick way to wire a cloud agent to a real phone during research. Their tool vocabularies (list elements, tap, type, launch) are a good starting schema for the OS's own GUI-fallback tool.",
+      "sources": [
+        "https://github.com/droidrun/mobilerun",
+        "https://github.com/mobile-next/mobile-mcp",
+        "https://github.com/minitap-ai/mobile-use",
+        "https://github.com/CursorTouch/Android-MCP"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "On-phone agent apps and 'LLM as launcher' prototypes",
+      "kind": "open_source",
+      "facts": "blurr/Panda (Ayush0Chaudhary/blurr, ~980 stars, Kotlin): an on-phone voice agent that 'can now use Android, just like a human' via accessibility (tagged open-doubao). Lumenberg (MIT, 0 stars): an experimental AI-centric launcher with Type (local app search), Ask (cloud or local LLM) and Glance (widgets); local Whisper transcription; API keys sealed with an Android Keystore AES-GCM key; refuses financial and destructive actions; ~2,000 lines, tested only on an emulator. jenny-android-ai-agent (~95 stars, AGPL, created Aug 2026): local-first agent with memory, scheduled work, self-written mini-apps and an optional home-screen launcher. OpenClaw (~390k stars) ships an Android 'companion node' on Google Play exposing camera, location, notifications and (third-party build only) SMS and call log to its gateway. No widely adopted 2025-2026 hackathon 'LLM as launcher' project was found; existing launcher prototypes are small and early.",
+      "implication": "The launcher-as-chat idea is open ground in open source: no credible reference implementation exists, which is an opportunity for the book's companion code. OpenClaw's node model (phone as a capability server for a remote agent) is the most battle-tested pattern to borrow.",
+      "sources": [
+        "https://github.com/Ayush0Chaudhary/blurr",
+        "https://github.com/lottieyael/Lumenberg",
+        "https://github.com/flagdizero/jenny-android-ai-agent",
+        "https://github.com/openclaw/openclaw/tree/main/apps/android"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Speech stack: WhisperKit, Kyutai, sherpa-onnx, platform ASR",
+      "kind": "speech",
+      "facts": "argmax-oss-swift (~6.4k stars, MIT) bundles WhisperKit (recommended large-v3-turbo 626MB model on iOS), TTSKit (Qwen3-TTS 0.6B ~1GB and 1.7B ~2.2GB) and SpeakerKit (Pyannote v4); real-time streaming with speakers and Android support are in the commercial Pro SDK; WhisperKitAndroid is archived. Kyutai STT: stt-1b-en_fr (0.5 s delay, semantic VAD) and stt-2.6b-en (2.5 s delay); MLX builds run on-device and the 1B model 'has been tested to work fine on an iPhone 16 Pro'; code MIT/Apache, weights CC-BY 4.0. Unmute (~1.5k stars) wraps any text LLM with Kyutai STT/TTS; Moshi (~11.1k stars) is a full-duplex speech-text model. sherpa-onnx (~15k stars) provides offline ASR, TTS, VAD and diarization on Android, iOS and HarmonyOS. Platform options: Apple SpeechAnalyzer (iOS 26) and ML Kit GenAI Speech Recognition on Android.",
+      "implication": "Voice-first home screens need streaming ASR with semantic end-of-turn detection more than a bigger LLM. Use platform ASR where available, sherpa-onnx or Kyutai 1B for an offline, cross-platform path, and keep TTS local for latency.",
+      "sources": [
+        "https://github.com/argmaxinc/argmax-oss-swift",
+        "https://github.com/argmaxinc/WhisperKitAndroid",
+        "https://github.com/kyutai-labs/delayed-streams-modeling",
+        "https://github.com/kyutai-labs/unmute",
+        "https://github.com/kyutai-labs/moshi",
+        "https://github.com/k2-fsa/sherpa-onnx",
+        "https://developer.apple.com/documentation/speech/speechanalyzer",
+        "https://developer.android.com/ai/gemini-nano"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "GUI agent benchmarks: AndroidWorld saturated, MobileWorld hard",
+      "kind": "benchmark",
+      "facts": "AndroidWorld (google-research/android_world) leaderboards reportedly show top entries at 97.4% pass@1 (August 2026), so the benchmark is near saturation. MobileWorld (Tongyi, Dec 2025): 201 tasks across 20 apps including long-horizon cross-app, agent-user interaction and MCP-augmented tasks; best agentic framework 51.7%, best end-to-end model 20.9%.",
+      "implication": "Single-app GUI tasks are close to solved in benchmarks, but cross-app, long-horizon and clarification-heavy tasks (the core of an agent OS) succeed about half the time at best. Ship typed tools first, GUI automation as supervised fallback, and adopt MobileWorld-style evals plus your own task suite.",
+      "sources": [
+        "https://github.com/google-research/android_world",
+        "https://benchlm.ai/benchmarks/androidworld",
+        "https://arxiv.org/html/2512.19432v1",
+        "https://tongyi-mai.github.io/MobileWorld/"
+      ],
+      "confidence": "likely"
+    }
+  ],
+  "recommended_plan": [
+    "Weeks 0-4: build the web simulator. Create a chat/voice home screen, a typed tool registry with JSON schemas for system services (audio.setVolume, bluetooth.connect, wifi.set, alarm.create, notifications.summarize, location.share) each tagged with a permission tier and confirmation policy, A2UI-style cards, and a Wizard-of-Oz console. Use it to test confirmation, interruption and error-recovery UX.",
+    "Weeks 2-6: write the eval harness before the product. Script 100-200 real tasks (settings, messaging, errands, cross-app) and run them against Android emulators with mobile-mcp or Mobilerun, plus AndroidWorld/MobileWorld subsets, logging success, latency, tokens and on-device vs cloud routing.",
+    "Months 1-3: ship the Android 'Level 1' app on stock Pixel and Galaxy phones. It takes ROLE_HOME and ROLE_ASSISTANT; runs Gemma 4 E2B (LiteRT-LM, GPU) or Gemini Nano (ML Kit) as the local router, with a cloud model (Haiku- or Flash-class) for planning; uses normal-permission and special-access tools (volume, alarms, calendar, contacts, notification listener, DND) and system Settings panels for radios; calls intents, deep links and AppFunctions where allowlisted; and keeps an accessibility-based GUI fallback only in a sideload flavor.",
+    "Months 2-4: run a 20-100 person pilot on dedicated phones provisioned as Device Owner, to unlock silent Bluetooth/Wi-Fi control and policy without a ROM. Measure daily-use retention, trust incidents, battery and cost per user.",
+    "Months 3-12: build the AOSP fork. Start from LineageOS or GrapheneOS on Pixels, put the agent in priv-app with an allowlisted set of privileged permissions (BLUETOOTH_PRIVILEGED, WRITE_SECURE_SETTINGS, input injection), boot to the agent home, patch SystemUI and the lock screen, make the agent the AppFunctions caller, and add a virtual-display automation service modeled on Computer Control (consent dialog, at most N apps, stop before payment, hand-back). Rebase on the Q2/Q4 AOSP drops.",
+    "In parallel, define the developer package: typed functions (AppFunctions/App Intents-style, KDoc/doc-comment described, with standard domain verbs), entity schemas for indexable data, an A2UI component catalog for cards, declared permissions and risk levels, and optional remote MCP endpoints with MCP Apps UI. Bootstrap coverage by wrapping popular services' existing intents, web APIs and MCP servers.",
+    "In parallel, build an iOS companion for reach. Use Foundation Models (on-device) with PCC for eligible developers, App Intents so Siri can call the agent, AlarmKit, MPVolumeView/AVRoutePickerView for user-driven audio, and a one-tap Shortcuts bundle for Bluetooth/Wi-Fi/volume run via shortcuts://x-callback-url. Present it as a companion, not an OS.",
+    "Privacy and security: keep the router, redaction and personal index on-device. Run any cloud tier as stateless inference with attestation (the PCC and Private AI Compute pattern). Require typed-tool confirmations for side effects, treat all screen and notification text as untrusted input (prompt-injection defense), and keep an audit log the user can read.",
+    "Optional, for the book's architecture chapter: build a postmarketOS/Phosh reference that auto-generates tool schemas from D-Bus introspection (BlueZ, NetworkManager, ModemManager, GeoClue) behind a portal-style consent broker."
+  ],
+  "open_questions": [
+    "Will Google open the AppFunctions caller allowlist or Computer Control to non-OEM default assistants, and when? Both are preview-only and OEM- or allowlist-gated as of September 2026.",
+    "Is the Computer Control framework in public AOSP source (Android 17 drop), or does it live in Google-only components? This decides whether a fork can reuse it or must reimplement virtual-display automation.",
+    "How will banking apps, super-apps and ride-hailing apps treat agent-driven sessions on forks and on stock Android (Play Integrity verdicts, bot detection), given WeChat's reaction to Doubao?",
+    "Can E2B/E4B-class local models reliably pick among 50-200 typed tools over multi-turn sessions within phone RAM and thermal limits across a full day? Sustained-load and battery data are missing; the published benchmarks are short bursts.",
+    "Gemini Flash-Lite prices come from secondary trackers (ai.google.dev was unreachable here). Cache-read pricing for Gemini was not verified.",
+    "Will the reported iOS 27 'Extensions' system or EU DMA interoperability rules let a third-party assistant become the default assistant or get deeper system hooks outside Japan?",
+    "What is the right cross-platform manifest for agent-OS apps: extend AppFunctions XML schemas, App Intents schemas, MCP tool lists plus A2UI catalogs, or a new neutral format?",
+    "Android 13+ 'restricted settings' for sideloaded apps (accessibility and notification-listener grants) and the 2026-2027 developer-verification rollout may add friction to sideload builds; the exact current behavior was not re-verified in this session."
+  ]
+}

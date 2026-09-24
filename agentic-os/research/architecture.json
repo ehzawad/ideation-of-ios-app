@@ -1,0 +1,595 @@
+{
+  "summary": "As of September 2026 the pieces of an agent-first phone OS exist, but they are scattered across research systems and vendor platforms. (1) 'LLM as OS' work comes in two kinds. Resource-management kernels (AIOS: scheduler, context snapshot/restore, memory/storage/tool/access managers; MemGPT/Letta: virtual context with memory tiers) are complemented by 2026 capability-controlled runtimes. The key example is Agent libOS, whose invariant is that the model-visible tool surface can grow while authority stays fixed. (2) Capability protocols have converged on typed, schema-described actions. MCP's 2026-07-28 spec went stateless and added multi-round-trip input requests, cacheable tool lists with TTLs, a Tasks extension and the MCP Apps UI extension. Apple's WWDC26 App Schemas, IndexedEntity semantic index, .onToolCall and schema-derived side-effect risk metadata, together with Android AppFunctions, turn phone apps into on-device capability servers. GUI automation (Gemini screen automation) remains a supervised fallback. (3) Generative UI splits along two lines. Declarative component trees rendered by a trusted native catalog include A2UI, AG-UI state sync and Vercel's schema-validated approach. Model-written code runs in sandboxes: MCP Apps/OpenAI Apps SDK iframes, Google Research's Generative UI pages, Claude Artifacts/Imagine. Google's Generative UI is preferred over markdown in about 83% of comparisons but takes a minute or two to generate. (4) Security research agrees on deterministic system-level enforcement around an untrusted model. The main designs are CaMeL (plan only from trusted input, capability-tagged values, policy at tool call), FIDES (information-flow labels), Willison's dual-LLM pattern and lethal trifecta (cited by Apple at WWDC26), and object-capability discipline from seL4, Fuchsia and KeyKOS. Newer work adds commit-time authorization (approvals must still be fresh and bound at the durability boundary) and saga-style compensation. A 2026 survey of 21 permission systems found that none combines low user overhead, formal policies and deterministic enforcement, and that commercial agents rely on opaque LLM auto-approval. (5) Memory is both essential and an attack surface. MobileMem (OPPO/ZJU, year-scale mobile experiences) shows current memory systems struggle with temporal reasoning. GhostWriter (Jul 2026) poisons Letta, Mem0 and others via email/calendar content with about 98% injection and about 60% activation. (6) Long-running and background agents need task handles, visible progress and stop controls, plus energy budgets: AgentStop cuts wasted local-agent energy by 15-20%. Confidence convention: 'verified' = checked against a primary or near-primary source during this research session; 'likely' = well-established or from reliable prior knowledge / secondary sources not re-fetched this session; 'uncertain' = single secondary source, ambiguous, or details could not be confirmed.",
+  "items": [
+    {
+      "name": "Karpathy's 'LLM OS' framing",
+      "kind": "concept",
+      "date": "2023-11 (Intro to LLMs talk); 2025-06 (Software Is Changing (Again), YC AI Startup School)",
+      "key_idea": "The LLM is the 'kernel process' of a new computer. The context window is RAM, embeddings/files are disk, and tools (browser, code interpreter, other LLMs, peripherals like audio/vision) are devices it orchestrates. In the 2025 talk LLMs are compared to 1960s-era time-shared operating systems. It argues for 'partial autonomy' apps with an autonomy slider, fast generate-verify loops, and GUIs that make verification easy.",
+      "implication_for_agent_os": "Gives the book its central metaphor: the conversation is the shell and the model is the scheduler of typed capabilities. The 'autonomy slider' and 'keep the AI on a leash' ideas map directly to per-task autonomy levels and to generated UI whose job is fast human verification rather than decoration.",
+      "sources": [
+        "https://www.youtube.com/watch?v=zjkBMFhNj_g",
+        "https://www.youtube.com/watch?v=LCEmiRjPEtQ"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "AIOS: LLM Agent Operating System (Rutgers)",
+      "kind": "paper",
+      "date": "2024-03 (arXiv 2403.16971); COLM 2025",
+      "key_idea": "Moves LLM and tool resources out of agent apps into an 'AIOS kernel' beside the normal OS kernel. Agent queries are split into AIOS syscalls (LLM, memory, storage, tool) and dispatched by a central scheduler (FIFO / round-robin). Other modules: an LLM core abstraction (models as 'cores'); a context manager that snapshots and restores in-flight generation (text- or logits-based) so LLM calls can be preempted; a memory manager with LRU-K eviction to disk; a storage manager (files + vector DB, versioned, rollback); a tool manager with parameter validation and parallel-access conflict resolution; and an access manager (privilege groups plus user confirmation before irreversible operations such as delete or overwrite). Reports up to 2.1x faster execution when serving agents from several frameworks.",
+      "implication_for_agent_os": "A template for the phone's agent kernel: treat the on-device model as a scarce, preemptible resource with fair scheduling across foreground chat and background tasks. Make context snapshot/restore a kernel service. Put a single choke point (the access manager) in front of irreversible effects. Its access control (hashmap privilege groups) is too coarse for a phone. Combine it with capability-based authority (see Agent libOS, CaMeL).",
+      "sources": [
+        "https://arxiv.org/abs/2403.16971",
+        "https://openreview.net/forum?id=L4HHkCDz2x",
+        "https://github.com/agiresearch/AIOS"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "AIOS ecosystem follow-ups: 'LLM as OS, Agents as Apps' and LLM-based Semantic File System",
+      "kind": "paper",
+      "date": "2023-12 (arXiv 2312.03815); 2024-09 (arXiv 2410.11843)",
+      "key_idea": "The position paper (Ge et al.) frames an AIOS-Agent ecosystem: the LLM is the OS, agents are apps, and natural language becomes the programming interface. The semantic file system work replaces path-based commands with prompt-driven semantic file operations (retrieve and roll back by meaning).",
+      "implication_for_agent_os": "Supports a phone OS whose 'Files' is a semantic store addressed by meaning and entity, not by folder. Every agent write should be versioned so it can be rolled back.",
+      "sources": [
+        "https://arxiv.org/abs/2312.03815",
+        "https://arxiv.org/abs/2410.11843"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MemGPT / Letta: virtual context and memory tiers",
+      "kind": "paper",
+      "date": "2023-10 (arXiv 2310.08560); Letta company/framework 2024-; sleep-time compute 2025",
+      "key_idea": "Treats the context window like RAM in a hierarchical memory system. A small 'main context' (system instructions, editable core memory blocks, FIFO message queue) sits above external recall storage (full conversation history) and archival storage (vector/document store). The model pages data in and out through self-directed function calls, and interrupts manage control flow. Letta productized this with persistent, editable memory blocks and later 'sleep-time' agents that reorganize memory asynchronously.",
+      "implication_for_agent_os": "The phone agent needs an explicit memory hierarchy: pinned user profile/core memory, recent episodic log, and a large archival personal index. Paging decisions are visible and inspectable. Background memory consolidation fits idle and charging windows. GhostWriter (2026) found Letta vulnerable to memory poisoning, so every memory write must carry provenance and pass policy.",
+      "sources": [
+        "https://arxiv.org/abs/2310.08560",
+        "https://www.letta.com",
+        "https://arxiv.org/abs/2504.13171"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "OS-Copilot / FRIDAY",
+      "kind": "paper",
+      "date": "2024-02 (arXiv 2402.07456)",
+      "key_idea": "Framework for generalist computer agents that interact with the whole OS (files, terminal, web, apps). The FRIDAY agent improves itself by writing, testing and saving new tools/skills into a tool repository, and a declarative/procedural memory supports planning.",
+      "implication_for_agent_os": "Self-extending skills are powerful but dangerous on a phone. Agent-authored skills should be sandboxed, reviewed and, most importantly, gain no authority by existing (see Agent libOS I1 invariant). Skills are recipes over existing capabilities, never new capabilities.",
+      "sources": [
+        "https://arxiv.org/abs/2402.07456"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Agent libOS: runtime substrate for capability-controlled, self-evolving agents",
+      "kind": "paper",
+      "date": "2026-06 (arXiv 2606.03895, v3 Aug 2026)",
+      "key_idea": "Library-OS-inspired runtime with persistent AgentProcesses (spawn/fork/exec/wait/signal/checkpoint) and three separate planes. (a) Operation admission is a conjunction: live process AND typed Capability AND Task Authority ceiling AND deterministic policy-or-human approval AND resource budget AND execution through a concrete primitive. Human approval cannot make up for a missing capability, and a budget never authorizes. (b) Information-flow admission: labels and immutable source references propagate, sinks are resolved from a host-owned registry, and high-sensitivity egress needs an exact one-shot human release. (c) An evidence plane (intent, outcomes, audit, causal links) that explains decisions but never grants authority. Invariant: the model-visible action surface (skills, JIT tools, images, remote endpoints) may grow without expanding resource authority or allowed flows. Child delegation attenuates authority. External effects use prepare-dispatch-settle and are never blindly replayed on recovery.",
+      "implication_for_agent_os": "Probably the closest published blueprint for the phone's agent kernel. Separate 'what the model can see' from 'what the process may do'. Make approvals, budgets and capabilities independent conjunctive checks. Route all egress through OS-registered sinks. Keep an append-only evidence log that cannot be replayed as authority.",
+      "sources": [
+        "https://arxiv.org/abs/2606.03895",
+        "https://huggingface.co/papers/2606.03895",
+        "https://github.com/yingqi-z20/Agent-libOS"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "OS Agents survey (MLLM-based agents for general computing devices)",
+      "kind": "survey",
+      "date": "2025-08 (arXiv 2508.04482; ACL 2025 short version)",
+      "key_idea": "Systematizes 'OS Agents' that operate computers and phones through OS-provided interfaces (mostly GUI). It covers environment, observation space and action space; capabilities (understanding, planning, grounding); construction (domain foundation models, agent frameworks); benchmarks; and open problems in safety and privacy, personalization and self-evolution.",
+      "implication_for_agent_os": "Records the limits of the screen-scraping approach (grounding errors, brittleness, privacy exposure of whole screens). This is why an agent-native OS should expose typed capabilities first and keep GUI operation as a fallback.",
+      "sources": [
+        "https://arxiv.org/abs/2508.04482",
+        "https://huggingface.co/papers/2508.04482"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Model Context Protocol: spec evolution 2024-11 to 2025-11",
+      "kind": "protocol",
+      "date": "2024-11-05 initial; 2025-03-26; 2025-06-18; 2025-11-25",
+      "key_idea": "JSON-RPC protocol exposing tools (name, description, JSON Schema input), resources and prompts from servers to AI hosts. Milestones: 2025-03-26 added OAuth 2.1-based authorization, Streamable HTTP and tool annotations (readOnlyHint, destructiveHint, idempotentHint, openWorldHint). 2025-06-18 added elicitation (server asks the user for structured input through the client), structured tool output/outputSchema, resource links, and treating MCP servers as OAuth resource servers. 2025-11-25 added experimental Tasks, Client ID Metadata Documents and URL-mode elicitation, among other changes. MCP was placed under the Linux Foundation's Agentic AI Foundation in late 2025.",
+      "implication_for_agent_os": "MCP's tool definition is the de facto capability-manifest core (typed inputs and outputs plus side-effect hints). Elicitation is the protocol form of 'generated UI asks the user something mid-task'. Annotations are only hints from possibly untrusted servers. The OS must attach its own verified risk metadata (as Apple does with schema-derived side effects).",
+      "sources": [
+        "https://modelcontextprotocol.io/specification/2025-06-18",
+        "https://modelcontextprotocol.io/specification/2025-11-25",
+        "https://blog.modelcontextprotocol.io/posts/mcp-roadmap/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "MCP 2026-07-28 specification (stateless core, extensions, Tasks)",
+      "kind": "protocol",
+      "date": "2026-07-28 (RC locked 2026-05-21)",
+      "key_idea": "Retires the initialize handshake and Mcp-Session-Id (SEP-2575, SEP-2567). Each request carries protocol version, client identity and capabilities in _meta, so servers can sit behind ordinary load balancers. Multi Round-Trip Requests (SEP-2322): a server returns resultType 'input_required' and the client retries with inputResponses, which makes elicitation and confirmations work over stateless connections. Mcp-Method/Mcp-Name headers let gateways route and meter traffic (SEP-2243). List responses carry ttlMs and cacheScope (SEP-2549). Authorization hardening: RFC 9207 issuer validation, credentials bound to the issuing authorization server, and a move from Dynamic Client Registration toward Client ID Metadata Documents. There is a formal Extensions framework: Tasks moves to io.modelcontextprotocol/tasks with tasks/get, tasks/update and tasks/cancel (SEP-2663), and MCP Apps and Enterprise Managed Authorization become extensions. Roots, Sampling, Logging and legacy HTTP+SSE are deprecated with at least a 12-month window.",
+      "implication_for_agent_os": "Fits a phone well. Stateless calls survive app suspension and network changes. input_required is a clean hook for OS-rendered confirmation sheets. Cacheable tool lists with TTLs allow install-time manifest review and offline capability catalogs. A Tasks handle is the right primitive for long-running background work shown as a Live Activity.",
+      "sources": [
+        "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+        "https://modelcontextprotocol.io/specification/2026-07-28",
+        "https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/",
+        "https://www.cdata.com/blog/mcp-2026-07-28-release"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MCP Apps (SEP-1865) and its precursor MCP-UI",
+      "kind": "protocol",
+      "date": "2025-11-21 proposal; 2026-01-26 live as first official MCP extension; formal extension in 2026-07-28 spec",
+      "key_idea": "Tools declare UI templates ahead of time (_meta.ui.resourceUri pointing at a ui:// resource of bundled HTML/JS), so hosts can prefetch, cache and security-review them. UIs render in sandboxed iframes with declared Content Security Policy. They talk to the host through JSON-RPC over postMessage (SDK: @modelcontextprotocol/ext-apps), and any UI-initiated tool call needs host approval and goes through the same audit and consent path as a model tool call. Co-authored by Anthropic and OpenAI MCP maintainers with the MCP-UI creators. Early 2026 clients: Claude, Goose, VS Code Insiders, ChatGPT.",
+      "implication_for_agent_os": "A cross-vendor standard for 'code UI' cards in a conversation. For a phone OS: pre-declared, reviewable templates are the unit that store review and signing apply to. The sandbox must stop generated UI from drawing OS chrome. UI-originated actions must be indistinguishable from agent-originated ones for policy purposes, so there is no side door around permissions.",
+      "sources": [
+        "https://blog.modelcontextprotocol.io/posts/2025-11-21-mcp-apps/",
+        "https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/",
+        "https://inkeep.com/blog/anthropic-openai-mcp-apps-extension"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "OpenAI Apps SDK (ChatGPT apps)",
+      "kind": "platform",
+      "date": "2025-10 (DevDay); converging on MCP Apps from 2025-11",
+      "key_idea": "Lets developers build apps that live inside ChatGPT conversations. It is built on MCP: tools plus UI components rendered inline in the chat, with a bridge between component and host. After launch OpenAI backed SEP-1865 so the same interactive UI can run across ChatGPT, Claude and IDEs.",
+      "implication_for_agent_os": "Proves the 'apps become conversational capabilities with optional UI' model at consumer scale. It also shows the pressure toward one portable UI-plus-tool package, which a phone OS should adopt instead of inventing a proprietary format.",
+      "sources": [
+        "https://developers.openai.com/apps-sdk",
+        "https://inkeep.com/blog/anthropic-openai-mcp-apps-extension",
+        "https://winbuzzer.com/2025/11/23/mcp-apps-anthropic-and-openai-unite-to-standardize-ai-agent-interfaces-xcxwbn/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "A2A (Agent2Agent) protocol",
+      "kind": "protocol",
+      "date": "2025-04 (Google launch); Linux Foundation from 2025-06; v1.0 reported 2026-03",
+      "key_idea": "Agent-to-agent interoperability. Agents publish an Agent Card (JSON: skills, endpoint, auth schemes, capabilities), and clients delegate Tasks (stateful units of work with lifecycle states across multiple turns) that produce Artifacts. Supports streaming and asynchronous updates.",
+      "implication_for_agent_os": "Covers the case where the phone agent delegates to remote agents (airline, bank, employer agent) rather than calling tools. Agent Cards are a model for remote capability manifests. Remote agents are untrusted principals, so their outputs are untrusted data and their Cards need signing and verification.",
+      "sources": [
+        "https://a2a-protocol.org/latest/specification/",
+        "https://tyk.io/learning-center/a2a-protocol-architecture-and-technical-specification/",
+        "https://aaif.io/blog/a2a-v1-0-a-builder-s-guide-part-1-discovery-tasks-and-clients"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Android AppFunctions",
+      "kind": "platform",
+      "date": "Android 16 (2025) platform API + Jetpack library (alpha); 'Intelligent OS' blog 2026-02-25; Gemini integration in private preview as of 2026-05",
+      "key_idea": "Apps expose functions that agents such as Gemini can discover and run on-device with direct access to local app state. Google describes this as apps behaving like on-device MCP servers. Each function has a name, a plain-language description and a JSON Schema for parameters and return value. The Jetpack library generates these from annotated Kotlin classes and KDoc, and an agent skill helps developers generate and test them.",
+      "implication_for_agent_os": "The Android counterpart of the capability layer. It confirms the design choice that the capability registry is an OS service, apps register typed functions at install time, and on-device execution keeps personal data local.",
+      "sources": [
+        "https://developer.android.com/ai/appfunctions",
+        "https://android-developers.googleblog.com/2026/02/the-intelligent-os-making-ai-agents.html",
+        "https://9to5google.com/2026/02/25/android-appfunctions-gemini/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Gemini screen automation (supervised GUI agent on Android)",
+      "kind": "product",
+      "date": "2026-02 (Galaxy Unpacked demo); rolled out 2026-03 on Galaxy S26 and Pixel 10 (Android 16 QPR3)",
+      "key_idea": "Gemini operates third-party app UIs (e.g., Uber, Lyft, DoorDash, Starbucks) for multi-step tasks. Users can watch progress through notifications or a 'live view', take over manually at any point, and tap 'Stop task' in the live update notification.",
+      "implication_for_agent_os": "Shows the fallback path for apps without typed capabilities, and the UX that GUI automation needs: always-visible progress, instant take-over and a kill switch. In an agent-native OS, GUI automation should run in a visible, isolated surface with the same confirmation gates as typed calls.",
+      "sources": [
+        "https://support.google.com/pixelphone/answer/16940971?hl=en",
+        "https://9to5google.com/2026/03/17/gemini-screen-automation-pixel/",
+        "https://www.androidcentral.com/apps-software/gemini-screen-automation-rolling-out-for-galaxy-s26"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Apple App Intents with App Schemas and the system semantic index (WWDC26 / iOS 27)",
+      "kind": "platform",
+      "date": "2026-06 (WWDC26 sessions 240 and 343); App Intents since iOS 16, assistant schemas since WWDC24",
+      "key_idea": "App Schemas are predefined shapes of App Intents and entities that Siri knows how to execute, grouped into domains (e.g., Messages with sendMessage and draftMessage, Mail, Photos, Documents). APIs include @AppEntity(schema:) and @AppIntent(schema:). Entities adopting IndexedEntity, with @Property(indexingKey:), are indexed into the system semantic index, so Siri can match by meaning, understand relationships and answer questions over app content. EntityStringQuery covers non-indexed data. .appEntityIdentifier annotations give Siri on-screen awareness. Xcode flags missing companion schemas at build time (e.g., draftMessage is required alongside sendMessage because confirmation scenarios need a draft). The session transcript does not mention MCP.",
+      "implication_for_agent_os": "The most mature typed-capability plus entity model on a phone. The book's OS can generalize it: capabilities are schema-typed intents, data is schema-typed entities in one OS-owned semantic index, and on-screen context is entity references rather than pixels. Paired schemas (draft vs send) encode 'preview before commit' as a type-level rule.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/240/",
+        "https://developer.apple.com/videos/play/wwdc2026/343/",
+        "https://developer.apple.com/wwdc26/guides/apple-intelligence/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Apple WWDC26 'Secure your app: mitigate risks to agentic features' (.onToolCall, .historyTransform, risk-based confirmations)",
+      "kind": "platform-guidance",
+      "date": "2026-06 (WWDC26 session 347; related Foundation Models sessions 241/242)",
+      "key_idea": "Threat model: indirect prompt injection from untrusted context (calendar events, feeds, tool results) causes 'data poisoning' (attacker picks parameters) or 'action poisoning' (attacker picks the action). Simon Willison's lethal trifecta is cited explicitly. Deterministic mitigations: .onToolCall intercepts Foundation Models tool calls before execution and can throw to block, e.g., after a user confirmation is denied. App Intents get system risk-based contextual confirmations computed from static action metadata plus dynamic system state. authenticationPolicy = .requiresAuthentication blocks execution on a locked device. Schema-based side-effect metadata (e.g., deleteAssets) assigns risk automatically, and developers can only make it stricter. Probabilistic layer: .historyTransform for spotlighting (delimiting untrusted tool output) and PII redaction before the transcript reaches the model. The prescribed process is data-flow analysis, then side-effect analysis, then a deterministic baseline, then probabilistic enhancements.",
+      "implication_for_agent_os": "A platform vendor's statement of the right layering: deterministic gates keyed to typed side-effect metadata first, model-level defenses second. Two rules carry over directly: risk can only be tightened by developers, and confirmation is an OS-owned modal the model cannot draw or bypass.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/347/",
+        "https://developer.apple.com/videos/play/wwdc2026/242/",
+        "https://developer.apple.com/videos/play/wwdc2026/241/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Windows MCP integration: On-Device Agent Registry and Agent Workspace",
+      "kind": "platform",
+      "date": "2025-05 (Build announcement); 2025-11/12 Insider preview (build 26220.x)",
+      "key_idea": "Windows puts MCP servers in an OS-governed On-Device Registry (ODR) that provides discovery, identity and auditing for agent connectors. Agents run in a separate 'agent workspace' under their own low-privilege Windows account (a separate principal), so ACLs, group policy and SIEM attribution apply. Microsoft's stated pillars are non-repudiation, confidentiality and authorization. Rules include detailed activity logs, least privilege (never more than the invoking user) and explicit approval for sensitive actions.",
+      "implication_for_agent_os": "A desktop precedent for an OS-level capability registry and for giving agents their own identity. On a phone, each agent or background task should be a distinct principal with its own audit trail, so logs can say 'the agent did X on the user's behalf' rather than 'the user did X'.",
+      "sources": [
+        "https://support.microsoft.com/en-us/windows/experimental-agentic-features-a25ede8a-e4c2-4841-85a8-44839191dfb3",
+        "https://developer.microsoft.com/en-us/windows/agentic",
+        "https://glama.ai/blog/2025-07-28-how-the-windows-mcp-registry-and-security-model-works-in-windows-11"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Google Research Generative UI ('Generative UI: LLMs are Effective UI Generators')",
+      "kind": "paper",
+      "date": "2025-11-18 (blog, with Gemini 3; in AI Mode and Gemini app 'dynamic view'); paper arXiv 2604.09577 (Feb 2026)",
+      "key_idea": "Leviathan, Valevski, Matias et al. show that a strong model, given the right tools and instructions, can robustly generate a full custom interactive web page for almost any prompt. Three components: a tool server (image generation, search; results either to the model or directly to the browser), a roughly 3K-word system prompt (philosophy, examples, planning, technical manual), and post-processors (inject API keys, detect JS errors, fix CSS/Tailwind, escape attributes, remove hallucinated assets). Human raters preferred it over standard markdown output 82.8% of the time (LMArena prompts). It was at least comparable to expert-built pages in about 50% of cases but still below experts (Elo 1736 vs 1800). The capability is emergent (Gemini 2.0 Flash-Lite had 60% output errors, Gemini 3 had 0%). Limitations: generation often takes a minute or two (streaming roughly halves perceived latency) and occasional JS/CSS/HTML errors. Released the PAGEN expert dataset.",
+      "implication_for_agent_os": "Fully generated code UI is now good enough to change the experience, but too slow and error-prone to be the default for every turn. A phone OS should use tiers: instant declarative cards from a component catalog for common intents, and sandboxed generated micro-apps for rich or long-lived tasks, with post-processing and error telemetry built in.",
+      "sources": [
+        "https://research.google/blog/generative-ui-a-rich-custom-visual-interactive-user-experience-for-any-prompt/",
+        "https://arxiv.org/abs/2604.09577",
+        "https://generativeui.github.io"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "A2UI (Agent-to-UI) protocol",
+      "kind": "protocol",
+      "date": "2025-12 (announced by Google); v0.9.1 stable, v1.0 release candidate by mid-2026",
+      "key_idea": "A declarative JSON format in which agents describe a UI (component tree plus data model) and the client renders it with its own native widgets. Agents can only request components from a client-owned catalog of pre-approved components ('safe like data, expressive like code'); no code executes. The flat component list with ID references is easy for LLMs to stream incrementally for progressive rendering, and supports incremental updates as the conversation continues. It is framework-agnostic (Lit, Angular, Flutter GenUI SDK; React, Jetpack Compose and SwiftUI on the roadmap), Apache 2.0, and designed to travel over A2A, AG-UI or MCP.",
+      "implication_for_agent_os": "Probably the right default wire format for the phone's in-conversation cards. The OS owns a signed catalog of native, accessible, themable components; the agent sends only data and structure; and the renderer can enforce provenance labels and forbid spoofing system UI. Streaming flat lists fit voice-first latency budgets.",
+      "sources": [
+        "https://github.com/google/A2UI",
+        "https://a2ui.org/",
+        "https://developers.googleblog.com/introducing-a2ui-an-open-project-for-agent-driven-interfaces/",
+        "https://www.copilotkit.ai/blog/a2ui-whats-new-in-google-generative-ui-spec"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "AG-UI (Agent-User Interaction Protocol, CopilotKit)",
+      "kind": "protocol",
+      "date": "2025 (launch); integrations incl. Microsoft Agent Framework by 2026",
+      "key_idea": "An event-based streaming protocol between an agent backend and a frontend, with about 16-17 standardized event types in five groups: lifecycle (run started/finished/error), text message deltas, tool call events, state management (STATE_SNAPSHOT plus JSON Patch STATE_DELTA for shared agent-UI state), and special/custom events (which can carry A2UI payloads). Supports human-in-the-loop pauses and frontend-defined tools that the agent can call.",
+      "implication_for_agent_os": "Provides the runtime channel that A2UI lacks: a shared, patchable state object between agent and card (e.g., a trip itinerary both the user and agent edit). The OS should mediate this channel so user edits are authoritative, typed and logged.",
+      "sources": [
+        "https://docs.copilotkit.ai/ag-ui/concepts/state",
+        "https://www.copilotkit.ai/blog/master-the-17-ag-ui-event-types-for-building-agents-the-right-way",
+        "https://learn.microsoft.com/en-us/agent-framework/integrations/ag-ui/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Vercel AI SDK generative UI (tool-part rendering; RSC streamUI paused; json-render)",
+      "kind": "framework",
+      "date": "2024 (RSC streamUI); 2025-2026 (AI SDK UI tool parts); early 2026 (json-render reported)",
+      "key_idea": "Originally streamed React Server Components from the model through streamUI. Development of that RSC path is paused. The recommended pattern renders developer-owned React components for typed tool-call parts in message.parts (loading, result and error states). Vercel reportedly open-sourced json-render, where the LLM emits schema-validated (Zod) JSON that maps to a registered component catalog.",
+      "implication_for_agent_os": "Industry practice has moved from 'model streams components' to 'model emits typed data and the app owns the components', the same direction as A2UI. Each capability should ship its own result-card renderer keyed to its outputSchema.",
+      "sources": [
+        "https://ai-sdk.dev/docs/introduction",
+        "https://vercel.com/academy/ai-sdk/multi-step-and-generative-ui",
+        "https://hia2ui.com/blog/a2ui-vs-vercel-ai-sdk/"
+      ],
+      "confidence": "uncertain"
+    },
+    {
+      "name": "Claude Artifacts and 'Imagine with Claude'",
+      "kind": "product",
+      "date": "2024-06 (Artifacts with Claude 3.5 Sonnet); 2025-09-29 (Imagine with Claude research preview with Sonnet 4.5)",
+      "key_idea": "Artifacts render model-written code (HTML/React/SVG) in a sandboxed side panel as persistent, iterable objects. Imagine with Claude was a temporary preview (Max, later Pro users) where 'Claude generates software on the fly. No functionality is predetermined; no code is prewritten': the interface itself is generated as the user interacts.",
+      "implication_for_agent_os": "Two ends of the generated-UI range. Artifacts are durable, versioned objects the user can pin, share and reopen, a good model for 'saved generated apps' on the phone. Imagine is a fully generative computer, which pushes latency, consistency and safety to the limit. It shows why an OS still needs stable, predictable surfaces (settings, confirmations, the conversation itself).",
+      "sources": [
+        "https://www.anthropic.com/news/claude-3-5-sonnet",
+        "https://www.anthropic.com/news/claude-sonnet-4-5",
+        "https://x.com/claudeai/status/1972706823305052518"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "ChatGPT canvas",
+      "kind": "product",
+      "date": "2024-10",
+      "key_idea": "A side-by-side workspace for writing and code in which the user and the model co-edit one document, with targeted inline edits and shortcuts rather than regenerating whole replies.",
+      "implication_for_agent_os": "Pattern for 'the conversation spawns an editable object': the phone OS should allow shared, directly manipulable objects (documents, lists, itineraries) that both the user and agent edit, with a clear change history.",
+      "sources": [
+        "https://openai.com/index/introducing-canvas/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Object-capability model (ocap)",
+      "kind": "security-model",
+      "date": "1966 (Dennis & Van Horn); 1985 (KeyKOS); 2006 (Miller, Robust Composition)",
+      "key_idea": "Authority exists only as unforgeable references (capabilities). Designating a resource and having authority over it are the same thing, and there is no ambient authority. Authority can be passed and attenuated (wrapped in a narrower facet). Revocation uses caretakers or forwarders. This yields least authority (POLA) and makes delegation explicit and auditable.",
+      "implication_for_agent_os": "The core security model for the book. The agent never holds ambient 'phone access'. Each task receives attenuated capability handles (e.g., 'send one message to Alice', 'read calendar for next 7 days'). Sub-agents and generated UIs receive only narrower handles, and handles expire.",
+      "sources": [
+        "https://jscholarship.library.jhu.edu/handle/1774.2/873",
+        "https://doi.org/10.1145/365230.365252",
+        "https://doi.org/10.1145/858336.858337"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "seL4 microkernel",
+      "kind": "system",
+      "date": "2009 (SOSP formal verification); ongoing",
+      "key_idea": "A formally verified microkernel (machine-checked proof of functional correctness, later integrity and confidentiality properties) whose access control is based entirely on capabilities stored in kernel-managed CNodes. All authority, including memory, IPC endpoints and interrupts, is conferred through capabilities.",
+      "implication_for_agent_os": "Sets the target for the trusted computing base under the agent. The component that checks capabilities, policies and labels should be small, deterministic and verifiable, while the LLM stays entirely outside the TCB.",
+      "sources": [
+        "https://sel4.systems/",
+        "https://doi.org/10.1145/1629575.1629596"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Fuchsia Component Framework and capability routing",
+      "kind": "system",
+      "date": "2019- (Component Framework v2); shipped on Nest Hub devices",
+      "key_idea": "Every component declares in a manifest (CML) the capabilities it 'uses', 'exposes' and 'offers' to children. Capabilities (protocols, directories, storage, services) are routed explicitly through the component topology, and each component sees only a namespace built from its routed capabilities. There is no global filesystem or ambient authority, and Zircon kernel handles are the underlying unforgeable capabilities.",
+      "implication_for_agent_os": "A practical, shipped model for capability manifests and static routing that auditors can inspect. Phone capability providers (apps) should declare use/expose sets. The OS routes capabilities to tasks, and the manifest graph is inspectable before anything runs.",
+      "sources": [
+        "https://fuchsia.dev/fuchsia-src/concepts/components/v2/capabilities",
+        "https://fuchsia.dev/fuchsia-src/concepts/components/v2/component_manifests"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Dual LLM pattern (Simon Willison)",
+      "kind": "security-pattern",
+      "date": "2023-04-25",
+      "key_idea": "A Privileged LLM plans and calls tools but never sees untrusted content. A Quarantined LLM processes untrusted content but has no tool access. A non-LLM controller passes untrusted results around as opaque variable references ($VAR1) that the privileged model can route but not read.",
+      "implication_for_agent_os": "The simplest architecture that separates control flow from untrusted data. CaMeL showed it still leaks through manipulated arguments (data-flow attacks), so it must be combined with capability or label checks at tool-call time.",
+      "sources": [
+        "https://simonwillison.net/2023/Apr/25/dual-llm-pattern/",
+        "https://arxiv.org/abs/2503.18813"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "The lethal trifecta (Simon Willison)",
+      "kind": "security-pattern",
+      "date": "2025-06-16",
+      "key_idea": "An agent is dangerously exploitable when it combines (1) access to private data, (2) exposure to untrusted content and (3) the ability to communicate externally (or cause side effects). Prompt injection then becomes data theft. Apple's WWDC26 security session adopts this framing directly.",
+      "implication_for_agent_os": "A phone assistant has all three by default (personal data, inbound messages and web, send/post/pay). The OS must break the trifecta per task or per data flow, e.g., any plan that has read untrusted content loses unmediated egress, and egress of private data requires label clearance or explicit release.",
+      "sources": [
+        "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/",
+        "https://developer.apple.com/videos/play/wwdc2026/347/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "CaMeL: Defeating Prompt Injections by Design (Google / Google DeepMind / ETH Zurich)",
+      "kind": "paper",
+      "date": "2025-03 (arXiv 2503.18813); IEEE SaTML 2026",
+      "key_idea": "The Privileged LLM turns the trusted user query into restricted Python code (the control flow). A Quarantined LLM with no tools parses untrusted data into Pydantic-typed outputs, with a have_enough_information flag and no free-text channel back. A custom interpreter tracks a data-flow graph and attaches capabilities (provenance plus allowed readers) to every value. Security policies (Python functions) run before each tool call and deny or ask the user when, e.g., a confidential document would reach a non-reader. A STRICT mode also tracks control-flow dependencies to limit side channels. Results: 77% of AgentDojo tasks solved with provable security vs 84% undefended (v2). Stated limitations: users must write and maintain policies, approval fatigue, side channels, possible ROP-like composition attacks, and no atomicity or rollback for partially executed side effects.",
+      "implication_for_agent_os": "The strongest published template for the agent runtime. Voice or chat intent becomes a plan in a restricted language that the OS interprets. Every value the agent handles carries OS-maintained provenance and reader labels, and policy is checked deterministically at the tool boundary. The missing rollback is exactly what saga/compensation design must add.",
+      "sources": [
+        "https://arxiv.org/abs/2503.18813",
+        "https://github.com/google-research/camel-prompt-injection"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "FIDES: Securing AI Agents with Information-Flow Control (Microsoft)",
+      "kind": "paper",
+      "date": "2025-05 (arXiv 2505.23643)",
+      "key_idea": "A formal model and planner (Fides) that attaches confidentiality and integrity labels to data, propagates them dynamically through the agent loop, and enforces policies deterministically at tool calls. Untrusted content can be hidden from the planner as variables and inspected only through constrained, typed queries, which keeps expressiveness while preventing low-integrity data from steering high-consequence actions.",
+      "implication_for_agent_os": "Supports making IFC labels (confidentiality + integrity) a first-class OS property of every datum in the personal index and every tool output, so policies like 'low-integrity content cannot choose a payment recipient' become checkable rules.",
+      "sources": [
+        "https://arxiv.org/abs/2505.23643",
+        "https://huggingface.co/papers/2505.23643"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Design Patterns for Securing LLM Agents against Prompt Injections",
+      "kind": "paper",
+      "date": "2025-06 (arXiv 2506.08837)",
+      "key_idea": "A multi-institution catalogue of principled patterns that trade utility for provable resistance: action-selector, plan-then-execute, LLM map-reduce, dual LLM, code-then-execute (CaMeL-style) and context-minimization, with case studies.",
+      "implication_for_agent_os": "Gives the OS a menu of task templates. Low-risk lookups can use the action-selector pattern. Multi-step errands with untrusted inputs should use plan-then-execute or code-then-execute. Bulk processing of untrusted items (triaging an inbox) should use map-reduce with isolated per-item quarantined calls.",
+      "sources": [
+        "https://arxiv.org/abs/2506.08837",
+        "https://huggingface.co/papers/2506.08837"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "How Agents Ask for Permission: User Permissions for AI Agents, from Interfaces to Enforcement (UW, 2026 survey)",
+      "kind": "survey",
+      "date": "2026-07 (arXiv 2607.13718)",
+      "key_idea": "Surveys 21 user-level agent permission systems (e.g., Progent, AgentSpec, AC4A, ShieldAgent, VeriSafe Agent, IFC systems) and 5 commercial agents (Claude, Claude Cowork, Codex, ChatGPT chat and agent mode, evaluated May-June 2026). Taxonomy: threat model; specification (natural language, privilege labels, fixed mobile-style Always/Once/Never, structured constraints, arbitrary rules); derivation (AI prediction or compilation vs deterministic or exact); enforcement (LLM guardrail, non-AI automated, user-in-the-loop). Findings: no system combines low user overhead, formally grounded specs and deterministic enforcement. Commercial agents mostly offer high-overhead per-action approval or opaque LLM auto-reviewers, in some observed cases auto-approving under a 'Needs approval' setting or keeping permissions unrevocable, but they do support ongoing user control, which research mostly ignores.",
+      "implication_for_agent_os": "A direct requirements list for the phone's permission system: natural-language policy entry compiled deterministically into structured constraints, deterministic enforcement, revocable and inspectable grants, and full disclosure whenever an LLM makes a permission decision.",
+      "sources": [
+        "https://arxiv.org/abs/2607.13718",
+        "https://arxiv.org/abs/2504.11703",
+        "https://arxiv.org/abs/2601.11893"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Commit-time authorization for LLM agents (COMMITGUARD)",
+      "kind": "paper",
+      "date": "2026-07 (arXiv 2607.10487)",
+      "key_idea": "Agents often commit durable effects based on 'temporary authority' (a DOM snapshot, approval epoch, version witness, worker result) that went stale before commit. In a 54-task controlled-invalidation suite, 262/270 runs reached the visible goal but only 55 were authorized commits. A commit is authorized only if the witness is fresh, causally prior, bound to the same effect and target, and still eligible (not revoked or superseded). Prompt caution and single checks fail. What works is refreshing, rebinding, replanning or refusing at the durability boundary. COMMITGUARD is a fail-closed monitor that requires atomic check-and-commit primitives (conditional writes, ETags, leases).",
+      "implication_for_agent_os": "User approvals in the conversation must be bound tokens (exact payee, amount, version, expiry) checked atomically when the effect executes, not a vague 'user said yes earlier'. Generated confirmation cards should mint such tokens.",
+      "sources": [
+        "https://arxiv.org/abs/2607.10487",
+        "https://huggingface.co/papers/2607.10487"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Sagas and compensating actions for agents (Sagas 1987; SagaLLM 2025; Robust Agent Compensation 2026)",
+      "kind": "concept",
+      "date": "1987 (Garcia-Molina & Salem, SIGMOD); 2025 (SagaLLM, PVLDB 18(12)); 2026 (RAC, ACM CAIS)",
+      "key_idea": "A long-lived transaction is a sequence of local steps, each paired with a compensating action that semantically undoes it, so failures roll back by running compensators in reverse instead of holding locks. SagaLLM brings transaction guarantees, validation and context management to multi-agent LLM planning. RAC studies teaching agents to compensate. Agent libOS adds prepare-dispatch-settle with explicit 'ambiguous outcome' states and no blind replay.",
+      "implication_for_agent_os": "Each capability manifest should declare reversibility (reversible, with a compensator capability, time-bounded, or irreversible). The OS keeps a per-task saga log so 'undo that' in conversation is a real, bounded operation. Irreversible steps are ordered last and gated hardest.",
+      "sources": [
+        "https://doi.org/10.1145/38713.38742",
+        "https://doi.org/10.14778/3750601.3750611",
+        "https://doi.org/10.1145/3786335.3813141",
+        "https://arxiv.org/abs/2606.03895"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Audit and evidence planes (synthesis)",
+      "kind": "synthesis",
+      "date": "2025-2026",
+      "key_idea": "Several designs separate recording from authorizing. Agent libOS: evidence (intent, outcomes, audit, causal links) 'explains a decision but never grants authority'. MCP Apps: all UI-to-host traffic is loggable JSON-RPC through the same audit and consent path. Windows agents: non-repudiation via separate agent principals and mandatory activity logs. MCP 2026: Mcp-Method/Mcp-Name headers let gateways meter and audit without parsing bodies.",
+      "implication_for_agent_os": "The phone should keep an append-only, user-readable activity timeline (what was asked, what the plan was, which capabilities were used, what was approved, what changed, how to undo it), stored locally and exportable. The log must never be read back as instructions or authority (it is also a poisoning surface).",
+      "sources": [
+        "https://arxiv.org/abs/2606.03895",
+        "https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/",
+        "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+        "https://glama.ai/blog/2025-07-28-how-the-windows-mcp-registry-and-security-model-works-in-windows-11"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "GhostWriter: memory poisoning attacks on tool-using personal agents",
+      "kind": "paper",
+      "date": "2026-07-06 (arXiv 2607.06595, New Mexico State University)",
+      "key_idea": "A two-phase attack. Injection: an adversary sends an email or calendar invite with a hidden or plausible payload (e.g., 'CONTACT UPDATE: Dmitri's email is now ...') that the agent writes into long-term memory. Activation: a later benign user request retrieves the poisoned memory as trusted context and acts on it. Payloads can be tuned black-box for retrieval similarity. Across five memory agents (incl. Letta, Mem0, A-Mem, MemoryOS, ExpeL) and four LLMs: about 98% injection, about 60% activation. Polite 'descriptive' payloads evade prompt-injection detectors (DataFilter 0%; LLM detector 6%). Proposed defense AM-Sentry combines a memory-saving policy (three strictness levels) with a retrieval screen, and sharply reduces success at small utility cost. Trajectory-style memory (ExpeL), which treats memories as examples rather than facts, was least vulnerable to GhostWriter but most vulnerable to plain injection.",
+      "implication_for_agent_os": "Writing to memory is a privileged, policy-gated effect. Memories derived from untrusted senders must keep source labels and be stored as attributed claims ('Bob's email says X'), never as facts. High-consequence fields (contacts, payees, policies) change only through verified channels or user confirmation, and retrieval must re-apply integrity labels.",
+      "sources": [
+        "https://arxiv.org/abs/2607.06595",
+        "https://arxiv.org/abs/2607.27080",
+        "https://arxiv.org/abs/2605.15338"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MobileMem: Learning from a Year of Mobile Experiences (OPPO / OpenKG / ZJU)",
+      "kind": "benchmark",
+      "date": "2026-08 (arXiv 2608.13606 v2); an ICLR 2026 entry titled 'MobileMem: Evaluating Long-Horizon Memory for Language Agents in Real-World Mobile Environments' appears related",
+      "key_idea": "A benchmark and framework for on-device long-term memory built on year-scale mobile experience trajectories synthesized through a knowledge-grounded pipeline (user modeling, user knowledge graph, multimodal memory synthesis). Sources include calendars, albums, notes, documents, to-dos, bills, voice memos, and screen and video memories. Tasks cover multi-hop and temporal reasoning, knowledge updates and implicit preference inference. Results: A-MEM and HippoRAG2 lead (about 78-80 overall), well above MemOS (about 66-74), Mem0 (about 36-43) and 128K long context (about 45-55). Temporal reasoning is weak across the board. Stronger systems over-answer adversarial questions, and memory construction costs several million tokens per trajectory.",
+      "implication_for_agent_os": "Personal memory for a phone OS should keep raw, fine-grained events plus entity and relation structure (graph plus personalized PageRank style retrieval), and should not aggressively summarize or overwrite. Time must be first-class, and the costly construction work belongs in background or charging windows. Related 2026 benchmarks: MemArena (on-device personal memory), KnowU-Bench (proactive and personalized mobile agents).",
+      "sources": [
+        "https://arxiv.org/abs/2608.13606",
+        "https://github.com/zjunlp/MobileMem",
+        "https://openreview.net/forum?id=w5I11HrMgJ",
+        "https://arxiv.org/abs/2608.02613",
+        "https://arxiv.org/abs/2604.08455"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "On-device semantic index and knowledge graphs for personal context",
+      "kind": "synthesis",
+      "date": "2024-2026",
+      "key_idea": "Apple: app entities adopting IndexedEntity are indexed into a system semantic index that Siri uses for meaning-based matching, relationships and Q&A over app content (WWDC26), and on-screen views are annotated with entity identifiers. Research memory systems build temporal knowledge graphs (Zep) or entity-relation graphs (HippoRAG2), which outperform flat RAG on mobile-style memory (MobileMem).",
+      "implication_for_agent_os": "The personal context store should be one OS-owned, schema-typed entity graph (people, places, events, documents, commitments), fed by app capabilities and indexed on-device. Every node and edge carries provenance, sensitivity and integrity labels, and apps contribute entities but cannot read others' entities without routed capabilities.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/240/",
+        "https://arxiv.org/abs/2501.13956",
+        "https://arxiv.org/abs/2608.13606"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Long-running task primitives: MCP Tasks, A2A Tasks, AG-UI run lifecycle",
+      "kind": "synthesis",
+      "date": "2025-2026",
+      "key_idea": "Protocols have converged on 'return a handle, poll or stream progress, allow cancel'. MCP Tasks: tools/call can return a task handle driven by tasks/get, tasks/update and tasks/cancel. A2A: stateful Tasks with lifecycle states producing Artifacts. AG-UI: run started/finished/error events plus state deltas. MCP input_required lets a background task pause for user input.",
+      "implication_for_agent_os": "Background agents map to OS-level task objects with Live-Activity-style visibility, a standard 'needs your input' notification that opens an OS-rendered card, a durable checkpoint, and a universal stop control, for both typed tasks and GUI automation.",
+      "sources": [
+        "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+        "https://a2a-protocol.org/latest/specification/",
+        "https://docs.copilotkit.ai/ag-ui/concepts/state"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "AgentStop: energy-aware early termination of local agents",
+      "kind": "paper",
+      "date": "2026-05 (arXiv 2605.15206; ACM CAIS 2026; UMass Amherst / Brave)",
+      "key_idea": "Measures local agent runs on consumer hardware (M1 Max; Qwen3-30B-A3B and Qwen3-Coder). Agentic loops drive sustained GPU power spikes above 40 W and temperatures near 95 C, and one failed SWE-bench run can use about 3% of a 100 Wh battery. Most energy goes into the first about 10 steps, and failed runs waste energy. A tiny gradient-boosted classifier on already-available signals (lowest token log-probs, step length, step-to-step overlap as a loop signal) predicts failure and stops early. Result: 15-20% (up to about 25%) less wasted energy with under 5% utility loss. Cites MELT: about 3 mAh per 100 output tokens for Gemma 2B on an iPhone 14 Pro.",
+      "implication_for_agent_os": "Energy is a schedulable resource for agents. The OS should enforce per-task energy and token budgets, run cheap supervisors that stop failing or looping runs, prefer cloud or deferred execution for heavy tasks, and report energy use per task.",
+      "sources": [
+        "https://arxiv.org/abs/2605.15206",
+        "https://doi.org/10.1145/3786335.3813163",
+        "https://arxiv.org/abs/2403.12844"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Mobile background execution constraints (iOS BackgroundTasks, Android WorkManager)",
+      "kind": "platform",
+      "date": "iOS 13+ BGTaskScheduler; iOS 26 BGContinuedProcessingTask; Android WorkManager (Jetpack)",
+      "key_idea": "Phones admit background work only under OS-controlled conditions: deferrable tasks scheduled opportunistically (e.g., when charging or on Wi-Fi), time-limited execution, user-visible progress for user-initiated long work (iOS 26 continued-processing tasks), and constraint-based job scheduling on Android.",
+      "implication_for_agent_os": "Agent triggers (time, location, inbound message, calendar event) should compile into OS jobs with declared constraints and budgets. User-initiated agent tasks get visible, cancellable continued execution, and memory consolidation and indexing happen on charger.",
+      "sources": [
+        "https://developer.apple.com/documentation/backgroundtasks",
+        "https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtask",
+        "https://developer.android.com/topic/libraries/architecture/workmanager"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "What a capability manifest should contain (synthesis)",
+      "kind": "synthesis",
+      "date": "2026",
+      "key_idea": "Combining MCP tool definitions (name, description, inputSchema, outputSchema, annotations, _meta.ui.resourceUri, ttlMs), Apple App Schemas (schema domain, entity types, authenticationPolicy, side-effect risk metadata, draft/commit pairs), AppFunctions (JSON Schema, on-device), A2A Agent Cards (skills, endpoint, auth), Fuchsia CML (use/expose/offer), Agent libOS (typed effects, expiry, finite uses, delegation lineage, egress declaration) and commit-time authorization (witness binding). Proposed fields: identity (id, version, publisher, signature); human and LLM descriptions (kept separate, localized); typed I/O schemas with entity types from a shared ontology; effect class (read / write-local / write-remote / communicate / spend / delete / physical); reversibility and compensator capability id; idempotency key support; data egress declaration (which sinks and label clearances); required input capabilities and scopes; authentication policy (device unlocked, biometric); default confirmation tier (developer can only raise it); precondition witnesses and version binding (ETag/lease) for commit-time checks; rate and cost limits; latency, energy and on-device vs cloud execution class; long-running support (task handle, progress, cancel); UI renderers (declarative card templates keyed to outputSchema, optional sandboxed app template with CSP); memory policy (may results be remembered, retention, integrity label of outputs); audit fields to log; locale and accessibility metadata.",
+      "implication_for_agent_os": "Makes the manifest the unit of review, signing, permission display, policy compilation and UI generation. The OS, not the model, derives risk and confirmation behavior from it.",
+      "sources": [
+        "https://modelcontextprotocol.io/specification/2026-07-28",
+        "https://developer.apple.com/videos/play/wwdc2026/347/",
+        "https://developer.android.com/ai/appfunctions",
+        "https://a2a-protocol.org/latest/specification/",
+        "https://fuchsia.dev/fuchsia-src/concepts/components/v2/component_manifests",
+        "https://arxiv.org/abs/2606.03895",
+        "https://arxiv.org/abs/2607.10487"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Rendering model-generated UI safely (synthesis: component schemas vs code)",
+      "kind": "synthesis",
+      "date": "2025-2026",
+      "key_idea": "There are three tiers. (1) Declarative component trees rendered from a trusted native catalog (A2UI, AG-UI state, json-render-style schema output, per-tool result cards): no code executes, the look is consistent, it is accessible and fast, and its expressiveness is bounded by the catalog. (2) Pre-declared, reviewable code templates hydrated with data (MCP Apps / OpenAI Apps SDK): sandboxed iframe, CSP, postMessage JSON-RPC, host approval for UI-initiated tool calls. (3) Fully model-written code (Google Generative UI, Claude Artifacts / Imagine): maximum flexibility, but a minute-scale latency, occasional runtime errors, and risk of phishing or spoofing surfaces.",
+      "implication_for_agent_os": "Default to tier 1 for conversation cards, allow tier 2 for installed capability providers, and restrict tier 3 to an explicitly labeled, sandboxed 'generated app' surface with no capabilities beyond those routed to it. The OS reserves unspoofable chrome for identity, payment and confirmation, and shows provenance on every card.",
+      "sources": [
+        "https://github.com/google/A2UI",
+        "https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/",
+        "https://arxiv.org/abs/2604.09577",
+        "https://docs.copilotkit.ai/ag-ui/concepts/state"
+      ],
+      "confidence": "likely"
+    }
+  ],
+  "design_principles": [
+    "Visibility is not authority: what tools the model can see (its action surface) is separate from what the task may do (its capabilities). Skills, generated tools, restored checkpoints and discovered endpoints never expand authority implicitly (Agent libOS invariant).",
+    "No ambient authority: every task gets attenuated, expiring, unforgeable capability handles (e.g., 'message Alice once', 'read next 7 days of calendar'). Sub-agents and generated UIs receive only narrower handles, and all grants are revocable and visible.",
+    "Plan only from trusted input: the user's utterance and the OS state produce the plan (control flow). Untrusted content (messages, web, tool output, remote agents) enters only as typed, schema-constrained values through quarantined parsing and cannot add steps (dual LLM / CaMeL / FIDES).",
+    "Label every datum: provenance, allowed readers or confidentiality, and integrity labels propagate through computation. Policies are checked deterministically at sinks, and private-data egress needs label clearance or an exact one-shot user release.",
+    "Break the lethal trifecta per task: a plan that has read untrusted content cannot also reach an unmediated external sink with private data. The OS enforces this as a flow rule, not a prompt.",
+    "Deterministic gates first, model defenses second: confirmations, authentication requirements and blocks derive from typed side-effect metadata in signed manifests (Apple schema risk, MCP annotations verified by the OS). Developers may only tighten risk. Spotlighting and classifiers are defense in depth only.",
+    "Confirmations are OS-owned and bound: approval sheets are rendered by the OS in chrome that generated UI cannot spoof. They mint tokens bound to the exact effect, target, amount and version, and are re-checked atomically at commit (commit-time authorization, fail closed).",
+    "Every effect is a saga step: manifests declare reversibility and compensators. The OS keeps a per-task saga log so 'undo that' works. Irreversible steps are ordered last, gated hardest, and never blindly retried (prepare-dispatch-settle).",
+    "Evidence is not authority: an append-only, user-readable activity timeline records intent, plan, capabilities used, approvals and outcomes. It is never replayed as instructions or permissions and is itself treated as untrusted when re-read.",
+    "Memory writes are privileged effects: ingestion is policy-gated, memories keep source attribution ('X's email claims ...'), high-consequence facts (contacts, payees, rules) change only through verified channels or user confirmation, retrieval is screened, and memory is user-inspectable and editable (GhostWriter lessons).",
+    "One OS-owned personal entity graph: apps contribute schema-typed entities to an on-device semantic index with fine-grained, time-stamped events and relations (MobileMem shows raw detail plus graphs beat aggressive summarization). Cross-app reads require routed capabilities.",
+    "Typed capabilities before pixels: apps expose schema-typed intents/functions (App Intents, AppFunctions, MCP). GUI automation is a supervised fallback in a visible, isolated surface with live view and an always-available stop.",
+    "Declarative UI by default, code UI by exception: conversation cards come from a signed native component catalog (A2UI-style streaming trees, keyed to outputSchema). Code UIs are pre-declared, sandboxed, CSP-restricted templates, and all UI-originated actions go through the same policy path as model tool calls.",
+    "Provenance is always visible: every card, message and suggestion shows who produced it (OS, which app capability, which remote agent, generated) and marks untrusted text, so users can calibrate trust and spot phishing inside generated UI.",
+    "Long-running work is a first-class task object: handle, progress, checkpoint, 'needs your input' pause (MCP input_required), cancel, and Live-Activity-style visibility. Triggers compile into OS jobs with declared constraints.",
+    "Energy and tokens are budgeted resources: per-task budgets, cheap supervisors that stop failing or looping runs, deferral to charging or Wi-Fi, and per-task energy accounting shown to the user.",
+    "Agents are separate principals: each agent or background task runs under its own identity (as Windows agent accounts do), so logs, policies and revocation can target it, and 'the agent did X for the user' is distinguishable from 'the user did X'.",
+    "No hidden LLM permission decisions: if a model auto-approves or predicts a policy, the user can see it, configure it and turn it off. Natural-language preferences compile deterministically into structured, reviewable rules (per the 2026 permissions survey).",
+    "Stateless, cacheable capability discovery: manifests are fetched with TTLs, reviewed and signed at install, available offline, and capability calls survive app suspension and network changes (MCP 2026-07-28 style)."
+  ],
+  "open_questions": [
+    "How can capability and IFC policies be written with near-zero user effort yet enforced deterministically? The 2026 permissions survey finds no system achieves low overhead, formal specs and deterministic enforcement together. Can intent-to-policy compilation be made trustworthy and explainable in voice?",
+    "What is the right plan language for a phone agent (restricted Python as in CaMeL, a typed DSL, a dataflow graph), and how are its semantics verified so the interpreter is a small, auditable TCB (seL4-style)?",
+    "How should declassification work in everyday use without approval fatigue (e.g., sharing a document excerpt with a new contact)? CaMeL and FIDES both flag user fatigue as the weak point.",
+    "How can compensation be made reliable across third-party services that expose no undo? Should manifests with no compensator face stricter gating, or should the OS require escrow or hold-then-commit patterns for spending and messaging?",
+    "How should memory poisoning be defended against adaptive attackers? AM-Sentry was tested only against non-adaptive ones. What should the integrity model for memories distilled from mixed-trust sources be?",
+    "Where should the line fall between declarative component catalogs and generated code UI? Can a catalog be expressive enough (charts, maps, editors, simulations) to avoid code generation for 95% of turns, and who governs the catalog?",
+    "How is generated UI made accessible (VoiceOver, Dynamic Type, localization) and consistent when it is produced per prompt, and how is it tested before it reaches the user?",
+    "What latency budget is acceptable for voice-first turns when rich generative UI takes a minute or two (Google Research)? What streaming, speculative or cached-template strategies close the gap on-device?",
+    "How should on-device vs cloud execution be split for privacy, energy and capability? Can IFC labels travel with data into private cloud compute and back with verifiable guarantees?",
+    "How should the OS arbitrate between multiple agents (system agent, third-party agents via A2A, app-embedded agents) competing for the same capabilities, context and user attention?",
+    "What evaluation standard should agent OSes report? Endpoint success is not authorized success (commit-time authorization paper). Benchmarks need authorized completion, unauthorized commit, safe non-completion, energy per task and memory integrity metrics.",
+    "Can capability manifests and generated UI templates be meaningfully reviewed at App Store scale, and how are their natural-language descriptions (which the model reads) kept from becoming a prompt-injection channel (tool-description poisoning)?"
+  ]
+}

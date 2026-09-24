@@ -1,0 +1,692 @@
+{
+  "summary": "Across 2016–2026, attempts to make an agent the primary phone interface fall into four waves. (1) Pre-LLM assistant platforms (Viv, Facebook M) that failed on service coverage and cost. (2) Dedicated AI gadgets (Humane Ai Pin, Rabbit r1, Friend, memory pendants) that proved the demand, then died, pivoted or were acquired: Humane was bricked after HP bought its assets for $116M (Feb 2025); Rabbit stopped making r1 and relaunched as the cross-device software agent rabbitOS 3 (Sept 2026). (3) OEM and platform agents on existing phones: Chinese OEMs (Honor YOYO, vivo PhoneGPT, Xiaomi, OPPO) plus Huawei HMAF; Samsung and Google Gemini with AppFunctions and virtual-display screen automation (live on Galaxy S26/Pixel 10, Mar 2026); Apple's Siri AI in iOS 27 (Sept 2026) after a public 2025 delay. (4) AI companies forcing their way in: ByteDance's Doubao phone was blocked by WeChat, Alipay and banks within days (Dec 2025) and relaunched in Sept 2026 as MCP/A2A-first with a consent-governed GUI fallback (SAEP); Perplexity's Comet was enjoined by Amazon and then cleared by the Ninth Circuit (Aug 2026); OpenAI shut its Atlas browser, is building io devices, and reportedly plans an agent-first phone for 2028. Cross-cutting findings: 'app-less' always became 'app-optional'; the action layer is converging on structured capabilities (intents, MCP, AppFunctions) with sandboxed GUI automation as fallback; payments always get a human gate; agents get their own sandboxed workspace and identity; prompt injection is unsolved; latency and reliability decide trust; and app-developer incentives, not model quality, are the main barrier to a truly agent-first phone.",
+  "items": [
+    {
+      "name": "Rabbit r1 + rabbitOS (LAM, LAM Playground, teach mode, rabbitOS 2)",
+      "kind": "dedicated AI gadget / agent OS (startup)",
+      "date": "Announced CES 2024-01-09; shipped from late Apr 2024; LAM Playground Oct 2024; teach mode beta 2024-11-21; rabbitOS 2 Sept 2025",
+      "what_it_was": "$199 no-subscription pocket device designed by Teenage Engineering (screen, push-to-talk button, scroll wheel, rotating camera). Pitched as an app-free 'pocket companion' in which a 'Large Action Model' (LAM) operates services for you. ~100,000 pre-orders by March 2024.",
+      "how_it_worked": "rabbitOS is a customized AOSP build; speech goes to the cloud where LLMs (reporting showed heavy reliance on OpenAI APIs) plan the task. The 'LAM' layer operated a handful of web services (Uber, DoorDash, Spotify, etc.) from Rabbit's cloud using the user's linked accounts. Investigations (Coffeezilla, 2024) reported the service actions were largely hard-coded Playwright browser-automation scripts rather than a learned action model. LAM Playground (Oct 2024) was a general web-agent that drove a cloud browser; teach mode (Nov 2024) let users demonstrate a web task once in the Rabbithole portal (Rabbit stored the session cookie, not the password) and replay it as a reusable agent. rabbitOS 2 (Sept 2025) replaced the UI with cards and gestures and added 'creations' (generate small tools on the device).",
+      "outcome": "Viral launch, then poor reviews: slow, unreliable integrations, and the discovery that the launcher ran as an Android APK on ordinary phones, undermining the 'why new hardware' case. Security incident: the Rabbitude group found hard-coded API keys (ElevenLabs, Azure TTS, Google Maps, Yelp, SendGrid) in May–June 2024, which could read every r1 response or brick devices; Rabbit blamed a leaking ex-employee and rotated keys. By 2026 the company had ~15 staff and ~$60M raised; it stopped manufacturing r1 and ruled out an r2 (see rabbitOS 3 entry).",
+      "lesson": "A new device with no OS-level access to the user's real apps cannot beat the phone that already has them. Brittle scripted or cloud-browser automation doesn't hold up for daily use, and 'teach by demonstration' is a useful escape hatch but no substitute for real capability APIs. Treat secrets and the agent's credential vault as core OS security, not app plumbing. Don't overclaim the model ('LAM') in marketing: the gap between demo and product became the story.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Rabbit_r1",
+        "https://www.rabbit.tech/newsroom/introducing-r1",
+        "https://www.rabbit.tech/newsroom/teach-mode-beta",
+        "https://www.engadget.com/ai/teach-mode-rabbits-tool-for-automating-r1-tasks-is-now-available-to-all-users-170036677.html",
+        "https://www.androidauthority.com/rabbit-r1-security-flaw-3455555/",
+        "https://gizmodo.com/rabbit-former-employee-handed-hacking-collective-the-keys-to-the-r1s-2000482297",
+        "https://mauimauricio.live/blog/rabbit-r1-coffeezilla-and-the-lost-lam",
+        "https://www.humai.blog/rabbit-r1-rabbitos-2-complete-overhaul-vibe-coding-2025/"
+      ],
+      "confidence": "verified (launch, pricing, teach mode, API-key leak, rabbitOS 2); likely (Playwright/OpenAI characterization comes from third-party investigations that Rabbit disputed)"
+    },
+    {
+      "name": "rabbitOS 3 (Rabbit's pivot to a hardware-agnostic agent) and r1 discontinuation",
+      "kind": "cross-device agent software (startup pivot)",
+      "date": "GA 2026-09-22",
+      "what_it_was": "An 'agentic operating system' delivered as software. Users reach it from a browser, Telegram, iMessage/RCS/SMS, or the legacy r1, and it can drive up to five of the user's Windows, Mac or Linux computers.",
+      "how_it_worked": "A cloud orchestrator plus a local agent installed on each computer, which can act on desktop programs, files and web pages. The system decides which device should run a task. Users bring their own API keys (OpenAI, Anthropic, routers or local models) and can swap models without losing context, memory or installed skills. No monthly fee. Jesse Lyu described it to WIRED as a 'brain dump' interface. The next hardware is a Linux 'cyberdeck' for vibe-coding, built with Teenage Engineering.",
+      "outcome": "Rabbit told WIRED it has stopped manufacturing r1 and ruled out an r2. Its founding thesis, that dedicated hardware would replace app-based OSes, ended up inverted: the agent runs on the devices people already own.",
+      "lesson": "For an agent OS, the valuable, defensible layer is the orchestrator, memory and skills, with models kept swappable. Messaging apps and existing devices are enough as front ends, so a new phone OS has to offer what a chat bot on someone else's OS can't: system-level permissions, sensors and trust.",
+      "sources": [
+        "https://siliconangle.com/2026/09/23/rabbit-returns-with-os3-a-personal-ai-agent-that-can-access-files-and-connect-computers/",
+        "https://www.techspot.com/news/113954-rabbit-launches-os3-agentic-ai-platform-desktop-telegram.html",
+        "https://www.prnewswire.com/news-releases/rabbit-unveils-os3-the-agentic-operating-system-for-every-device-302886403.html",
+        "https://www.engadget.com/ai/rabbits-cyberdeck-is-a-modern-take-on-a-netbook-151907273.html",
+        "https://www.itechpost.com/articles/237399/20260923/rabbit-os3-new-ai-agent-launches-agentic-operating-system-without-r1.htm"
+      ],
+      "confidence": "verified (multiple outlets, 22–23 Sept 2026)"
+    },
+    {
+      "name": "Humane Ai Pin and CosmOS",
+      "kind": "dedicated screenless AI wearable + AI-first OS (startup)",
+      "date": "Unveiled 2023-11-09; shipped Apr 2024; charge-case recall June 2024; CosmOS licensing pitch Oct–Dec 2024; HP asset purchase 2025-02-18; servers shut 2025-02-28",
+      "what_it_was": "$699 magnetic lapel pin plus a $24/month plan with its own phone number. No apps ('We don't do apps', co-founder Bethany Bongiorno, as reported). Input was voice, a touchpad, gestures and a camera; output was a speaker and a 'Laser Ink' display projected onto the palm.",
+      "how_it_worked": "CosmOS routed each request through an orchestration layer Humane called the 'AI Bus', which picked among AI models, services and device capabilities (OpenAI models among them) with no app model at all. The heavy processing ran in the cloud. In late 2024, after the hardware flopped, Humane pitched CosmOS for licensing to cars, TVs, speakers and phones.",
+      "outcome": "Reviews were brutal (MKBHD: 'The Worst Product I've Ever Reviewed… For Now'): it overheated, had short battery life, answered slowly, and the projection was unreadable in sunlight. About 10,000 units sold, and returns outpaced sales from May to August 2024. The charge case was recalled for fire risk (CPSC, about 10,500 units). HP bought the IP (300+ patents), CosmOS and most staff for $116M, far below the up-to-$1B sale price Humane had reportedly sought in 2024, and every Pin was bricked on 2025-02-28.",
+      "lesson": "Screenless, voice-only computing loses on latency, privacy (you have to speak in public) and every choose-from-options task. A cloud-dependent device dies with the vendor's servers, so a new OS must degrade gracefully offline and when vendors fail. An orchestration layer (the AI Bus) is the right idea, but it has to sit on a device people already carry, with a real display.",
+      "sources": [
+        "https://techcrunch.com/2023/11/09/humanes-ai-pin/",
+        "https://time.com/6333416/humane-ai-pin-launch/",
+        "https://en.wikipedia.org/wiki/Humane_Inc.",
+        "https://www.digitaltrends.com/phones/humane-ai-pin-more-returns-than-new-sales-report/",
+        "https://www.cpsc.gov/Recalls/2025/Humane-Recalls-Charge-Case-Accessory-for-Ai-Pin-Due-to-Lithium-Battery-Fire-Hazard",
+        "https://om.co/2024/10/23/humane-has-a-plan-for-its-ai-first-operating-system/",
+        "https://techcrunch.com/2024/12/05/ai-pin-maker-humane-is-developing-ai-software-for-cars-phones-and-smart-speakers",
+        "https://techcrunch.com/2025/02/18/humanes-ai-pin-is-dead-as-hp-buys-startups-assets-for-116m",
+        "https://www.dexerto.com/tech/marques-brownlee-slams-humane-ai-pin-as-the-worst-product-hes-ever-reviewed-2646829/",
+        "https://www.notebookcheck.net/Humane-maker-of-flawed-AI-Pin-may-sell-business-to-HP-for-1-billion.844980.0.html"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Brain Technologies (Brain.ai) 'Natural AI' generative interface",
+      "kind": "generative-interface app / app-less UI startup",
+      "date": "Natural AI introduced 2021 (per Brain.ai); basis of the DT concept phone Feb 2024",
+      "what_it_was": "An assistant that generates the next interface for a request instead of routing the user into an app: 'you don't go to apps, apps come to you' (Jerry Yue, founder).",
+      "how_it_worked": "Natural-language intent goes in; the system predicts it and assembles a task-specific UI (lists, forms, confirmation cards) backed by service integrations, 'like a concierge'.",
+      "outcome": "It attracted a carrier partner (Deutsche Telekom) but never reached a mass-market product under its own brand. DT's shipping 'AI Phone' in 2025 used Perplexity, not Brain.ai.",
+      "lesson": "Generated, task-specific UI is the right output format for an agent OS: not just chat text, not whole apps. But generated UIs need a reliable action back end and a consistent design grammar, or users can't build muscle memory.",
+      "sources": [
+        "https://www.globenewswire.com/news-release/2024/02/15/2830140/0/en/Deutsche-Telekom-and-Brain-ai-Unveil-Revolutionary-App-less-Phone-at-Mobile-World-Congress.html",
+        "https://www.linkedin.com/posts/jerry-sheng-yue_t-x-brain-introducing-the-first-ai-phone-activity-7167907522446606336--tu0",
+        "https://en.wikipedia.org/wiki/Jerry_Yue"
+      ],
+      "confidence": "likely (2021 date and product claims come from Brain.ai's own materials)"
+    },
+    {
+      "name": "Deutsche Telekom 'T Phone' app-less concept with Brain.ai and Qualcomm",
+      "kind": "carrier concept phone",
+      "date": "Announced 2024-02-15; shown at MWC Barcelona, Feb 2024",
+      "what_it_was": "A concept 'app-less AI Phone' whose home screen is an AI prompt that 'predicts and generates the next interface contextually'.",
+      "how_it_worked": "Brain.ai's Natural AI generative interface running as the main surface of an Android phone (Qualcomm partnership). Crucially, swiping up still revealed a normal app drawer, so apps remained as a fallback.",
+      "outcome": "It stayed a concept. A year later DT changed partners and approach (Perplexity, below), and the shipping phone was ordinary Android plus an assistant button.",
+      "lesson": "Even the 'app-less' concept shipped with an app drawer. In practice the transition is app-optional, not app-free: the agent has to coexist with apps and fall back to them gracefully.",
+      "sources": [
+        "https://www.globenewswire.com/news-release/2024/02/15/2830140/0/en/Deutsche-Telekom-and-Brain-ai-Unveil-Revolutionary-App-less-Phone-at-Mobile-World-Congress.html",
+        "https://www.androidpolice.com/telekom-concept-phone-go-app-free-not-entirely/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Deutsche Telekom 'AI Phone' with Perplexity (T Phone 3 / T Phone 3 Pro, Magenta AI)",
+      "kind": "carrier-branded phone",
+      "date": "Announced MWC 2025-03-03; T Phone 3 launched 2025-08-14; T Phone 3 Pro on sale 2025-10-14",
+      "what_it_was": "Low-cost Android phone (T Phone 3 at €149, bundled with 18 months of Perplexity Pro; Pro model just under €230) branded as the 'AI-phone'. It was pitched at MWC 2025 as app-free, with a 'Magenta AI' layer replacing the app UI.",
+      "how_it_worked": "A magenta lock-screen button or a power-button double-press opens the Perplexity Assistant, which answers questions and acts on pre-installed apps (calendar, email, maps) and on some services (taxi, calls, purchases). Google Cloud AI, ElevenLabs and Picsart were bundled as extra 'Magenta AI' features.",
+      "outcome": "It shipped, in about ten markets, but as a normal app-based Android phone with a privileged assistant, not the app-free device the concepts promised. There is no evidence of breakout adoption.",
+      "lesson": "Carriers can distribute an assistant but can't rebuild the OS or get third-party apps to cooperate. The workable part turned out to be 'one gesture to an agent from the lock screen' plus deep hooks into the default apps, a pattern the new OS should adopt natively.",
+      "sources": [
+        "https://www.telekom.com/en/media/media-information/archive/deutsche-telekom-at-mwc-2025-ai-phone-flying-base-stations-and-self-healing-networks-1088708",
+        "https://www.telekom.com/en/media/media-information/archive/from-the-vision-to-our-ai-phone-1088630",
+        "https://www.lightreading.com/smartphones-devices/reisen-bildet-how-i-unexpectedly-got-my-first-ai-phone-",
+        "https://www.lightreading.com/smartphones-devices/deutsche-telekom-s-ai-phone-is-now-on-sale-in-ten-markets",
+        "https://www.heise.de/en/news/Perplexity-on-board-Deutsche-Telekom-announces-AI-Phone-Pro-10723797.html",
+        "https://www.eweek.com/news/deutsche-telekom-ag-t-phone-3-perplexity-ai/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Perplexity Assistant on Android and OEM distribution (Motorola, Samsung Galaxy S26)",
+      "kind": "third-party assistant replacing the default assistant",
+      "date": "Android assistant 2025-01-23; Motorola global deal Apr 2025; OS-level integration on Galaxy S26 Feb 2026",
+      "what_it_was": "Perplexity's answer engine made the default Android assistant, able to call other apps: book an Uber, reserve on OpenTable, draft email, set reminders, and use the camera.",
+      "how_it_worked": "Runs as the Android default digital-assistant app, using Android intents, deep links and accessibility/screen context to hand off to or drive apps. Distributed through OEM preinstalls (Motorola Razr cover-screen access; Samsung S26 as a selectable agent, with Perplexity also powering Bixby's search).",
+      "outcome": "It got real distribution through OEMs. On Samsung S26 it is reported as the first non-Google company with OS-level access. Actions stay limited to what intents and deep links expose, and heavier web actions moved to its Comet browser (see the Amazon litigation).",
+      "lesson": "The 'choose your agent' model (a replaceable default assistant) is becoming standard on Samsung, and reportedly in iOS 27 Extensions. A new OS should separate the agent runtime and permissions from the model vendor.",
+      "sources": [
+        "https://techcrunch.com/2025/01/23/perplexity-launches-an-assistant-for-android",
+        "https://9to5google.com/2025/01/24/perplexity-assistant-android/",
+        "https://www.androidheadlines.com/2025/04/motorolas-perplexity-ai-gamble-could-change-how-you-use-your-phone.html",
+        "https://www.perplexity.ai/hub/blog/perplexity-apis-deliver-powerful-ai-to-the-world-s-largest-android-device-maker"
+      ],
+      "confidence": "verified (launch, Motorola); likely (the 'first non-Google OS-level access' characterization)"
+    },
+    {
+      "name": "Nothing: Essential Space, Essential Key, Essential Apps / Playground, planned Essential OS",
+      "kind": "OEM AI layer, moving toward an AI-native OS",
+      "date": "Essential Space with Phone (3a), Mar 2025; Essential Apps + Playground 2025-09-30; $200M Series C Sept 2025; Essential OS targeted H1 2027 (reported)",
+      "what_it_was": "A dedicated hardware Essential Key that captures screenshots, voice notes and photos into an AI-organized 'Essential Space' (summaries, reminders). Essential Apps generates personal mini-apps (widgets) from a natural-language description, such as 'capture receipts from camera roll and export a finance-ready PDF every Friday'. Playground is a community store for sharing and remixing them.",
+      "how_it_worked": "An LLM overlay on Nothing OS (Android), with cloud generation of small apps built on a constrained widget and runtime API. The long-term plan is a 'hyper-personalized', proactive OS that uses agents to accomplish tasks.",
+      "outcome": "Still early. Reviewers note Essential is an AI overlay on Android and the 'apps' are effectively widgets. The real AI-native OS is a 2027 promise.",
+      "lesson": "Two ideas worth stealing: a physical 'capture to agent' key (a low-friction context feed), and user-generated micro-apps as a way to persist repeated agent workflows as UI. The limit: generated apps still need safe, permissioned system APIs underneath.",
+      "sources": [
+        "https://9to5google.com/2025/09/30/nothing-essential-ai-app-generator-promises/",
+        "https://www.androidpolice.com/nothing-launches-a-vibe-coded-app-store/",
+        "https://www.fonearena.com/blog/465795/nothing-essential-ai-platform.html",
+        "https://9to5google.com/2025/09/16/nothing-will-make-its-own-os-for-phones-and-beyond-first-ai-native-devices-in-2026/",
+        "https://techcrunch.com/2025/09/15/nothing-closes-200m-series-c-led-by-tiger-global-plans-ai-first-device-launch",
+        "https://nothing.wiki/software/essential_space"
+      ],
+      "confidence": "verified (products, dates); likely (H1 2027 Essential OS timing)"
+    },
+    {
+      "name": "Honor YOYO Agent (MagicOS 9 → MagicOS 10 / Magic8 → Robot Phone) and the Alpha Plan",
+      "kind": "OEM system agent operating third-party apps",
+      "date": "MagicOS 9 agent 2024-10-23; Alpha Plan ($10B over 5 yrs) Mar 2025; Magic8 with MagicOS 10 2025-10-15; Robot Phone prototype MWC 2026, China sale Aug 2026",
+      "what_it_was": "A system assistant upgraded into an agent that operates third-party apps. The launch demo: 'order a hot latte' opens your usual delivery app, picks your usual shop, places the order, then asks you to verify payment. MagicOS 9 claimed about 900 automatable tasks (coffee, managing subscriptions and auto-renewals, permissions, forms). Magic8 claimed 3,000+ scenarios and a 'self-evolving' agent. The Robot Phone (RMB 9,999+) adds a YOYO Pro agent with skills tied to its motorized gimbal camera.",
+      "how_it_worked": "An OEM-privileged GUI agent: an on-device plus cloud multimodal model (MagicLM) reads the screen and injects taps via system permissions, combined with habit and preference memory. Payment stops for user verification.",
+      "outcome": "Shipped at scale in China on Honor flagships. It avoided the public blocking fight that hit Doubao, likely because it launched with narrower task lists and as an OEM feature rather than a platform challenger. The Robot Phone is a limited, enthusiast-focused product.",
+      "lesson": "An OEM holding system signing keys can ship GUI agents that third parties can't. Curated task lists with a confirm-at-payment step are the pattern that shipped. Personal preference memory ('your usual coffee shop') is what makes one-sentence commands work.",
+      "sources": [
+        "https://www.androidauthority.com/honor-magic-os-9-0-ai-agent-3493067/",
+        "https://9to5google.com/2024/10/23/honor-announces-magicos-9/",
+        "https://www.gadgetmatch.com/honor-magicos-9-now-official-magiclm-ai-agent-deepfake-detection-security/",
+        "https://www.honor.com/global/news/honor-magic8-china-launch/",
+        "https://www.mobileworldlive.com/devices/honor-teases-robot-phone-at-magic-8-launch/",
+        "https://technode.com/2026/08/13/honor-launches-robot-phone-with-gimbal-camera-and-ai-agent-features/"
+      ],
+      "confidence": "verified (announcements); uncertain (the exact mechanism, GUI injection vs. partner APIs, is not fully disclosed)"
+    },
+    {
+      "name": "vivo PhoneGPT, Xiaomi HyperOS 3 'Super XiaoAi', OPPO ColorOS 16 Agent Matrix / Xiaobu",
+      "kind": "OEM system agents (China)",
+      "date": "vivo PhoneGPT 2024-10-10 (OriginOS 5); Xiaomi HyperOS 3 2025-08-28; OPPO ColorOS 16 Oct 2025, AI Mind Pilot May 2026, Xiaobu Next beta 2026-07-27",
+      "what_it_was": "Each major Chinese OEM shipped a system agent that plans and executes cross-app tasks. vivo's PhoneGPT can order coffee or takeout and even phone a restaurant to make a reservation through an extended voice conversation. Xiaomi's Super XiaoAi 'one-step' feature plans the steps and opens apps to do them (80+ apps targeted by Sept 2025). OPPO's Agent Matrix, Xiaobu Claw and Xiaobu Next add an on-device multi-agent system (100+ system capabilities, with Luckin Coffee and Meituan integrations) and a May 2026 multi-model router across Gemini, GPT and Perplexity.",
+      "how_it_worked": "A mix of GUI-state detection and simulated input (vivo describes 'detecting GUI states to operate the smartphone') with system-capability APIs and selected partner integrations. Xiaomi published a real-device-trained GUI agent model (Xiaomi-GUI-0, June 2026).",
+      "outcome": "Incremental. The features ship as part of the OS and there is no mass backlash, but capabilities stay scenario-limited and marketing counts ('700 service scenarios') substitute for general reliability.",
+      "lesson": "The industry has converged: every OEM is building 'agent over apps', which makes it table stakes. The differentiators are reliability, how many real apps cooperate, and preference memory. Voice-calling agents that phone businesses are an under-discussed capability.",
+      "sources": [
+        "https://news.qq.com/rain/a/20241010A09ZTO00",
+        "https://arxiv.org/html/2504.19838v1",
+        "https://eu.36kr.com/en/p/3443194625365637",
+        "https://www.gizmochina.com/2025/08/28/xiaomi-unveils-hyperos-3-everything-you-need-to-know/",
+        "https://www.gsmarena.com/oppo_coloros_16_may_2026_update-news-73057.php",
+        "https://finance.biggo.com/news/681e2f81-d26b-4336-9659-53a70d548e64",
+        "https://huggingface.co/papers/2606.31410"
+      ],
+      "confidence": "likely (drawn from search snippets of Chinese-language and trade press; the details of each feature are not independently tested)"
+    },
+    {
+      "name": "Huawei HarmonyOS 6: HarmonyOS Agent Framework (HMAF), Xiaoyi agent hub, Tiangong Initiative",
+      "kind": "OS vendor structured agent framework (API-first)",
+      "date": "HarmonyOS 6 beta at HDC June 2025; launched 2025-10-22",
+      "what_it_was": "An OS-level framework defining how the system assistant Xiaoyi, apps and third-party 'intelligent agents' interact. It includes an agent hub with 80+ agents (travel, health, productivity). The Tiangong Initiative funds a target of 10,000 AI-native meta-services, 1,000 intention frameworks and 5,000 agents.",
+      "how_it_worked": "Developers declare intents and meta-services and publish agents to the OS registry. Xiaoyi routes a user's intent to the right agent or service (API-first, not screen-scraping). Huawei controls the whole stack (kernel, app model, store).",
+      "outcome": "Deployed on Huawei devices in China; ecosystem growth depends on subsidies and developer adoption. Little independent evaluation of reliability exists.",
+      "lesson": "The closest real-world analogue to a ground-up agent OS: an intent registry, agent marketplace and developer incentive fund designed together. It shows the capability layer must be seeded with money and tooling, not just specified.",
+      "sources": [
+        "https://technode.com/2025/10/22/huawei-launches-harmonyos-6-with-ai-agent-framework-and-file-sharing-with-apple-devices/",
+        "https://technode.com/2025/06/23/huawei-unveils-harmonyos-6-beta-at-hdc-2025-mate-80-series-likely-to-feature-it-in-q4/",
+        "https://www.yicaiglobal.com/news/huawei-launches-tiangong-initiative-to-invest-usd141-million-in-harmonyos-ai-ecosystem",
+        "https://en.tmtpost.com/post/7738826"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "ByteDance Doubao Phone Assistant, gen 1 (ZTE Nubia M153 engineering phone)",
+      "kind": "AI-company OS-level GUI agent on a partner phone",
+      "date": "Early Dec 2025 (engineering units); blocking and backlash within days; preview at MWC 2026",
+      "what_it_was": "ByteDance's first 'AI phone': about 30,000 Nubia M153 engineering units at RMB 3,499, sold out on day one, aimed at developers and enthusiasts. Doubao could do cross-app tasks by voice, like comparing prices, ordering food, replying to messages or operating games.",
+      "how_it_worked": "The assistant was granted the system-level INJECT_EVENTS permission, normally reserved for OEM components. With it, Doubao read screen content and injected taps and swipes in any app, acting like a human user and bypassing app APIs.",
+      "outcome": "Within days WeChat forcibly logged users out ('abnormal login environment'). Taobao, Alipay and bank apps (Agricultural Bank of China, China Construction Bank) blocked it or warned users to disable it. ByteDance suspended banking, payment and gaming automation. Commentators called it a '72-hour war' over who owns the user.",
+      "lesson": "GUI-level control without consent is treated by incumbent apps as a bot or security attack, and they can detect and block it. Apps' business models (attention, payments, super-app lock-in) are threatened by an agent that disintermediates them. A new OS needs a consent and economics protocol with apps, plus bank-grade isolation for money flows, before shipping cross-app autonomy.",
+      "sources": [
+        "https://www.business-standard.com/world-news/bytedance-ai-phone-doubao-nubia-zte-app-blocks-user-control-china-125120800459_1.html",
+        "https://www.scmp.com/business/china-business/article/3335404/bytedances-agentic-ai-smartphone-dials-digital-backlash-chinas-top-apps",
+        "https://www.yicaiglobal.com/news/wechat-some-chinese-banking-apps-reportedly-restrict-devices-with-bytedances-new-ai-voice-assistant",
+        "https://www.silicon.co.uk/e-innovation/artificial-intelligence/bytedance-ai-agent-627884",
+        "https://www.gizmochina.com/2025/12/09/tiktoks-parent-bytedance-is-now-making-phones-and-challenging-industry-giants-in-ai/",
+        "https://technode.com/2026/02/28/mwc-2026-zte-to-debut-nubia-m153-with-doubao-ai-assistant-preview/",
+        "https://aiagenteconomy.substack.com/p/chinas-first-ai-phone-sparked-a-72"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "ByteDance Doubao gen 2: nubia NaviX Ultra, MCP/A2A-first with GUI fallback, SAEP opt-out protocol",
+      "kind": "AI-company agent phone (second attempt)",
+      "date": "Doubao Phone Assistant consumer edition 2026-09-14; NaviX Ultra launched 2026-09-16 (from RMB 5,999)",
+      "what_it_was": "Marketed as 'the world's first AI-agent phone' (Snapdragon 8 Elite Gen 5). A dedicated AI key: press for a prompt window, hold for voice, double-press for a video call with the AI. It plans and executes long cross-app tasks with self-correction.",
+      "how_it_worked": "Structured calls come first: apps that expose MCP or A2A-style interfaces are called directly (launch partners included CaoCao Mobility, Lark, map and music services). GUI screen control is the fallback. For the fallback ByteDance published SAEP (Screen Automation Execution/Declaration Protocol), which lets an app declare which pages may be read, which actions may be automated and which areas are off-limits, with a 30-day public notice period. Doubao stops if an app opts out; officials likened it to robots.txt for agents. Reports say major Alibaba and Tencent apps will be automated via GUI only if they enable MCP services.",
+      "outcome": "Launched days before this writing. Reports say only three apps had opened MCP interfaces at launch, so GUI execution is still the main path. Whether WeChat, Alipay and banks cooperate remains the open question.",
+      "lesson": "This is the most direct evidence for a new OS design: (1) prefer declared capabilities (MCP, intents) over pixels; (2) keep a GUI fallback, but make it consent-governed with a machine-readable per-app manifest; (3) expect adoption of the structured path to be slow, so the fallback has to be good.",
+      "sources": [
+        "https://technode.com/2026/09/17/nubia-navix-ultra-second-generation-doubao-phone-launches/",
+        "https://technode.com/2026/09/14/doubao-phone-assistant-launches-consumer-version-with-beta-phone-controls/",
+        "https://pandaily.com/bytedance-doubao-phone-agent-mcp-a2a-gui-fallback",
+        "https://eu.36kr.com/en/p/3864388536679049",
+        "https://www.caixinglobal.com/2026-09-17/nubia-releases-second-generation-ai-phone-102485820.html",
+        "https://www.globenewswire.com/news-release/2026/09/15/3361678/0/en/caocao-among-first-to-integrate-with-doubao-mobile-assistant-takes-early-lead-in-ai-on-device-ecosystem.html",
+        "https://www.gizmochina.com/2026/09/07/nubia-navix-ultra-launch-date-confirmed/"
+      ],
+      "confidence": "verified (launch, price, MCP-first + GUI fallback); likely (SAEP specifics, the 'only three apps with MCP' count, the Alibaba/Tencent clause: from snippets of secondary coverage)"
+    },
+    {
+      "name": "Zhipu AutoGLM and Open-AutoGLM (open-sourced phone agent)",
+      "kind": "open-source phone-use agent model + framework",
+      "date": "AutoGLM paper/product Oct 2024; Open-AutoGLM + AutoGLM-Phone-9B open-sourced 2025-12-08",
+      "what_it_was": "A 9B-parameter vision-language 'phone use' model (Chinese and multilingual variants) and framework that completes multi-step tasks such as food delivery or flight booking in 50+ high-frequency Chinese apps (WeChat, Taobao, Douyin, Meituan) on Android, and 60+ apps on HarmonyOS.",
+      "how_it_worked": "Controls the phone over ADB (HDC for HarmonyOS): screenshot → VLM reasons over the screen → emits tap coordinates, swipes, text entry and app launches. Planning is separated from grounding (per the AutoGLM paper). It can run locally or in the cloud. It includes a sensitive-operation confirmation callback and manual takeover for logins and verification codes. Research and learning use only.",
+      "outcome": "It gave anyone an 'AI phone' capability and landed the same week as the Doubao controversy. Widely forked; its disclaimers reflect the legal and ToS gray zone.",
+      "lesson": "Phone-use models are commoditizing, so a new OS can't differentiate on the GUI agent alone. The durable primitives are human takeover for auth and OTP, confirmation hooks on sensitive steps, and local deployment for privacy.",
+      "sources": [
+        "https://github.com/zai-org/Open-AutoGLM",
+        "https://github.com/zai-org/Open-AutoGLM/blob/main/README_en.md",
+        "https://technode.com/2025/12/09/zhipu-ai-open-sources-autoglm-an-ai-agent-model-capable-of-full-phone-operation/",
+        "https://huggingface.co/papers/2411.00820",
+        "https://xiao9905.github.io/AutoGLM/"
+      ],
+      "confidence": "verified (README read directly)"
+    },
+    {
+      "name": "Samsung Galaxy AI → Gemini cross-app actions (S25) → 'agentic' Galaxy S26 (Bixby, Gemini, Perplexity, Now Nudge)",
+      "kind": "OEM + platform assistant",
+      "date": "Galaxy AI debuted with Galaxy S24 (Jan 2024); S25 Gemini cross-app actions Jan 2025; S26 Unpacked late Feb 2026, on sale 2026-03-11",
+      "what_it_was": "S25: one Gemini prompt can chain actions across Samsung Calendar, Notes, Reminder and Clock, e.g. find a restaurant, text it to a friend, add it to the calendar. S26: a choice of agents (Gemini, Perplexity, Bixby). Bixby becomes an agent for multi-step tasks. 'Now Nudge' uses on-device OCR of the screen to suggest the next step (e.g. add a plan in a chat to the calendar). S26 was the launch device for Gemini's app automation.",
+      "how_it_worked": "S25: API-style 'extensions' into first-party apps. S26: adds screen-context understanding on device plus Gemini's cloud-processed virtual-screen automation (see the Google entry).",
+      "outcome": "Shipped broadly. First-party cross-app actions are reliable because Samsung controls those apps; third-party coverage depends on Google's automation beta.",
+      "lesson": "The dependable part of 'agentic' phones today is first-party apps with structured hooks. Proactive, screen-aware suggestions (Now Nudge) are a low-risk step between passive assistant and autonomous agent.",
+      "sources": [
+        "https://www.droid-life.com/2025/01/23/google-gemini-galaxy-s25-apps-features/",
+        "https://news.samsung.com/global/galaxy-unpacked-2026-highlights-from-galaxy-unpacked-the-beginning-of-truly-agentic-ai",
+        "https://news.samsung.com/global/samsung-unveils-galaxy-s26-series-the-most-intuitive-galaxy-ai-phone-yet",
+        "https://www.phonearena.com/news/bixby-is-finally-growing-up-with-its-new-role-on-the-samsung-galaxy-s26-series_id178521"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Google Gemini on Android: AppFunctions (Android 16) + screen automation / 'Computer Control' (Pixel 10, Galaxy S26)",
+      "kind": "platform OS agent capability (structured + GUI)",
+      "date": "AppFunctions in Android 16 (2025); screen-automation framework seen in Android 16 QPR2/QPR3 betas; Gemini multi-step automation announced 2026-02-25, live on S26 2026-03-11 and Pixel 10 in March 2026 (US and Korea beta); Android 17 teardown shows per-app automation allowlist",
+      "what_it_was": "Two layers. (1) AppFunctions: apps expose functions (a Jetpack library, which Google likens to MCP) that authorized callers holding EXECUTE_APP_FUNCTIONS can discover and run, e.g. 'show me pictures of my cat from Samsung Gallery' returned inside Gemini. (2) Screen automation: Gemini operates unmodified apps (Uber, Lyft, DoorDash, Grubhub, Uber Eats, Starbucks, McDonald's, Instacart) to complete food, grocery and ride tasks.",
+      "how_it_worked": "Automation runs the target app in a 'secure, virtual window' (a virtual display) that can't access the rest of the device. The virtual screen is processed in the cloud. The user can watch Gemini tap, scroll and type, or keep using the phone. It stops before checkout, and a strong vibration notification hands control back to finalize payment. Framework rules require explicit user approval per session or for all sessions, and Android 17 adds a Settings screen listing which apps each assistant may automate.",
+      "outcome": "A shipping but limited beta: a curated app list, no payments, US and Korea only. Early testers reported a bug that locked them into a fullscreen automation preview until they rebooted.",
+      "lesson": "This is the reference architecture to beat: structured functions first, GUI automation in an isolated virtual display, a visible 'agent screen' the user can supervise, per-app consent, and a hard human handoff at payment. The curated app list signals that general GUI autonomy isn't yet reliable enough for open-ended use.",
+      "sources": [
+        "https://developer.android.com/ai/appfunctions",
+        "https://9to5google.com/2026/02/25/android-appfunctions-gemini/",
+        "https://9to5google.com/2026/02/25/gemini-automation-android/",
+        "https://blog.google/innovation-and-ai/products/gemini-app/android-multi-step-tasks/",
+        "https://9to5google.com/2026/03/12/gemini-android-app-automation-galaxy-s26-rollout/",
+        "https://www.androidcentral.com/apps-software/gemini-screen-automation-rolling-out-for-galaxy-s26",
+        "https://www.androidauthority.com/android-computer-control-feature-3603862/",
+        "https://9to5google.com/2026/01/15/android-16-qpr3-screen-automation/",
+        "https://nerdschalk.com/android-17-is-adding-a-settings-screen-to-manage-which-apps-ai-assistants-can-automate-apk-teardown",
+        "https://support.google.com/pixelphone/answer/16940971?hl=en"
+      ],
+      "confidence": "verified (AppFunctions, Gemini automation launch, virtual window, checkout handoff); uncertain (Android 17 allowlist, from an APK teardown)"
+    },
+    {
+      "name": "Google Project Astra (universal assistant research prototype)",
+      "kind": "research prototype",
+      "date": "Shown at Google I/O 2024; Android-agent demo at I/O May 2025",
+      "what_it_was": "A real-time multimodal (camera plus voice) assistant. The I/O 2025 demo helped with a bike repair: it found the manual, pulled up a YouTube tutorial, searched email, and offered to call a shop and place an order.",
+      "how_it_worked": "Continuous video and audio streaming to Gemini, memory of what it has seen, and an agent that controls Android apps by simulating screen inputs. The capabilities later flowed into Gemini Live and Android screen automation.",
+      "outcome": "Not a product itself; its parts shipped piecemeal (Gemini Live camera sharing, then the 2026 app automation).",
+      "lesson": "Live camera plus voice context combined with action-taking is the target experience, but Google shipped it in narrow, supervised pieces. The research demo to product gap took about a year per capability.",
+      "sources": [
+        "https://www.androidauthority.com/project-astra-android-ai-agent-3559266/",
+        "https://www.androidcentral.com/apps-software/ai/project-astra"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Google Generative UI (Gemini 3 'dynamic view' / 'visual layout')",
+      "kind": "research + shipped generative interface",
+      "date": "2025-11-18",
+      "what_it_was": "Gemini 3 designs and codes a custom interactive interface (mini web app, tool, game or magazine-style layout) for each prompt, instead of replying in text. Backed by the paper 'Generative UI: LLMs are Effective UI Generators'.",
+      "how_it_worked": "The model generates HTML, CSS and JS with tool access (search, images) and renders it inside the Gemini app or Search AI Mode.",
+      "outcome": "Shipped in the Gemini app and AI Mode for paid US subscribers; 2026 academic follow-ups study the UX tradeoffs of GenUI.",
+      "lesson": "For a chat-first OS, answers should often be interactive surfaces (pickers, maps, comparison tables, confirm sheets), not paragraphs. The OS needs a safe, sandboxed, themeable component runtime for generated UI so it stays consistent and can't phish the user.",
+      "sources": [
+        "https://research.google/blog/generative-ui-a-rich-custom-visual-interactive-user-experience-for-any-prompt/",
+        "https://ppc.land/google-launches-gemini-3-with-generative-ui-for-dynamic-search-experiences/",
+        "https://arxiv.org/pdf/2606.13843"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Apple Intelligence 'personal Siri' promise and delay (App Intents in-app actions)",
+      "kind": "platform assistant (failed first attempt)",
+      "date": "Promised WWDC June 2024; iPhone 16 ads Sept 2024; delay announced 2025-03-07",
+      "what_it_was": "A Siri with personal context, onscreen awareness and the ability to act in and across apps through App Intents.",
+      "how_it_worked": "Apps declare actions and entities via the App Intents framework; the on-device model plus Private Cloud Compute plans which intents to call.",
+      "outcome": "Apple admitted it would take 'longer than we thought' and pulled the features from iOS 18. It added fine print to iPhone 16 marketing and faced false-advertising class actions; one report says it agreed to a $250M settlement.",
+      "lesson": "Even the platform owner, with a structured intent system, couldn't ship reliable cross-app actions on its schedule, largely over reliability and security concerns such as prompt injection through personal data. Don't advertise agent capabilities before they reach production reliability.",
+      "sources": [
+        "https://www.macrumors.com/2025/03/07/apple-intelligence-siri-features-delayed/",
+        "https://www.cnbc.com/2025/03/07/apple-delays-siri-ai-improvements-to-2026.html",
+        "https://www.macrumors.com/2025/03/12/apple-website-siri-features-fine-print/",
+        "https://tidbits.com/2025/03/07/apple-delays-more-personalized-siri/"
+      ],
+      "confidence": "verified (delay); likely (the $250M settlement figure appeared in search summaries and was not directly confirmed)"
+    },
+    {
+      "name": "Apple Siri AI (iOS 27)",
+      "kind": "platform assistant rebuilt for agentic use",
+      "date": "Announced WWDC 2026-06-08; iOS 27 released 2026-09-14 with Siri AI as an English (US) beta; delayed in the EU because of the DMA",
+      "what_it_was": "A rebuilt Siri with its own chat-style app (text box, mic, attachments) and conversation history synced over iCloud. It searches personal context across Messages, Mail and Photos; understands the screen and the camera view; takes actions in and across apps (multi-stop directions, edit and share photos, write email in your style); and answers from the web. Requires an iPhone 15 Pro or later.",
+      "how_it_worked": "App actions go through App Intents (reportedly now the only integration path, with SiriKit deprecated). Reported three-tier model routing: on-device models, Private Cloud Compute, and a custom Google Gemini model (reported ~1.2T parameters, ~$1B/yr deal). Reported 'Extensions' let users choose a third-party model provider (Claude, ChatGPT, Gemini) as the backend, in which case queries leave Apple's PCC privacy guarantees.",
+      "outcome": "Only just shipped. Early hands-ons are cautiously positive, but real-world reliability at iOS scale is unproven. The EU launch is blocked by DMA compliance.",
+      "lesson": "The biggest incumbent has now committed to chat as a first-class surface, an intent registry as the action layer, and a tiered privacy architecture. A ground-up agent OS competes with this, so it must go further: agent-native permissions, an agent workspace, and consent protocols for GUI fallback. Regulation such as the DMA can gate agent features by region.",
+      "sources": [
+        "https://www.apple.com/newsroom/2026/06/apple-introduces-siri-ai-a-profoundly-more-capable-and-personal-assistant/",
+        "https://www.apple.com/newsroom/2026/06/due-to-dma-siri-ai-delayed-in-eu-for-ios-27-and-ipados-27/",
+        "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+        "https://techcrunch.com/2026/06/09/wwdc-2026-everything-announced-on-siri-ai-os-27-apple-intelligence-and-more/",
+        "https://thenextweb.com/news/apple-wwdc-2026-siri-ai-gemini-ios-27",
+        "https://www.macrumors.com/2026/06/10/ios-27-siri-ai-hands-on/",
+        "https://www.digitaltrends.com/phones/siri-ai-ios-27-launch/",
+        "https://www.techtimes.com/articles/318005/20260608/wwdc-2026-app-intents-replaces-sirikit-gemini-siri-migration-clock-starts.htm"
+      ],
+      "confidence": "verified (announcement, release date, EU delay, chat app, App Intents); likely (Gemini parameter count and deal size, Extensions details, SiriKit deprecation timeline: secondary reporting)"
+    },
+    {
+      "name": "OpenAI ChatGPT agent + Apps in ChatGPT (Apps SDK on MCP)",
+      "kind": "chat-as-platform (apps rendered inside the conversation)",
+      "date": "ChatGPT agent 2025-07-17; Apps SDK announced at DevDay 2025-10-06",
+      "what_it_was": "ChatGPT agent runs tasks on its own virtual computer (browser, terminal, file tools). The Apps SDK lets services (Spotify, Zillow, Canva, Figma, Booking.com, Expedia, Coursera) render interactive app UI inside the chat when invoked by name or context ('Spotify, make a playlist').",
+      "how_it_worked": "The agent works in a sandboxed cloud VM and asks the user before consequential actions. Apps are MCP servers plus UI components the model can call and render inline.",
+      "outcome": "Established the 'apps come to the chat' model at large scale. The browser half, Atlas, was later shut down and folded back into ChatGPT (see below).",
+      "lesson": "The chat thread can serve as the home screen if third-party services render branded, interactive components in it. That gives developers a reason to participate (brand, customer relationship, transactions), which is what WeChat and Amazon felt they lost to screen-scraping agents.",
+      "sources": [
+        "https://openai.com/index/introducing-chatgpt-agent/",
+        "https://techcrunch.com/2025/07/17/openai-launches-a-general-purpose-agent-in-chatgpt/",
+        "https://www.axios.com/2025/10/06/openai-chatgpt-app-devday",
+        "https://www.techcrunch.com/2025/10/06/openai-launches-apps-inside-of-chatgpt"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "OpenAI + io (Jony Ive) consumer device",
+      "kind": "dedicated AI device (announced, unreleased)",
+      "date": "io acquisition announced May 2025 (~$6.4–6.5B, all-stock); Davos Jan 2026: first device in H2 2026; Bloomberg July 2026: screen-free 'home computer' speaker; Apple trade-secret lawsuit 2026-07-10",
+      "what_it_was": "Reportedly a family of screenless, context-aware devices. Code names reported for an earbud-style wearable ('Sweetpea') and a pen ('Gumdrop'). July 2026 reporting describes the first device as a screen-free smart speaker meant as a new kind of home computer: it controls appliances, plays media, responds to messages, and becomes more personal and proactive by drawing on data such as your email.",
+      "how_it_worked": "Not disclosed. Expected to be voice-first with cameras and microphones for context, and ChatGPT as the OS-level agent.",
+      "outcome": "Unreleased as of 2026-09-24. Apple sued OpenAI and io in July 2026, alleging former Apple employees took hardware trade secrets, which complicates the launch. Reported production targets (40–50M units via Foxconn) are unverified.",
+      "lesson": "Even the best-funded attempt avoids competing head-on with the phone, positioning around 'calm', ambient computing. That suggests a phone OS should treat companion devices (speaker, earbuds, pin) as endpoints of the same agent, with the phone as hub.",
+      "sources": [
+        "https://fortune.com/2025/05/22/openai-sees-visions-of-jony-ive/",
+        "https://axios.com/2026/01/19/openai-device-2026-lehane-jony-ive",
+        "https://techcrunch.com/2026/01/21/openai-aims-to-ship-its-first-device-in-2026-and-it-could-be-earbuds",
+        "https://fortune.com/2026/07/15/openai-building-human-like-chatgpt-device-apple-jony-ive/",
+        "https://fortune.com/2026/07/10/apple-openai-lawsuit-trade-secrets-theft-allegations/",
+        "https://fortune.com/2026/07/22/sam-altman-and-jony-ive-formed-a-dream-team-to-reinvent-hardware-now-its-at-the-center-of-a-battle-for-openais-future/",
+        "https://9to5mac.com/2026/07/30/jony-ives-first-openai-hardware-device-sounds-rather-like-a-homepad/"
+      ],
+      "confidence": "likely (device details come from leaks and reports; acquisition, lawsuit and timing statements verified)"
+    },
+    {
+      "name": "OpenAI agent-first smartphone (reported)",
+      "kind": "reported AI-native phone project",
+      "date": "Reported 2026-04-27 (analyst Ming-Chi Kuo); specs and suppliers expected late 2026 / Q1 2027; mass production targeted 2028",
+      "what_it_was": "A smartphone whose primary interface is a task-driven agent instead of an app grid.",
+      "how_it_worked": "Per the report: a custom processor co-designed with Qualcomm and MediaTek for continuous, power-efficient AI inference; Luxshare as exclusive manufacturer. Everything else is speculative.",
+      "outcome": "Unconfirmed by OpenAI. The analyst projects 300–400M annual units by 2028, which should be treated skeptically.",
+      "lesson": "The leading model company reportedly concluded that agent-first needs control of the OS and silicon, not just an app. That validates the book's premise, but also means well-funded competition around 2028.",
+      "sources": [
+        "https://techcrunch.com/2026/04/27/openai-could-be-making-a-phone-with-ai-agents-replacing-apps/",
+        "https://thenextweb.com/news/openai-qualcomm-ai-phone-agents-replace-apps",
+        "https://www.eetimes.com/openai-prepares-ai-first-smartphone-for-2028/"
+      ],
+      "confidence": "uncertain (single analyst report)"
+    },
+    {
+      "name": "ChatGPT Atlas (agentic browser)",
+      "kind": "agentic browser",
+      "date": "Launched 2025-10-21 (macOS); shutdown announced 2026-07-09; stopped working 2026-08-09",
+      "what_it_was": "A Chromium-based browser with ChatGPT in a sidebar, browser memories, and 'agent mode' that clicks, types, fills forms and runs multi-step tasks in the user's logged-in browser.",
+      "how_it_worked": "The agent operated in the real browser with the user's sessions and could be run logged-out for safety. OpenAI ran automated red-teaming (an RL-trained attacker) against prompt injection and published that such attacks 'may never be fully solved'.",
+      "outcome": "Retired less than a year after launch. OpenAI moved browser-agent capabilities (tabs, downloads, logins) into ChatGPT and Codex instead.",
+      "lesson": "Users didn't switch browsers for an agent, so the agent went where they already were. Operating in the user's logged-in context is the most useful and the most dangerous mode; a phone OS should give the agent a separate, scoped identity and session rather than raw access to the user's.",
+      "sources": [
+        "https://openai.com/index/introducing-chatgpt-atlas/",
+        "https://en.wikipedia.org/wiki/ChatGPT_Atlas",
+        "https://openai.com/index/hardening-atlas-against-prompt-injection/",
+        "https://cyberscoop.com/openai-chatgpt-atlas-prompt-injection-browser-agent-security-update-head-of-preparedness/",
+        "https://www.macrumors.com/2026/07/10/openais-chatgpt-atlas-browser-shutting-down/",
+        "https://help.openai.com/en/articles/20001371-evolving-atlas-into-chatgpt-for-browser-based-agentic-work"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Perplexity Comet and Amazon v. Perplexity (agent access litigation)",
+      "kind": "agentic browser + landmark legal test",
+      "date": "Comet 2025-07-09 (Max tier); free 2025-10-02; Android 2025-11-20; iOS 2026-03-18. Amazon suit Nov 2025; preliminary injunction 2026-03-09; Ninth Circuit vacated it 2026-08-04",
+      "what_it_was": "An AI browser whose assistant can log into accounts, search, compare and buy, including on Amazon.",
+      "how_it_worked": "The agent drives the page in the user's session. Amazon alleged Comet disguised itself as Chrome and declined to use an identifying user-agent string that would let Amazon recognize or block it.",
+      "outcome": "A district court (Judge Chesney) enjoined Comet from password-protected Amazon pages, citing CFAA. The Ninth Circuit unanimously vacated the injunction, holding that the access was by the user, employing the assistant as a tool, not by Perplexity. Separately, Brave showed AI browsers, Comet included, were vulnerable to indirect prompt injection.",
+      "lesson": "Legally, US courts are leaning toward treating a user-directed agent as the user's tool, but platforms will still fight commercially and technically. An agent OS should identify its agents honestly (a declared agent identity or user-agent), respect platform declarations where feasible, and keep a per-action audit trail. That is also what wins disputes.",
+      "sources": [
+        "https://www.cnbc.com/2025/10/02/perplexity-ai-comet-browser-free-.html",
+        "https://en.wikipedia.org/wiki/Comet_(browser)",
+        "https://www.paymentsdive.com/news/amazon-sues-perplexity-ai-shopping-agents/804923/",
+        "https://www.cnbc.com/2026/03/10/amazon-wins-court-order-to-block-perplexitys-ai-shopping-agent.html",
+        "https://www.geekwire.com/2026/judge-blocks-perplexitys-ai-bot-from-shopping-on-amazon-in-early-test-of-agentic-commerce/",
+        "https://law.justia.com/cases/federal/appellate-courts/ca9/26-1444/26-1444-2026-08-04.html",
+        "https://www.cooley.com/news/insight/2026/2026-08-06-ninth-circuit-rules-on-ai-agent-access-to-third-party-websites-under-cfaa",
+        "https://techcrunch.com/2025/12/22/openai-says-ai-browsers-may-always-be-vulnerable-to-prompt-injection-attacks/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Claude for Chrome / Claude in Chrome (Anthropic)",
+      "kind": "browser-extension agent",
+      "date": "Research preview Aug 2025 (limited Max users); generally available on paid plans in late Aug 2026 (reported 2026-08-26)",
+      "what_it_was": "A Chrome extension that lets Claude read the page and act in the browser (navigate, click, type, fill forms) using the user's existing logins.",
+      "how_it_worked": "Site-level permissions (grant or revoke per site), mandatory confirmation before high-risk actions (purchases, publishing, sharing personal data), blocked categories (e.g. financial services), and classifiers against prompt injection. Anthropic's published red-team numbers: attack success fell from 23.6% to 11.2% in autonomous mode with mitigations, and from 35.7% to 0% on a browser-specific attack set (hidden form fields, URL manipulation). The GA version adds a safety classifier that checks each action before it runs.",
+      "outcome": "Went from gated preview to general availability over about a year. It is openly framed around prompt-injection risk.",
+      "lesson": "Publish attack-success metrics and ship layered defenses: per-site or per-app scopes, confirmation for irreversible actions, category blocklists, and per-action classifiers. Residual risk isn't zero, so defaults and blast-radius limits matter as much as the model.",
+      "sources": [
+        "https://claude.com/blog/claude-for-chrome",
+        "https://www.anthropic.com/news/prompt-injection-defenses",
+        "https://venturebeat.com/infrastructure/anthropic-launches-claude-for-chrome-in-limited-beta-but-prompt-injection-attacks-remain-a-major-concern",
+        "https://claude.com/blog/claude-in-chrome-generally-available",
+        "https://support.claude.com/en-us/articles/12902428-use-claude-in-chrome-safely",
+        "https://gigazine.net/gsc_news/en/20260827-claude-chrome-available/"
+      ],
+      "confidence": "verified (preview metrics); likely (exact GA date and classifier details, from search snippets)"
+    },
+    {
+      "name": "Microsoft 'agentic OS' Windows: MCP on Windows, agent connectors, Agent Workspace, Copilot Actions",
+      "kind": "desktop OS agent platform",
+      "date": "MCP-in-Windows direction announced 2025 (Build); 'Windows is evolving into an agentic OS' post by Pavan Davuluri 2025-11-10; Ignite Nov 2025; agent connectors in Agent Workspace 2025-12-05; still experimental in 2026",
+      "what_it_was": "Windows as a host for agents. MCP-based 'agent connectors' expose apps and system tools, found through an on-device agent registry. Agent Workspace gives each agent its own separate Windows account and desktop session, running in parallel to the user. Copilot Actions lets Copilot operate local apps and files.",
+      "how_it_worked": "Agents run under distinct agent accounts and IDs (least privilege, auditable, separate from the user), with scoped access to known folders. Microsoft's stated principles: agent actions observable, human approval for decisions, non-repudiation. The feature is off by default and can only be enabled by an administrator, because Microsoft explicitly warns of cross-prompt injection (XPIA) leading to data exfiltration or malware installation.",
+      "outcome": "Heavy public backlash to the 'agentic OS' framing (reliability, forced Copilot upsells, privacy after Recall); Microsoft conceded it 'has work to do'. The features remain experimental, Insider-only, off by default.",
+      "lesson": "Agent-as-separate-user with its own workspace, plus an MCP registry, is a sound OS primitive worth copying. But announcing 'agentic OS' before basic reliability and user control are earned creates backlash, so position the agent as the user's servant with visible controls, not as the product's new owner.",
+      "sources": [
+        "https://www.computerworld.com/article/4094314/singin-the-agentic-windows-blues.html",
+        "https://www.geekwire.com/2026/microsoft-2-5-evp-pavan-davuluri-wants-to-remake-windows-for-both-human-and-agent-users/",
+        "https://support.microsoft.com/en-us/windows/ai/ai-features/experimental-agentic-features",
+        "https://www.windowscentral.com/microsoft/windows-11/microsoft-warns-security-risks-agentic-os-windows-11-xpia-malware",
+        "https://www.securityweek.com/microsoft-highlights-security-risks-introduced-by-new-agentic-ai-feature/",
+        "https://www.privacyguides.org/news/2025/11/19/windows-announces-experimental-agentic-features-admits-potential-for-prompt-injection-and-malware/",
+        "https://www.tomshardware.com/software/windows/microsofts-vision-of-ai-native-windows-is-becoming-real-update-introduces-agents-that-pilfer-through-your-files-latest-windows-11-insider-build-includes-experimental-ai-agents-toggle-that-can-perform-tasks-for-you-in-the-background"
+      ],
+      "confidence": "verified (Nov–Dec 2025 facts); likely (exact Build 2025 MCP announcement date, not re-checked this session)"
+    },
+    {
+      "name": "Amazon Alexa+",
+      "kind": "assistant-as-platform (smart home + services)",
+      "date": "Announced 2025-02-26; available to all US customers 2026-02-04 (free with Prime; web and app access)",
+      "what_it_was": "An LLM-rebuilt Alexa that completes tasks across services: OpenTable reservations, Uber rides, Ticketmaster, Thumbtack, and from 2026 Angi, Expedia, Square and Yelp.",
+      "how_it_worked": "An orchestrator routes each request to specialized 'experts' (smart home, shopping, etc.) that call partner APIs, plus browser-style agentic navigation for sites without APIs.",
+      "outcome": "Reached general US availability a year after announcement; bundling with Prime solved distribution. It is not a phone OS, but it is the largest API-partnership model for agent actions.",
+      "lesson": "Negotiated API partnerships give reliable actions but cover the long tail slowly; the 'experts' orchestration pattern is a practical way to structure an OS agent. Bundling with an existing subscription is a proven business model.",
+      "sources": [
+        "https://www.aboutamazon.com/news/devices/new-alexa-generative-artificial-intelligence",
+        "https://www.aboutamazon.com/news/devices/new-alexa-tech-generative-artificial-intelligence",
+        "https://techcrunch.com/2026/02/04/alexa-amazons-ai-assistant-is-now-available-to-everyone-in-the-u-s/",
+        "https://techcrunch.com/2025/12/23/amazons-ai-assistant-alexa-now-works-with-angi-expedia-square-and-yelp/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Meta Muse agent (Muse Spark model, Muse Secure VM) and Muse Charm device",
+      "kind": "personal agent in a cloud VM + dedicated handheld",
+      "date": "Muse Spark model 2026-04-08; Muse agent ~Sept 2026; Muse Charm unveiled at Connect 2026-09-23, shipping for the December holidays",
+      "what_it_was": "A personal agent that sends email, books travel, fills forms, organizes tasks and makes purchases, and keeps working after you close the app. Muse Charm is a keychain-sized 5G handheld (about Apple Watch size) with a small screen showing an animated avatar ('Jolly'), a fingerprint sensor for instant voice activation, speakers and mics. The agent is also integrated with Meta's glasses. Price not announced as of 2026-09-24.",
+      "how_it_worked": "Each user gets a dedicated, isolated Linux VM (Muse Secure VM) with its own browser and enough compute to write code, build custom skills, run concurrent sub-agents and schedule cron jobs; connected services' data lives there. A 'Muse Confidential VM' is planned for later in 2026, encrypted so Meta can't read it and designed to be externally auditable.",
+      "outcome": "Too new to judge. It comes with Meta's privacy-trust deficit and follows Meta's Dec 2025 purchase of Limitless.",
+      "lesson": "The emerging consensus for agent execution: a persistent, per-user sandboxed computer the agent owns, reached from thin clients (phone, glasses, charm). A phone agent OS should decide what runs on device versus in a per-user cloud enclave, and make that boundary auditable (confidential computing).",
+      "sources": [
+        "https://www.marktechpost.com/2026/09/08/meta-introduces-muse-a-personal-ai-agent-that-runs-on-its-own-dedicated-secure-cloud-computer/",
+        "https://research.meta.ai/blog/security-and-safety-for-ai-agents-our-approach-with-muse",
+        "https://techcrunch.com/2026/09/23/meta-made-a-tamagotchi-like-wearable-for-its-muse-ai-agent/",
+        "https://www.axios.com/2026/09/23/meta-muse-ai-hardware-handheld-glasses",
+        "https://www.engadget.com/2267229/meta-put-muse-in-a-tamagotchi-like-charm-device/",
+        "https://en.wikipedia.org/wiki/Meta_Superintelligence_Labs"
+      ],
+      "confidence": "verified (Charm announcement and VM architecture per multiple outlets); likely (exact Muse agent launch date)"
+    },
+    {
+      "name": "Friend (AI companion pendant)",
+      "kind": "always-listening companion wearable",
+      "date": "Pre-orders 2024; NYC subway campaign (~11,000 ads, >$1M) Sept–Oct 2025; shipping late 2025–2026",
+      "what_it_was": "A mic-only disc pendant (no speaker; roughly $99–$129 reported) that listens all day and texts you commentary through a paired iPhone app.",
+      "how_it_worked": "Continuous audio → Bluetooth → phone → cloud LLM → push notifications and texts.",
+      "outcome": "The ads were widely defaced ('AI wouldn't care if you lived or died'). WIRED and Fortune reviews found it antisocial and snarky, bad at hearing, and slow (7–10 s replies); testers stopped wearing it in public.",
+      "lesson": "Always-on sensing without bystander consent triggers social rejection. Latency over about 2 s breaks conversational feel. Using messaging (texts) as the UI is cheap and effective, but personality and tone are safety-relevant design surfaces.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Friend_(product)",
+        "https://techcrunch.com/2025/09/27/ai-startup-friend-spent-more-than-1m-on-all-those-subway-ads",
+        "https://fortune.com/2025/10/03/friend-ai-necklace-review-avi-schiffmann/",
+        "https://futurism.com/artificial-intelligence/friend-ceo-photoshoot-ads"
+      ],
+      "confidence": "verified (campaign, backlash); likely (price and latency figures from reviews)"
+    },
+    {
+      "name": "Limitless Pendant (→ Meta) and Bee (→ Amazon): memory wearables absorbed by platforms",
+      "kind": "ambient memory wearables",
+      "date": "Amazon acquired Bee July 2025; Meta acquired Limitless Dec 2025 (Rewind Mac app shut 2025-12-19)",
+      "what_it_was": "Low-cost pendant or wristband devices ($49.99 Bee) that record and transcribe conversations and turn them into summaries, to-dos and a searchable personal memory.",
+      "how_it_worked": "Dual microphones and a long battery; audio is transcribed in the cloud, and an LLM extracts memories, tasks and suggestions shown in a companion app.",
+      "outcome": "Neither became a standalone platform. Both were bought by big platforms for their teams and memory tech; Limitless stopped selling pendants.",
+      "lesson": "Personal memory (a lifelong, searchable context) is highly valued by platforms, but as a feature of the main agent, not a separate device. A phone agent OS should treat memory as a core, user-owned, inspectable and deletable store, with strict consent rules for recording others.",
+      "sources": [
+        "https://techcrunch.com/2025/07/22/amazon-acquires-bee-the-ai-wearable-that-records-everything-you-say/",
+        "https://aibusiness.com/speech-recognition/meta-acquires-limitless",
+        "https://www.hedy.ai/post/meta-acquires-limitless-ai-privacy/",
+        "https://techinformed.com/meta-acquires-limitless-pendant-users-moved-to-free-unlimited-plan/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Brilliant Labs Frame / Halo with the Noa agent (open-source AI glasses)",
+      "kind": "open-source AI glasses",
+      "date": "Halo announced ~2025-07-31 at $299; shipping from Q4 2025",
+      "what_it_was": "Lightweight (~40 g) display glasses with a camera, mics and bone-conduction audio. Noa is the conversational agent; 'Narrative' is an 'agentic memory' that builds a private knowledge base from what you see and hear. The glasses can 'vibe-code' small apps by voice.",
+      "how_it_worked": "A low-power Alif B1 (Cortex-M55 plus NPU) handles on-device sensing and the heavy LLM work is offloaded. Hardware designs and source code are published on GitHub.",
+      "outcome": "A niche developer and enthusiast product; there is no evidence yet of mainstream traction.",
+      "lesson": "Openness (hackable firmware, voice-built apps) attracts developers, but the phone stays the compute and connectivity hub. An agent OS should expose the agent to wearables as peripherals with scoped sensor permissions.",
+      "sources": [
+        "https://www.designboom.com/technology/halo-open-source-glasses-private-ai-agent-brilliant-labs-08-01-2025/",
+        "https://roadtovr.com/brilliant-labs-halo-smart-glasses-price-release-date/",
+        "https://brilliant.xyz/products/halo",
+        "https://en.wikipedia.org/wiki/Brilliant_Labs"
+      ],
+      "confidence": "verified (announcement); uncertain (shipping volumes and reception)"
+    },
+    {
+      "name": "OpenClaw (formerly Clawdbot / Moltbot): messaging-native personal agent",
+      "kind": "open-source self-hosted agent",
+      "date": "Viral late Jan 2026 (renamed 2026-01-27 and 2026-01-30); Chinese state-enterprise restrictions Mar 2026",
+      "what_it_was": "A self-hosted agent you talk to over WhatsApp, Telegram or Discord. It runs shell commands, manages files and automates the browser on the host machine; 100k+ GitHub stars in about a week.",
+      "how_it_worked": "An always-on local daemon with persistent memory, skills and cron-style proactivity, driven through existing chat apps as the UI and connected to the user's choice of LLM.",
+      "outcome": "Huge developer enthusiasm, followed by security alarms (broad host access, exposed instances, prompt injection) and restrictions on government and state-enterprise machines in China. It spawned the 'claw' naming trend for phone agents (e.g. OPPO Xiaobu Claw, the PalmClaw research framework).",
+      "lesson": "Strong evidence that 'chat thread as the home screen' is what power users want: persistent, proactive, reachable from any messenger. It also shows the danger of giving an agent ambient root. A phone OS must deliver the same feel with capability-scoped tools and sandboxing by default.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/OpenClaw",
+        "https://www.cnbc.com/2026/02/02/openclaw-open-source-ai-agent-rise-controversy-clawdbot-moltbot-moltbook.html",
+        "https://pureai.com/articles/2026/02/03/from-clawdbot-to-moltbot-to-openclaw.aspx",
+        "https://www.kucoin.com/news/flash/oppo-becomes-third-chinese-vendor-to-announce-phone-ai-agent-xiaobu-claw-revealed"
+      ],
+      "confidence": "verified (virality, renames); likely (details of China restrictions)"
+    },
+    {
+      "name": "Open-source phone agents and LLM launchers (DroidRun/Mobilerun, minitap mobile-use, MobileAgent-Android, SaintJohn launcher, others)",
+      "kind": "open-source frameworks / launchers",
+      "date": "2024–2026",
+      "what_it_was": "Community projects that turn research GUI agents into usable tools. Mobilerun (formerly DroidRun): LLM-agnostic control of Android and iOS through a CLI or Python API. mobile-use: agents operating real Android and iOS apps. MobileAgent-Android: an on-device agent using the accessibility tree, no PC or ADB. SaintJohn: a minimalist Android launcher with a built-in LLM chat. Plus many 'open Jarvis'-style accessibility-service agents.",
+      "how_it_worked": "Either ADB from a host computer, or an on-device Accessibility Service reading the view hierarchy and dispatching gestures, with screenshots going to a VLM or LLM for planning.",
+      "outcome": "Great for hobbyists and QA automation. As daily-driver launchers they hit the same walls: accessibility-API restrictions (Play Store policy), battery and latency, app anti-automation checks, and no payment safety.",
+      "lesson": "The accessibility tree is a cheaper, more reliable observation channel than pixels, but third-party launchers can't get OS-grade permissions or trust. A ground-up OS should make the semantic UI tree a first-class, permissioned agent API.",
+      "sources": [
+        "https://github.com/droidrun/mobilerun",
+        "https://github.com/minitap-ai/mobile-use",
+        "https://github.com/Sajjat4/MobileAgent-Android",
+        "https://github.com/jonaylor89/SaintJohn",
+        "https://github.com/topics/android-agent"
+      ],
+      "confidence": "verified (repos exist); uncertain (adoption levels)"
+    },
+    {
+      "name": "Academic mobile GUI-agent lineage and benchmarks (AppAgent → Mobile-Agent v1–v3.5, AndroidWorld, MobileWorld, AgentHazard)",
+      "kind": "research",
+      "date": "AppAgent Dec 2023; Mobile-Agent Jan 2024; AndroidWorld May 2024; Mobile-Agent-v3/GUI-Owl Aug 2025; MobileWorld Dec 2025; Mobile-Agent-v3.5 Feb 2026; Xiaomi-GUI-0 Jun 2026",
+      "what_it_was": "The research base under every commercial phone agent. AppAgent (Tencent) learned apps by exploration or demonstration; Mobile-Agent (Alibaba) is a vision-centric agent needing no app-specific hooks; GUI-Owl added RL-trained foundation models.",
+      "how_it_worked": "Screenshots and/or the accessibility tree go to a multimodal LLM, which does planning, grounding and action, with reflection and error recovery. Newer benchmarks add MCP tool calls and user-interaction steps.",
+      "outcome": "AndroidWorld is saturated (>90% success). But on the harder MobileWorld (201 long, cross-app tasks averaging 27.8 steps; 62% multi-app) the best framework reaches only 51.7% and the best end-to-end model 20.9%, and models struggle specifically with asking the user questions and with MCP calls. AgentHazard found third-party content (ads, user posts) misled all tested agents, both open-source and commercial, at average rates of 42.0% (dynamic) and 36.1% (static).",
+      "lesson": "Benchmarks overstate readiness: realistic multi-app tasks still fail about half the time, and untrusted on-screen content is an attack surface. Build clarifying questions, verification and tool calls in as first-class agent behaviors, and never trust on-screen text as instructions.",
+      "sources": [
+        "https://huggingface.co/papers/2312.13771",
+        "https://huggingface.co/papers/2401.16158",
+        "https://huggingface.co/papers/2405.14573",
+        "https://huggingface.co/papers/2508.15144",
+        "https://huggingface.co/papers/2602.16855",
+        "https://huggingface.co/papers/2512.19432",
+        "https://huggingface.co/papers/2507.04227",
+        "https://huggingface.co/papers/2606.31410"
+      ],
+      "confidence": "verified (abstracts read via Hugging Face)"
+    },
+    {
+      "name": "PalmClaw: native on-device agent framework exposing device capabilities as tools",
+      "kind": "research prototype (open source)",
+      "date": "arXiv 2607.13027, July 2026",
+      "what_it_was": "An agent that runs entirely on the phone (sessions, memory, skills, tools, agent loop), unlike GUI agents hosted on a PC or in the cloud.",
+      "how_it_worked": "Device capabilities are exposed as typed 'device tools' with explicit arguments, structured results and defined execution boundaries, instead of tap and swipe sequences.",
+      "outcome": "Reported an 11.5% relative gain in task success and a 94.9% reduction in completion time over the strongest GUI baseline, with lower setup burden.",
+      "lesson": "The core architectural claim of an agent OS in miniature: system functions (volume, alarms, Bluetooth, messages) should be typed tools, not GUI puppetry. That gives order-of-magnitude latency gains and clear permission boundaries.",
+      "sources": [
+        "https://huggingface.co/papers/2607.13027",
+        "https://arxiv.org/abs/2607.13027"
+      ],
+      "confidence": "verified (abstract)"
+    },
+    {
+      "name": "Mercury OS (Jason Yuan): speculative app-less OS concept",
+      "kind": "design concept",
+      "date": "2019",
+      "what_it_was": "A widely shared concept for an OS with no apps or folders. The user states an intention and the OS assembles 'Modules' (content plus actions) into horizontal 'Flows', grouped into 'Spaces' per overarching intent. Designed around focus and users with limited executive function.",
+      "how_it_worked": "A concept only (design writeup and prototype videos); no functioning intent engine.",
+      "outcome": "Influential in design circles as the canonical 'app-less, intent-driven' vision years before LLMs made it feasible. Yuan later co-founded New Computer.",
+      "lesson": "It gives the vocabulary for an agent OS's output layer: intent → task-scoped workspace → composable modules, with calm, attention-respecting design as an explicit principle.",
+      "sources": [
+        "https://uxdesign.cc/introducing-mercury-os-f4de45a04289",
+        "https://www.mercuryos.com/",
+        "https://beebom.com/mercury-os-operating-system-concept/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Historical precursors: Viv (acquired by Samsung, 2016) and Facebook M (2015–2018)",
+      "kind": "earlier assistant-as-platform attempts",
+      "date": "Viv acquired by Samsung Oct 2016; Facebook M shut down Jan 2018",
+      "what_it_was": "Viv, from Siri's creators, promised a single conversational interface that understands intent and 'writes code to effect that intent' across third-party services. Facebook M was a Messenger concierge that booked and bought things for you.",
+      "how_it_worked": "Viv: dynamic program generation over a developer-supplied service graph. M: AI plus hidden human 'M Trainers' doing the hard requests; the human-powered version reached only about 2,000 users.",
+      "outcome": "Viv's technology folded into Bixby with limited impact. M was shut down because the human-in-the-loop cost didn't scale.",
+      "lesson": "The app-less assistant idea is at least a decade old. It failed on coverage of third-party services and unit economics, and LLMs solve language, not those two. A new OS must plan the service-coverage strategy and per-task cost from day one.",
+      "sources": [
+        "https://techcrunch.com/2016/10/05/samsung-acquires-viv-a-next-gen-ai-assistant-built-by-creators-of-apples-siri",
+        "https://en.wikipedia.org/wiki/Viv_(software)",
+        "https://techcrunch.com/2018/01/08/facebook-is-shutting-down-its-standalone-personal-assistant-m/",
+        "https://en.wikipedia.org/wiki/M_(virtual_assistant)"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "patterns": [
+    "Standalone AI gadgets lost to the phone. Humane was bricked and sold for parts; Rabbit stopped making r1 and became a cross-device software agent; Limitless and Bee were absorbed by Meta and Amazon. Whoever owns the device users already carry, with OS-level permissions, wins. A new agent OS must be the phone OS, not a companion to it.",
+    "'App-less' became 'app-optional' every time. DT and Brain.ai kept an app drawer; DT's shipping T Phone 3 is Android plus an assistant button; Nothing Essential is an overlay; Gemini and Siri sit over apps. Apps survive as fallbacks, as rendered surfaces inside the chat (Apps SDK), and as capability providers.",
+    "The action layer is converging on 'structured first, GUI fallback': Android AppFunctions (explicitly compared to MCP) + screen automation; Apple App Intents; Huawei HMAF; Windows MCP agent connectors; OpenAI Apps SDK on MCP; Doubao gen 2 going MCP/A2A-first. PalmClaw measured ~95% less completion time with typed device tools versus GUI automation.",
+    "GUI automation without app consent triggers blocking and lawsuits. WeChat, Alipay, Taobao and banks locked out Doubao gen 1 (INJECT_EVENTS); Amazon sued Perplexity over Comet. Consent protocols are appearing: Doubao's SAEP (a robots.txt for screen agents, 30-day notice, opt-out), Android 17's per-app automation allowlist, Amazon's demand for an agent user-agent string. The Ninth Circuit (Aug 2026) treated the user-directed agent as the user's tool, which is legal cover, not commercial peace.",
+    "Payment and irreversible actions are universally gated. Gemini stops at checkout and hands back control; Honor's YOYO asks the user to verify payment; AutoGLM has sensitive-operation callbacks and manual takeover for logins and OTPs; Claude in Chrome requires confirmation for purchases and blocks financial sites; ByteDance suspended banking and payment automation. Design confirmations as a first-class OS surface, with the fatigue problem in mind.",
+    "The agent gets its own sandbox and identity: Gemini's virtual display, Windows Agent Workspace (separate account, off by default, admin-only), Muse Secure VM (with a confidential VM planned), ChatGPT agent's virtual computer. The user watches a visible 'agent screen' and can take over.",
+    "Prompt injection is structural and unsolved. OpenAI says it 'may never be fully solved'; the UK NCSC warns similarly; Anthropic reported 23.6%→11.2% attack success with mitigations; AgentHazard found third-party content misled mobile GUI agents 36–42% of the time; Microsoft ships agentic Windows off by default because of XPIA. OS-level defense: separate instructions from observed content, scope capabilities, keep irreversible actions out of reach without confirmation, and audit every action.",
+    "Latency and reliability are the product. Humane's slow answers, Friend's 7–10 s lag, Rabbit's broken integrations and Gemini's beta lockups destroyed trust. Research shows ~50% success on realistic multi-app tasks (MobileWorld). Deterministic system verbs (volume, alarms, Bluetooth, toggles) should be direct local tool calls with near-instant feedback, not LLM-planned GUI sessions.",
+    "Business model and ecosystem incentives decide adoption. Apps that monetize attention, ads or payments resist disintermediation. The models that worked offer participants something in return: branded interactive surfaces in chat (Apps SDK), API partnerships (Alexa+), developer funds (Huawei Tiangong), subscription bundles (Alexa+ with Prime, Perplexity Pro with the T Phone). An agent OS needs an explicit value exchange with app developers.",
+    "Overpromising is punished: Rabbit's 'LAM', Apple's delayed personal Siri (fine print, false-advertising suits), Humane's launch hype, Microsoft's 'agentic OS' post backlash. Ship narrow, reliable verbs and expand on evidence.",
+    "Screenless and voice-only is a trap for general computing. Choosing among options, privacy in public and glanceable status all need a display (Humane's projector failed; even Muse Charm has a screen). Generated, interactive UI cards (Google Generative UI, Brain.ai, Nothing Essential Apps, Rabbit creations, Mercury OS modules) are the output modality that fills the gap between chat and apps.",
+    "Chat and messaging are the universal shell. OpenClaw via WhatsApp and Telegram, Rabbit OS3 via iMessage and Telegram, Friend via texts, Siri AI's new chat app with history: a persistent, searchable thread with proactive messages is the proven home-screen metaphor for an agent.",
+    "The agent is being decoupled from the model vendor: Samsung's choice of Gemini, Perplexity or Bixby; iOS 27 Extensions (reported); OPPO's multi-model AI Mind Pilot; Rabbit OS3 bring-your-own-keys. The OS should own the runtime, permissions, memory and UI, and treat models as swappable providers, while making the privacy boundary change visible when a third-party model is used.",
+    "Privacy architecture is a differentiator and a regulatory front. Apple's three-tier on-device/PCC/Gemini routing, Meta's planned confidential VM and the backlash to Friend's always-on mic show trust is designed in, not claimed. Regulation already gates agent features: the EU DMA delayed Siri AI, China restricted OpenClaw on state machines, and the CFAA was tested in Amazon v. Perplexity.",
+    "OEM privilege is the moat and the risk. Only system-signed components get INJECT_EVENTS or virtual-display automation; Honor, vivo, Xiaomi, OPPO and Samsung ship GUI agents that third parties can't. A new OS vendor holds that power, and its legitimacy with app developers depends on using it through transparent, consent-based protocols.",
+    "Persistent personal memory is what makes one-sentence commands work ('your usual coffee shop', 'what did we agree last week'). Platforms are buying it (Limitless, Bee), and it must be user-owned, inspectable and deletable, with bystander-consent rules for anything recorded."
+  ],
+  "open_questions": [
+    "Will super-apps, marketplaces and banks (WeChat, Alipay, Amazon, banks) accept agent access under a consent protocol like SAEP or AppFunctions, and what economics (revenue share, attribution, sponsored placement, per-transaction fees) will they demand?",
+    "Can GUI fallback ever be made safe against indirect prompt injection when untrusted third-party content is in view, or must high-stakes domains be structured-API-only?",
+    "What confirmation UX prevents irreversible mistakes without confirmation fatigue: risk-tiered, reversible-by-default transactions, spending limits, delegated mandates?",
+    "Liability beyond the CFAA: the Ninth Circuit treated the user as the actor, but who is liable for an agent's wrong purchase, misdirected message or privacy breach under consumer-protection and banking rules?",
+    "Which verbs can on-device models handle at sub-second latency, and what should go to a per-user cloud enclave? How is that boundary shown to users?",
+    "Will Apple's Siri AI (App Intents, iOS 27) prove that a structured intent registry at 1B+ device scale is reliable enough, or will it hit the same coverage gap as Viv, Alexa skills and SiriKit?",
+    "How do users discover what an agent can do without an app grid? The 'blank prompt' problem that hurt Alexa skills and Humane.",
+    "Do generated UIs stay consistent and learnable enough for muscle memory, and how do you prevent generated UI from being used for phishing?",
+    "What business model sustains an agent-first OS: hardware margin, subscription (Perplexity Pro, Prime bundles), transaction fees, or ads inside agent answers? And how does each affect the agent's neutrality?",
+    "Will OpenAI's reported agent-first phone (2028) or the io devices change the market, and will Doubao gen 2's MCP-first approach win over Tencent and Alibaba?",
+    "How should an agent OS identify itself to external services (a declared agent user-agent, cryptographic agent identity, per-user mandates), and will that be standardized across platforms?"
+  ]
+}
