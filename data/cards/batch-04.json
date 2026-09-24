@@ -1,0 +1,1021 @@
+[
+  {
+    "id": "W-01",
+    "slug": "denial-clock",
+    "title": "Denial Clock",
+    "tagline": "Times your prior auths against the insurer's legal deadlines, then runs the appeal when the answer is no.",
+    "tier": "whitespace",
+    "flagship": true,
+    "category": "Health & body",
+    "moment": "Your MRI has sat at 'pending review' for nine days, and the scheduler keeps moving your slot. You forward the plan's notice, and when a letter finally says 'not medically necessary' you photograph it. Before you've finished reading, your phone tells you the plan missed its 7-day decision window, that you can ask for the criteria it used, and that a first appeal is drafted and waiting for your review.",
+    "problem": "Prior authorization is a clock game, and most patients don't know the clock exists. Since January 2026, Medicare Advantage, Medicaid and CHIP plans must decide within 72 hours (urgent) or 7 days (standard) and give a specific reason for a denial, but nothing on the patient's side tracks those deadlines. Appeal-letter tools write the letter and stop. The status calls, claim-file requests, filing and external review are still left to a sick person.",
+    "loop": {
+      "trigger": "New prior auth, letter, or lapsed window",
+      "senses": "Plan notices, EOBs, portal data, call notes",
+      "decides": "Which rule applies, what to ask next",
+      "checks_with_you": "Every filing, call script and signature",
+      "acts": "Drafts, calls, faxes, tracks the clocks",
+      "remembers": "Case timeline, reference numbers, rules"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans denial letters, notices and EOBs"
+      },
+      {
+        "name": "Foundation Models (@Generable)",
+        "why": "pulls dates, codes and reference numbers from letters on-device"
+      },
+      {
+        "name": "PrivateCloudComputeLanguageModel",
+        "why": "drafts long appeal letters with a 32K context"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows decision and appeal countdowns on the Lock Screen"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "OAuth sign-in to a plan's FHIR Patient Access API where one exists"
+      },
+      {
+        "name": "HealthKit (HKClinicalRecord)",
+        "why": "pulls diagnoses and history from Health Records for the appeal, with permission"
+      },
+      {
+        "name": "App Intents",
+        "why": "answers 'where is my MRI appeal?' from Siri or Shortcuts"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "deadline alerts and approval requests pushed by the server agent"
+      }
+    ],
+    "hard_parts": [
+      "Most prior-auth status isn't machine-readable for patients until prior-auth data reaches Patient Access APIs in 2027, so the first version works from forwarded notices, scans and phone calls.",
+      "Appeal rules differ by plan type. Medicare Advantage, Medicaid managed care, marketplace and employer plans each have their own appeal windows and next step (an independent review entity, a state fair hearing, or external review). The rules table has to be exact and kept current.",
+      "The new 72-hour and 7-day windows cover Medicare Advantage, Medicaid and CHIP. They exclude marketplace (FFE) plans, prescription drugs and employer plans. Telling someone a deadline was missed when it didn't apply would hurt both trust and the appeal.",
+      "The doctor's letter of medical necessity often wins the appeal, and the app can't make the office write it. It can only make the request easy and follow up politely."
+    ],
+    "risks": [
+      "Safety line: this is not medical or legal advice. It never suggests skipping or delaying care while an appeal runs, a person reviews and signs every filing, and urgent cases are routed to the plan's expedited process and the doctor, not a queue.",
+      "Health data flows to a server and maybe a cloud model. That needs 5.1.2(i) consent naming the provider, HIPAA-grade handling, and a promise never to use the data for anything else.",
+      "A wrong deadline, a missed filing window or a misread denial reason can lose the appeal. Every computed date needs a visible source and a safety buffer."
+    ],
+    "assumptions": [
+      "Plans treat an appeal and a claim-file request sent by the patient as seriously as one from the doctor's office.",
+      "Doctors will write a necessity letter when the patient asks with a ready-made request.",
+      "Patients will share insurer letters and health details with an app in exchange for someone watching the clock."
+    ],
+    "unknowns": [
+      "Will member-services lines talk to an AI caller acting for the member, or insist on the member being on the line or a signed representative form (such as Medicare's CMS-1696)?",
+      "Does copying the state insurance regulator actually speed decisions, and how would the app measure that?",
+      "Who pays: patients once per crisis, employers, unions, or patient-advocacy groups?"
+    ],
+    "prior_art": [
+      {
+        "name": "Counterforce Health",
+        "url": "https://www.counterforcehealth.org/",
+        "note": "Free AI-written appeal letters for patients. It stops at the letter: no deadline tracking, claim-file requests, calls or external-review filing."
+      },
+      {
+        "name": "Claimable",
+        "url": "https://www.pymnts.com/news/artificial-intelligence/2026/insurance-denials-meet-their-match-in-ai-powered-appeals/",
+        "note": "Paid AI appeal letters. Same gap: the patient still runs the follow-up and watches the clocks."
+      },
+      {
+        "name": "Insight Health",
+        "url": "https://www.insighthealth.ai/blog/prior-authorization-appeal-ai",
+        "note": "Prior-auth and appeal automation sold to practices. It works for the clinic's revenue cycle, not for a patient whose doctor's office has moved on."
+      },
+      {
+        "name": "Payer-calling voice agents (VocalLabs roundup)",
+        "url": "https://www.vocallabs.ai/blogs/top-ai-voice-agents-prior-authorization-healthcare-2026",
+        "note": "Voice agents that call insurers about prior auths and denials, sold to providers. No patient-side equivalent."
+      },
+      {
+        "name": "KFF tracker of rules on insurer AI",
+        "url": "https://www.kff.org/patient-consumer-protections/regulation-of-ai-in-prior-authorization-and-claims-review-a-look-at-federal-and-state-consumer-protections/",
+        "note": "Tracks federal and state rules on insurers' use of AI in prior auth and claims review. A source for the rules table, not a tool."
+      }
+    ],
+    "first_version": "Medicare Advantage and Medicaid members only. Scan or forward any prior-auth notice or denial, and the app builds a timeline, starts the right countdown and drafts three things for your approval: a status inquiry when a window lapses, a claim-file and criteria request after a denial, and a first-level appeal. Filing is by cloud fax, and the confirmation page is saved to the case.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 5
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-24",
+      "W-19",
+      "W-21"
+    ],
+    "notes_for_editor": "Corrected the candidate's scope: per search results quoting the CMS fact sheet, the 72-hour/7-day decision windows exclude QHP issuers on the federally facilitated exchanges (their existing 15-day/72-hour rules still apply) and exclude drugs, and employer (ERISA) plans are outside CMS-0057-F entirely. cms.gov itself was blocked for fetching. Patient Access API prior-auth data due 2027 confirmed via search snippets. The 11.5% appealed / about 80% overturned figures come from Insight Health via the research digest and look like KFF's Medicare Advantage prior-auth numbers; I did not verify them at source, so the card doesn't use them. Claimable's drug-maker deals (in the candidate) were not re-checked and are left out. CMS-1696 as Medicare's Appointment of Representative form is from general knowledge.",
+    "why_flagship": "New 2026 federal deadlines give a patient-side agent something rare: hard rules to hold an insurer to.",
+    "deep_dive": "## Deep dive\n\nDenial Clock is a case file with a stopwatch attached. The phone is where evidence comes in and where you say yes. The waiting, calling and faxing run on a server, because a case can take months and iOS won't keep an app running that long.\n\n```mermaid\nsequenceDiagram\n  participant You as \"You\"\n  participant App as \"iPhone app\"\n  participant Agent as \"Cloud agent\"\n  participant Plan as \"Health plan\"\n  participant Doc as \"Your doctor\"\n  participant Rev as \"External reviewer\"\n  You->>App: \"Scan prior-auth notice\"\n  App->>App: \"Extract dates and codes on device\"\n  App->>Agent: \"Open case, start 7-day clock\"\n  Agent->>Plan: \"Check status in portal or API\"\n  Agent->>App: \"Window lapsed, inquiry drafted\"\n  You->>App: \"Approve inquiry and call script\"\n  Agent->>Plan: \"Call member line, log reference number\"\n  Plan->>You: \"Denial letter by mail\"\n  You->>App: \"Scan denial letter\"\n  Agent->>Plan: \"Request claim file and criteria used\"\n  Agent->>App: \"Draft necessity-letter request\"\n  You->>Doc: \"Send request through patient portal\"\n  Doc->>You: \"Letter of medical necessity\"\n  Agent->>App: \"Appeal packet ready for review\"\n  You->>App: \"Read, sign, confirm with Face ID\"\n  Agent->>Plan: \"Fax appeal, save confirmation page\"\n  Plan->>Agent: \"Denial upheld\"\n  Agent->>App: \"External review request drafted\"\n  You->>App: \"Approve\"\n  Agent->>Rev: \"File external review\"\n```\n\n### What the first 90 days look like\n\nStart narrow: Medicare Advantage and Medicaid managed care members in two or three states, where the 2026 decision windows and specific-denial-reason rules apply. Weeks 1 to 4 build the rules table (decision windows, appeal windows and the next level of review for each plan type) and test letter extraction on a few hundred donated, redacted denial letters. Weeks 5 to 8 run a concierge beta with about 30 patients recruited through a patient-advocacy group. A human case worker reviews every draft before the patient sees it. Weeks 9 to 12 add cloud fax, the status-call agent and Live Activity countdowns. The numbers that matter are days from request to decision, the share of lapsed windows caught, appeals filed on time, and the overturn rate.\n\n### The hardest engineering problem\n\nGetting the clock right. The countdown starts when the plan received the request, which the patient rarely knows. Whether a request is urgent depends on what the doctor asked for. Whether the 72-hour and 7-day rules apply at all depends on plan type: they cover Medicare Advantage, Medicaid and CHIP, not marketplace plans, employer plans or drugs. So every date the app shows carries its working (\"7 calendar days from receipt on May 3, per the plan's notice\"), and the first status call asks the plan for the receipt date and a reference number. When the app can't be sure, it says so and uses the more cautious date. A confident wrong deadline does more harm than no deadline, because it can make someone wait too long to appeal.\n\nThe second-hardest problem is the handoff to the doctor. A necessity letter often decides the appeal, and the app can't write it. It can make asking easy: a one-page summary of the denial reason, the plan's criteria and what the letter needs to answer, sent through the patient portal, with a polite follow-up if nothing comes back.\n\n### How it makes money\n\nPeople meet this problem in a crisis, not as a monthly habit, so a consumer subscription fits poorly. Better options are a flat fee per case, refunded if the appeal isn't filed on time; licenses to employers, unions and disease foundations that already pay for patient advocates; and a free tier for Medicaid members funded by grants. Two tempting models should be avoided: contingency fees on the value of care, which invite conflicts and state regulation, and drug-maker sponsorship, which biases which denials get help.\n"
+  },
+  {
+    "id": "W-02",
+    "slug": "night-before-check",
+    "title": "Night-Before Check",
+    "tagline": "A separate checker agent that re-verifies tomorrow's family plans against the original messages each evening.",
+    "tier": "whitespace",
+    "flagship": true,
+    "category": "Family & care",
+    "moment": "It's 8:40pm. Your family calendar, filled in by an AI organizer, says picture day is Wednesday. At 3:12pm the teacher sent a correction moving it to Thursday, and nobody noticed. Your phone shows one line: 'Tomorrow: 5 plans checked, 1 changed. Picture day moved to Thursday (teacher, 3:12pm). Fix?'",
+    "problem": "AI family organizers now turn school emails and flyers into calendar events automatically, and a misread date is worse than no event because you trust it. Milo shut down in January 2026 after its founder said the technology was too early to be reliable. Every organizer competes on extracting more, faster. None has an independent step that re-checks what it wrote against the source, and against later corrections, before the family acts on it.",
+    "loop": {
+      "trigger": "Every evening at a time you pick",
+      "senses": "Tomorrow's events, source emails, flyers",
+      "decides": "Does each event still match its source?",
+      "checks_with_you": "Every fix; nothing changes until you tap",
+      "acts": "Queues fixes, drafts a question to sender",
+      "remembers": "Per-sender error record, past fixes"
+    },
+    "ios_blocks": [
+      {
+        "name": "EventKit (EKEventStore)",
+        "why": "reads tomorrow's events from every calendar on the phone and applies approved fixes"
+      },
+      {
+        "name": "Foundation Models (@Generable)",
+        "why": "re-extracts date, time, place and what to bring from each source on-device"
+      },
+      {
+        "name": "PrivateCloudComputeLanguageModel",
+        "why": "reconciles long threads and conflicting messages"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "captures paper flyers and notes as sources"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "the evening summary with actionable Fix buttons"
+      },
+      {
+        "name": "App Intents",
+        "why": "answers 'Is tomorrow checked?' from Siri or Shortcuts"
+      },
+      {
+        "name": "BackgroundTasks (BGAppRefreshTask)",
+        "why": "opportunistic prep on the phone; the server push is the reliable trigger"
+      }
+    ],
+    "hard_parts": [
+      "Finding the source of each event. Organizers rarely store a link back, and some keep events only in their own app where EventKit can't see them. The checker has to search mail for the message that produced each event and say plainly when it can't find one.",
+      "Catching corrections. The error that hurts is the 3:12pm 'correction: Thursday' email. The checker must look for newer messages from the same sender and thread, not just re-read the original.",
+      "Keeping the queue short. If it flags ten items a night, parents stop reading by Friday. It needs calibrated confidence and a target of zero to two items on a normal night.",
+      "Mail access. Gmail's read scopes are restricted and need Google's security assessment. A forwarding address is cheaper but misses anything nobody forwarded."
+    ],
+    "risks": [
+      "False reassurance. '5 plans checked' can make parents stop looking. The summary must also say what it could not check, such as a plan changed by text message, which the app can't read.",
+      "Children's school data and co-parent calendars are sensitive. Keep extraction on-device where possible, get 5.1.2(i) consent before any third-party model sees mail, and never message a teacher or co-parent without a tap.",
+      "Reading another household's calendar needs that person's own consent. The app must not become a way to monitor a co-parent."
+    ],
+    "assumptions": [
+      "Parents will spend 20 seconds on an evening review if the queue is short and each item quotes the source sentence.",
+      "Organizers write events to calendars the checker can read (iCloud, Google, Outlook), not only into their own app.",
+      "Most costly errors can be seen in email, flyers and documents the family received, not only in texts and conversations."
+    ],
+    "unknowns": [
+      "What error rate do AI organizers actually have on school email? No one publishes it.",
+      "Is evening the right time, or does a 6am re-check catch more late changes?",
+      "Will organizer makers see an independent checker as a threat or as a partner?"
+    ],
+    "prior_art": [
+      {
+        "name": "Skylight Sidekick and Magic Import",
+        "url": "https://myskylight.com/lp/sidekick-magic-import-for-busy-families/",
+        "note": "Turns forwarded emails, PDFs and photos into calendar events. It extracts once and doesn't re-check events against the source or later corrections."
+      },
+      {
+        "name": "Ohai",
+        "url": "https://www.ohai.ai/",
+        "note": "Household manager for schedules, tasks and grocery orders through an app and SMS. No independent verification step."
+      },
+      {
+        "name": "Sense",
+        "url": "https://getsense.ai/",
+        "note": "AI family organizer that fills the calendar from school mail. Same single-pass design."
+      },
+      {
+        "name": "Milo (shut down)",
+        "url": "https://startups.rip/company/milo",
+        "note": "SMS family assistant that closed in January 2026; its founder said AI was 'too early to be reliable'. The failure this card is built to catch."
+      }
+    ],
+    "first_version": "Google or iCloud calendar plus a forwarding address. Each evening at a time you pick, it checks tomorrow's events against the emails and flyers that created them and sends one notification: how many it checked, which changed, and which it couldn't verify. Fixes apply with one tap, and nothing else changes.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-12",
+      "W-12",
+      "W-15"
+    ],
+    "notes_for_editor": "Skylight Sidekick and Magic Import confirmed via search results (URL swapped to the Sidekick page). Milo's shutdown and quote come from the research digest and search snippets (startups.rip, a Sense blog post). I did not open the Sense 2026 roundup cited by the candidate, so it's left out, and the claim that 2026 reviews 'still warn about misread dates' is not repeated. Gmail restricted-scope security assessment is from general knowledge.",
+    "why_flagship": "A direct answer to why Milo shut down: a second agent whose only job is to catch the first one's mistakes.",
+    "deep_dive": "## Deep dive\n\nNight-Before Check is deliberately not an organizer. It doesn't create events. It audits the ones that exist, whoever or whatever made them, the evening before they matter. Keeping it separate is the point: the checker reads each source again with fresh eyes and has no stake in the first extraction being right.\n\n```mermaid\nsequenceDiagram\n  participant Parent as \"Parent\"\n  participant App as \"iPhone app\"\n  participant Server as \"Check server\"\n  participant Mail as \"Gmail or Outlook\"\n  participant Cal as \"Family calendar\"\n  participant Teacher as \"Teacher\"\n  Server->>App: \"Evening push, start the check\"\n  App->>Cal: \"Read tomorrow's events\"\n  App->>Server: \"Find the source of each event\"\n  Server->>Mail: \"Search senders and threads\"\n  Mail-->>Server: \"Original emails and a 3:12pm correction\"\n  Server-->>App: \"Encrypted source messages\"\n  App->>App: \"Re-extract facts on device\"\n  App->>App: \"Compare facts with calendar entries\"\n  App->>Parent: \"5 plans checked, 1 changed, fix it?\"\n  Parent->>App: \"Tap Fix\"\n  App->>Cal: \"Move picture day to Thursday\"\n  App->>Parent: \"Draft question about a second conflict\"\n  Parent->>Teacher: \"Send the question from own mail\"\n  App->>Server: \"Update per-sender error record\"\n```\n\n### What the first 90 days look like\n\nWeeks 1 to 4: collect about 1,000 real school and activity emails and flyers from volunteer families (with consent), hand-label the true facts, and measure how often two or three popular organizers get dates, times and items wrong. That base rate decides whether the product is needed and where. Weeks 5 to 8: a beta with 40 families at a few schools, using Google or iCloud calendars plus a forwarding address. Track flags per night, how many were real, and how many real errors slipped through. Weeks 9 to 12: add the people check (the driver's clashing meeting, whose week it is) and per-sender error history, and tune until a normal night shows zero to two items.\n\n### The hardest engineering problem\n\nLinking each calendar event back to its source, then finding anything that changed it. Organizers rarely store where an event came from. The checker has to search mail for the sender, the subject and the days around the event's creation, and match on meaning, because \"picture day\" and \"school photos\" are the same event. Then it has to look forward in time for corrections, which often arrive as a short reply in the same thread or as a new email with a different subject.\n\nAll of this has to stay cheap and mostly private. The phone re-extracts facts with the on-device model using guided generation. Only long or conflicting threads go to Private Cloud Compute, which has a larger context window and a daily per-user quota.\n\nCalibration matters as much as accuracy. A checker that flags ten things a night gets ignored within a week, and then it fails the same way Milo did. So each flag carries a confidence score and the quoted source sentence. A plain \"couldn't check\" list covers events with no findable source, such as a plan made by text message, which iOS doesn't let the app read.\n\n### How it makes money\n\nA family subscription sold on one promise: fewer surprises at drop-off. A second channel is licensing the checker to organizer apps that want an independent accuracy check they can show parents, as long as the checker stays separate from the extractor it audits.\n"
+  },
+  {
+    "id": "W-03",
+    "slug": "agent-control-tower",
+    "title": "Agent Control Tower",
+    "tagline": "One iPhone inbox to approve, pause and audit every AI agent that acts for you, whoever made it.",
+    "tier": "whitespace",
+    "flagship": true,
+    "category": "Work & business",
+    "moment": "It's 7:40am and three agents want something: Claude wants to send a contract redline, OpenClaw wants to pay a $40 invoice, and ChatGPT's agent wants to email your landlord. Instead of three apps with three approval styles, your Watch shows one stack with Approve, Edit or Deny, and what each agent read before it asked. On Friday evening, before the walkthrough, it reminds you that an agent told Priya you'd bring the signed lease.",
+    "problem": "Heavy users now run several agents at once, and each has its own approvals, notifications and log. Nobody can answer 'what did my agents do this week, and what did they promise in my name?' A July 2026 survey of agent permission systems found most commercial agents apply one product-wide policy to every user, so you can't set a rule like 'no agent spends over $50 alone'. And five agents pinging about the same flight change turns delegation into a new interruption problem.",
+    "loop": {
+      "trigger": "An agent calls a tool that changes things",
+      "senses": "Tool, inputs, recipient, agent, call chain",
+      "decides": "Inside your rules, or does a human decide?",
+      "checks_with_you": "Money, new recipients, deletes, off-rule",
+      "acts": "Allows, holds, blocks, or freezes all",
+      "remembers": "Signed log of calls and promises made"
+    },
+    "ios_blocks": [
+      {
+        "name": "UserNotifications (timeSensitive, authenticationRequired actions)",
+        "why": "approval requests that get through Focus and need an unlocked device"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "a live queue of pending approvals on the Lock Screen and Watch Smart Stack"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID for money, new recipients and deletions"
+      },
+      {
+        "name": "CryptoKit (SecureEnclave.P256.Signing)",
+        "why": "signs each approval so the gateway can prove a person said yes"
+      },
+      {
+        "name": "App Intents (IntentAuthenticationPolicy)",
+        "why": "'Pause all agents' from Siri or the Action button; resuming needs authentication"
+      },
+      {
+        "name": "WidgetKit (Controls)",
+        "why": "a kill-switch control on the Lock Screen and in Control Center"
+      },
+      {
+        "name": "EventKit and Core Location (CLMonitor)",
+        "why": "briefs you on agent promises before the meeting or place they concern"
+      }
+    ],
+    "hard_parts": [
+      "Routing. The gateway only sees agents whose connectors go through it. Users must remove each agent's built-in Gmail, Calendar and payment connectors and add the gateway instead. Agents with fixed built-in tools (Muse, Siri AI) can only be logged after the fact, from confirmation emails.",
+      "Waiting for a human. Agent hosts time out long tool calls. The gateway needs MCP Tasks or a 'pending, check back' result, and every host handles these differently.",
+      "Context. To approve well you need to know why the agent asked. The gateway sees tool inputs and results, not the agent's conversation, so it has to show the chain of calls that led here and flag requests that trace back to an incoming email.",
+      "Holding the keys. One service with tokens to email, calendar and cards is a prize target. Tokens need per-agent scopes, approvals backed by hardware keys, and fast revocation."
+    ],
+    "risks": [
+      "Single point of failure: if the gateway goes down every agent stops, and if it's breached every connected account is exposed.",
+      "Rule drift: auto-approval rules can slide into rubber-stamping. Defaults must be conservative, with a weekly review of what was approved without you.",
+      "Money safety line: agents pay only with agent-scoped virtual cards from a card-issuing partner. Caps and freezes are enforced at the issuer, not just in the app, and every charge is reported with an undo path."
+    ],
+    "assumptions": [
+      "People will give one more company access to their email and cards in exchange for one place to control every agent.",
+      "Agent vendors will keep supporting remote MCP connectors and won't block third-party gateways.",
+      "Agents treat a denied tool call as final and don't retry through another route."
+    ],
+    "unknowns": [
+      "Will vendors let outside approvers answer their standard 'input required' states (MCP elicitation, A2A), or keep approvals inside their own apps?",
+      "What rules do ordinary people actually write? 'Under $50' is easy; 'only people I've emailed before' is not.",
+      "How many interruptions a day will people tolerate before they approve everything without reading?"
+    ],
+    "prior_art": [
+      {
+        "name": "HITL: Human In The Loop (iOS)",
+        "url": "https://apps.apple.com/np/app/hitl-human-in-the-loop/id6752878072",
+        "note": "iPhone approvals for team AI workflows built to call it. It doesn't sit in front of consumer agents like ChatGPT, Claude or OpenClaw."
+      },
+      {
+        "name": "Arahi AI human approval",
+        "url": "https://arahi.ai/human-approval",
+        "note": "Approval inbox for agents built on Arahi's own platform only."
+      },
+      {
+        "name": "OpenClaw iOS app",
+        "url": "https://github.com/openclaw/openclaw",
+        "note": "Approves actions for your own self-hosted OpenClaw agent. One agent, one vendor."
+      },
+      {
+        "name": "Microsoft Copilot Cowork",
+        "url": "https://www.microsoft.com/en-us/copilot/blog/2026/05/05/copilot-cowork-from-conversation-to-action-across-skills-integrations-and-devices/",
+        "note": "Approve or reject steps from the Microsoft 365 Copilot iOS app, for Microsoft's agent only."
+      },
+      {
+        "name": "How Agents Ask for Permission (survey)",
+        "url": "https://huggingface.co/papers/2607.13718",
+        "note": "Reviews 21 permission-system proposals and five commercial agents and finds no user-level policies. Research that names the gap; not a product."
+      },
+      {
+        "name": "Nylas CLI agent audit",
+        "url": "https://cli.nylas.com/guides/audit-ai-agent-activity",
+        "note": "Developer audit log for email-sending agents. Built for the developer, not the person whose name is on the email."
+      }
+    ],
+    "first_version": "A remote MCP server with the three tools that matter most (send email, create calendar event, pay with a virtual card) and an iPhone and Watch approval queue. You connect Claude and ChatGPT to it, set two or three rules, and every call that changes something is logged. Anything outside the rules waits for your Face ID, and a Lock Screen control pauses everything.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-25",
+      "W-12",
+      "M-02"
+    ],
+    "notes_for_editor": "Merged 'Delegation Recall' (a log of promises agents made in your name, with briefings before the related meeting or place, and flags for promises traced to incoming email) and 'Agent Attention Firewall' (batching, dedupe, Focus-time holds, a daily interruption count; originally a moonshot). The firewall's full version needs agents to route approvals to outside approvers, so the card keeps only what works through a gateway. HITL, Arahi and Nylas URLs come from the candidates and were not opened. Feasibility lowered to 3 because it depends on users rewiring each agent's connectors. Boundaries with B-25 and W-12 are worth checking.",
+    "why_flagship": "Everyone will have five agents by 2027. Nobody has one place to see, approve and stop them all.",
+    "deep_dive": "## Deep dive\n\nAgent Control Tower is a gateway plus a remote control. The gateway is a remote MCP server that sits between your agents and the tools that change things: email, calendar, payments. The iPhone and Watch are where you approve, pause and read the log. Agents keep their own models and memory. The tower only controls what they can do.\n\n```mermaid\nsequenceDiagram\n  participant You as \"You\"\n  participant Phone as \"iPhone and Watch\"\n  participant GW as \"Control Tower gateway\"\n  participant Agent as \"ChatGPT agent\"\n  participant Gmail as \"Gmail API\"\n  participant Card as \"Card issuer\"\n  Agent->>GW: \"Tool call, email the landlord\"\n  GW->>GW: \"Check rules, recipient not in Contacts\"\n  GW-->>Agent: \"Task pending, check back later\"\n  GW->>Phone: \"Time-sensitive push with context\"\n  You->>Phone: \"Approve with Face ID\"\n  Phone->>GW: \"Approval signed on device\"\n  GW->>Gmail: \"Send with a scoped token\"\n  Gmail-->>GW: \"Message ID\"\n  GW-->>Agent: \"Task complete, email sent\"\n  GW->>GW: \"Append to log, record promise\"\n  Agent->>GW: \"Tool call, pay $40 invoice\"\n  GW->>Card: \"Charge agent card, under $50 rule\"\n  GW->>Phone: \"Paid $40, undo window open\"\n  You->>Phone: \"Pause all agents\"\n  Phone->>GW: \"Kill switch\"\n  GW->>Card: \"Freeze agent cards\"\n  GW-->>Agent: \"All tools disabled\"\n```\n\n### What the first 90 days look like\n\nWeeks 1 to 4: build the gateway with three tools (send email, create event, pay with an agent-scoped virtual card), connect it to Claude, ChatGPT and OpenClaw, and learn exactly how each host behaves when a tool call waits for a human. Weeks 5 to 8: a beta with about 50 people who already run several agents. Measure approvals per day, median time to answer, how many rules people write, and how often they override those rules. Weeks 9 to 12: add receipts for agents that can't be gated (read from their confirmation emails), a list of promises agents made in your name with a briefing before the related meeting, and batching, so a Focus block produces one digest instead of eleven pings.\n\n### The hardest engineering problem\n\nHolding a tool call open while a person decides. Hosts time out long calls, and each handles waiting differently. MCP's 2025-11-25 spec added an experimental Tasks primitive (call now, fetch the result later), and the 2026-07-28 spec made servers stateless with Tasks as an extension, but host support varies. The gateway needs three paths: a Task where the host supports it; a structured \"pending your approval, check back in 5 minutes\" result that the agent's model can act on; and, after a timeout, a clear denial with a reason, so the agent tells you instead of trying another route. Every approved action must be idempotent, so a host that retries doesn't send the email twice. Each approval is signed with a Secure Enclave key on your phone, so the log can show that a person, not a script, said yes.\n\nA close second is context. The gateway sees tool calls, not the agent's conversation. It rebuilds the \"why\" from the chain of calls that led to this one, and it flags any request whose wording traces back to an incoming email or web page, which is the pattern behind prompt-injection attacks.\n\n### How it makes money\n\nA subscription for people who already pay for several agents, with a household plan so a family shares one rulebook. Interchange on agent-scoped cards is a second stream. The log is never sold or used for ads, because trust is the whole product.\n"
+  },
+  {
+    "id": "W-04",
+    "slug": "really-you-check",
+    "title": "Really-You Check",
+    "tagline": "One tap during a scary call pings the relative's own phone: 'Did you just call Grandma?'",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Safety & civic",
+    "moment": "Your grandmother gets a call from 'you', crying, saying you're in jail and need $4,000 in gift cards. She taps the big button on her Lock Screen. Within 20 seconds your phone asks 'Did you just call Grandma?', you tap No and confirm with Face ID, and her screen says in large type, and out loud: 'Jake is safe. This call is not Jake. Hang up.'",
+    "problem": "Voice cloning needs only a short clip from a social post, and both the FTC and FCC warn about fake family-emergency calls. The official advice (hang up and call back, or use a family code word) fails exactly when it's needed, because a frightened person forgets both. Scam tools for seniors screen and block numbers on one phone. None asks the person being impersonated.",
+    "loop": {
+      "trigger": "Elder taps the button or asks Siri",
+      "senses": "Who the caller claims to be",
+      "decides": "Whom to ask next, and when to escalate",
+      "checks_with_you": "The relative confirms with Face ID",
+      "acts": "Shows and speaks the answer to the elder",
+      "remembers": "Family circle, who answers fastest"
+    },
+    "ios_blocks": [
+      {
+        "name": "App Intents (AppShortcutsProvider)",
+        "why": "'Is this really Jake?' by Siri, the Action button or Back Tap"
+      },
+      {
+        "name": "WidgetKit (Controls)",
+        "why": "a big Lock Screen and Control Center button that starts the check"
+      },
+      {
+        "name": "UserNotifications (timeSensitive)",
+        "why": "reaches the relative even in Focus"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID on the relative's phone, so a stolen SIM can't answer"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows the answer in large type on the elder's Lock Screen during the call"
+      },
+      {
+        "name": "AVFAudio (AVSpeechSynthesizer)",
+        "why": "speaks the answer, since the phone is at the elder's ear"
+      },
+      {
+        "name": "Accessibility (Assistive Access support)",
+        "why": "a full-screen, large-button layout for elders who use Assistive Access"
+      }
+    ],
+    "hard_parts": [
+      "Using it mid-call. The phone is at the elder's ear. The check must start from the Lock Screen, the Action button, Back Tap or Siri, and the answer must be spoken as well as shown.",
+      "Speed. Relatives are in meetings or asleep. The ladder (the named relative, then parents and siblings, then 'nobody confirmed, hang up and call Jake from your contacts') must finish in about two minutes without paging everyone at once.",
+      "Setup is a group job. Every relative must install the app, join the circle and allow time-sensitive alerts. The product lives or dies on a one-link family invite.",
+      "Ambiguity. There may be two grandsons, or the caller may claim to be a lawyer or police officer. The check has to handle 'someone calling about Jake', not only 'Jake'."
+    ],
+    "risks": [
+      "Safety line: it never tells the elder to send money or keep talking. 'Yes, it was me' only confirms the call; it doesn't approve a payment, and the advice is still to hang up and call back on a known number.",
+      "A stolen, unlocked relative's phone could answer 'yes'. Face ID narrows this but doesn't close it.",
+      "It must not become surveillance. It never listens to calls or reads messages. It only knows the elder asked, and the elder controls who is in the circle."
+    ],
+    "assumptions": [
+      "Scammers don't also control the relative's phone. A SIM swap alone doesn't beat it, because the answer comes from the app on the relative's device, not their number.",
+      "In a panic, older adults remember one big button better than a code word.",
+      "Families keep the app installed and alerts on for a rare event."
+    ],
+    "unknowns": [
+      "How often does a relative answer within 90 seconds, and at what hours does it fail?",
+      "When the elder says 'let me check', do scammers hang up or push harder?",
+      "Would banks or gift-card sellers want to trigger the same check at the counter?"
+    ],
+    "prior_art": [
+      {
+        "name": "FTC alert on AI family-emergency scams",
+        "url": "https://consumer.ftc.gov/consumer-alerts/2023/03/scammers-use-ai-enhance-their-family-emergency-schemes",
+        "note": "Advises hanging up and calling the person back. Good advice that depends on memory under stress."
+      },
+      {
+        "name": "FCC grandparent scam alert",
+        "url": "https://www.fcc.gov/consumers/scam-alert/grandparent-scams-get-more-sophisticated",
+        "note": "Same advice plus family code words. Nothing automates the check."
+      },
+      {
+        "name": "Carefull",
+        "url": "https://getcarefull.com/",
+        "note": "Monitors an older adult's accounts and alerts family to unusual activity. It reacts after money moves, not during the call."
+      },
+      {
+        "name": "Scammer Guardian",
+        "url": "https://www.scammerguardian.com/about/",
+        "note": "Screens scam calls before they reach seniors. Detection on one phone; it never asks the real relative."
+      },
+      {
+        "name": "Apple Call Screening (iOS 26)",
+        "url": "https://www.macrumors.com/how-to/ios-26-make-your-iphone-wait-on-hold-for-you/",
+        "note": "Asks unknown callers who they are. A scammer just says 'it's Jake', and screening can't verify that claim."
+      }
+    ],
+    "first_version": "A family circle of up to ten people, one Lock Screen button and one Siri phrase on the elder's phone. A tap sends a time-sensitive alert to the named relative, then to two backups after 60 seconds. The answer appears in large type and is spoken aloud on the elder's phone.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-18",
+      "W-16"
+    ],
+    "notes_for_editor": "Dropped the candidate's callback 'from a known family number through cloud telephony': presenting a relative's number from a cloud line is close to spoofing. If nobody confirms, the app tells the elder to hang up and call the relative from Contacts instead. The FTC, FCC and Carefull URLs are from the candidate and were not opened. I found no product that asks the impersonated relative to confirm, but I searched only the digest and candidate sources."
+  },
+  {
+    "id": "W-05",
+    "slug": "dread-opener",
+    "title": "Dread Opener",
+    "tagline": "Reads the letter you've avoided for weeks, tells you how bad it really is, and does all but the last tap.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Mind & focus",
+    "moment": "The envelope from the county has sat on your counter for three weeks. You scan it without reading it. Ten seconds later: 'Not scary. It's a $38 late fee on the dog license. I've filled in the renewal; you have two minutes left.' A Live Activity counts down while your distracting apps are shielded, and one Face ID finishes it.",
+    "problem": "For many people with ADHD, anxiety or plain overload, the hardest part of admin is opening the thing. Letters sit for weeks while late fees grow. ADHD planners break tasks into steps and send reminders, and admin agents target inbox-heavy professionals, but nobody treats the first step, opening and understanding the thing, as the job. Nobody measures success in minutes of your time left.",
+    "loop": {
+      "trigger": "You scan or share something you avoid",
+      "senses": "Letter, email, PDF or voicemail text",
+      "decides": "How bad, how urgent, what it can do",
+      "checks_with_you": "Before any email, call, form or payment",
+      "acts": "Does the steps it can, shrinks the rest",
+      "remembers": "Dread pile, your good hours, what worked"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans the letter without you having to read it first"
+      },
+      {
+        "name": "Foundation Models",
+        "why": "classifies and summarizes sensitive mail on-device"
+      },
+      {
+        "name": "PDFKit (PDFAnnotation)",
+        "why": "fills PDF forms"
+      },
+      {
+        "name": "FamilyControls, ManagedSettings, DeviceActivity",
+        "why": "shields the apps you picked while you do the last step"
+      },
+      {
+        "name": "ActivityKit and App Intents (LiveActivityIntent)",
+        "why": "the last step as a Lock Screen timer with a Done button"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID before anything is sent or paid"
+      },
+      {
+        "name": "Share extension (NSExtensionContext)",
+        "why": "takes in PDFs, emails and voicemail transcripts from other apps"
+      },
+      {
+        "name": "MessageUI (MFMessageComposeViewController)",
+        "why": "a prefilled 'can you sit with me on FaceTime?' text to a friend you chose"
+      }
+    ],
+    "hard_parts": [
+      "The one-line verdict must be right. Calling a debt lawsuit 'not scary' would be harmful, so court, tax, immigration and debt-collection letters always get a careful summary and a pointer to free help.",
+      "The final step often lives outside the app: a government portal, a bank app, a wet signature. The app can prefill and deep-link but can't press the button.",
+      "Screen Time shields need Apple's Family Controls entitlement, and DeviceActivity schedules have a 15-minute minimum, so the shield lasts until you tap Done or up to 15 minutes.",
+      "Changing tactics after two snoozes needs a record of what works for this person, without turning into nagging."
+    ],
+    "risks": [
+      "Safety line: it summarizes and drafts; it doesn't give legal, tax or financial advice. Serious letters get a plain 'this matters, here is free help' path, and every deadline shows its source.",
+      "Mail holds account numbers and health details. Read on-device, and ask for 5.1.2(i) consent before any cloud model or call agent sees it.",
+      "Nudges can turn into shame. No streaks, no guilt copy, and snoozing is always allowed."
+    ],
+    "assumptions": [
+      "Avoidance is mostly about dreading an unclear first step, not the work itself. When the last step is the dreaded part (a hard conversation), shrinking the task doesn't help.",
+      "People will scan a letter they haven't read if the app promises to tell them how bad it is first.",
+      "Most dreaded admin can be reduced to a signature, a Face ID or a yes."
+    ],
+    "unknowns": [
+      "Does hearing the worst realistic outcome reduce avoidance, or raise anxiety for some people?",
+      "What share of dreaded items can the agent actually finish, and how many does it hand back?",
+      "Who pays: individuals, ADHD coaching services, or employer benefits programs?"
+    ],
+    "prior_art": [
+      {
+        "name": "Shelpful",
+        "url": "https://apps.apple.com/py/app/shelpful-ai-for-adhd-tasks/id6741499362",
+        "note": "AI plus human coaches for ADHD task breakdown and accountability. It helps you plan; it doesn't open the letter or do the task."
+      },
+      {
+        "name": "alfred_",
+        "url": "https://get-alfred.ai/blog/ai-agent-for-adhd",
+        "note": "Email and calendar assistant pitched to ADHD users. Inbox-first; no paper mail, calls or last-step design."
+      },
+      {
+        "name": "Saner.AI",
+        "url": "https://www.saner.ai/",
+        "note": "Notes, tasks and reminders for ADHD brains. Organizes, doesn't act."
+      },
+      {
+        "name": "Marblism",
+        "url": "https://www.marblism.com/blog/best-ai-tools-for-adhd",
+        "note": "AI assistants for work admin, aimed at professionals' inboxes, not a person's dreaded personal mail."
+      }
+    ],
+    "first_version": "Scan or share one item and get a one-line verdict: what it is, the worst realistic outcome, the deadline and how many minutes it needs. For the three most common kinds (a bill, a form, an appointment to book) it drafts the reply or fills the form, then leaves you one Live Activity step with a timer.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-23",
+      "W-08",
+      "W-26"
+    ],
+    "notes_for_editor": "The candidate's 3-minute shield is now 'until Done or up to 15 minutes' because DeviceActivity's minimum schedule is 15 minutes (verified in Apple docs); the app can also set and clear ManagedSettings shields itself. The FaceTime body-double invite became a prefilled message, since apps can't create FaceTime links. Goblin Tools was dropped from prior_art (no verified URL). The alfred_, Saner.AI and Marblism URLs come from the candidate and were not opened; Marblism's product description is from general knowledge."
+  },
+  {
+    "id": "W-06",
+    "slug": "accommodations-booked-ahead",
+    "title": "Accommodations Booked Ahead",
+    "tagline": "Requests the ASL interpreter, captioner or language interpreter you're owed, then chases it until confirmed.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Accessibility",
+    "moment": "You're Deaf, and your cardiology follow-up is in nine days. Last time the clinic 'forgot' the interpreter and offered to pass notes. This time, the night you book, your phone has already emailed the clinic's patient-access office, and by day three you have a written confirmation naming the interpreter agency.",
+    "problem": "Hospitals, courts, airlines and schools have legal duties to provide interpreters, captioning and other accommodations, but in practice the person who needs them does the chasing. Requests get lost, the interpreter doesn't show, and the fallback is 'we'll write notes' or a relative interpreting. Students with approved extra exam time face the same paperwork race every term. Interpreter platforms sell to institutions, so nobody builds for the person making the request.",
+    "loop": {
+      "trigger": "New appointment, hearing, flight or exam",
+      "senses": "Calendar, forwarded confirmations, syllabi",
+      "decides": "What's owed, by whom, by when",
+      "checks_with_you": "First request to each place; any fallback",
+      "acts": "Requests, follows up, gets it in writing",
+      "remembers": "Contacts per institution, what worked"
+    },
+    "ios_blocks": [
+      {
+        "name": "EventKit",
+        "why": "spots new appointments, court dates, flights and exams"
+      },
+      {
+        "name": "App Intents",
+        "why": "a 'request accommodation for this event' action from Siri or Shortcuts"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "request status in the days before an appointment"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "replies, fallback offers that need your answer, and the day-before confirmation"
+      },
+      {
+        "name": "Translation",
+        "why": "shows the institution's replies in your own language"
+      },
+      {
+        "name": "Foundation Models and PrivateCloudComputeLanguageModel",
+        "why": "drafts short, rule-citing requests while keeping disability details on Apple's models"
+      },
+      {
+        "name": "VisionKit and PDFKit",
+        "why": "reads syllabi and accommodation letters to find exam dates"
+      }
+    ],
+    "hard_parts": [
+      "Finding the right contact. The patient-access office, ADA coordinator, court interpreter office or airline accessibility desk is rarely on the appointment confirmation, so the agent needs a contact directory per institution that stays current.",
+      "Getting confirmation in writing. Offices confirm by phone or not at all. The follow-up call has to ask for the agency name, interpreter type and in-person versus video, and then get it in an email.",
+      "Each school's testing center runs its own portal (such as AIM or Accommodate) with no API, so exam booking stays a prefilled one-tap handoff to the student.",
+      "The rules differ: the ADA and Section 504, Section 1557 language access, the Air Carrier Access Act and state court rules each set different duties and notice periods."
+    ],
+    "risks": [
+      "Safety line: it is not legal advice. It cites rules in plain words, never threatens legal action on its own, and any complaint packet is for the person to read and file.",
+      "Disability status and language needs are sensitive. Share the minimum in each request, draft on Apple's models where possible, and get 5.1.2(i) consent before any third-party model sees them.",
+      "An agent-sent request could be treated as spam or as less legitimate, delaying the accommodation it was meant to secure."
+    ],
+    "assumptions": [
+      "Institutions act faster on a polite, dated, rule-citing written request than on a patient's phone call.",
+      "They won't treat an agent-sent request as less legitimate than one typed by the person.",
+      "Users will approve the first request to each institution and trust later ones to go out automatically."
+    ],
+    "unknowns": [
+      "Who pays: users, disability organizations, Medicaid plans, legal-aid groups or universities?",
+      "Does a written paper trail measurably reduce no-show interpreters?",
+      "How should it handle video remote interpreting offers, which some Deaf patients accept and others find unusable?"
+    ],
+    "prior_art": [
+      {
+        "name": "Boostlingo on-demand ASL interpreting",
+        "url": "https://boostlingo.com/solutions/interpreter-services/on-demand/asl-interpretation-services/",
+        "note": "Interpreting sold to hospitals and courts. The provider books it; the patient has no way to make sure it happens."
+      },
+      {
+        "name": "Sorenson healthcare interpreting",
+        "url": "https://sorenson.com/enterprise/healthcare/",
+        "note": "Interpreting for health providers. Same institution-side model."
+      },
+      {
+        "name": "Ability Together guide to requesting ASL interpreters",
+        "url": "https://abilitytogether.org/scheduling-a-medical-appointment-understanding-the-ada-and-asl-interpreters/",
+        "note": "Explains how to ask for an interpreter under the ADA. A how-to the person still carries out alone, every time."
+      },
+      {
+        "name": "UIC accommodated testing rules",
+        "url": "https://drc.uic.edu/drc-testing/accommodatedtesting/",
+        "note": "Typical testing-center rules with fixed booking windows. Students track and book every exam themselves."
+      },
+      {
+        "name": "Purdue DRC booking reminders",
+        "url": "https://www.purdue.edu/drc/news/01_28_22.php",
+        "note": "A disability office reminding students about booking deadlines, a sign that missed windows are common."
+      }
+    ],
+    "first_version": "Medical appointments only, for Deaf and hard-of-hearing users. When a new appointment lands in your calendar, it drafts a request for an ASL interpreter or CART captioning to the clinic's patient-access office, sends it after your first approval, follows up at 72 hours, and asks for written confirmation two days before.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "W-07",
+      "W-11",
+      "W-29"
+    ],
+    "notes_for_editor": "Merged 'Accommodations Autopilot' (finding every exam in a student's syllabi and booking extended-time seats before the testing center's deadline). AIM and Accommodate are named without URLs (not verified). The Boostlingo, Sorenson, Ability Together, UIC and Purdue URLs come from the candidates and were not opened. The legal duties are named at a high level from general knowledge."
+  },
+  {
+    "id": "W-07",
+    "slug": "deaf-first-call-agent",
+    "title": "Deaf-First Call Agent",
+    "tagline": "Sits through phone trees and hold music, handles routine questions, then hands you the call in captions.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Social & communication",
+    "moment": "You're hard of hearing, and the pharmacy's refill line is a voice-only menu that times out before captions catch up. You type 'refill my lisinopril and ask when it's ready'. The agent calls, gets through the menu, waits 18 minutes on hold and gives your date of birth from your profile. It only taps your Watch when the pharmacist asks something outside its brief, and then you take over with live captions while your typed replies are spoken aloud.",
+    "problem": "Voice-only phone menus, hold queues and 'we only call back' offices are still a wall for Deaf and hard-of-hearing people. Caption apps help once a person is on the line, but you still sit through the menu and the hold. General calling agents handle menus and holds, then report a summary afterwards. None hands the live call back to a Deaf user, in captions, at the moment a person is needed.",
+    "loop": {
+      "trigger": "You type a goal and pick a business",
+      "senses": "Call audio, menu prompts, your profile",
+      "decides": "Handle it, ask you, or hand you the call",
+      "checks_with_you": "The call brief, then off-brief questions",
+      "acts": "Dials, works menus, holds, bridges you in",
+      "remembers": "Menu paths per business, results"
+    },
+    "ios_blocks": [
+      {
+        "name": "CallKit and PushKit",
+        "why": "rings you in like a normal call when you take over the live line"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer, SpeechTranscriber)",
+        "why": "on-device live captions of the other person"
+      },
+      {
+        "name": "AVFAudio (AVSpeechSynthesizer, Personal Voice)",
+        "why": "speaks your typed replies, in your own voice if you made one and allow it"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "'on hold, 18 min' and 'pharmacist has a question' on the Lock Screen and Watch"
+      },
+      {
+        "name": "WatchKit (WKInterfaceDevice haptics)",
+        "why": "a distinct tap when a person picks up or asks for you"
+      },
+      {
+        "name": "App Intents",
+        "why": "'call the pharmacy about my refill' from Siri or Shortcuts"
+      },
+      {
+        "name": "MapKit (MKLocalSearch)",
+        "why": "finds the business and its number"
+      }
+    ],
+    "hard_parts": [
+      "The handoff. Moving a live cloud call into a VoIP session on the phone without dropping it, with captions fast enough for real conversation.",
+      "Staying on the line. Many businesses hang up on anything that sounds like a robocall. The agent has to say up front that it is an assistant calling for a Deaf customer.",
+      "Identity checks. Pharmacies and banks ask for date of birth or more. The brief must say exactly what the agent may disclose, and anything beyond that goes to you.",
+      "Funding. FCC relay services such as IP CTS are paid per minute for conversations between two people, so an agent talking on its own probably falls outside that model and needs another way to pay for minutes."
+    ],
+    "risks": [
+      "Health safety line: it can ask about a refill or a ready date, but it never agrees to a change in medication, dose or pharmacy. Anything clinical is handed to you live.",
+      "Mishearing. A wrong ready date or confirmation number costs a trip. Key facts are read back on the call and shown to you with the audio clip.",
+      "Consent and disclosure. Some states require every party's consent to record, and the FCC treats AI-generated voices as 'artificial' under the TCPA. The agent identifies itself and keeps recordings only with consent."
+    ],
+    "assumptions": [
+      "Businesses will stay on the line with an AI that says it is calling for a Deaf customer instead of hanging up on it as a robocall.",
+      "Deaf users will trust a machine to speak for them on routine turns.",
+      "On-device captions are fast and accurate enough on phone-quality audio."
+    ],
+    "unknowns": [
+      "Can Personal Voice audio be streamed into a VoIP call, and does Apple's authorization allow that use?",
+      "Would the FCC treat an agent-plus-handoff service as relay, so that part of it could be funded that way?",
+      "How often do routine calls hit a point that needs the user, and how long will the other side hold?"
+    ],
+    "prior_art": [
+      {
+        "name": "Rylo (formerly Nagish)",
+        "url": "https://apps.apple.com/us/app/rylo-live-call-captioning/id1514154600",
+        "note": "Live captions and type-to-speak on phone calls. You still sit through menus and hold yourself; it doesn't make the call for you."
+      },
+      {
+        "name": "Rylo's $85M raise (2026)",
+        "url": "https://hlth.com/insights/news/rylo-raises-85m-to-scale-ai-communication-tools-for-deaf-and-hard-of-hearing-users",
+        "note": "Funding to grow from call captioning into a wider communication platform. Shows demand; no agent that calls for you yet."
+      },
+      {
+        "name": "Pine AI",
+        "url": "https://apps.apple.com/us/app/pine-assistant/id6746403769",
+        "note": "Calls businesses, waits on hold and works phone menus, then reports back. No live, captioned handoff."
+      },
+      {
+        "name": "Genspark Call for Me",
+        "url": "https://www.businesswire.com/news/home/20260203556134/en/Genspark-Uses-Twilio-to-Power-Global-AI-Calling-Call-for-Me-Agent",
+        "note": "Places calls and returns structured results, for users who read a summary afterwards."
+      },
+      {
+        "name": "Apple Hold Assist (iOS 26)",
+        "url": "https://www.macrumors.com/how-to/ios-26-make-your-iphone-wait-on-hold-for-you/",
+        "note": "Waits on hold on cellular calls, first-party only. It alerts you when a person picks up, which assumes you can then hear them."
+      }
+    ],
+    "first_version": "Outbound calls to pharmacies and doctors' offices only. You type the goal and approve a brief; the agent calls, works the menu and holds. When a person answers it handles the routine part, and at anything off-brief it asks them to hold and taps your Watch so you can join with live captions and type-to-speak. An inbound number for offices that 'only call back' comes next.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-02",
+      "W-06",
+      "M-16"
+    ],
+    "notes_for_editor": "Rylo's $85M raise and Nagish rename confirmed via search results (hlth.com, MobiHealthNews, Ctech). The candidate's 'FCC-certified AI captioning' for Rylo was not verified, so the card doesn't claim it. Whether Personal Voice audio can be piped into a VoIP stream is untested (write(_:toBufferCallback:) exists; policy unknown). The FCC's 2024 ruling on AI voices under the TCPA is from general knowledge."
+  },
+  {
+    "id": "W-08",
+    "slug": "paper-round-trip",
+    "title": "Paper Round-Trip",
+    "tagline": "Reads the letter aloud, fills the form with you by voice, then mails or faxes it back before the deadline.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Life admin",
+    "moment": "You're blind, or you read Arabic but not English, and a thick envelope arrives: a Medicaid renewal due in 30 days. You hold your phone over it and hear, in plain words and your language, what it is, the deadline and the five things it needs from you. You answer out loud while making tea. The next morning the signed form is in the mail with tracking, and a reminder is set to check that the office logged it.",
+    "problem": "Paper letters from agencies are the last channel that stays inaccessible to blind people, low-literacy readers and people who don't read English. Reading apps stop at reading, and form helpers stop at explaining fields. The return trip (filling, signing, sending by a channel the agency accepts, and confirming receipt) is where deadlines are missed and benefits lapse.",
+    "loop": {
+      "trigger": "You scan an envelope's pages",
+      "senses": "Pages, form fields, your profile, voice",
+      "decides": "What it is, what's missing, how to return",
+      "checks_with_you": "Each answer read back; every send",
+      "acts": "Fills, signs, mails, faxes or uploads",
+      "remembers": "Profile, case numbers, receipt checks"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "guided page capture that works with VoiceOver"
+      },
+      {
+        "name": "Vision (RecognizeDocumentsRequest)",
+        "why": "reads structured pages, including on phones without Apple Intelligence"
+      },
+      {
+        "name": "Foundation Models (Attachment) with Vision's OCRTool",
+        "why": "reads and classifies the letter privately on newer phones"
+      },
+      {
+        "name": "PDFKit (PDFAnnotation)",
+        "why": "fills the form's fields"
+      },
+      {
+        "name": "PencilKit (PKCanvasView)",
+        "why": "captures a finger signature"
+      },
+      {
+        "name": "Speech (SpeechTranscriber) and AVSpeechSynthesizer",
+        "why": "asks questions by voice and reads every answer back"
+      },
+      {
+        "name": "Translation",
+        "why": "summaries and questions in the user's language"
+      },
+      {
+        "name": "PassKit (PKAddPassesViewController)",
+        "why": "saves a cash-payment barcode as a Wallet pass"
+      },
+      {
+        "name": "EventKit",
+        "why": "deadline and 'confirm receipt' reminders"
+      }
+    ],
+    "hard_parts": [
+      "Form mapping. A scanned form has no field data. Finding each box, its label and its format (dates, checkboxes, case numbers) from a photo is error-prone, and every value must be read back before it's written.",
+      "Signatures. Some agencies need ink. The app must know which ones and route to a trusted person or in-person help, rather than send something that will be rejected.",
+      "The return channel. Mail and fax need a paid backend (print-and-mail and cloud fax services), and portal uploads need a server-side browser that agency sites may block.",
+      "Older phones. The people who most need this often don't have Apple Intelligence hardware, so reading falls back to Vision OCR and a cloud model, which needs explicit consent."
+    ],
+    "risks": [
+      "Safety line: it is not legal or benefits advice. It reads and fills what you tell it; eligibility questions and appeals go to legal aid or a caseworker, and you approve every outbound item.",
+      "A missed deadline can mean lost coverage. Tracking numbers, receipt reminders and a 'did the office log it?' follow-up are part of the job, not extras.",
+      "Household, income and immigration details are highly sensitive. The profile stays on the phone, encrypted, and is shared only with the agency the form is for."
+    ],
+    "assumptions": [
+      "Agencies accept an e-signature or a printed copy of a finger signature for most routine forms.",
+      "Users will trust a voice read-back enough to let the app send a benefits form.",
+      "Mail and fax are still accepted return channels for most agency letters."
+    ],
+    "unknowns": [
+      "Which agencies reject printed signatures, and how can the app know in advance?",
+      "Who carries the blame for a lost envelope or a late fax?",
+      "Would benefits offices or legal-aid groups sponsor the mailing costs?"
+    ],
+    "prior_art": [
+      {
+        "name": "ImmiGuide USCIS form helper",
+        "url": "https://apps.apple.com/us/app/immiguide-uscis-form-helper/id6761538383",
+        "note": "Explains USCIS form fields in plain language in 8 languages. It doesn't fill, sign, send or track anything."
+      },
+      {
+        "name": "FormBharo (research)",
+        "url": "https://arxiv.org/pdf/2608.06027",
+        "note": "Voice-driven form filling for low-literacy users. A research prototype with no return channel."
+      },
+      {
+        "name": "Be My Eyes, Seeing AI and Envision",
+        "url": "https://www.bemyeyes.com/business/blog/the-future-of-ai-in-accessible-customer-service-for-blind-and-low%E2%80%91vision-customers/",
+        "note": "Apps for blind and low-vision users read and describe documents well. They stop at reading; nothing fills and returns the form."
+      },
+      {
+        "name": "Immigration AI for law firms (Docketwise)",
+        "url": "https://www.docketwise.com/blog/ai-for-immigration-lawyers/",
+        "note": "Most form AI in this space is sold to lawyers, not to the person holding the letter."
+      }
+    ],
+    "first_version": "One letter family in one state, such as Medicaid and SNAP renewals, in two languages. Scan, hear a summary, answer by voice, sign with a finger, and the app mails the form with tracking and sets a receipt reminder. Every outbound item needs a double-tap and Face ID.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 5
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-05",
+      "W-26",
+      "B-19"
+    ],
+    "notes_for_editor": "Corrected the candidate: OCRTool belongs to the Vision framework (iOS 27) and is passed to a Foundation Models session; it isn't a Foundation Models type. FormBharo (arXiv 2608.06027) is from the candidate and was not opened. The claim that Siri AI is English-only at launch and needs iPhone 15 Pro or later comes from the research digest."
+  },
+  {
+    "id": "W-09",
+    "slug": "pause-and-ask-errands",
+    "title": "Pause-and-Ask Errands",
+    "tagline": "A web-errand agent built for VoiceOver: it does the task and stops at every real choice instead of guessing.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Accessibility",
+    "moment": "You're blind, and you ask for the cheapest unscented laundry pods from the store you always use. It finds three at the same price and, instead of silently picking one, reads you a short list (brand, count, rating, one line each), and you choose with a VoiceOver custom action. Before it presses Buy, it reads the total and delivery date and waits for your double-tap and Face ID.",
+    "problem": "Blind users could gain the most from agents that work websites for them, yet today's agents fail them twice. One study found a leading computer-use agent's success falling from 78% to 28% under screen-magnifier conditions, and a field study saw an agent silently pick among equal-price items for a blind shopper. Mainstream agents are tuned to interrupt as little as possible, and their approval screens are built around screenshots.",
+    "loop": {
+      "trigger": "You ask for an errand by voice or text",
+      "senses": "Cloud browser page state, your preferences",
+      "decides": "Is this a real choice, or a trap to flag?",
+      "checks_with_you": "Every tie, upsell, term change, and Buy",
+      "acts": "Works the site, fills forms, places order",
+      "remembers": "Standing preferences you approved"
+    },
+    "ios_blocks": [
+      {
+        "name": "UIKit accessibility (accessibilityCustomActions, UIAccessibilityCustomRotor)",
+        "why": "choice cards with a fixed reading order, rotor headings and choose, hear-more and cancel actions"
+      },
+      {
+        "name": "UIAccessibility announcements",
+        "why": "speaks progress and 'needs you' without moving VoiceOver focus"
+      },
+      {
+        "name": "App Intents (SnippetIntent)",
+        "why": "the same choice card from Siri or the Action button"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "progress on long errands"
+      },
+      {
+        "name": "Core Haptics (CHHapticEngine)",
+        "why": "a distinct 'needs you' pattern"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID before anything is bought"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "an accessible sign-in hand-off to the cloud browser session"
+      }
+    ],
+    "hard_parts": [
+      "Finding real decision points. Price ties, substitutions, pre-ticked boxes, auto-renew and changed terms look different on every site. Too few pauses and it guesses; too many and the errand stalls.",
+      "Accessible sign-in. Logging into a retailer through a cloud browser has to work with VoiceOver, including CAPTCHAs and two-factor codes, without asking the user to look at a screenshot.",
+      "Bot defenses. Retailers may block cloud browsers, so partner APIs are more reliable where they exist.",
+      "Reading order. Every card puts the price first and stays short. Long card text defeats the point."
+    ],
+    "risks": [
+      "Money safety line: it never buys without reading back the item, total and delivery date and getting an explicit confirmation. Afterwards it keeps return windows and cancel links in a spoken log.",
+      "Retail logins held in a cloud browser are a target. Sessions are scoped per site and can be revoked from the phone.",
+      "Site dark patterns, like a pre-ticked subscription, could slip through if detection misses them. Unknown checkboxes are flagged, never accepted."
+    ],
+    "assumptions": [
+      "Blind users will accept a cloud browser holding their retail logins.",
+      "Retailers won't block it.",
+      "For this audience, more interruptions at the right moments feel like control, not friction."
+    ],
+    "unknowns": [
+      "What pause rate do blind users prefer, and does it drop as trust grows?",
+      "Will accessibility law push retailers to offer an agent-friendly API?",
+      "How should it present choices that are hard to describe in words, like colors or styles?"
+    ],
+    "prior_art": [
+      {
+        "name": "Morae (research)",
+        "url": "https://huggingface.co/papers/2508.21456",
+        "note": "Pauses UI agents at decision points so blind users choose. A research prototype, not an iPhone product."
+      },
+      {
+        "name": "CHI 2026 voice computer-use agent for visually impaired shoppers",
+        "url": "https://dl.acm.org/doi/10.1145/3772318.3791681",
+        "note": "Studied a voice agent for blind shoppers. Research, not shipping."
+      },
+      {
+        "name": "A11y-CUA dataset",
+        "url": "https://huggingface.co/papers/2602.09310",
+        "note": "Shows agent success falling from 78.3% to 41.67% keyboard-only and 28.3% under magnifier. Measures the gap; doesn't fix it."
+      },
+      {
+        "name": "Be My Eyes",
+        "url": "https://www.bemyeyes.com/business/blog/the-future-of-ai-in-accessible-customer-service-for-blind-and-low%E2%80%91vision-customers/",
+        "note": "Describes scenes and screens and supplies accessible support to businesses. It doesn't complete purchases for the user."
+      },
+      {
+        "name": "ChatGPT agent on iOS",
+        "url": "https://techcrunch.com/2026/09/23/chatgpt-mobile-app-gets-voice-based-agentic-features/",
+        "note": "A cloud browser that runs errands, tuned for sighted users: few interruptions and screenshot-based progress."
+      }
+    ],
+    "first_version": "One retailer the user already shops at, reorders and simple searches only. Every choice arrives as a VoiceOver-first card with the price first, and every order ends with a spoken read-back and Face ID.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-01",
+      "M-04",
+      "M-05"
+    ],
+    "notes_for_editor": "The candidate's 'Foundation Models onToolCall confirmations' was dropped because the agent runs in a cloud browser; confirmations are enforced on the server and on the phone with Face ID. The CHI 2026 URL is from the candidate and was not opened. Feasibility is 3 because retailer bot defenses can block the cloud browser."
+  }
+]
