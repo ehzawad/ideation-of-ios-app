@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 600" width="1280" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">From a grid of apps to one line</title>
+  <desc id="desc">Left: today's iPhone home screen, a grid of app icons, where connecting AirPods and lowering the volume means a path of taps through Settings and Control Center. Right: the Line, a single conversation. One sentence, "Connect my AirPods and turn it down a bit", becomes two typed capability calls, bluetooth.connect and audio.setVolume, each with a receipt and an Undo, followed by a live volume slider and a one-line reply.</desc>
+  <style>
+    svg { --bg:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --line:#e1e0d9; --icon:#d9e2ee; --gridscr:#eef2f7; --badge:#eb6834;
+          --scr:#0b1018; --scr-ink:#e8edf4; --scr-muted:#8b97a9; --scr-card:#141b26; --scr-card2:#1a2331; --scr-rule:#253144; --acc:#93a6ff; --ok:#4fd197; --bez:#05070b; --blue:#2a78d6; }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#111113; --ink:#ffffff; --ink2:#c3c2b7; --muted:#8e8e93; --line:#2c2c2a; --icon:#34405a; --gridscr:#1b2230; --badge:#d95926; --bez:#2c3445; --blue:#3987e5; }
+    }
+    text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .bg { fill: var(--bg); }
+    .title { fill: var(--ink); font-size: 26px; font-weight: 700; }
+    .sub { fill: var(--ink2); font-size: 15px; }
+    .cap { fill: var(--ink); font-size: 15px; font-weight: 600; }
+    .cap2 { fill: var(--ink2); font-size: 13.5px; }
+    .note { fill: var(--ink); font-size: 14px; font-weight: 600; }
+    .note2 { fill: var(--ink2); font-size: 13px; }
+    .lead { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 3 4; }
+    .bez { fill: var(--bez); }
+    .scr { fill: var(--scr); }
+    .gridscr { fill: var(--gridscr); }
+    .icon { fill: var(--icon); }
+    .badge { fill: var(--badge); }
+    .badge-t { fill: #ffffff; font-size: 12px; font-weight: 800; }
+    .bubble { fill: var(--scr-card2); }
+    .t-ink { fill: var(--scr-ink); }
+    .t-muted { fill: var(--scr-muted); }
+    .t-acc { fill: var(--acc); }
+    .dot { fill: var(--ok); }
+    .rule { stroke: var(--scr-rule); stroke-width: 1.5; fill: none; }
+    .card { fill: var(--scr-card); stroke: var(--scr-rule); stroke-width: 1; }
+    .track { fill: #2a3445; }
+    .fill { fill: var(--acc); }
+    .knob { fill: #ffffff; }
+    .arrow { stroke: var(--blue); stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+  <rect class="bg" width="1280" height="600"/>
+  <text class="title" x="40" y="52">From a grid of apps to one line</text>
+  <text class="sub" x="40" y="80">The same errand: connect the AirPods and turn the volume down a little.</text>
+
+  <!-- left phone: the grid -->
+  <rect class="bez" x="110" y="110" width="280" height="420" rx="44"/>
+  <rect class="gridscr" x="121" y="121" width="258" height="398" rx="34"/>
+  <rect x="210" y="130" width="80" height="20" rx="10" fill="#05070b"/>
+  <g>
+    <!-- 4 x 5 icons, 44px, gap 18 -->
+    <rect class="icon" x="140" y="170" width="44" height="44" rx="11"/><rect class="icon" x="202" y="170" width="44" height="44" rx="11"/><rect class="icon" x="264" y="170" width="44" height="44" rx="11"/><rect class="icon" x="326" y="170" width="44" height="44" rx="11"/>
+    <rect class="icon" x="140" y="236" width="44" height="44" rx="11"/><rect class="icon" x="202" y="236" width="44" height="44" rx="11"/><rect class="icon" x="264" y="236" width="44" height="44" rx="11"/><rect class="icon" x="326" y="236" width="44" height="44" rx="11"/>
+    <rect class="icon" x="140" y="302" width="44" height="44" rx="11"/><rect class="icon" x="202" y="302" width="44" height="44" rx="11"/><rect class="icon" x="264" y="302" width="44" height="44" rx="11"/><rect class="icon" x="326" y="302" width="44" height="44" rx="11"/>
+    <rect class="icon" x="140" y="368" width="44" height="44" rx="11"/><rect class="icon" x="202" y="368" width="44" height="44" rx="11"/><rect class="icon" x="264" y="368" width="44" height="44" rx="11"/><rect class="icon" x="326" y="368" width="44" height="44" rx="11"/>
+    <rect class="icon" x="140" y="450" width="44" height="44" rx="11"/><rect class="icon" x="202" y="450" width="44" height="44" rx="11"/><rect class="icon" x="264" y="450" width="44" height="44" rx="11"/><rect class="icon" x="326" y="450" width="44" height="44" rx="11"/>
+  </g>
+  <!-- tap path badges -->
+  <circle class="badge" cx="366" cy="174" r="11"/><text class="badge-t" x="366" y="178" text-anchor="middle">1</text>
+  <circle class="badge" cx="242" cy="306" r="11"/><text class="badge-t" x="242" y="310" text-anchor="middle">2</text>
+  <circle class="badge" cx="180" cy="372" r="11"/><text class="badge-t" x="180" y="376" text-anchor="middle">3</text>
+  <circle class="badge" cx="304" cy="240" r="11"/><text class="badge-t" x="304" y="244" text-anchor="middle">4</text>
+  <circle class="badge" cx="366" cy="454" r="11"/><text class="badge-t" x="366" y="458" text-anchor="middle">5</text>
+  <circle class="badge" cx="180" cy="454" r="11"/><text class="badge-t" x="180" y="458" text-anchor="middle">6</text>
+  <text class="cap" x="250" y="562" text-anchor="middle">Today</text>
+  <text class="cap2" x="250" y="584" text-anchor="middle">A path of taps through Settings and Control Center</text>
+
+  <!-- arrow -->
+  <path class="arrow" d="M430 320 H548 M530 302 L548 320 L530 338"/>
+
+  <!-- right phone: the Line -->
+  <rect class="bez" x="590" y="110" width="300" height="420" rx="44"/>
+  <rect class="scr" x="601" y="121" width="278" height="398" rx="34"/>
+  <rect x="700" y="130" width="80" height="20" rx="10" fill="#000000"/>
+  <rect x="622" y="168" width="18" height="2.5" rx="1.25" class="fill"/>
+  <text class="t-ink" x="646" y="174" font-size="15" font-weight="700">Line</text>
+  <!-- user bubble -->
+  <rect class="bubble" x="706" y="190" width="160" height="46" rx="14"/>
+  <text class="t-ink" x="718" y="209" font-size="12.5">Connect my AirPods and</text>
+  <text class="t-ink" x="718" y="227" font-size="12.5">turn it down a bit</text>
+  <!-- step 1 -->
+  <circle class="dot" cx="620" cy="258" r="4"/>
+  <text class="mono t-ink" x="630" y="262" font-size="11">bluetooth.connect<tspan class="t-muted">(device: airpods)</tspan></text>
+  <path class="rule" d="M622 268 v10 a4 4 0 0 0 4 4 h6"/>
+  <text class="t-muted" x="638" y="286" font-size="11.5">Connected AirPods Pro</text>
+  <text class="t-acc" x="864" y="286" font-size="11.5" font-weight="700" text-anchor="end">Undo</text>
+  <!-- step 2 -->
+  <circle class="dot" cx="620" cy="310" r="4"/>
+  <text class="mono t-ink" x="630" y="314" font-size="11">audio.setVolume<tspan class="t-muted">(delta: -5)</tspan></text>
+  <path class="rule" d="M622 320 v10 a4 4 0 0 0 4 4 h6"/>
+  <text class="t-muted" x="638" y="338" font-size="11.5">Volume 45% → 40% on AirPods Pro</text>
+  <text class="t-acc" x="864" y="338" font-size="11.5" font-weight="700" text-anchor="end">Undo</text>
+  <!-- slider card -->
+  <rect class="card" x="614" y="354" width="254" height="64" rx="14"/>
+  <text class="t-ink" x="628" y="378" font-size="12.5" font-weight="600">Volume · AirPods Pro</text>
+  <text class="t-ink" x="854" y="378" font-size="12.5" font-weight="700" text-anchor="end">40%</text>
+  <rect class="track" x="628" y="396" width="226" height="5" rx="2.5"/>
+  <rect class="fill" x="628" y="396" width="90" height="5" rx="2.5"/>
+  <circle class="knob" cx="718" cy="398.5" r="8"/>
+  <!-- reply -->
+  <text class="t-ink" x="616" y="446" font-size="13">Done. Your AirPods are at 40%.</text>
+  <!-- composer -->
+  <rect x="614" y="474" width="210" height="32" rx="16" class="bubble"/>
+  <text class="t-muted" x="630" y="494" font-size="12">Ask or tell your phone…</text>
+  <circle cx="850" cy="490" r="16" class="fill"/>
+  <path d="M850 497 V483 M844 489 l6 -6 6 6" stroke="#0b1018" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="cap" x="740" y="562" text-anchor="middle">The Line</text>
+  <text class="cap2" x="740" y="584" text-anchor="middle">One sentence, two typed calls, each with an undo</text>
+
+  <!-- callouts -->
+  <path class="lead" d="M872 262 H948"/>
+  <text class="note" x="956" y="258">Capability calls</text>
+  <text class="note2" x="956" y="277">Typed, named, and checked by the</text>
+  <text class="note2" x="956" y="294">Gate before they run</text>
+  <path class="lead" d="M872 338 H948"/>
+  <text class="note" x="956" y="334">Receipts with Undo</text>
+  <text class="note2" x="956" y="353">Every change is in the ledger</text>
+  <path class="lead" d="M872 398 H948"/>
+  <text class="note" x="956" y="394">A live card, not a picture</text>
+  <text class="note2" x="956" y="413">Drag it; the ledger records you did</text>
+  <path class="lead" d="M872 446 H948"/>
+  <text class="note" x="956" y="442">A short answer</text>
+  <text class="note2" x="956" y="461">It only claims what a call confirmed</text>
+</svg>

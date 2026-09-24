@@ -111,7 +111,7 @@ flowchart LR
   M --> C["Core Animation commit"]
   C --> R["Render server<br/>draws the frame"]
   R --> D["Display"]
-  M -.->|"busy for 250 ms or more"| H["Hang"]
+  M -.->|"busy for more than 250 ms"| H["Hang"]
   M -.->|"too slow for one frame"| X["Hitch"]
   R -.->|"frame not ready in time"| X
 ```
@@ -670,7 +670,7 @@ final class DiagnosticsReporter: Sendable {
 *a. Swift Testing suite (30 min).* In `ErrandTests`, add pattern 4's suites. Then add store tests against your Day 1 actor: adding an errand keeps its steps; completing steps in any order ends with every step done; 100 concurrent completions from a `withTaskGroup` leave the store consistent. In `ErrandPlannerTests`, add pattern 5's evaluation with at least ten real errands.
 *Done when:* at least 12 test cases pass, none uses `sleep`, and the evaluation is skipped cleanly on a machine without Apple Intelligence.
 
-*b. Instruments pass (25 min).* On a physical device, profile "plan an errand" three times with Time Profiler and Hangs. Then use the Foundation Models template. For each request, note the input and output tokens and the latency. If one request uses most of the 4,096-token window, shorten the instructions or split the task.
+*b. Instruments pass (25 min).* On a physical device, profile "plan an errand" three times with Time Profiler and Hangs. Then use the Foundation Models template. For each request, note the input and output tokens and the latency. If one request uses most of the on-device window (read `SystemLanguageModel.default.contextSize`; the docs say 4,096 tokens), shorten the instructions or split the task.
 *Done when:* you've written down the three numbers per request, found no hang over 250 ms, and deleted the trace files, since they hold your prompts.
 
 *c. Privacy manifest and consent review (15 min).* Add `PrivacyInfo.xcprivacy` to the app target. If you store settings in `UserDefaults`, declare it:
@@ -798,7 +798,7 @@ You've finished the week when you can do or explain each of these without lookin
 
 **Apple Intelligence (Day 5)**
 - [ ] Get typed output from the on-device model with `LanguageModelSession` and `@Generable`, and handle the model being unavailable.
-- [ ] Explain the 4,096-token on-device context window and when to move to Private Cloud Compute's 32K.
+- [ ] Explain the on-device context window (read `contextSize` at runtime; design for 4,096 tokens) and when to move to Private Cloud Compute's 32K.
 - [ ] Give the model a tool, and put a deterministic check in front of anything with side effects.
 - [ ] Say what guideline 5.1.2(i) requires before personal data reaches a third-party AI.
 

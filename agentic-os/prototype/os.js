@@ -303,6 +303,13 @@ const OS = (() => {
     description: 'Sends money to a contact. Needs approval with Face ID, and is refused above the per-purchase cap.',
     params: { to: { type: 'string' }, amount: { type: 'number' }, note: { type: 'string' } },
     whyRisky: (a) => `Money can't be pulled back. Your cap is $${state.wallet.perPurchaseCap} per payment.`,
+    check: (a) => {
+      if (!findContact(a.to)) return `No contact named "${a.to}".`;
+      const amt = Number(a.amount);
+      if (!(amt > 0)) return 'The amount must be more than zero.';
+      if (amt > state.wallet.perPurchaseCap) return `$${amt.toFixed(2)} is over your $${state.wallet.perPurchaseCap} per-payment cap. The cap changes in Settings, not by asking the assistant.`;
+      return null;
+    },
     preview: (a) => ({ type: 'info', icon: 'wallet', title: `Pay ${(findContact(a.to) || { name: a.to }).name}`, rows: [['Amount', '$' + Number(a.amount).toFixed(2)], ['Note', a.note || '—'], ['Cap', '$' + state.wallet.perPurchaseCap + ' per payment']] }),
     run: (a) => { const c = findContact(a.to); const amt = Number(a.amount);
       if (!c) throw new Error(`No contact named "${a.to}"`);
@@ -338,6 +345,9 @@ const OS = (() => {
     const c = capabilities[capId];
     if (!c) return { verdict: 'deny', reason: `Unknown capability ${capId}` };
     const risk = riskOf(capId, args);
+    // Hard limits are checked before anyone is asked: a request over the cap is refused, not offered for approval.
+    const why = c.check && c.check(args);
+    if (why) return { verdict: 'deny', risk, reason: why };
     if (risk === 'irreversible') return { verdict: 'ask', faceId: true, risk, reason: (c.whyRisky && c.whyRisky(args)) || 'This can’t be undone.' };
     if (RISK[risk] <= MODES[mode].autoUpTo) return { verdict: 'allow', risk, reason: `${risk} · allowed in ${MODES[mode].label} mode` };
     const g = risk === 'consequential' && grantFor(capId, args);

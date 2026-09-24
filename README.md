@@ -12,7 +12,13 @@ Every idea gets a card with the moment it helps, how the agent works (with a dia
 
 Snapshot date: **September 2026** (iOS 27, a week after Siri AI's beta launch).
 
-> **New to iOS?** The repo also has a learning hub: **[iOS 27 in 7 days](learn/README.md)**, a seven-day plan for building the mental model of an experienced iOS developer. It covers Swift 6.4, SwiftUI and Liquid Glass, App Intents and Siri AI, Foundation Models and on-device ML, Metal 4, and shipping, and is also available as a [PDF](learn/ios27-in-7-days.pdf).
+## Three books in one repository
+
+| Book | What it is | Read |
+|---|---|---|
+| **Agentic iOS: an idea atlas** | This page and everything under [`ideas/`](ideas/README.md) and [`docs/`](docs/): 85 agentic iPhone app ideas, the walls they hit, and how to build inside them. | [PDF, 325 pages](books/agentic-ios-idea-atlas.pdf) |
+| **[iOS 27 in 7 Days](learn/README.md)** | A seven-day plan for building the mental model of an experienced iOS developer: Swift 6.4, SwiftUI and Liquid Glass, data and lifecycle, App Intents and Siri AI, Foundation Models and on-device ML, Metal 4, and shipping. With a capstone app and a glossary. | [PDF](learn/ios27-in-7-days.pdf) |
+| **[The Agentic Phone](agentic-os/README.md)** | A design for what comes after apps: a phone whose home screen is one conversation, where apps become typed capabilities and fixed code decides what needs your OK. With a working [simulator](agentic-os/prototype/). | [PDF](books/the-agentic-phone.pdf) |
 
 <!-- BEGIN GENERATED:stats -->
 | Tier | Ideas | What it means |
@@ -181,6 +187,7 @@ The full sortable index with scores is in **[ideas/README.md](ideas/README.md)**
 | [Agent UI patterns](docs/ui-patterns.md) | Mockups of approval, status, receipt and guardrail screens |
 | [How this atlas was made](docs/method.md) | Sources, scoring, and the limits of this snapshot |
 | [iOS 27 in 7 days](learn/README.md) | The learning hub: mental models, APIs and a capstone app, as chapters and a [PDF](learn/ios27-in-7-days.pdf) |
+| [The Agentic Phone](agentic-os/README.md) | The third book: an agentic phone OS designed from the ground up, with a [browser simulator](agentic-os/prototype/) and its own [research](agentic-os/research/) |
 | [Research notes](research/README.md) | The raw findings behind the atlas, with confidence tags and sources |
 
 ## Contributing

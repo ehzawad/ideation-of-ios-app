@@ -141,7 +141,7 @@ You still need it for closures you store on `self` (handlers, callbacks), for ta
 | `@Model class Visit` | Attached macro (SwiftData) | The same observation machinery, plus backing storage for persistence (`_$backingData`, `schemaMetadata`, an `init`) and conformance to `PersistentModel`. |
 | `#Preview { … }` | Freestanding declaration macro | A type that Xcode's canvas discovers and runs. Its body is a `@MainActor` closure. |
 | `#expect(a == b)` | Freestanding expression macro | Code that evaluates `a` and `b` separately, so a failure prints both values and records an issue instead of crashing. |
-| `@State var count = 0` | Property wrapper (`@propertyWrapper struct State`) | Hidden storage plus computed accessors. `$count` is the projected value (a binding). |
+| `@State var count = 0` | Attached macro in Xcode 27 (`State()`; a property wrapper before that) | Hidden storage plus computed accessors, stored once per view identity. `$count` is still the projected value (a binding). Day 2 covers the switch. |
 | `var body: some View { … }` | Result builder (`@resultBuilder struct ViewBuilder`) | Each line, `if` and `for` inside becomes part of one nested value. |
 | `struct Visit: Codable` | Synthesized conformance | `init(from:)`, `encode(to:)` and a `CodingKeys` enum, written by the compiler. |
 
