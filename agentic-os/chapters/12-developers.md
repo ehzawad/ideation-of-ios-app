@@ -8,30 +8,9 @@ The history is blunt. Viv and Facebook M failed on coverage of third-party servi
 
 ## What an app becomes
 
-In the agentic phone an app becomes a **capability pack**: a signed bundle of capabilities, card templates and, optionally, a **surface**, a full-screen UI the pack draws for deep, visual or continuous work. Each part of today's app moves somewhere:
+In the agentic phone an app becomes a **capability pack**: a signed bundle of capabilities, card templates and, optionally, a **surface**, the full-screen UI an app draws for deep, visual or continuous work. [Chapter 6](06-capabilities.md) specifies the pack and walks through one for Corner Pizza, a local restaurant: `menu.search`, `cart.build`, `order.place` (irreversible, with a two-minute cancel), `order.status` and `order.cancel`. The icon becomes a name in each card's provenance line, the checkout screen becomes a request to the Wallet's payment sheet, and the app's own screens become a surface you open when you need them.
 
-| Today's app | In the agentic phone |
-|---|---|
-| Icon on the home grid | Name, icon and accent color in each card's provenance line ([Chapter 7](07-cards.md)) |
-| Screens and buttons for routine tasks | Capabilities the planner calls, and cards that show the results |
-| Checkout screen | A request to the system payment sheet |
-| Push notifications | Events the Line triages ([Chapter 4](04-the-line.md)) |
-| Permission prompts inside the app | Grants, managed in one place |
-| The whole app | An optional surface, opened for deep work |
-
-Here is what a pizza place's pack might declare. The ids and classes are this book's proposal:
-
-```
-Tony's Pizza · capability pack
-  food.menu.search     read          → menu card
-  food.cart.update     reversible    → cart card      undo: restore previous cart
-  food.order.quote     read          → price card     total, fees, delivery time
-  food.order.place     irreversible  → receipt card   compensator: food.order.cancel, 30 min
-  food.order.track     read          → live tracker card
-  surface              none
-```
-
-Two details matter economically. The quote is a separate read capability, so the phone can compare providers without ordering. And the order names a compensator with a deadline, which makes the receipt's Cancel button honest ([Chapter 9](09-trust.md)).
+This chapter adds one verb to Chapter 6's order group. `order.quote` is a read capability that returns an itemized total, fees and a delivery time without building a cart. It lets the phone compare providers without touching any of them, and it gives the ranker (below) a number to hold each provider to.
 
 Three shapes cover most apps:
 
@@ -41,7 +20,7 @@ Three shapes cover most apps:
 | Hybrid pack | Airline (seat map), maps (turn-by-turn), music | Many | For the visual or continuous part |
 | Surface-first pack | Games, video editing, drawing | A few (resume, export, share) | The main product |
 
-Packs are one of three sources of capability. A service with no phone app can publish a remote MCP server whose tools point to pre-declared UI templates: MCP Apps, MCP's first official extension since January 2026, supported in ChatGPT, Claude, Goose and VS Code ([MCP blog](https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/)). A remote agent, such as an airline's, can publish an A2A Agent Card listing its skills ([A2A](https://a2a-protocol.org/latest/specification/)). When nothing typed exists, the phone falls back to supervised screen automation, only where the app allows it (see legal access, below). In [the simulator](../prototype/), the weather card's provenance line reads "Weather (capability pack)" and Wallet's reads "System · Wallet", so you can tell a third party from the OS.
+A service can also reach the Line without a pack. With no phone app, it can publish a remote MCP server whose tools point to pre-declared UI templates: MCP Apps, MCP's first official extension since January 2026, supported in ChatGPT, Claude, Goose and VS Code ([MCP blog](https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/)). A remote agent, such as an airline's, can publish an A2A Agent Card listing its skills ([A2A](https://a2a-protocol.org/latest/specification/)). When nothing typed exists, the phone falls back to supervised screen automation, only where the app allows it. In [the simulator](../prototype/), the weather card's provenance line reads "Weather (capability pack)" and Wallet's reads "System · Wallet", so you can tell a third party from the OS.
 
 ## Who builds what
 
@@ -53,11 +32,9 @@ Packs are one of three sources of capability. A service with no phone app can pu
 | Pack builders | Packs for many small businesses at once | None yet (a proposal) |
 | People | Recipes and grants built from existing capabilities | Shortcuts; Nothing's Playground |
 
-What makes an economy possible is the **standard verb**. The OS defines verbs by domain (`food.order`, `ride.request`, `message.send`), each with a schema, a minimum effect class and a platform-written description. Many packs implement the same verb, and the planner learns it once.
+What makes an economy possible is the **standard verb** ([Chapter 6](06-capabilities.md)). The OS defines verbs such as `order.place`, `ride.request` and `message.send`, each with a schema and a minimum effect class, and many packs implement the same one. Apple's app schemas are the model: "a person can send a message on different apps that support the `sendMessage` schema with the same phrases" ([Apple](https://developer.apple.com/documentation/appintents/app-schema-domain-messages)). Apple also lets a schema supply an intent's default description ([Apple](https://developer.apple.com/documentation/appintents/appintent/description)). The agentic phone goes further for standard verbs: the platform writes the `describe.planner` text the planner reads, so no pack can talk the planner into choosing it.
 
-Apple already works this way. App schemas group intents into domains so "a person can send a message on different apps that support the `sendMessage` schema with the same phrases." An app that supports one Messages schema must support all five (draft, send, edit, unsend, mark read), and Xcode checks at build time ([Apple](https://developer.apple.com/documentation/appintents/app-schema-domain-messages)). When an intent conforms to a schema, the schema supplies its default description ([Apple](https://developer.apple.com/documentation/appintents/appintent/description)). The agentic phone takes both rules: a pack implementing `food.order.place` must also implement the quote and the cancel, and the platform writes what the planner reads about each standard verb.
-
-Once ten packs can all do `food.order`, something has to pick one.
+Once ten packs implement `order.place`, something has to put them in order.
 
 ## Who decides which pizza place?
 
@@ -65,7 +42,7 @@ On a grid, you chose the provider by tapping its icon. In the Line, "order a piz
 
 That position has a legal history. The European Commission fined Google €2.42 billion for favoring its own comparison-shopping service in search results, and the EU Court of Justice upheld the fine on September 10, 2024 ([Covington](https://www.covcompetition.com/2024/09/ecjs-google-shopping-judgment-the-end-of-a-long-saga/)). An agent picking one pizza place is ranking too, often with only the winner shown.
 
-In the agentic phone the model doesn't choose. The planner extracts the verb and constraints ("pizza, delivered, under $30, before 8"). A separate **ranker**, deterministic code like the Gate, picks the provider by published rules. That keeps pack descriptions from steering the choice and makes the choice explainable.
+In the agentic phone the model doesn't choose, and nothing chooses silently for a consequential or irreversible call ([Chapter 6](06-capabilities.md)). The planner extracts the verb and constraints ("pizza, delivered, under $30, before 8"). A separate **ranker**, deterministic code like the Gate, decides which providers to show and in what order, by published rules. You pick, or a preference you set does. For read-only verbs, such as a forecast, the top-ranked provider just runs. Keeping the model out keeps pack descriptions from steering the order and makes it explainable.
 
 ```mermaid
 flowchart TD
@@ -75,23 +52,21 @@ flowchart TD
   C -- Yes --> U["Use your usual"]
   C -- No --> F["Filter to providers that can do it now"]
   F --> R["Rank by published signals"]
-  R --> T{"Clear winner?"}
-  T -- Yes --> W["Propose it, with the reason"]
-  T -- No --> K["Show a choice card"]
+  R --> K["Choice card in ranked order, with reasons"]
 ```
 
 ### Ranking rules the OS could publish
 
 These are proposals, written as a platform would publish them:
 
-1. **A provider you name wins.** "Order from Tony's" goes to Tony's, or the Line says why it can't.
-2. **Your standing preferences come next, and you can see them.** "Always Tony's for pizza" lives in **memory** with its source and can be edited or deleted ([Chapter 10](10-memory.md)). Honor's agent launched with this pattern: "order a hot latte" went to your usual delivery app and shop ([Android Authority](https://www.androidauthority.com/honor-magic-os-9-0-ai-agent-3493067/)).
+1. **A provider you name wins.** "Order from Corner Pizza" goes there, or the Line says why it can't.
+2. **Your standing preferences come next, and you can see them.** "Corner Pizza is my pizza place" lives in **memory** with its source and can be edited or deleted ([Chapter 10](10-memory.md)). Honor's agent launched with this pattern: "order a hot latte" went to your usual delivery app and shop ([Android Authority](https://www.androidauthority.com/honor-magic-os-9-0-ai-agent-3493067/)).
 3. **Filters are hard.** A provider must implement the verb and confirm through a live quote that it can do the job now.
 4. **The OS measures the signals.** Total price from the quote, fees included; delivery time, weighted by how well the provider met past quotes; reliability, meaning how often calls completed as quoted, from ledger outcomes aggregated so no one's orders are visible; cancel and refund terms; your ratings; distance.
 5. **Some things are never signals.** Payment to the OS vendor, commission status, ad spend, being first-party, and anything a pack's description says about itself.
 6. **Sponsored results are separate.** Labeled, below the answer, never picked by default, never covered by a grant, never run in Autopilot.
-7. **Near ties ask.** Close candidates get a choice card instead of a silent pick.
-8. **Every pick is explainable.** The ledger records the candidates and the deciding rule, and "Why Tony's?" is answered from that record.
+7. **The ranker orders; you choose.** Without a named or remembered provider, the Line shows the top three in ranked order, each with a one-line reason. The ranker never places an order.
+8. **Every ordering is explainable.** The ledger records the candidates, their order and the rules behind it, and "Why is Corner Pizza first?" is answered from that record.
 9. **Developers see their own numbers,** including why they lost ("price", "late on 3 of the last 20 orders").
 10. **Changes are announced.** Rules are versioned and changes published 30 days ahead, the notice period Doubao's SAEP reportedly uses.
 
@@ -99,16 +74,18 @@ Rule 7 in action, with no standing preference yet:
 
 ```
 › order a large margherita for tonight
-● food.order.quote(providers: 3 nearby, item: large margherita)
-  └ Slice House $22.80 · 50 min   Tony's $24.10 · 35 min   Roma $26.40 · 30 min
-Slice House is cheapest, Roma is fastest, Tony's is in between. Which one?
-[Slice House $22.80] [Tony's $24.10] [Roma $26.40]
-› tony's, and make it my usual
-● memory.save(preference: pizza → Tony's, source: you, today)
+● order.quote(item: large margherita, by: 8 PM) · 3 nearby providers
+  └ Corner Pizza $24.10 · Slice House $22.80 · Roma $26.40
+Three can deliver by 8. Pick one:
+[Corner Pizza · 35 min · on time 19 of 20] [Slice House · 50 min · cheapest] [Roma · 30 min · fastest]
+› corner pizza, and make it my usual
+● memory.save(preference: pizza → Corner Pizza, source: you, today)
   └ Saved. Say "forget my pizza place" to undo.   [Undo]
-◆ Needs you · irreversible — Pay Tony's Pizza $24.10 for 1 large margherita. [Cancel] [Pay with Face ID]
-● food.order.place(provider: Tony's, cart: 7f3, total: 24.10)
-  └ Order placed · arriving 7:40 PM · free cancel for 30 min   [Cancel order]
+● cart.build(items: large margherita, deliver_to: Home) · Corner Pizza
+  └ Cart 7f3 · $24.10 incl. delivery · 35 min
+◆ Needs you · irreversible — Order from Corner Pizza: large margherita, to Home. $24.10 on Visa ··42. Cancel free for 2 min. [Cancel] [Pay with Face ID]
+● order.place(cart: 7f3, total: 24.10) · Corner Pizza
+  └ Ordered · arriving 7:40 PM                       [Cancel order · 1:58]
 ```
 
 What could go wrong:
@@ -128,7 +105,7 @@ What could go wrong:
 - **The relationship.** The merchant stays the merchant of record. Its name is on the receipt, and the account, order history and loyalty points stay with it, exposed as capabilities if it chooses.
 - **The surface.** Browsing the menu with photos opens the pack's own full-screen UI.
 
-The precedent is OpenAI's Apps SDK, which lets Spotify, Zillow, Canva, Booking.com and others render their own interactive UI inside ChatGPT ([Axios](https://www.axios.com/2025/10/06/openai-chatgpt-app-devday)). Brand, customer relationship and transactions are why developers joined, and what WeChat and Amazon felt they lost to screen-driving agents.
+The precedent is OpenAI's Apps SDK, which lets Spotify, Zillow, Canva, Booking.com and others render their own interactive UI inside ChatGPT ([Axios](https://www.axios.com/2025/10/06/openai-chatgpt-app-devday)). The book's research reads brand, customer relationship and transactions as the reason developers joined, and as what WeChat and Amazon were defending against screen-driving agents.
 
 The losses are real: upsell screens, in-app ads, engagement time, an icon that reminds you daily. Businesses paid for by attention lose the most, and nothing here compensates them. A pack can't add offers to the OS-owned approval sheet, though its menu card can show "popular add-ons", labeled as the merchant's content.
 
@@ -147,9 +124,9 @@ The precedents point one way. In September 2025 OpenAI launched Instant Checkout
 
 The agentic phone's money rules:
 
-1. **One payment sheet.** Every purchase goes through a system payment capability, on the floor: ask plus Face ID in every mode ([Chapter 9](09-trust.md)). A pack can't draw its own Pay button.
+1. **One payment sheet.** Every purchase goes through the Wallet's payment sheet, on the floor: ask plus Face ID in every mode ([Chapter 9](09-trust.md)). A pack can't draw its own Pay button.
 2. **The merchant stays merchant of record,** with the order, receipt, refunds and customer service.
-3. **Signed evidence.** The merchant receives a signed mandate binding payee, items and total, as in Google's AP2 ([Chapter 9](09-trust.md) has the flow), plus a ledger reference for disputes.
+3. **Signed evidence.** The merchant receives a signed mandate binding payee, items and total, as in Google's AP2 ([Google Cloud](https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol); [Chapter 9](09-trust.md) has the flow), plus a ledger reference for disputes.
 4. **No commission on physical goods and real-world services,** only payment processing. This carries 3.1.3(e) over unchanged.
 5. **Fee parity for digital goods.** Buying through the Line costs the developer the same as buying in its surface, so nobody gains by pushing people from one to the other.
 6. **Fees never touch ranking.** OpenAI said Instant Checkout items get no preferential ranking, yet listed "whether Instant Checkout is enabled" among the factors it weighs when several merchants sell the same product ([Search Engine Land](https://searchengineland.com/instant-checkout-chatgpt-agentic-commerce-463222)). Ranking rule 5 forbids that ambiguity.
@@ -160,18 +137,18 @@ sequenceDiagram
   participant P as Person
   participant L as Planner
   participant G as Gate
-  participant W as System payment sheet
+  participant W as Wallet payment sheet
   participant K as Pizza pack
   participant M as Merchant
-  L->>K: food.order.quote
-  K-->>L: total 24.10, 35 min
-  L->>G: food.order.place, cart 7f3, total 24.10
+  L->>K: cart.build
+  K-->>L: cart 7f3, total 24.10
+  L->>G: order.place, cart 7f3, total 24.10
   G->>W: irreversible, ask with Face ID
   W->>P: payee, items, total
   P-->>W: Face ID
   W->>K: signed mandate bound to cart and total
   K->>M: order with mandate
-  M-->>K: order id, cancel window 30 min
+  M-->>K: order id, cancel window 2 min
   K-->>P: receipt card with Cancel order
 ```
 
@@ -186,7 +163,7 @@ In [the simulator](../prototype/), try "Pay Sam $20 for pizza". The approval ask
 | Manifest part | What the reviewer checks | How |
 |---|---|---|
 | Identity | Publisher verified, signing key matches | Automated |
-| Verbs and schemas | Conforms to standard verbs; implements the whole group (quote, place, cancel) | Automated at build time |
+| Verbs and schemas | Conforms to standard verbs; implements the whole group (quote, place, status, cancel) | Automated at build time |
 | Effect class | At least the verb's minimum; developers can raise it, never lower it | Automated; human for custom verbs |
 | Undo and compensators | In a sandbox, undo restores state and cancel works inside its window | Test harness, human spot checks |
 | Data egress | Declared hosts and data types match traffic in test runs | Automated |
@@ -249,29 +226,11 @@ An agent reaches a service in one of three ways: declared (a pack, an MCP server
 
 **Android's consent step.** A Computer Control session starts with a system consent dialog and works with "a limited set of target apps" ([Android](https://developer.android.com/ai/computer-control)). An APK teardown suggests, unconfirmed, that Android 17 lists in Settings which apps each assistant may automate ([Nerds Chalk](https://nerdschalk.com/android-17-is-adding-a-settings-screen-to-manage-which-apps-ai-assistants-can-automate-apk-teardown)).
 
-The agentic phone proposes an **automation declaration**, a file an app ships in its package or serves from its domain:
+[Chapter 6](06-capabilities.md) specifies the agentic phone's version, an `automation` block an app ships in its package. It names the screens an agent may read and act on and the ones it never touches, sets a notice period for changes, and can point to the capability the app would rather you use. Without a block, automation is supervised and limited to reading and navigation, and payment screens are always handed to you ([Chapter 9](09-trust.md)). Three parts matter economically:
 
-```json
-{
-  "app": "com.tonys.pizza",
-  "agent_automation": "allowed",
-  "screens": {
-    "menu": "read_and_act",
-    "account": "read_only",
-    "checkout": "off_limits"
-  },
-  "never_read": ["card_number", "security_code"],
-  "prefer": "capability_pack",
-  "contact": "agents@tonys.example"
-}
-```
-
-The rules around it:
-
-- **Opt-outs take effect at once.** Before automating an app that has no declaration, the OS gives public notice, borrowing SAEP's reported 30-day period.
-- **Payment, banking and identity screens are always off-limits,** whatever a declaration says ([Chapter 9](09-trust.md)).
-- **The agent says what it is.** Automation sessions and outbound web requests carry a declared agent identity, and an app can ask the system whether an agent is driving it. The agent never poses as a person or a browser.
-- **A refusal is visible.** If Tony's opts out, the Line says "Tony's doesn't allow assistants to use its app" and offers to open it for you. It never works around the refusal.
+- **Honest identity.** An automation session tells the app that an agent is acting for its user, and the phone's outbound web requests say the same. Amazon's complaint against Comet was partly that it didn't. Identity gives the app something to measure, rate-limit and price.
+- **Visible refusal.** If Corner Pizza opts out, the Line says "Corner Pizza doesn't allow assistants to use its app" and offers to open it for you. It never works around the refusal.
+- **A standing invitation.** The `prefer` field lets an app that refuses automation point to its pack, so opting out of pixels can mean opting in to a typed path on the app's own terms.
 
 ```mermaid
 flowchart TD
@@ -325,26 +284,15 @@ Deep surfaces (games, creative tools, navigation) lose nothing. Rabbit's pivot t
 
 ## What a developer should do in 2026
 
-The agentic phone doesn't exist, but three real targets share its shape, and work done for them carries over.
-
-| Concept | Apple (iOS 27) | Android | MCP |
-|---|---|---|---|
-| Capability | App intent with `AppIntent(schema:)` | `@AppFunction` function | Tool |
-| Standard verb | App schema domains | None yet | None |
-| Content | `IndexedEntity`, `AppEntity(schema:)` | Serializable data classes | Resources |
-| Risk | Schema side-effect metadata, `authenticationPolicy` | None in the schema | [`readOnlyHint`, `destructiveHint`](https://modelcontextprotocol.io/specification/2025-06-18) (hints only) |
-| Confirmation | `requestConfirmation(conditions:actionName:dialog:)` | Left to the caller | Elicitation, `input_required` |
-| Undo | `UndoableIntent` | None | None |
-| UI | `SnippetIntent` interactive snippets | [A2UI Compose renderer](https://developer.android.com/develop/ui/compose/agentic) | MCP Apps templates |
-| Long tasks | `LongRunningIntent` | WorkManager | Tasks extension |
+The agentic phone doesn't exist, but three real targets share its shape: App Intents on iOS, AppFunctions on Android, and MCP everywhere. [Chapter 6](06-capabilities.md) maps each onto the manifest field by field. Work done for them carries over:
 
 1. **List your verbs and classify each by effect class.** Anything that moves money, deletes or commits someone legally is irreversible, whatever marketing prefers.
-2. **On iOS, adopt app schemas.** Siri AI, released with iOS 27 on September 14, 2026 as a US English beta, acts through App Intents ([Apple](https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/)). Conform to the [schema domains](https://developer.apple.com/documentation/appintents/app-schema-domains) that fit, support whole groups, and index content with [`IndexedEntity`](https://developer.apple.com/documentation/appintents/indexedentity).
+2. **On iOS, adopt app schemas.** Siri AI, released with iOS 27 on September 14, 2026 as a US English beta, acts through App Intents ([Apple](https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/)). Conform to the [schema domains](https://developer.apple.com/documentation/appintents/app-schema-domains) that fit, support whole groups, index content with [`IndexedEntity`](https://developer.apple.com/documentation/appintents/indexedentity), and show results with [`SnippetIntent`](https://developer.apple.com/documentation/appintents/snippetintent) interactive snippets, the nearest thing iOS has to cards.
 3. **Separate draft from commit.** Apple pairs `draftMessage` with `sendMessage`. Build a quote for every order and a draft for every send.
 4. **Make changes undoable** with [`UndoableIntent`](https://developer.apple.com/documentation/appintents/undoableintent), or expose a cancel with a deadline.
-5. **Set an authentication policy.** [`authenticationPolicy`](https://developer.apple.com/documentation/appintents/appintent/authenticationpolicy) defaults to `alwaysAllowed`, "including when the device is locked". Require authentication for money and personal data, and conform shared entities to [`OwnershipProvidingEntity`](https://developer.apple.com/documentation/appintents/ownershipprovidingentity) so the system confirms before acting on them.
-6. **On Android, ship AppFunctions** as groundwork: annotated Kotlin functions described in KDoc. The library was at 1.0.0-alpha12 on September 23, 2026 and callers are still limited ([Android](https://developer.android.com/jetpack/androidx/releases/appfunctions)). Verify your developer identity.
-7. **Run a remote MCP server** with MCP Apps templates. The 2026-07-28 specification is stateless and adds an `input_required` result that clients can turn into confirmation sheets ([MCP](https://blog.modelcontextprotocol.io/posts/2026-07-28/)). It is the one package that already reaches several agents.
+5. **Set an authentication policy.** [`authenticationPolicy`](https://developer.apple.com/documentation/appintents/appintent/authenticationpolicy) defaults to `alwaysAllowed`, "including when the device is locked". Require authentication for money and personal data, ask with [`requestConfirmation(conditions:actionName:dialog:)`](https://developer.apple.com/documentation/appintents/appintent/requestconfirmation(conditions:actionname:dialog:)) before risky steps, and conform shared entities to [`OwnershipProvidingEntity`](https://developer.apple.com/documentation/appintents/ownershipprovidingentity) so the system confirms before acting on them.
+6. **On Android, ship AppFunctions** as groundwork: annotated Kotlin functions described in KDoc. The library was at 1.0.0-alpha12 on September 23, 2026 and callers are still limited ([Android](https://developer.android.com/jetpack/androidx/releases/appfunctions)). Try the [A2UI Compose renderer](https://developer.android.com/develop/ui/compose/agentic) for agent-composed UI, and verify your developer identity.
+7. **Run a remote MCP server** with MCP Apps templates and honest tool annotations such as `readOnlyHint` and `destructiveHint`, which hosts treat only as hints ([MCP](https://modelcontextprotocol.io/specification/2025-06-18)). The 2026-07-28 specification is stateless and adds an `input_required` result that clients can turn into confirmation sheets ([MCP](https://blog.modelcontextprotocol.io/posts/2026-07-28/)). It is the one package that already reaches several agents.
 8. **Write descriptions for a model:** short, factual, no superlatives, no instructions.
 9. **Support conditional writes.** An order endpoint that refuses if the cart version or price changed makes commit-time authorization possible ([Chapter 9](09-trust.md)).
 10. **Publish your automation stance** in a machine-readable form, offer a typed path, and identify agent traffic rather than blocking it blindly. Count agent-originated orders separately; that number will set next year's budget.
@@ -371,7 +319,7 @@ The agentic phone doesn't exist, but three real targets share its shape, and wor
 - [MCP 2026-07-28 release](https://blog.modelcontextprotocol.io/posts/2026-07-28/)
 - [A2A specification](https://a2a-protocol.org/latest/specification/)
 - [MCP specification 2025-06-18](https://modelcontextprotocol.io/specification/2025-06-18)
-- [Android, A2UI in Compose](https://developer.android.com/develop/ui/compose/agentic)
+- [Android, agentic UI with A2UI in Compose](https://developer.android.com/develop/ui/compose/agentic)
 - [Apple, Messages app schema domain](https://developer.apple.com/documentation/appintents/app-schema-domain-messages)
 - [Apple, App schema domains](https://developer.apple.com/documentation/appintents/app-schema-domains)
 - [Apple, AppIntent description](https://developer.apple.com/documentation/appintents/appintent/description)
@@ -381,12 +329,12 @@ The agentic phone doesn't exist, but three real targets share its shape, and wor
 - [Apple, OwnershipProvidingEntity](https://developer.apple.com/documentation/appintents/ownershipprovidingentity)
 - [Apple, requestConfirmation(conditions:actionName:dialog:)](https://developer.apple.com/documentation/appintents/appintent/requestconfirmation(conditions:actionname:dialog:))
 - [Apple, SnippetIntent](https://developer.apple.com/documentation/appintents/snippetintent)
-- [Apple, LongRunningIntent](https://developer.apple.com/documentation/appintents/longrunningintent)
 - [Apple WWDC26 session 347](https://developer.apple.com/videos/play/wwdc2026/347/)
 - [Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
 - [Apple App Store Small Business Program](https://developer.apple.com/app-store/small-business-program/)
 - [Apple Newsroom, Siri AI is here](https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/)
 - [Apple Newsroom, Siri AI delayed in the EU](https://www.apple.com/newsroom/2026/06/due-to-dma-siri-ai-delayed-in-eu-for-ios-27-and-ipados-27/)
+- [Google Cloud, Agent Payments Protocol (AP2)](https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol)
 - [Android AppFunctions](https://developer.android.com/ai/appfunctions)
 - [AppFunctions release notes](https://developer.android.com/jetpack/androidx/releases/appfunctions)
 - [Android Computer Control](https://developer.android.com/ai/computer-control)
