@@ -145,7 +145,7 @@ An approval follows five rules:
 ◆ Needs you · irreversible — Pay Sam $18.00 · Note: lunch · Cap $50 per payment [Cancel] [Pay with Face ID]
 ```
 
-In the [simulator](../prototype/), try "pay Sam $80": the Gate asks for Face ID, and the payment is still refused after you approve, because it is over the $50 per-payment cap. That is the floor working as designed.
+In the [simulator](../prototype/), try "pay Sam $20": the Gate asks for Face ID in every mode. Then try "pay Sam $80": it's refused before anyone is asked, because it's over the $50 per-payment cap. The floor asks; hard limits don't even offer the question.
 
 **Plan cards** handle multi-step or consequential requests. Before anything changes, the agent shows a short plan in plain words: what will change, who will be contacted, what it costs. It offers three buttons. Both leading coding agents have a plan mode, and in Claude Code approving the plan also chooses how much autonomy the agent gets while carrying it out ([Claude Code permission modes](https://code.claude.com/docs/en/permission-modes)).
 
