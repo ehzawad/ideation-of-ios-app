@@ -1,0 +1,1027 @@
+[
+ {
+  "id": "M-01",
+  "slug": "seconds-ahead-hazard-voice",
+  "title": "Seconds-Ahead Hazard Voice",
+  "tagline": "Warns a blind walker about the reversing car or open trench before they reach it, not after they ask.",
+  "tier": "moonshot",
+  "category": "Accessibility",
+  "moment": "You're walking to the bus with your cane, iPhone in a chest harness, open-ear headphones on. Eight seconds before a driveway, a low tone pans to your left and a voice says 'car reversing, stop'. Two blocks later it tells you the stop moved for construction and guides you to the temporary one.",
+  "problem": "Blind and low-vision walkers already have apps that answer questions: point the camera, ask what's there. Dangerous moments don't wait for a question: a car backing out, a bike on the sidewalk, a trench that wasn't there yesterday. A cane finds what's at ground level within reach, and guide dogs are scarce. No phone app decides on its own when to interrupt, and Apple says its own detection mode should not be relied on for navigation.",
+  "loop": {
+   "trigger": "You start a walk or tap 'guide me'",
+   "senses": "LiDAR depth, camera, sounds, route data",
+   "decides": "Will anything cross your path in 5 s?",
+   "checks_with_you": "Nothing for warnings; asks before 311 reports",
+   "acts": "Speaks a spatial cue; hands off to a helper",
+   "remembers": "Hazards per block, your pace and limits"
+  },
+  "ios_blocks": [
+   {
+    "name": "ARKit (ARFrame.sceneDepth)",
+    "why": "per-frame LiDAR depth to measure drop-offs, poles and closing distance"
+   },
+   {
+    "name": "Core AI and Vision",
+    "why": "run small custom detectors and trackers (vehicles, bikes, curbs) on the Neural Engine"
+   },
+   {
+    "name": "SoundAnalysis (SNClassifySoundRequest)",
+    "why": "hear engines, horns and sirens before the camera sees them"
+   },
+   {
+    "name": "PHASE",
+    "why": "place warning tones in space so direction is audible without words"
+   },
+   {
+    "name": "AVSpeechSynthesizer",
+    "why": "short spoken warnings at the user's preferred rate"
+   },
+   {
+    "name": "Core Location and MapKit",
+    "why": "route, heading and known crossings for warnings that need no camera"
+   },
+   {
+    "name": "ProcessInfo.thermalState",
+    "why": "notice heat throttling and say out loud that warnings are degraded"
+   },
+   {
+    "name": "Meta Wearables Device Access Toolkit (third-party SDK, developer preview)",
+    "why": "a head-height glasses camera stream instead of a chest-mounted phone"
+   }
+  ],
+  "hard_parts": [
+   "The wall (research): the model must choose when to speak. VIABench (July 2026) shows current multimodal models do worst at exactly this: warning ahead of time about navigation-critical events. A safe system needs almost no misses on cars and drop-offs and few enough false alarms that people don't tune it out. Nobody has shown both at once.",
+   "The wall (platform): third-party apps get camera frames only in the foreground, so the phone must stay awake, open and pointed forward for the whole walk. Hours of LiDAR plus neural inference heat the phone, and a throttled phone sees less, later. What would have to change: an accessibility entitlement for continuous camera use with a visible indicator, or a glasses camera path out of developer preview.",
+   "The wall (liability): a missed car is an injury, and Apple's own Magnifier Detection Mode says not to rely on it for navigation. What would have to change: a clear legal framing as a supplement to cane or guide dog, published miss rates per hazard, and possibly a standards or medical-device route.",
+   "Latency: detection, prediction and a warning must fit well under a second, and a spoken sentence itself takes a second or more. Tones have to carry most of the meaning."
+  ],
+  "risks": [
+   "Over-trust is the safety line: a walker leans on it and stops scanning with the cane. It must never say a path is clear, only that something is coming, and silence must never mean safe.",
+   "Alarm fatigue: too many warnings and people mute it, then miss the one that matters.",
+   "Bystander privacy: it films streets all day. Frames stay on the phone, faces are never stored, and video goes to a human helper only when the walker asks."
+  ],
+  "assumptions": [
+   "Blind users will wear a chest-mounted phone or camera glasses in public for a whole walk.",
+   "People will trust a device that sometimes stays silent when it should not, as long as it never replaces the cane.",
+   "Crossing, driveway and construction data exists in usable form for the user's city."
+  ],
+  "unknowns": [
+   "What miss rate and false-alarm rate would orientation-and-mobility instructors accept, and how would anyone measure them outside a lab?",
+   "Who is liable when a warning comes too late: the app maker, the model vendor, or nobody?",
+   "Does a camera at eye level (glasses) or chest level (phone) catch more of the hazards that matter, such as head-height poles versus curb drop-offs?"
+  ],
+  "prior_art": [
+   {
+    "name": "Biped NOA",
+    "url": "https://biped.ai/noa-chat",
+    "note": "A wearable with 3D cameras that predicts obstacle paths a few seconds ahead and gives audio cues. Dedicated hardware, not an iPhone agent."
+   },
+   {
+    "name": "VIABench",
+    "url": "https://huggingface.co/papers/2607.14660",
+    "note": "Benchmark built from blind people's first-person video. Models struggle most with proactive warnings about navigation-critical events."
+   },
+   {
+    "name": "Apple Magnifier Detection Mode",
+    "url": "https://support.apple.com/guide/iphone/detect-doors-around-you-iph35c335575/ios",
+    "note": "Detects people, doors and furniture with LiDAR on Pro iPhones and gives sound, speech and haptics. Reactive, few classes, and Apple says not to rely on it for navigation."
+   },
+   {
+    "name": "Meta Wearables Device Access Toolkit for iOS",
+    "url": "https://github.com/facebook/meta-wearables-dat-ios",
+    "note": "Lets iPhone apps stream video from Meta's glasses, including in the background. Developer preview only."
+   },
+   {
+    "name": "Be My Eyes, Aira and Seeing AI",
+    "note": "Human help or scene description on request. The natural fallback when the agent's confidence drops, but none warns unprompted."
+   }
+  ],
+  "first_version": "Partial version buildable today: a foreground app for Pro iPhones with three narrow, well-tested detectors (vehicles near driveways, drop-offs, head-height obstacles) using LiDAR depth, plus route warnings from map and transit alerts that need no camera. When light, rain or heat degrade it, it says so and offers a one-tap handoff to a human helper. Pilot it with orientation-and-mobility instructors walking alongside.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 3,
+   "feasibility": 2,
+   "impact": 5
+  },
+  "horizon": "3-5y",
+  "autonomy": "act-report",
+  "flagship": true,
+  "why_flagship": "The hardest perception problem on a phone, with the highest stakes: warn before the danger, not after the question.",
+  "deep_dive": "## Deep dive\n\nThe warning loop has to run entirely on the phone, because a round trip to a server takes longer than a reversing car needs to close the gap. The cloud only does the slow work before and after the walk: fetching the route, service alerts and known sidewalk problems, and filing reports afterwards.\n\n```mermaid\nsequenceDiagram\n  participant W as \"Walker\"\n  participant P as \"iPhone app\"\n  participant M as \"On-device models\"\n  participant D as \"Map and transit data\"\n  participant H as \"Human helper service\"\n  participant C as \"City 311\"\n  W->>P: \"Start walk to the bus stop\"\n  P->>D: \"Fetch route, crossings, service alerts\"\n  D-->>P: \"Stop moved, driveway at 40 m\"\n  loop \"Every frame while walking\"\n    P->>M: \"LiDAR depth, camera frame, audio\"\n    M-->>P: \"Tracks and time to contact\"\n  end\n  P->>W: \"Tone pans left, then car reversing, stop\"\n  P->>W: \"Low confidence, rain on the lens\"\n  W->>P: \"Call a helper\"\n  P->>H: \"Live video and route\"\n  H-->>W: \"Voice guidance to the temporary stop\"\n  P->>W: \"Two blocked sidewalks logged. File them?\"\n  W->>P: \"Approve one\"\n  P->>C: \"Report with photo and location\"\n```\n\n### What the first 90 days look like\n\nWeeks 1 to 4: record walks with orientation-and-mobility instructors and blind volunteers, phone in a chest harness, and label every near-miss: driveways, bikes on the sidewalk, construction, head-height branches. This becomes the test set, and it matters more than any model. Weeks 5 to 8: ship a TestFlight build with only two camera warnings (vehicle entering your path, drop-off ahead) plus route warnings from transit service alerts, which need no camera at all. Walkers double-tap to flag a moment where it should have warned and didn't. Weeks 9 to 12: publish miss and false-alarm rates for each hazard type before adding any new class, and decide with the testers which hazards earn a spoken word and which only earn a tone.\n\n### The hardest engineering problem\n\nDeciding when to speak. Detection is the easier half: LiDAR depth and small detectors already find cars, poles and curbs. The hard half is a policy that turns a stream of tracked objects into very few interruptions. Will this car's path and yours meet in the next five seconds, and is it worth breaking the walker's concentration while they are also listening to traffic? The policy has to run at camera frame rate inside a heat budget, say out loud when the phone is throttling or the lens is wet rather than going quiet, and be judged on miss rate, not on average accuracy. VIABench suggests that general multimodal models are not the answer yet. For now, small specialized trackers plus a hand-tuned, testable policy probably are.\n\n### How it makes money\n\nBlind and low-vision people are a small market with many low incomes, so the core warning feature should be free or cheap. Money can come from a subscription for helper minutes, licensing the warning engine to remote-assistance services and glasses makers, and paid pilots with cities and transit agencies that want structured, geotagged reports of sidewalk barriers. Some rehabilitation and employment programs already buy assistive technology for clients, which is a route to paying for chest harnesses or glasses.",
+  "related": [
+   "B-19",
+   "M-23",
+   "W-29"
+  ],
+  "notes_for_editor": "Mermaid sequence diagrams keep the double quotes as visible text when rendered (checked with the repo's Mermaid build in Chromium); strip them globally if that looks wrong. SoundAnalysis's built-in classifier covers vehicle and siren sounds, but I did not check whether it includes reversing beeps specifically, so the card says engines, horns and sirens."
+ },
+ {
+  "id": "M-02",
+  "slug": "household-spending-constitution",
+  "title": "Household Spending Constitution",
+  "tagline": "One set of spending rules, signed with Face ID, that every AI agent in your home must follow at checkout.",
+  "tier": "moonshot",
+  "category": "Money & commerce",
+  "moment": "Your partner shops through Alexa, you use Muse, and your teenager's school-trip agent books buses. You set one rule set: groceries under $180 a week, nothing over $50 from a new merchant, nothing non-refundable without asking. When one agent tries to buy non-refundable concert tickets, the charge is declined at authorization and your Watch offers a one-tap approval.",
+  "problem": "Households now run several agents that can spend money: Amazon's Buy for Me and Auto Buy, Meta's Muse with one-time Stripe Link cards, Google's agentic checkout, card-network tokens inside ChatGPT. Each has its own limits in its own settings screen, and none knows what the others spent. Nobody can answer 'what did our agents buy this week, and on whose instruction?', and one hijacked agent can spend up to its own cap before anyone notices.",
+  "loop": {
+   "trigger": "An agent asks to pay for something",
+   "senses": "Amount, merchant, refund terms, which agent",
+   "decides": "Does it fit the household's signed rules?",
+   "checks_with_you": "Face ID on Watch or phone if out of policy",
+   "acts": "Issues, narrows or revokes agent credentials",
+   "remembers": "Ledger: charge, agent, instruction, mandate"
+  },
+  "ios_blocks": [
+   {
+    "name": "CryptoKit (SecureEnclave.P256.Signing)",
+    "why": "signs the household policy and each exception with a key that never leaves the phone"
+   },
+   {
+    "name": "LocalAuthentication (LAContext)",
+    "why": "Face ID before signing rules or approving an out-of-policy purchase"
+   },
+   {
+    "name": "ActivityKit and LiveActivityIntent",
+    "why": "a Lock Screen approval card with Approve and Decline buttons"
+   },
+   {
+    "name": "UserNotifications (time-sensitive, actionable)",
+    "why": "approval requests that also reach Apple Watch"
+   },
+   {
+    "name": "FinanceKit",
+    "why": "reads Apple Card and Apple Cash transactions to reconcile charges (managed entitlement)"
+   },
+   {
+    "name": "PassKit (PKRecurringPaymentRequest, PKDeferredPaymentRequest)",
+    "why": "the closest Apple Pay primitive today: merchant tokens for pre-agreed charges, with no agent delegation"
+   },
+   {
+    "name": "Foundation Models",
+    "why": "turns plain-language rules into a structured policy on-device with @Generable"
+   },
+   {
+    "name": "App Intents (IntentAuthenticationPolicy)",
+    "why": "lets Siri or Shortcuts query the ledger or pause an agent, with authentication required"
+   }
+  ],
+  "hard_parts": [
+   "The wall (platform): Apple Pay and Wallet have no agent-delegation or mandate API in iOS 27, and every Apple Pay authorization needs the user present on the payment sheet. A consumer app can't sit between an agent and the cards in your Wallet.",
+   "The wall (payment networks): enforcing a rule at authorization needs issuer or network cooperation. Mastercard's agentic tokens already bind a card to one agent, a merchant scope and a consent policy, but each token carries its own policy. Nothing evaluates a household rule like 'groceries under $180 a week across all agents'.",
+   "No shared policy format: AP2 mandates, ACP delegated payments, UCP and the card-network tokens each describe consent differently, and 'refundable' or 'new merchant' is not a field any of them reliably carries at authorization.",
+   "What would have to change: a Wallet API for agent tokens or signed mandates, issuer hooks that ask a customer's own policy engine before approving (as corporate-card spend controls already do for businesses), and a common policy schema across AP2, ACP, UCP and the card networks."
+  ],
+  "risks": [
+   "A false decline strands a real need, such as a prescription or a ride home. Keep an always-allowed list and a one-tap override that is logged, not blocked.",
+   "Control inside a household: one partner could use it to police the other. Each adult sets rules for their own agents, shared rules need both to sign, and nobody's purchases are hidden from them.",
+   "Money safety line: it never moves or holds money itself. It only issues, narrows and revokes credentials, and every decision is logged with the rule that caused it."
+  ],
+  "assumptions": [
+   "Families want one policy over all their agents instead of trusting each vendor's own guardrails.",
+   "Card networks and issuers will let a consumer app sit in, or next to, the authorization path.",
+   "Agents will accept a credential they didn't issue, rather than insisting on their own wallet (Stripe Link cards, Google Pay, an Amazon account)."
+  ],
+  "unknowns": [
+   "Who pays when a purchase fits the policy but is plainly wrong: the household, the agent maker or the issuer?",
+   "Can refundability and 'recurring' be known reliably at authorization time, or only after checkout?",
+   "If Apple builds agent controls into Wallet itself, is there room left for a third-party policy app?"
+  ],
+  "prior_art": [
+   {
+    "name": "Mastercard Agent Pay",
+    "url": "https://www.mastercard.com/us/en/news-and-trends/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai.html",
+    "note": "Agentic tokens bind a card to one agent, merchant scope and consent policy. Limits are per agent, not a household policy across agents and networks."
+   },
+   {
+    "name": "Google AP2 (Agent Payments Protocol)",
+    "url": "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+    "note": "Signed intent, cart and payment mandates for human-present and human-not-present purchases. A mandate format, not a family rulebook."
+   },
+   {
+    "name": "Agentic Commerce Protocol",
+    "url": "https://github.com/agentic-commerce-protocol/agentic-commerce-protocol",
+    "note": "OpenAI and Stripe's checkout and delegated-payment spec. Limits live inside each agent platform."
+   },
+   {
+    "name": "What's new in Wallet (WWDC26)",
+    "url": "https://developer.apple.com/videos/play/wwdc2026/209/",
+    "note": "Pass features and Verify with Wallet. No agent-payment or mandate API."
+   },
+   {
+    "name": "Privacy.com merchant-locked cards",
+    "url": "https://www.privacy.com/merchant-cards",
+    "note": "Virtual cards locked to one merchant with weekly or monthly limits. The closest thing today, but it knows nothing about agents, refundability or shared household rules."
+   },
+   {
+    "name": "How Agents Ask for Permission (survey)",
+    "url": "https://huggingface.co/papers/2607.13718",
+    "note": "Reviews 21 permission proposals and five commercial agents. Most apply one product-level policy to every user and lack user-level rules."
+   }
+  ],
+  "first_version": "Partial version buildable today: give each agent its own virtual card from a card-issuing platform with real-time authorization webhooks, and check every authorization against the household rules before approving. Out-of-policy charges are declined and a Live Activity or Watch notification asks you to allow a retry. Revoking an agent means closing its card, not yours, and it covers only agents that accept a card you give them.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 4,
+   "feasibility": 2,
+   "impact": 4
+  },
+  "horizon": "3-5y",
+  "autonomy": "act-report",
+  "flagship": true,
+  "why_flagship": "Apple Pay has no agent API. This is what a household's rules for AI spending could look like if it did.",
+  "deep_dive": "## Deep dive\n\nThe design pulls apart three things that today's agents bundle together: who writes the rules (the household), who holds a credential (each agent), and who enforces the rules (the card issuer, at the moment of authorization). The phone is where rules get signed and exceptions get approved.\n\n```mermaid\nsequenceDiagram\n  participant U as \"You\"\n  participant P as \"iPhone app\"\n  participant G as \"Policy service\"\n  participant A as \"Shopping agent\"\n  participant S as \"Merchant\"\n  participant I as \"Card issuer\"\n  U->>P: \"Groceries under $180 a week, ask before non-refundable\"\n  P->>U: \"Face ID to sign the household policy\"\n  P->>G: \"Signed policy\"\n  A->>G: \"Request a credential for this agent\"\n  G-->>A: \"Scoped virtual card or agent token\"\n  A->>S: \"Checkout, concert tickets, $240\"\n  S->>I: \"Authorization request\"\n  I->>G: \"Check against household policy\"\n  G-->>I: \"Decline, needs approval\"\n  G->>P: \"Push approval request\"\n  P->>U: \"Watch asks, approve $240 for tickets?\"\n  U->>P: \"Approve with Face ID\"\n  P->>G: \"Signed one-time exception\"\n  A->>S: \"Retry checkout\"\n  S->>I: \"Authorization request\"\n  I->>G: \"Check again\"\n  G-->>I: \"Approve\"\n  G->>P: \"Ledger entry with agent and instruction\"\n```\n\n### What the first 90 days look like\n\nMonth 1: pick one card-issuing platform with real-time authorization webhooks and give ten test households one virtual card per agent. Rules start as plain fields: a weekly cap per category, a cap for new merchants, a list of always-allowed merchants such as the pharmacy. Month 2: add the plain-language rule editor (an on-device model turns sentences into the structured policy, and the app reads it back for confirmation), the Watch approval path, and a ledger that matches each charge to the agent's receipt email and to FinanceKit data where available. Month 3: run revocation drills (\"this agent was prompt-injected, shut it off now\") and count false declines per household per week. That number decides whether anyone keeps using it.\n\n### The hardest engineering problem\n\nTiming. An issuer's authorization webhook has to answer within a few seconds, but a human approval takes a minute. So an out-of-policy purchase is always declined first and retried after you approve with a signed one-time exception, and every agent has to handle \"declined, retry later\" without giving up or retrying in a loop. Some merchants flag a declined-then-retried card as fraud. The second problem is information: an authorization message carries an amount and a merchant category, not refund terms or which instruction caused it. Rules like \"nothing non-refundable\" need the agent to declare those facts in a signed mandate before checkout, and the ledger to check the receipt afterwards.\n\n### How it makes money\n\nA household subscription priced like a streaming service, plus a share of interchange on the issued cards. Longer term, issuers and card networks could license the policy engine as the consumer-facing control for their own agent tokens, the way businesses already pay for spend controls on corporate cards.",
+  "related": [
+   "W-03",
+   "W-16",
+   "M-12"
+  ],
+  "notes_for_editor": "The partial version names no specific issuing platform; Stripe Issuing and Lithic both offer real-time authorization decisions, but I did not re-check their current response-time limits, so the deep dive says 'a few seconds'. Mastercard agentic-token scope (agent, merchant scope, consent policy) is from the research digest and secondary explainers, not Mastercard's own documentation."
+ },
+ {
+  "id": "M-03",
+  "slug": "fading-whisper",
+  "title": "Fading Whisper",
+  "tagline": "An earbud prompter for real conversations in a new language that gives you less help every week.",
+  "tier": "moonshot",
+  "category": "Learning & memory",
+  "moment": "You're at a pharmacy in Seville and stall on the word for 'drowsy'. After a two-second pause your AirPods whisper 'somnolencia', and nothing more. By month three it waits five seconds before helping, and most weeks it says nothing at all.",
+  "problem": "Learners hit a wall when they move from apps to real conversations: they freeze on one missing word and switch to English or pull out a translator. Translation earbuds and AirPods Live Translation carry the conversation for you, which replaces your speaking instead of building it. AI tutors practice with a character, not with the pharmacist. Nothing gives just enough help inside a live conversation and then steps back.",
+  "loop": {
+   "trigger": "You start a practice session",
+   "senses": "Your speech and pauses, the other speaker",
+   "decides": "Thinking pause, or truly stuck?",
+   "checks_with_you": "Asks before listening in each new place",
+   "acts": "Whispers one word; schedules drills",
+   "remembers": "Your stalls as text, never their audio"
+  },
+  "ios_blocks": [
+   {
+    "name": "AVAudioSession and AVAudioEngine",
+    "why": "capture the mic and play the whisper into AirPods during a visible, user-started session"
+   },
+   {
+    "name": "Speech (SpeechAnalyzer, SpeechTranscriber, SpeechDetector)",
+    "why": "on-device transcription and voice activity detection to time pauses"
+   },
+   {
+    "name": "Translation (TranslationSession)",
+    "why": "on-device lookup of the one missing word or short phrase"
+   },
+   {
+    "name": "Core AI or MLX Swift",
+    "why": "run a small local model that predicts which word you were reaching for"
+   },
+   {
+    "name": "ActivityKit",
+    "why": "a 'listening' Live Activity shown for the whole session"
+   },
+   {
+    "name": "AVSpeechSynthesizer",
+    "why": "speak the whispered word quietly in the target language"
+   },
+   {
+    "name": "EventKit",
+    "why": "put next week's drills and practice errands on your calendar"
+   },
+   {
+    "name": "Core Location (CLMonitor)",
+    "why": "offer, never start, a session when you arrive somewhere you practiced before"
+   }
+  ],
+  "hard_parts": [
+   "The wall (research): nobody has a validated model of when a hint teaches and when it becomes a crutch. Fading help comes from classroom research on scaffolding, not live conversation. The app also has to tell a thinking pause from being stuck in under a second, in a noisy shop, next to a speaker it has never heard.",
+   "The wall (latency): the path from hearing your stall to whispering a word must fit inside a pause of about two seconds, so it can't depend on a server. Full-duplex speech models now run on MLX Swift (Kyutai's moshi-swift), but no one has published iPhone performance numbers for them.",
+   "The wall (law): processing a stranger's speech, even briefly and without storing it, can fall under two-party-consent recording laws in some US states and under GDPR in the EU. Apple's own Live Captions and Live Translation process other people's speech, but a third-party app has no settled legal footing. What would have to change: clear legal treatment of transient, on-device processing that stores nothing.",
+   "The wall (platform): Apple's in-person Live Translation on AirPods is not open to apps, and the Call Translation API covers only VoIP calls. Background listening needs an active, visible audio session. What would have to change: an AirPods conversation-audio API for third parties, or a 'hint only' mode in Apple's own Live Translation."
+  ],
+  "risks": [
+   "Dependence: if the fade schedule is wrong, it becomes the crutch it was meant to remove. Track how often it speaks and show the learner that number.",
+   "Bystander privacy: the other person never agreed to be processed. Never store their audio or transcript, keep the indicator visible, and default off where recording rules are strict.",
+   "Wrong word in a health or legal setting: a bad hint about a medicine can cause harm. At pharmacies and clinics, it should suggest confirming with the other person rather than supply the term with confidence."
+  ],
+  "assumptions": [
+   "A whisper at the right moment builds fluency rather than dependence. This scaffolding hypothesis is untested for live conversation.",
+   "Learners will wear earbuds in a conversation without the other person finding it rude.",
+   "Hesitation looks similar enough within one person that a model can learn it in a few sessions."
+  ],
+  "unknowns": [
+   "Which fade schedule works: fixed weeks, per-word mastery, or the learner's own choice?",
+   "Is a transient, never-stored transcript of the other speaker a 'recording' under two-party-consent laws?",
+   "Does hearing the right word once, in context and under pressure, stick better than a flashcard later?"
+  ],
+  "prior_art": [
+   {
+    "name": "LlamaPIE (proactive in-ear assistant)",
+    "url": "https://arxiv.org/pdf/2505.04066",
+    "note": "Research prototype that decides when to offer short hints through earbuds during a conversation. General help, not language learning with fading."
+   },
+   {
+    "name": "moshi-swift (Kyutai)",
+    "url": "https://github.com/kyutai-labs/moshi-swift",
+    "note": "Full-duplex Moshi and Hibiki speech translation ported to MLX Swift with an experimental iOS app. Shows the local pieces exist; no device benchmarks."
+   },
+   {
+    "name": "Timekettle earbuds in classrooms",
+    "url": "https://wmich.edu/x/news/2025/05/ai-powered-earbuds",
+    "note": "Translation earbuds used in classes. They translate for you instead of helping you speak."
+   },
+   {
+    "name": "Duolingo Video Call",
+    "url": "https://blog.duolingo.com/video-call/",
+    "note": "Real-time AI conversation practice. Practice with an AI character, not help inside real conversations."
+   },
+   {
+    "name": "AirPods Live Translation and the Call Translation API",
+    "url": "https://developer.apple.com/forums/thread/789314",
+    "note": "Apple translates in-person speech on AirPods but opens translation to apps only for VoIP calls (CXSetTranslatingCallAction)."
+   }
+  ],
+  "first_version": "Partial version buildable today: a user-started 'practice errand' mode, with a Live Activity showing it's listening. When you stall, you say the English word under your breath and it whispers the target word. It keeps only your stalls as text, turns them into next week's drills, and fades on a schedule you can see.",
+  "scores": {
+   "difficulty": 4,
+   "novelty": 5,
+   "feasibility": 2,
+   "impact": 4
+  },
+  "horizon": "3-5y",
+  "autonomy": "act-report",
+  "flagship": true,
+  "why_flagship": "An assistant designed to make itself unnecessary: less help every week until you don't need it.",
+  "deep_dive": "## Deep dive\n\nThe product is a control loop on the amount of help. Everything else serves that loop: how long to wait before whispering, how much to say, and when to say nothing at all. Success is measured by how rarely it speaks.\n\n```mermaid\nsequenceDiagram\n  participant L as \"Learner\"\n  participant P as \"iPhone app\"\n  participant E as \"AirPods\"\n  participant M as \"On-device models\"\n  participant O as \"Other speaker\"\n  participant K as \"Calendar\"\n  L->>P: \"Start practice at the pharmacy\"\n  P->>L: \"Live Activity shows listening, nothing stored\"\n  O->>E: \"Speaks Spanish\"\n  E->>P: \"Mic audio\"\n  P->>M: \"Transcribe, time the pause, guess the missing word\"\n  M-->>P: \"Stuck for 2.1 s, likely somnolencia\"\n  P->>E: \"Whisper one word\"\n  E->>L: \"somnolencia\"\n  L->>O: \"Finishes the sentence\"\n  P->>P: \"Drop audio, keep the stall as text\"\n  L->>P: \"End session\"\n  P->>L: \"3 stalls today, wait time now 2.5 s\"\n  P->>K: \"Drill Thursday, practice errand Saturday\"\n```\n\n### What the first 90 days look like\n\nStart with learners who already live or travel abroad and already wear AirPods. Weeks 1 to 4: only the simplest trigger. When you stall, you say the English word under your breath and it whispers the target word. No hesitation detection yet, and a weekly report of your stalls. Weeks 5 to 8: add automatic stall detection as a suggestion you confirm with a tap, which builds a labeled set of real stalls versus thinking pauses for each person. Weeks 9 to 12: turn on fading for volunteers, keep a control group on constant help, and compare how often each group still needs a hint by week 12. That comparison is the product's reason to exist, so it has to come early, not after launch.\n\n### The hardest engineering problem\n\nTelling thinking from stuck fast enough to matter, in a shop, with a phone in your pocket and a mic in your ear. Pause length alone fails: some people pause mid-sentence as a habit, others fill silence with \"eh\" or \"este\". It probably needs calibration to each person, prosody features and the half-finished sentence, so a model can guess which word is missing. That guess has to come from a model small enough to run on the phone, because a two-second budget leaves no room for a server in bad reception. The fade policy sits on top as a small, visible rule set: \"waiting 3 seconds now, because you needed help 4 times last week, down from 11.\"\n\n### How it makes money\n\nA subscription priced like a language app, sold around a move or a long trip (\"your first 90 days in Spain\"). Employers that relocate staff and study-abroad programs could buy it per learner. The honest pitch is that success means the user stops needing it, so the price should cover a fixed course length rather than an open-ended subscription that profits from dependence.",
+  "related": [
+   "B-17",
+   "W-22"
+  ],
+  "notes_for_editor": "The Apple forums URL is the digest's source for the Call Translation API; I found no Apple page for AirPods Live Translation itself. Whether a transient transcript counts as a recording under two-party-consent laws is a real open legal question, stated as such."
+ },
+ {
+  "id": "M-04",
+  "slug": "voiceover-map-agent",
+  "title": "Agent That Reads VoiceOver's Map",
+  "tagline": "An on-device agent that works any app through its accessibility tree, the way VoiceOver does, for blind users.",
+  "tier": "moonshot",
+  "category": "Accessibility",
+  "moment": "You're blind, and your pharmacy's app has no App Intents and takes about 40 VoiceOver swipes to refill a prescription. You say 'refill everything that's due'. The agent walks the app's accessibility elements itself, stops at an unlabeled button or a real choice, and tells you exactly what it did.",
+  "problem": "VoiceOver makes most apps reachable, but reachable isn't the same as quick: a refill, a benefits form or a return can take dozens of swipes through badly labeled screens. Agents that could do this work drive screens by pixels, and they fail under assistive tech: in the A11y-CUA study, a computer-use agent's success fell from 78.3% to 28.3% under magnifier conditions. Siri AI acts only in apps that adopt App Intents, and the apps blind users struggle with most usually haven't.",
+  "loop": {
+   "trigger": "You say a goal: 'refill everything due'",
+   "senses": "The app's accessibility tree, not pixels",
+   "decides": "Which element moves toward the goal next",
+   "checks_with_you": "Before paying, deleting, sending, guessing",
+   "acts": "Activates elements and custom actions",
+   "remembers": "A replayable route per app and task"
+  },
+  "ios_blocks": [
+   {
+    "name": "UIAccessibility (accessibilityActivate, UIAccessibilityCustomAction)",
+    "why": "the actions the agent would perform; today they work only inside its own app"
+   },
+   {
+    "name": "AccessibilityNotification",
+    "why": "announce what the agent did and hand VoiceOver focus back to you"
+   },
+   {
+    "name": "App Intents (app schemas)",
+    "why": "the sanctioned route, tried first wherever an app has adopted intents"
+   },
+   {
+    "name": "Foundation Models (onToolCall)",
+    "why": "plan the next step over the element list on-device, with a hard stop before risky actions"
+   },
+   {
+    "name": "Core AI",
+    "why": "run a small UI-grounding model to guess what an unlabeled button is"
+   },
+   {
+    "name": "WebKit (WKWebView)",
+    "why": "the partial version: read a website's accessibility attributes inside the app's own browser"
+   }
+  ],
+  "hard_parts": [
+   "The wall (platform): iOS gives no third-party app access to another app's accessibility tree and no way to perform actions in it. There is no equivalent of Android's AccessibilityService, which malware has abused heavily, so Apple has good reason to keep it closed.",
+   "What would have to change: a restricted 'assistive agent' entitlement with Switch Control-style consent and a visible indicator, or VoiceOver itself accepting goals from an agent the user picks. Apple's 2025 brain-computer interface protocol for Switch Control shows it will add new input classes for disability needs. In the EU, disability groups could ask for this under the Digital Markets Act's interoperability rule (Article 6(7)).",
+   "The wall (research): agents must plan on accessibility semantics, not screenshots, and the hardest apps for blind users tend to be the worst labeled. A vision fallback helps (Ferret-UI Lite shows a 3B on-device model can ground UI elements) but it is still a guess.",
+   "Even in research, iPhone agents are far from reliable: iOSWorld (June 2026) had to build 26 of its own apps and drive them from a Mac through XCUITest, and the best setup reached 52% overall and 37% on multi-app tasks."
+  ],
+  "risks": [
+   "An agent that can drive any app is also ideal for malware and stalkerware, as Android showed. Access must be tied to accessibility settings, run locally, and be revocable at any time.",
+   "Silent wrong choices: picking one of several equal options without saying so. It must pause at every real decision and read the options aloud.",
+   "Payments, deletions and messages are never completed without explicit confirmation, even when the goal says 'everything'."
+  ],
+  "assumptions": [
+   "Apps are labeled well enough to plan on, when the apps hardest for blind users are usually the worst labeled.",
+   "Blind users want to hand off whole tasks, not just speed up VoiceOver navigation.",
+   "Apple would trust a third-party agent at the same level as its own assistive features."
+  ],
+  "unknowns": [
+   "If Siri AI gains actions in any app through on-screen awareness, will it pause at choices and return focus the way blind users need, or is a separate agent still required?",
+   "How would an entitlement check that the user needs it, without creating a registry of disabled people?",
+   "Would developers label their apps better once agents, not only VoiceOver users, depend on those labels?"
+  ],
+  "prior_art": [
+   {
+    "name": "mobile-mcp",
+    "url": "https://github.com/mobile-next/mobile-mcp",
+    "note": "MCP server that reads the accessibility tree on simulators and USB-tethered iPhones for QA. Needs a Mac and a cable; no use to a blind person on the go."
+   },
+   {
+    "name": "iOSWorld benchmark",
+    "url": "https://arxiv.org/html/2606.09764v1",
+    "note": "First native-iOS agent benchmark. Had to build its own apps and drive them from a Mac."
+   },
+   {
+    "name": "Apple Ferret-UI Lite",
+    "url": "https://machinelearning.apple.com/research/ferret-ui",
+    "note": "Apple's on-device GUI agent research. Grounds UI elements well but still fails at multi-step navigation."
+   },
+   {
+    "name": "A11y-CUA dataset",
+    "url": "https://huggingface.co/papers/2602.09310",
+    "note": "Traces from blind, low-vision and sighted users. Computer-use agent success drops sharply under assistive-tech conditions."
+   },
+   {
+    "name": "Morae",
+    "url": "https://huggingface.co/papers/2508.21456",
+    "note": "Pauses UI agents at decision points so blind users choose. The interaction model this agent needs."
+   },
+   {
+    "name": "Apple's brain-computer interface protocol for Switch Control",
+    "url": "https://www.idownloadblog.com/2025/05/13/apple-iphone-brain-computer-interfaces-details/",
+    "note": "May 2025: Apple added BCIs as a Switch Control input. A precedent for new assistive input classes, not an agent API."
+   }
+  ],
+  "first_version": "Partial version buildable today: an agent with the same interaction model (goal in, pause at decisions, focus returned to the exact element) that works only through sanctioned routes. That means App Intents through Shortcuts, websites opened in its own WKWebView where it reads accessibility attributes, and services with APIs. It logs unlabeled controls to report to developers, building the planning and trust design while the platform stays closed.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 4,
+   "feasibility": 1,
+   "impact": 5
+  },
+  "horizon": "3-5y",
+  "autonomy": "act-report",
+  "flagship": false,
+  "related": [
+   "B-19",
+   "M-05",
+   "M-23"
+  ],
+  "notes_for_editor": "The BCI protocol source is a press article (iDownloadBlog, May 13, 2025) found by search; Apple's newsroom post was not opened. The DMA Article 6(7) route is a possibility, not an existing request."
+ },
+ {
+  "id": "M-05",
+  "slug": "assistive-agent-pass",
+  "title": "Assistive Agent Pass",
+  "tagline": "Lets a disabled person's agent past CAPTCHAs and bot walls, the way sites must already admit a screen reader.",
+  "tier": "moonshot",
+  "category": "Safety & civic",
+  "moment": "You have limited hand movement, and your agent is renewing your disability parking permit on the city portal. Halfway through, a bot wall appears. Instead of failing, the agent presents a pass showing that a verified person authorized this session as an accessibility accommodation, and the portal lets it finish.",
+  "problem": "Bot defenses get stricter as agent traffic grows, and they already hit disabled people hardest: audio CAPTCHAs, timed puzzles, press-and-hold challenges. For someone with limited hand movement or low vision, an agent is the accommodation, but to the site it looks like any other bot. New token schemes can say 'a human is here' or 'this is a known agent', but none says 'this agent is a person's accommodation', and nothing stops a site from blocking all agents.",
+  "loop": {
+   "trigger": "Your agent hits a bot wall mid-task",
+   "senses": "The site, the task, the challenge shown",
+   "decides": "Show a pass, or ask for another route?",
+   "checks_with_you": "Face ID sets each pass: site, task, time",
+   "acts": "Presents a signed pass; logs refusals",
+   "remembers": "Passes used and sites that refused"
+  },
+  "ios_blocks": [
+   {
+    "name": "DeviceCheck (DCAppAttestService)",
+    "why": "proves the pass was issued by a genuine app on a real iPhone"
+   },
+   {
+    "name": "LocalAuthentication (LAContext)",
+    "why": "Face ID before each delegation"
+   },
+   {
+    "name": "CryptoKit (SecureEnclave)",
+    "why": "signs the short-lived delegation token"
+   },
+   {
+    "name": "AuthenticationServices (passkeys)",
+    "why": "ties the pass to your existing account where the site has one"
+   },
+   {
+    "name": "PassKit (PKIdentityAuthorizationController)",
+    "why": "Verify with Wallet could confirm a real adult without revealing any disability (entitlement-gated)"
+   },
+   {
+    "name": "ActivityKit",
+    "why": "shows the live agent session with a revoke button"
+   }
+  ],
+  "hard_parts": [
+   "The wall (standards): Cloudflare's signed agents and Web Bot Auth identify an agent's operator, and PACT (proposed in June 2026 by Cloudflare with Chrome, Edge, Firefox and Shopify) would let browsers prove a human is in the loop. None has an 'assistive use' class, and PACT has no rollout date.",
+   "The wall (regulation): no regulator has said that blocking an authorized assistive agent is disability discrimination under the ADA or the European Accessibility Act. What would have to change: guidance that treats such an agent like a screen reader, plus a duty to offer an accessible alternative route.",
+   "The wall (privacy research): proving a need for accommodation without revealing the disability, or creating a registry of disabled people, needs anonymous credentials that aren't deployed anywhere.",
+   "The wall (platform and abuse): Apple's Private Access Tokens serve the device's own browser, not a delegated cloud browser. And if a pass works, everyone will want one, so fraud controls (per-person issuance, tight scopes, instant revocation) are part of the wall, not an afterthought."
+  ],
+  "risks": [
+   "An accidental disability registry: whoever issues passes learns who is disabled. Issuance must be unlinkable to use.",
+   "Scalpers and scrapers will claim to be assistive. Tight scopes (one site, one task, 30 minutes) limit the damage.",
+   "Sites may respond by blocking agents harder. Pair every refusal with a request for the accessible route and a documented complaint."
+  ],
+  "assumptions": [
+   "A need for accommodation can be proven without anyone learning what the disability is or who has one.",
+   "Site owners care more about stopping abuse than about stopping agents as such.",
+   "Disabled users want their agent treated as an accommodation, not as a separate class of user."
+  ],
+  "unknowns": [
+   "Who should issue the pass: a doctor, a disability agency, the phone maker, or self-attestation backed by rate limits?",
+   "Does existing ADA or EAA law already cover assistive agents, and will a court decide before a regulator does?",
+   "Will sites accept passes from any issuer, or only from agent platforms they have contracts with?"
+  ],
+  "prior_art": [
+   {
+    "name": "Cloudflare signed agents",
+    "url": "https://blog.cloudflare.com/signed-agents/",
+    "note": "Agent operators sign requests so sites can allow known agents. Identifies the operator, not the person or their need."
+   },
+   {
+    "name": "Cloudflare PACT announcement",
+    "url": "https://www.cloudflare.com/press/press-releases/2026/cloudflare-collaborates-with-leading-browsers-to-develop-a-privacy-first-protocol-for-the-global-internet/",
+    "note": "Proposed anonymous tokens that prove a human is in the loop, with Chrome, Edge, Firefox and Shopify. Not rolled out; no assistive class."
+   },
+   {
+    "name": "Amazon Bedrock AgentCore Browser Web Bot Auth",
+    "url": "https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-bedrock-agentcore-browser-web-bot-auth-preview",
+    "note": "A cloud browser that signs its requests so bot walls can recognize it. Built for enterprise agents, not accommodations."
+   },
+   {
+    "name": "Apple Private Access Tokens",
+    "note": "Device-attested tokens that let Safari skip some CAPTCHAs. They can't be handed to a cloud browser acting for you."
+   }
+  ],
+  "first_version": "Partial version buildable today: log every bot wall the agent hits with a screenshot and timestamp, ask the site for its accessible route by email or support form, and build a complaint file when none exists. Where a site accepts Web Bot Auth, run the task in a signed cloud browser and attach a Face ID-signed statement of who authorized it. That builds the evidence and the delegation format a regulator would need.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 5,
+   "feasibility": 2,
+   "impact": 4
+  },
+  "horizon": "3-5y",
+  "autonomy": "act-report",
+  "flagship": false,
+  "related": [
+   "M-04",
+   "M-06",
+   "B-01"
+  ],
+  "notes_for_editor": "Replaced the candidate's prosopo.io PACT link (blocked by the proxy, so unverified) with Cloudflare's own June 2026 press release, found by search. Search results say PACT has no rollout timeline; I did not confirm that on Cloudflare's page itself."
+ },
+ {
+  "id": "M-06",
+  "slug": "proxy-passport",
+  "title": "Proxy Passport",
+  "tagline": "A scoped, revocable 'you may act for me' credential your agent shows pharmacies, insurers and agencies.",
+  "tier": "moonshot",
+  "category": "Family & care",
+  "moment": "Your daughter has type 1 diabetes and turns 18 at midnight, and your patient-portal proxy access ends with it. She still wants you handling insulin refills and insurance fights, but not reading her therapy notes. She picks those scopes on her phone and signs with Face ID. The next day your agent calls the pharmacy and presents the credential, and she gets a Watch notice that it was used.",
+  "problem": "Acting for someone else runs on paper: a proxy form at each patient portal, a HIPAA authorization for each insurer, SSA-1696 or IRS Form 2848 for agencies, and phone identity checks that fail Deaf, speech-disabled and older people. The same wall hits teenagers with chronic illness turning 18 and parents who can no longer manage alone. Agents can now call and fill in forms, but they can't prove whom they act for, and voice cloning makes phone identity checks weaker every month.",
+  "loop": {
+   "trigger": "A helper's agent needs to act for someone",
+   "senses": "Granted scopes, institution, expiry date",
+   "decides": "Is this action inside the grant?",
+   "checks_with_you": "Grantor signs scopes; told of every use",
+   "acts": "Presents credential and one-time code",
+   "remembers": "Every use per institution; revocations"
+  },
+  "ios_blocks": [
+   {
+    "name": "CryptoKit (SecureEnclave)",
+    "why": "signs the delegation with a key bound to the grantor's phone"
+   },
+   {
+    "name": "LocalAuthentication (LAContext)",
+    "why": "Face ID to grant, narrow or revoke"
+   },
+   {
+    "name": "PassKit (PKIdentityAuthorizationController)",
+    "why": "Verify with Wallet checks the grantor's ID once (entitlement-gated)"
+   },
+   {
+    "name": "DeviceCheck (DCAppAttestService)",
+    "why": "proves the credential came from a genuine app instance"
+   },
+   {
+    "name": "UserNotifications",
+    "why": "a use notice on the grantor's iPhone and Watch every time"
+   },
+   {
+    "name": "HealthKit (HKClinicalRecord)",
+    "why": "the grantor's own records view, to choose what helpers may see"
+   },
+   {
+    "name": "PDFKit",
+    "why": "fills each institution's own proxy or authorization form in the meantime"
+   },
+   {
+    "name": "App Intents",
+    "why": "lets Siri answer 'who can act for me right now?' and revoke by voice"
+   }
+  ],
+  "hard_parts": [
+   "The wall (institutions): every portal, pharmacy, insurer and agency has its own proxy process, and none has agreed to accept a portable, machine-checkable delegation. Agencies recognize representatives appointed on paper (SSA-1696, IRS Form 2848) and define no 'digital agent of the principal', or who is liable when it errs.",
+   "The wall (law): powers of attorney and health-care proxies are state law in the US, with different witnessing rules, and a signed digital scope doesn't map neatly onto any of them.",
+   "The wall (platform): Verify with Wallet checks government IDs. Wallet can't hold or present third-party delegation credentials.",
+   "What would have to change: a FHIR or TEFCA-level proxy and consent standard that portals must honor, agency rules that accept a verifiable delegation, and Wallet support for third-party verifiable credentials."
+  ],
+  "risks": [
+   "Elder financial abuse: a caregiver could pressure someone into granting broad scopes. Scopes default narrow and time-limited, the grantor sees every use, and broad or unusual scopes need a second trusted person.",
+   "Loss of capacity: a parent who can no longer decide can't revoke, so the credential must sit under a real legal instrument (a power of attorney), not replace it.",
+   "Health safety line: sensitive records (therapy notes, reproductive and substance-use records) stay excluded unless the grantor adds them one by one."
+  ],
+  "assumptions": [
+   "Institutions would rather verify a signed credential than keep paper forms and knowledge-based checks, even though that moves liability they now avoid.",
+   "Grantors can understand scopes well enough to choose them.",
+   "A key held on a phone is an acceptable basis for a legal delegation."
+  ],
+  "unknowns": [
+   "Who is liable when an agent acts inside a valid credential but causes harm?",
+   "How does a credential survive the grantor losing their phone, or their capacity?",
+   "Would HIPAA accept a scoped, machine-readable authorization in place of each institution's own form?"
+  ],
+  "prior_art": [
+   {
+    "name": "Verifiable credentials in healthcare",
+    "url": "https://noworldborders.com/2026/06/16/verifiable-credentials-in-healthcare/",
+    "note": "Proposals to use verifiable credentials for consent and access rights. Not a deployed proxy system."
+   },
+   {
+    "name": "What's new in Wallet (WWDC26)",
+    "url": "https://developer.apple.com/videos/play/wwdc2026/209/",
+    "note": "Verify with Wallet checks government IDs with an entitlement. No third-party delegation credentials."
+   },
+   {
+    "name": "Google AP2 agent payment mandates",
+    "url": "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+    "note": "Signed mandates for agents that spend money. Nothing comparable exists for agents that speak for a person."
+   },
+   {
+    "name": "Authenticated Delegation and Authorized AI Agents",
+    "url": "https://arxiv.org/pdf/2501.09674",
+    "note": "Research framework for delegating scoped authority to AI agents with verifiable credentials."
+   },
+   {
+    "name": "Patient-portal proxy access (for example Epic MyChart)",
+    "note": "Proxy access set up separately at each organization, with its own forms and age rules."
+   }
+  ],
+  "first_version": "Partial version buildable today: a scope builder where the grantor picks what each helper may do and signs it with Face ID. The app fills each institution's own proxy form, HIPAA authorization or SSA-1696 from that one choice, tracks which were accepted, and warns before any expire. Revoking in the app drafts the revocation letters, and the signed credential rides along as an attachment, ready for the first institution willing to check it.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 4,
+   "feasibility": 2,
+   "impact": 5
+  },
+  "horizon": "5y+",
+  "autonomy": "act-report",
+  "flagship": false,
+  "related": [
+   "W-10",
+   "M-11",
+   "M-05"
+  ],
+  "notes_for_editor": "Merged 'Delegation Agencies Accept' (SSA and IRS paper representation, phone identity checks failing Deaf and older people, caregiver sub-delegation). Left out that source's claim about a September 2026 agent-related breach of an Australian Medicare database, which I could not verify. Feasibility set to 2 rather than 1 because iOS itself doesn't block it; the wall is institutional."
+ },
+ {
+  "id": "M-07",
+  "slug": "context-passport",
+  "title": "Context Passport",
+  "tagline": "Each piece of your data carries where it came from, and no agent can send it somewhere it doesn't belong.",
+  "tier": "moonshot",
+  "category": "Social & communication",
+  "moment": "You tell an agent to 'send Sam the notes from today.' You know two Sams: your manager and the nurse at your oncologist's office. Before anything leaves, the phone sees the notes include biopsy results from a clinic email, blocks the send to your manager, and asks which Sam you meant.",
+  "problem": "Agents now read your mail, notes and health records, and they also send things. The failure that matters most is often not a hack but a wrong flow: biopsy results to your manager, a private thread pasted into a group chat, a salary figure in a vendor email. Agent CI Bench found 12 of 15 frontier computer-use agents leaked context in more than half its scenarios, 67.9% on average. iOS permissions answer 'may this app read Health?' but never 'may this fact go to this person?'",
+  "loop": {
+   "trigger": "Any agent tries to send or save something",
+   "senses": "Where each piece of the content came from",
+   "decides": "Does this flow fit the data's context?",
+   "checks_with_you": "When a flow is new or the recipient unclear",
+   "acts": "Blocks, redacts, or asks which Sam you mean",
+   "remembers": "Flow rules you approved, per agent"
+  },
+  "ios_blocks": [
+   {
+    "name": "Foundation Models (onToolCall, historyTransform)",
+    "why": "block or confirm outbound tool calls and mark untrusted content, but only for your own app's agent"
+   },
+   {
+    "name": "Contacts (CNContactRelation)",
+    "why": "relationship labels to tell your manager Sam from the clinic's Sam"
+   },
+   {
+    "name": "App Intents (OwnershipProvidingEntity, IntentAuthenticationPolicy)",
+    "why": "mark entities private or shared so Siri confirms before side effects"
+   },
+   {
+    "name": "Core Spotlight (CSSearchableIndex)",
+    "why": "a local index where each item keeps its source label"
+   },
+   {
+    "name": "HealthKit",
+    "why": "health data enters already tagged as health, with Apple's sharing rules attached"
+   }
+  ],
+  "hard_parts": [
+   "The wall (platform): iOS gives third-party apps no provenance labels on Mail, Messages, Health or Files data, and no way to inspect Siri's or another app's outbound actions. Only Apple could add system-wide flow labels, something like App Tracking Transparency but for where agent context travels.",
+   "The wall (research): judging whether a flow is appropriate is error-prone. False blocks make agents useless and false passes leak. Google DeepMind's CaMeL and Microsoft's FIDES track information flow inside one agent; nobody has done it across a whole phone.",
+   "Mixed data: a forwarded email, a screenshot or a model's summary blends contexts, and labels are lost once a model rewrites content.",
+   "What would have to change: OS-level provenance labels that survive copy, paste and summaries; a system hook where every agent's outbound action, Siri's included, is checked against the user's flow rules; and research that keeps false blocks rare."
+  ],
+  "risks": [
+   "Over-blocking: if it stops every third send, people turn it off. Start with a few high-harm flows (health, money, private threads).",
+   "The flow log is itself a very sensitive record of who you talk to about what. It must stay on the device.",
+   "False confidence: data that arrived unlabeled slips through. The app must say plainly what it can't see."
+  ],
+  "assumptions": [
+   "Data can be labeled cleanly at the source, though much real data (a forwarded email, a screenshot) mixes contexts.",
+   "People will set flow rules once and accept an occasional question.",
+   "Apple would let a third-party checker see agents' outbound actions rather than build the checker itself."
+  ],
+  "unknowns": [
+   "Can provenance survive an AI summary that blends three sources into one sentence?",
+   "Who sets the default norms: the user, Apple, or each profession (clinicians, employers)?",
+   "What false-block rate will people tolerate before switching it off?"
+  ],
+  "prior_art": [
+   {
+    "name": "Agent CI Bench",
+    "url": "https://huggingface.co/papers/2606.23189",
+    "note": "Measured contextual-integrity leaks in 15 frontier computer-use agents, including sending to the wrong recipient. Measures the problem; doesn't fix it."
+   },
+   {
+    "name": "GhostWriter and AM-Sentry",
+    "url": "https://huggingface.co/papers/2607.06595",
+    "note": "Memory poisoning through email and calendar, and a defense that screens memory writes. Works inside one agent."
+   },
+   {
+    "name": "Securing agentic features (WWDC26)",
+    "url": "https://developer.apple.com/videos/play/wwdc2026/347/",
+    "note": "Apple's onToolCall confirmations, spotlighting of untrusted content and authentication policies. They protect an app's own agent only."
+   },
+   {
+    "name": "How to limit what Siri AI can access (EFF)",
+    "url": "https://www.eff.org/deeplinks/2026/09/how-limit-what-apples-new-siri-ai-can-access-ios-27",
+    "note": "Shows users can't limit Siri AI's on-screen awareness per app. Control is coarse today."
+   },
+   {
+    "name": "CaMeL (Google DeepMind) and FIDES (Microsoft)",
+    "note": "2025 research designs that enforce information-flow rules inside an agent. Not a phone-wide layer."
+   }
+  ],
+  "first_version": "Partial version buildable today: a gateway that labels data on entry for the agents you route through it: your own app's agent, cloud agents connected through an MCP proxy, and email you forward in. Every outbound send (email, message draft, file share) passes a flow check that blocks, redacts or asks, and unclear recipients are resolved with Contacts relationships. It can't see Siri or other apps, and says so.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 5,
+   "feasibility": 1,
+   "impact": 5
+  },
+  "horizon": "3-5y",
+  "autonomy": "act-report",
+  "flagship": false,
+  "related": [
+   "W-03",
+   "W-13",
+   "M-09"
+  ],
+  "notes_for_editor": "CaMeL and FIDES are listed without URLs because I did not open their papers in this pass."
+ },
+ {
+  "id": "M-08",
+  "slug": "trial-inbox",
+  "title": "Trial Inbox",
+  "tagline": "Flips trial matching: sponsors' agents query your private eligibility profile, and your phone answers.",
+  "tier": "moonshot",
+  "category": "Health & body",
+  "moment": "Your son has a rare neuromuscular condition and you've read every ClinicalTrials.gov listing twice. This morning your phone shows a new card: a Phase 2 study 90 miles away, eligible on 11 of 12 criteria, travel covered. No one at the sponsor knows who you are until you tap 'Tell them'.",
+  "problem": "Finding a trial means reading free-text eligibility criteria across thousands of listings, which is hard for anyone and brutal for a parent managing a rare disease. Sponsors buy AI recruitment tools that mine clinic records the patient never sees. Both sides want a match, but the only way to check eligibility today is to hand records to someone first.",
+  "loop": {
+   "trigger": "A registry or sponsor agent sends criteria",
+   "senses": "Criteria text vs. your on-phone profile",
+   "decides": "Likely eligible, not eligible, or unknown",
+   "checks_with_you": "You pick which sponsors learn who you are",
+   "acts": "Sends a pre-screen; books the screening",
+   "remembers": "Matches seen, declined, and why"
+  },
+  "ios_blocks": [
+   {
+    "name": "HealthKit (HKClinicalRecord, HKFHIRResource)",
+    "why": "builds the profile from health records the user already pulled into Health"
+   },
+   {
+    "name": "Foundation Models",
+    "why": "checks free-text criteria against the profile on the device"
+   },
+   {
+    "name": "PrivateCloudComputeLanguageModel",
+    "why": "handles long or tricky criteria with a larger context, only with consent"
+   },
+   {
+    "name": "DeviceCheck (DCAppAttestService)",
+    "why": "proves answers come from a genuine app instance"
+   },
+   {
+    "name": "CryptoKit",
+    "why": "signs each yes/no answer so a sponsor's agent can verify it"
+   },
+   {
+    "name": "VisionKit (VNDocumentCameraViewController)",
+    "why": "adds genetic reports and letters that aren't in Health Records"
+   },
+   {
+    "name": "EventKit",
+    "why": "books the screening call and study visits"
+   },
+   {
+    "name": "UserNotifications",
+    "why": "shows each new match as a card"
+   }
+  ],
+  "hard_parts": [
+   "The wall (standards): eligibility criteria are free text with no machine-readable standard, so every answer is a model's reading of prose. Exclusion criteria (past therapies, recent labs) need data the phone may not have.",
+   "The wall (regulation): first contact with patients and any payments need IRB approval, and there's no IRB template for agent-mediated contact. Consumer health apps sit outside HIPAA, and HealthKit data may only be shared with services that provide health care, so answers must be computed on the device.",
+   "The wall (adoption): sponsors have no reason to query patient-held profiles until many patients hold them, and patients won't keep a profile nobody queries. What would have to change: registries requiring structured criteria (FHIR ResearchStudy or similar), IRB templates that accept agent-mediated first contact, and a standard way for sponsors to ask.",
+   "Proof, not data: a signed 'likely eligible' is only as good as the records behind it. The same pattern for money (proving income above 3x rent without sending statements) needs data sources that sign their own data, such as open-banking APIs; zkTLS proofs from a web session are heavy on phones, and banks may treat them as scraping."
+  ],
+  "risks": [
+   "False hope: 'likely eligible' will often be wrong at screening. Show uncertainty per criterion and never imply a place in the study.",
+   "Health safety line: it never advises joining a trial over current care. That stays a conversation with the treating doctor.",
+   "Re-identification: many yes/no answers can reveal a rare condition. Answer only registered sponsors, rate-limit queries, and log who asked what."
+  ],
+  "assumptions": [
+   "A patient-held record is complete enough to answer exclusion criteria such as past therapies and recent lab values.",
+   "Sponsors want the answer more than they want the data.",
+   "Families will keep the profile current between queries."
+  ],
+  "unknowns": [
+   "Would an IRB accept an automated eligibility answer as a valid pre-screen?",
+   "How do you stop a sponsor from asking many narrow questions to rebuild the record?",
+   "Who is responsible when the phone's answer is wrong and a family travels 90 miles for nothing?"
+  ],
+  "prior_art": [
+   {
+    "name": "Clinical trial recruitment vendors compared",
+    "url": "https://intuitionlabs.ai/articles/clinical-trial-patient-recruitment-vendors-compared",
+    "note": "Recruitment AI sold to sponsors and sites (Antidote, Deep 6 AI and others). Patients don't see or control it."
+   },
+   {
+    "name": "Zero-shot LLM trial matching (NEJM AI)",
+    "url": "https://ai.nejm.org/doi/full/10.1056/AIcs2400360",
+    "note": "LLMs matched patients to free-text criteria without task-specific training. Evidence the matching step works, run by institutions."
+   },
+   {
+    "name": "Authenticated Delegation and Authorized AI Agents",
+    "url": "https://arxiv.org/pdf/2501.09674",
+    "note": "Framework for verifiable credentials between agents; a basis for signed answers."
+   },
+   {
+    "name": "Indicio verifiable credentials for bank AI agents",
+    "url": "https://indicio.tech/blog/proven-ai-kyc/",
+    "note": "Proof-based identity checks for banks. Identity only, not health eligibility."
+   },
+   {
+    "name": "ClinicalTrials.gov search",
+    "note": "The patient does all the reading and all the contacting."
+   }
+  ],
+  "first_version": "Partial version buildable today: an on-device profile built from Health Records and scanned documents, plus a nightly check of new ClinicalTrials.gov listings for the condition. The on-device model checks each criterion, shows 'likely eligible on 11 of 12, unknown on 1', and drafts a pre-screen email to the coordinator that you approve. The sponsor-query direction waits for a registry willing to pilot it.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 5,
+   "feasibility": 2,
+   "impact": 4
+  },
+  "horizon": "3-5y",
+  "autonomy": "draft-approve",
+  "flagship": false,
+  "related": [
+   "B-09",
+   "W-20",
+   "M-07"
+  ],
+  "notes_for_editor": "Merged 'Proof, Not Data' (signed yes/no answers instead of files, the landlord income example, zkTLS limits). The Plaid and TLSNotary mentions from that source were left out of prior_art because I had no URLs for them."
+ },
+ {
+  "id": "M-09",
+  "slug": "decade-memory",
+  "title": "Decade Memory That Moves",
+  "tagline": "Personal memory that learns you for a decade, survives every phone and model upgrade, and resists poisoning.",
+  "tier": "moonshot",
+  "category": "Learning & memory",
+  "moment": "You're filling in your daughter's intake form at a new pediatrician. The agent fills in her vaccine dates, the 2022 rash after amoxicillin and her last doctor's name, each with a source you can tap. A week later, as you're about to rehire a plumber, it reminds you this company overcharged you in 2024 and shows the invoice.",
+  "problem": "Every assistant now keeps a memory of you, and each one is locked in, hard to read, and writable by strangers: GhostWriter showed hidden payloads in email and calendar invites get written into agent memory about 98% of the time. Switching agents means starting over, because no vendor exports tasks, rules or trust history. And anything an on-device model learns in its weights is lost when Apple ships a new base model.",
+  "loop": {
+   "trigger": "A new receipt, photo or note; a form to fill",
+   "senses": "Sources you own; others' messages held back",
+   "decides": "Worth remembering? From a trusted source?",
+   "checks_with_you": "Before a quarantined fact can drive action",
+   "acts": "Fills forms; warns before repeat mistakes",
+   "remembers": "A sourced ledger that moves with you"
+  },
+  "ios_blocks": [
+   {
+    "name": "Core Spotlight (CSSearchableIndex, SpotlightSearchTool)",
+    "why": "a local semantic index of memories the model can search (SpotlightSearchTool is new in iOS 27)"
+   },
+   {
+    "name": "Foundation Models (onToolCall, historyTransform)",
+    "why": "re-read the ledger with whatever model is current, and stop quarantined facts from triggering actions"
+   },
+   {
+    "name": "SwiftData",
+    "why": "the source ledger: each fact with its source, confidence and expiry"
+   },
+   {
+    "name": "CloudKit (encryptedValues)",
+    "why": "encrypted sync to your next iPhone"
+   },
+   {
+    "name": "App Intents (IndexedEntity, OwnershipProvidingEntity)",
+    "why": "expose memories to Siri, marked private or shared"
+   },
+   {
+    "name": "Visual Intelligence (IntentValueQuery)",
+    "why": "recall from what the camera sees, such as the plumber's van"
+   },
+   {
+    "name": "BGContinuedProcessingTask",
+    "why": "import a large export from an old agent with visible progress"
+   },
+   {
+    "name": "CryptoKit",
+    "why": "sign export bundles and re-sign spending limits on import"
+   }
+  ],
+  "hard_parts": [
+   "The wall (platform): Apple's custom adapters for its on-device model are tied to one base-model version and must be retrained whenever the model changes. Training runs on a Mac with Apple's toolkit, not on the phone, and deploying adapters needs an entitlement. So a model that learns you in its weights resets with each OS release.",
+   "The wall (research): removing a fact from trained weights (unlearning) is unsolved, and provenance is lost once a model summarizes or merges memories. Defenses like AM-Sentry only partly stop poisoning.",
+   "The wall (vendors and regulation): no agent maker exports tasks, skills, limits or trust history, OAuth tokens can't move between clients, and lock-in helps their business. It likely takes regulators reading data-portability rules (GDPR Article 20, the EU Data Act's switching rules) as covering agent state, plus a shared export schema.",
+   "What would have to change: adapter formats that carry across base-model versions or an on-device personalization API, practical and verifiable unlearning, memory write rules and retrieval screens built into the OS, and a standard export format for agent state."
+  ],
+  "risks": [
+   "A well-organized ten-year record of your life is a prize for thieves and a target for subpoenas. Keep it on-device and end-to-end encrypted, with deletion by category.",
+   "Poisoned memories that drive actions: anything from other people's messages stays quarantined until you confirm it.",
+   "Inheritance gone wrong: an heir sees more than intended. Heir access is per category and needs a trusted contact to confirm death or incapacity."
+  ],
+  "assumptions": [
+   "People want an agent to remember them for ten years at all, and will spend time correcting it.",
+   "Agent state moves in meaning, not just format: a task written for one agent does the same thing in another.",
+   "Asking an assistant to recite its memory returns what it actually stored, not a paraphrase."
+  ],
+  "unknowns": [
+   "How much of 'knowing you' can live in a text ledger that a model re-reads, versus needing trained weights?",
+   "Who owns the inferences an agent made about you, and can you export or delete them?",
+   "Can a correction pushed to one vendor's memory be verified from outside?"
+  ],
+  "prior_art": [
+   {
+    "name": "MobileMem benchmark",
+    "url": "https://huggingface.co/papers/2608.13606",
+    "note": "First benchmark of year-scale personal memory on phones. Measures the problem, no product."
+   },
+   {
+    "name": "GhostWriter memory poisoning",
+    "url": "https://huggingface.co/papers/2607.06595",
+    "note": "About 98% injection into agent memory through email and calendar; AM-Sentry partly defends."
+   },
+   {
+    "name": "Apple Foundation Models adapter training",
+    "url": "https://developer.apple.com/apple-intelligence/foundation-models-adapter",
+    "note": "Custom adapters must be retrained for each base-model version."
+   },
+   {
+    "name": "LoRA-X",
+    "url": "https://arxiv.org/pdf/2501.16559",
+    "note": "Research on moving adapters between base models without retraining. Not applied to Apple's models."
+   },
+   {
+    "name": "Mem0 OpenMemory",
+    "url": "https://mem0.ai/openmemory",
+    "note": "A local memory layer shared across AI tools. Not built around source chains, poisoning quarantine or moving between phones."
+   },
+   {
+    "name": "Siri AI personal context and Amazon Bee",
+    "note": "Memory with no user-visible ledger (Siri) or lifelogging from a wearable (Bee). Limitless was discontinued after Meta bought it."
+   }
+  ],
+  "first_version": "Partial version buildable today: memory kept as an inspectable, sourced text ledger in SwiftData and the Spotlight index, re-read by whatever model is current, with no weight training. It saves facts only from sources you own, quarantines anything from other people's messages, and fills forms from the share sheet with a source behind each field. A weekly audit checks what your other assistants have memorized about you and flags planted instructions.",
+  "scores": {
+   "difficulty": 5,
+   "novelty": 4,
+   "feasibility": 3,
+   "impact": 4
+  },
+  "horizon": "3-5y",
+  "autonomy": "draft-approve",
+  "flagship": false,
+  "related": [
+   "B-11",
+   "M-11",
+   "W-13"
+  ],
+  "notes_for_editor": "Merged 'Agent Number Portability' (export bundle, re-consenting connectors, regulators and Article 20), 'Memory Chain of Custody' (per-fact sources, quarantine, provenance lost in summaries) and 'Agent Memory Audit' (weekly audit of other assistants' memories, now part of the first version). If the editor keeps 'Agent Memory Audit' as its own whitespace card, drop the last sentence of first_version. The iOS 27 SystemLanguageModel docs I checked no longer list an Adapter type, so the card cites Apple's adapter-toolkit page and names no adapter API in ios_blocks."
+ }
+]

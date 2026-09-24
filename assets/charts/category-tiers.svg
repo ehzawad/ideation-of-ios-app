@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 804 504" width="804" height="504" role="img" aria-labelledby="t2 d2">
+<title id="t2">Ideas per category, split by tier</title>
+<desc id="d2">Stacked horizontal bars. Each bar is a category; segments count ideas in each tier. Totals are printed at the bar end.</desc>
+<style>
+  svg { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --t-building-now: #2a78d6;--t-whitespace: #eb6834;--t-moonshot: #1baf7a; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --t-building-now: #3987e5;--t-whitespace: #d95926;--t-moonshot: #199e70; }
+  }
+  text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; }
+  .bg { fill: var(--surface); }
+  .title { fill: var(--ink); font-size: 20px; font-weight: 650; }
+  .sub { fill: var(--ink2); font-size: 13px; }
+  .axis-label { fill: var(--ink2); font-size: 13px; font-weight: 600; }
+  .tick { fill: var(--muted); font-size: 12px; }
+  .grid { stroke: var(--grid); stroke-width: 1; fill: none; }
+  .axis { stroke: var(--axis); stroke-width: 1; }
+  .legend { fill: var(--ink2); font-size: 13px; }
+  .val { fill: var(--ink2); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .chip-text { font-size: 10.5px; font-weight: 650; fill: #0b0b0b; }
+  .fill-building-now { fill: var(--t-building-now); }.fill-whitespace { fill: var(--t-whitespace); }.fill-moonshot { fill: var(--t-moonshot); }
+</style>
+<rect class="bg" x="0" y="0" width="804" height="504" rx="12"/>
+<text x="24" y="36" class="title">Where the ideas cluster</text>
+<text x="24" y="58" class="sub">Ideas per category, split by tier. Long orange or green segments mark open ground.</text>
+<rect x="24" y="74" width="12" height="12" rx="3" class="fill-building-now"/>
+<text x="42" y="84" class="legend">B  Building now</text>
+<rect x="177" y="74" width="12" height="12" rx="3" class="fill-whitespace"/>
+<text x="195" y="84" class="legend">W  Whitespace</text>
+<rect x="315" y="74" width="12" height="12" rx="3" class="fill-moonshot"/>
+<text x="333" y="84" class="legend">M  Moonshots</text>
+<line class="axis" x1="214" y1="98" x2="214" y2="476"/>
+<text x="202" y="117" class="legend" text-anchor="end">Money &amp; commerce</text>
+<rect x="214.0" y="104" width="146.6" height="18" class="fill-building-now"><title>Money &amp; commerce: 4 building now</title></rect>
+<rect x="362.6" y="104" width="183.7" height="18" class="fill-whitespace"><title>Money &amp; commerce: 5 whitespace</title></rect>
+<path d="M548.3,104 h181.7 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-181.7 z" class="fill-moonshot"><title>Money &amp; commerce: 5 moonshots</title></path>
+<text x="742.0" y="117" class="val">14</text>
+<text x="202" y="147" class="legend" text-anchor="end">Health &amp; body</text>
+<rect x="214.0" y="134" width="109.4" height="18" class="fill-building-now"><title>Health &amp; body: 3 building now</title></rect>
+<rect x="325.4" y="134" width="146.6" height="18" class="fill-whitespace"><title>Health &amp; body: 4 whitespace</title></rect>
+<path d="M474.0,134 h107.4 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-107.4 z" class="fill-moonshot"><title>Health &amp; body: 3 moonshots</title></path>
+<text x="593.4" y="147" class="val">10</text>
+<text x="202" y="177" class="legend" text-anchor="end">Family &amp; care</text>
+<rect x="214.0" y="164" width="35.1" height="18" class="fill-building-now"><title>Family &amp; care: 1 building now</title></rect>
+<rect x="251.1" y="164" width="146.6" height="18" class="fill-whitespace"><title>Family &amp; care: 4 whitespace</title></rect>
+<path d="M399.7,164 h144.6 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-144.6 z" class="fill-moonshot"><title>Family &amp; care: 4 moonshots</title></path>
+<text x="556.3" y="177" class="val">9</text>
+<text x="202" y="207" class="legend" text-anchor="end">Work &amp; business</text>
+<rect x="214.0" y="194" width="109.4" height="18" class="fill-building-now"><title>Work &amp; business: 3 building now</title></rect>
+<rect x="325.4" y="194" width="146.6" height="18" class="fill-whitespace"><title>Work &amp; business: 4 whitespace</title></rect>
+<path d="M474.0,194 h70.3 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-70.3 z" class="fill-moonshot"><title>Work &amp; business: 2 moonshots</title></path>
+<text x="556.3" y="207" class="val">9</text>
+<text x="202" y="237" class="legend" text-anchor="end">Life admin</text>
+<rect x="214.0" y="224" width="146.6" height="18" class="fill-building-now"><title>Life admin: 4 building now</title></rect>
+<rect x="362.6" y="224" width="109.4" height="18" class="fill-whitespace"><title>Life admin: 3 whitespace</title></rect>
+<path d="M474.0,224 h33.1 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-33.1 z" class="fill-moonshot"><title>Life admin: 1 moonshots</title></path>
+<text x="519.1" y="237" class="val">8</text>
+<text x="202" y="267" class="legend" text-anchor="end">Accessibility</text>
+<rect x="214.0" y="254" width="35.1" height="18" class="fill-building-now"><title>Accessibility: 1 building now</title></rect>
+<rect x="251.1" y="254" width="109.4" height="18" class="fill-whitespace"><title>Accessibility: 3 whitespace</title></rect>
+<path d="M362.6,254 h144.6 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-144.6 z" class="fill-moonshot"><title>Accessibility: 4 moonshots</title></path>
+<text x="519.1" y="267" class="val">8</text>
+<text x="202" y="297" class="legend" text-anchor="end">Safety &amp; civic</text>
+<rect x="214.0" y="284" width="35.1" height="18" class="fill-building-now"><title>Safety &amp; civic: 1 building now</title></rect>
+<rect x="251.1" y="284" width="109.4" height="18" class="fill-whitespace"><title>Safety &amp; civic: 3 whitespace</title></rect>
+<path d="M362.6,284 h144.6 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-144.6 z" class="fill-moonshot"><title>Safety &amp; civic: 4 moonshots</title></path>
+<text x="519.1" y="297" class="val">8</text>
+<text x="202" y="327" class="legend" text-anchor="end">Learning &amp; memory</text>
+<rect x="214.0" y="314" width="109.4" height="18" class="fill-building-now"><title>Learning &amp; memory: 3 building now</title></rect>
+<rect x="325.4" y="314" width="35.1" height="18" class="fill-whitespace"><title>Learning &amp; memory: 1 whitespace</title></rect>
+<path d="M362.6,314 h70.3 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-70.3 z" class="fill-moonshot"><title>Learning &amp; memory: 2 moonshots</title></path>
+<text x="444.9" y="327" class="val">6</text>
+<text x="202" y="357" class="legend" text-anchor="end">Physical world</text>
+<rect x="214.0" y="344" width="109.4" height="18" class="fill-building-now"><title>Physical world: 3 building now</title></rect>
+<path d="M325.4,344 h107.4 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-107.4 z" class="fill-whitespace"><title>Physical world: 3 whitespace</title></path>
+<text x="444.9" y="357" class="val">6</text>
+<text x="202" y="387" class="legend" text-anchor="end">Social &amp; communication</text>
+<rect x="214.0" y="374" width="35.1" height="18" class="fill-building-now"><title>Social &amp; communication: 1 building now</title></rect>
+<rect x="251.1" y="374" width="72.3" height="18" class="fill-whitespace"><title>Social &amp; communication: 2 whitespace</title></rect>
+<path d="M325.4,374 h33.1 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-33.1 z" class="fill-moonshot"><title>Social &amp; communication: 1 moonshots</title></path>
+<text x="370.6" y="387" class="val">4</text>
+<text x="202" y="417" class="legend" text-anchor="end">Mind &amp; focus</text>
+<rect x="214.0" y="404" width="35.1" height="18" class="fill-building-now"><title>Mind &amp; focus: 1 building now</title></rect>
+<path d="M251.1,404 h33.1 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-33.1 z" class="fill-whitespace"><title>Mind &amp; focus: 1 whitespace</title></path>
+<text x="296.3" y="417" class="val">2</text>
+<text x="202" y="447" class="legend" text-anchor="end">Creativity &amp; media</text>
+<path d="M214.0,434 h33.1 a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h-33.1 z" class="fill-building-now"><title>Creativity &amp; media: 1 building now</title></path>
+<text x="259.1" y="447" class="val">1</text>
+</svg>

@@ -1,0 +1,956 @@
+[
+  {
+    "title": "Cloud-computer errand agents",
+    "tagline": "Tell one app a goal; it works in a cloud browser and pings your iPhone for logins and the Pay button.",
+    "tier": "building-now",
+    "category": "Life admin",
+    "moment": "It is Sunday night and you have five errands: return a jacket, book a haircut, renew a parking permit. You dictate them into one app, lock the phone, and a Live Activity ticks through each one while the agent works in its own cloud computer. It stops twice: once for a password, once before paying.",
+    "what_it_does": [
+      "Breaks a spoken or typed goal into steps and runs them in a cloud virtual computer or browser, not on the phone",
+      "Signs into the sites and accounts you connect, fills forms, sends email and compares options",
+      "Pauses and hands control back at logins, CAPTCHAs, licence checks and the Pay button",
+      "Pays only after you approve, often with a one-time virtual card (Muse uses Stripe Link)",
+      "Reports back with a step-by-step log and the result, by push or in the app"
+    ],
+    "why_now": "Meta's Muse (Sept 8, 2026) took #1 on the US free iPhone chart with 2.5M+ downloads; ChatGPT added a voice-driven Work tab on iPhone on Sept 23, 2026; Gemini Spark launched at I/O in May 2026. Cloud sandboxes and cheaper frontier models made long multi-step runs affordable enough to put in a consumer app.",
+    "why_nobody_yet_or_wall": "Crowded, and owned by the largest labs: Meta (Muse, plus Manus, bought for a reported $2B+), OpenAI (ChatGPT agent and Work tab), Google (Gemini Spark, Pro/Ultra only), Perplexity (Computer, Comet), xAI (Grok Bot) and Genspark. All run off-device because iOS will not let an app operate other apps. Going fast on downloads, uneven on reliability: CNN's Muse test saw a purchase stall at a store that required a professional licence, and Spark still loads the checkout page but will not press Pay. Most launches are US-only or on paid tiers.",
+    "ios_hooks": [
+      "ActivityKit (Live Activities for run progress, push-to-start)",
+      "User Notifications (approval prompts)",
+      "App Intents (start a task from Siri or the Action button)",
+      "AuthenticationServices (OAuth to connected services)"
+    ],
+    "nearest_existing": [
+      "Meta Muse (https://9to5mac.com/2026/09/17/meta-ai-launches-muse-personal-agent-including-a-new-mobile-app-for-iphone/): email, travel, forms, one-time-card checkout and business calls; US 18+",
+      "ChatGPT agent and Work tab (https://techcrunch.com/2026/09/23/chatgpt-mobile-app-gets-voice-based-agentic-features/): cloud-browser tasks started by voice on iPhone",
+      "Gemini Spark (https://support.google.com/gemini/answer/17094507?hl=en&co=GENIE.Platform%3DiOS): 24/7 agent across Gmail, Docs and signed-in sites; hands payments back to you",
+      "Manus (https://apps.apple.com/us/app/manus-ai-agent-automation/id6740909540): virtual-computer agent that shows every step; now Meta-owned",
+      "Genspark Super Agent (https://apps.apple.com/us/app/genspark-super-ai-agent/id6739554054): 80+ tools including Call for Me"
+    ],
+    "unsaid_assumption": "That people will hand one company the logins to many services, as long as money and passwords still need their tap.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "The iPhone lost the agent but kept the approval: every heavy agent runs in someone else's cloud, and the phone became the remote control and the place you press Pay."
+  },
+  {
+    "title": "Phone-call errand agents",
+    "tagline": "An agent phones businesses from a cloud number to get quotes, hold slots and wait on hold, then reports back.",
+    "tier": "building-now",
+    "category": "Life admin",
+    "moment": "Your car needs brakes and you hate calling around. You give the agent the car, your zip code and a budget. Twenty minutes later you have three shop quotes and a Thursday slot on hold, and you never dialed.",
+    "what_it_does": [
+      "Turns your request into a call plan: who to call, what to ask, what you would accept",
+      "Dials from cloud telephony (Genspark runs on Twilio), works phone trees and waits on hold",
+      "Talks to the person who answers and collects prices, availability and reference numbers",
+      "Asks you before booking anything, sharing account details or going outside your limits",
+      "Sends a transcript and a structured summary by push, text or email"
+    ],
+    "why_now": "Google's 'Let Google Call' grew out of the Search Labs 'Ask for Me' test and now phones salons, auto shops and groomers; Genspark's Call for Me moved onto Twilio Programmable Voice in Feb 2026; Muse switched on outbound business calls around Sept 17, 2026. Real-time voice models got good enough to survive hold queues and phone trees.",
+    "why_nobody_yet_or_wall": "Google (Search AI Mode), Genspark, Meta Muse, Pine AI and small apps such as Assindo are building it. Every one places calls from the cloud, because iOS gives third parties no access to cellular calls, and Apple's Hold Assist and Call Screening are locked inside the Phone app. It is going well for information calls (price, hours, availability) and harder when the call needs identity checks, account PINs or a live handoff to you.",
+    "ios_hooks": [
+      "User Notifications",
+      "ActivityKit (live call status)",
+      "App Intents (start a call task from Siri)",
+      "CallKit / LiveCommunicationKit (only for a VoIP handoff inside the app)"
+    ],
+    "nearest_existing": [
+      "Google 'Let Google Call' (https://blog.google/products-and-platforms/products/shopping/how-to-agentic-calling-let-google-call/): calls local businesses about prices and availability",
+      "Genspark Call for Me (https://www.genspark.ai/helpcenter/call-for-me): multilingual outbound calls for bookings and customer service",
+      "Meta Muse calls (https://9to5mac.com/2026/09/17/meta-ai-launches-muse-personal-agent-including-a-new-mobile-app-for-iphone/): outbound calls to US businesses since mid-Sept 2026",
+      "Assindo (https://assindo.com/news/never-wait-on-hold-ai-phone-calls): consumer call agent that waits on hold and works IVR menus on iOS, Android and web"
+    ],
+    "unsaid_assumption": "That businesses keep answering calls from AI agents instead of blocking them or putting their own AI receptionist on the line.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "The busiest agent channel on the iPhone is the oldest one, a phone call, and it works because the call never touches the iPhone."
+  },
+  {
+    "title": "Inbox triage-and-draft agents",
+    "tagline": "An agent sorts your mail, writes replies in your voice and leaves them in Drafts for you to send.",
+    "tier": "building-now",
+    "category": "Work & business",
+    "moment": "You open your mail app at 7am and 14 replies are already drafted in your tone. You fix one sentence, send nine, and see that the agent filed the newsletters and flagged the one invoice that needs you.",
+    "what_it_does": [
+      "Reads new mail through the Gmail or Microsoft Graph API on a server",
+      "Labels threads (to reply, FYI, receipts, marketing) and surfaces to-dos",
+      "Writes reply drafts in your style and saves them to your real Drafts folder",
+      "Proposes meeting times or routes work to partner agents (Superhuman Go calls Box, Gamma and others)",
+      "Sends nothing without your tap unless you set a narrow rule"
+    ],
+    "why_now": "Gmail's AI Inbox view went to trusted testers in Jan 2026; Superhuman Go launched partner agents with an iOS app; Gemini Spark acts across Gmail. Models now match a person's writing style well enough that drafts are usable as-is.",
+    "why_nobody_yet_or_wall": "Busy but web-first: Fyxer, Shortwave, Superhuman Go and Google's own Gmail features. Fyxer has no iPhone app and still works on iPhone, because its drafts appear in whatever mail app you use. iOS has no Mail.app API (MailKit is macOS-only), so an iPhone inbox agent must run server-side on Gmail or Outlook APIs, or be the mail client itself.",
+    "ios_hooks": [
+      "AuthenticationServices (OAuth to Gmail or Outlook)",
+      "User Notifications",
+      "App Intents mail schema (so Siri AI can act on drafts)",
+      "WidgetKit"
+    ],
+    "nearest_existing": [
+      "Superhuman Go (https://www.grammarly.com/blog/company/superhuman-go-new-partner-agents/): directs first-party and partner agents; has an iOS app",
+      "Gmail AI Inbox (https://fortune.com/2026/01/08/google-ai-inbox-gmail-gemini-3-integration-email-new-view-features/): summaries, topics and to-dos; trusted testers first",
+      "Fyxer (https://tldv.io/blog/fyxer-ai-review/): sorts and drafts inside Gmail and Outlook; no dedicated iPhone app",
+      "Shortwave (https://www.usecarly.com/blog/fyxer-vs-shortwave/): AI-native Gmail client with a multi-step assistant"
+    ],
+    "unsaid_assumption": "That Google and Microsoft keep granting broad read-and-draft API scopes to third-party agents.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "The inbox agents that work barely need an iPhone app: they write into your Drafts folder on the server, so the stock mail app becomes their interface."
+  },
+  {
+    "title": "Scheduling negotiator agents",
+    "tagline": "CC or text an assistant; it trades times with the other side, sends the invite and chases replies.",
+    "tier": "building-now",
+    "category": "Work & business",
+    "moment": "A client emails asking to meet next week. You reply-all with 'Howie, find 30 minutes' and go back to your run. By lunch the invite is on both calendars with a video link and a note about the time zone.",
+    "what_it_does": [
+      "Reads the thread it is copied on, plus your calendar availability",
+      "Proposes times to the other party by email or text and handles the back-and-forth",
+      "Sends the invite and adds links or rooms",
+      "Asks you only when your rules clash (a focus block, an evening request from a VIP)",
+      "Chases non-replies and reschedules when something moves"
+    ],
+    "why_now": "Howie reports 1,000+ paying customers booking 5,000+ meetings a week, including over iMessage; Claude on iOS now creates and edits Calendar events; Siri AI can chain calendar intents in iOS 27.",
+    "why_nobody_yet_or_wall": "Split field. Email and iMessage assistants (Howie) do real negotiation. AI calendars are weak on the phone: Motion's iPhone app mostly views and edits while scheduling runs on desktop, Reclaim has no native iOS app, and Clockwise reportedly shut down in March 2026 after Salesforce bought it. No true mobile-first autonomous calendar agent exists yet.",
+    "ios_hooks": [
+      "EventKit (read and write events)",
+      "App Intents calendar schema (Siri AI)",
+      "User Notifications",
+      "Messages for Business (for text-based assistants)"
+    ],
+    "nearest_existing": [
+      "Howie (https://howie.com/): scheduling assistant with its own email address and phone number; works over iMessage",
+      "Motion (https://efficient.app/compare/motion-vs-reclaim): auto-scheduling calendar whose planning engine is desktop-first",
+      "Reclaim.ai (https://get-alfred.ai/blog/best-ai-calendar-assistants): habit and focus-time blocking; owned by Dropbox",
+      "Claude iOS Calendar integration (https://support.claude.com/en/articles/11869619-use-claude-with-ios-apps): creates and edits Calendar events on the phone",
+      "Clockwise, reportedly shut down March 2026 (https://get-alfred.ai/compare/motion-vs-clockwise)"
+    ],
+    "unsaid_assumption": "That the other side accepts negotiating with an assistant, and will more and more often be one.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The best scheduling agent on iPhone has no calendar screen at all; it lives in email and iMessage, while the famous AI calendars still need a laptop."
+  },
+  {
+    "title": "Trip booking and rebooking agents",
+    "tagline": "Agents that search and book trips and, when a flight dies, propose a rebooking before you reach the desk.",
+    "tier": "building-now",
+    "category": "Physical world",
+    "moment": "Your 6pm connection is cancelled while you are still in the air. When you land, a notification already lists two rebooking options and a hotel hold near the airport. You tap the second one and walk past the rebooking line.",
+    "what_it_does": [
+      "Plans and books flights and hotels through supplier APIs (Muse uses Duffel) or partner booking flows",
+      "Watches bookings for delays, cancellations and schedule changes",
+      "Ranks alternatives against your rules: arrival time, airline, budget, status",
+      "Asks you to confirm any change that costs money or moves a date",
+      "Updates your calendar, Wallet passes and a Live Activity with the new plan"
+    ],
+    "why_now": "Expedia bought Layla in July 2026 and talks about 'self-healing' trips; Google AI Mode added hotel booking in Aug 2026; Muse books flights through Duffel; Hopper's HTS Assist cancels, refunds and rebooks without a human. Industry reports frame 2026 as the year airline disruption agents moved from pilots to production.",
+    "why_nobody_yet_or_wall": "Booking is crowded: Expedia with Layla, Google AI Mode, Meta Muse, Airbnb and Mindtrip. Disruption handling is being built mostly on the airline and booking-platform side (Hopper HTS, airline re-accommodation agents), so a consumer agent often just relays the carrier's offer. A neutral agent that fights for the traveller is thinner, partly because changing a ticket needs airline or agency access, and App Review wants air-travel apps submitted by the entity that provides the service.",
+    "ios_hooks": [
+      "ActivityKit (flight and rebooking Live Activity)",
+      "PassKit / Wallet (boarding passes)",
+      "EventKit",
+      "App Intents travel entities (Tripsy is a named Siri AI partner)",
+      "User Notifications (time-sensitive)"
+    ],
+    "nearest_existing": [
+      "Expedia + Layla (https://ir.expediagroup.com/news-and-events/news/news-details/2026/Expedia-Group-acquires-Layla-accelerating-its-AI-powered-trip-planning-and-booking-strategy/default.aspx): conversational planner and booker; 'self-healing' trips planned",
+      "Google AI Mode hotel booking (https://skift.com/2026/08/27/googles-agentic-hotel-booking-tool-comes-to-ai-mode/)",
+      "Meta Muse travel (https://www.phocuswire.com/news/technology/meta-launches-ai-agent-travel-booking): books flights through the Duffel API",
+      "Hopper HTS Assist (https://venturebeat.com/infrastructure/hoppers-ai-agent-can-book-flights-and-cancel-trips-without-human-help): cancels, refunds and rebooks through airline systems"
+    ],
+    "unsaid_assumption": "That airlines will let a third-party agent change a ticket rather than routing every change through their own app.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 3
+    },
+    "surprise": "Disruption, the travel job people would most pay an agent for, is being automated first for the airline, so the traveller's agent risks becoming a messenger for the carrier's offer."
+  },
+  {
+    "title": "Price-watch auto-buy agents",
+    "tagline": "Set a target price once; the agent watches the item and buys when it drops, within a budget you set.",
+    "tier": "building-now",
+    "category": "Money & commerce",
+    "moment": "You want a specific stroller, but not at $480. You tell the shopping agent 'buy it at 30% off, black, ship to home.' Three weeks later a notification says it bought it for $329 and shows the return window.",
+    "what_it_does": [
+      "Tracks one item's price at a retailer or across many merchants",
+      "Checks variant, seller and delivery date against your rules",
+      "Buys with saved payment when the price crosses your line (Amazon Auto Buy) or asks first (Google agentic checkout)",
+      "Completes checkout on other stores with your saved address (Amazon Buy for Me)",
+      "Tracks the order and the return window after purchase"
+    ],
+    "why_now": "Amazon replaced Rufus with Alexa for Shopping on May 13, 2026, with Auto Buy and Buy for Me; Google's agentic checkout (Nov 2025) and Universal Cart (I/O 2026) run on Google Pay and the Universal Commerce Protocol; Visa and Mastercard shipped agent payment tokens.",
+    "why_nobody_yet_or_wall": "Owned by the platforms that already hold your payment method: Amazon, Google, and Meta Muse (one-time Stripe Link cards). Buying inside a chatbot is retreating: OpenAI dropped Instant Checkout in March 2026 after Walmart measured it converting about 3x worse than a click-through to its own site. Apple has no agent-payment API, so an iOS app cannot let an agent use Apple Pay without a Face ID tap per purchase.",
+    "ios_hooks": [
+      "User Notifications",
+      "Apple Pay / PassKit (user-confirmed checkout)",
+      "App Intents",
+      "WidgetKit (tracked items)",
+      "Visual Intelligence (snap a product to start tracking)"
+    ],
+    "nearest_existing": [
+      "Amazon Alexa for Shopping, Auto Buy and Buy for Me (https://www.cnbc.com/2026/05/13/amazon-ditches-rufus-ai-chatbot-in-favor-of-alexa-shopping-agent.html)",
+      "Google agentic checkout and Universal Cart (https://blog.google/products-and-platforms/products/shopping/agentic-checkout-holiday-ai-shopping/): buys via Google Pay at your target price, after confirming",
+      "ChatGPT Instant Checkout, discontinued March 2026 (https://www.digitalcommerce360.com/2026/03/06/openai-shifts-checkout-plans-agentic-commerce-strategy/)",
+      "Meta Muse checkout (https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/): pays with one-time Stripe Link cards"
+    ],
+    "unsaid_assumption": "That the agent works for you and not for the store whose search results it ranks.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The standing rule beat the chat: 'buy at this price' shipped widely, while buying inside a chatbot converted about 3x worse and was pulled."
+  },
+  {
+    "title": "Money autopilot agents",
+    "tagline": "Link your accounts; the agent plans goals and moves money within your limits, then texts you what it did.",
+    "tier": "building-now",
+    "category": "Money & commerce",
+    "moment": "Payday lands on a Friday. Before you check your balance, the agent has paid the card in full, moved $180 to your trip fund and texted: 'Held back $60 because your car insurance renews Tuesday. Undo?'",
+    "what_it_does": [
+      "Pulls transactions through aggregators such as Plaid, or FinanceKit for Apple Card and Apple Cash",
+      "Builds a plan around goals, bills and subscriptions",
+      "Moves money between your own accounts inside caps and pre-approved rules",
+      "Texts or pushes a summary with undo, and asks before anything outside the rules",
+      "Flags savings such as subscriptions to cancel or cheaper insurance (on Cleo's 2026 roadmap)"
+    ],
+    "why_now": "Cleo launched Autopilot in Feb 2026; ChatGPT added Plaid-linked finances across 12,000+ institutions for US Plus and Pro users; Rocket Money reportedly launched Rowan, built with Anthropic, which texts savings opportunities. iOS 26 gave FinanceKit a background delivery extension.",
+    "why_nobody_yet_or_wall": "Cleo, OpenAI and Rocket Money are building it, mostly US-only. Trust is the ceiling: Menlo's 2026 survey found only 20% of AI users have given an agent a financial account, against 36% for email. Most 'autopilot' today moves money between the user's own accounts; paying third parties is rare. Rowan's details come from one trade report and are unconfirmed.",
+    "ios_hooks": [
+      "FinanceKit (Apple Card/Cash data, background delivery extension)",
+      "User Notifications",
+      "WidgetKit",
+      "App Intents",
+      "LocalAuthentication (Face ID to change rules)"
+    ],
+    "nearest_existing": [
+      "Cleo Autopilot (https://web.meetcleo.com/blog/introducing-autopilot): plans goals and acts within user-set limits",
+      "ChatGPT finances (https://techcrunch.com/2026/05/15/openai-launches-chatgpt-for-personal-finance-will-let-you-connect-bank-accounts/): Plaid-linked dashboard and Q&A",
+      "Rocket Money Rowan (https://www.pymnts.com/news/artificial-intelligence/2026/this-ai-agent-ends-subscriptions-without-a-phone-call/): texts savings opportunities; unconfirmed"
+    ],
+    "unsaid_assumption": "That regulators keep treating an agent moving your money between your own accounts as a feature, not as financial advice.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "People hand agents their email almost twice as often as their bank (36% vs 20%), so the money agents that ship stay inside your own accounts and sell the undo button as hard as the automation."
+  },
+  {
+    "title": "Bill-fighting and cancel agents",
+    "tagline": "An agent calls, emails and chats with companies to lower bills, cancel subscriptions and chase refunds.",
+    "tier": "building-now",
+    "category": "Money & commerce",
+    "moment": "Your internet bill jumped $25 when the promo ended. You forward the bill and tap 'negotiate.' Two days later the agent reports it waited 40 minutes on hold, got a $20-a-month credit, and needs your OK before accepting a 12-month term.",
+    "what_it_does": [
+      "Reads a forwarded bill or linked account to find the target",
+      "Calls the provider through cloud telephony, waits on hold and works retention menus",
+      "Uses email and web chat for cancellations and refund requests",
+      "Stops to ask before agreeing to a contract, sharing an account PIN or accepting an offer",
+      "Tracks the savings and follows up until the credit shows on the next bill"
+    ],
+    "why_now": "Pine pairs a calling agent with an email and web agent; Muse negotiated bills and a car sale at launch; Rocket Money's Rowan reportedly cancels subscriptions without a phone call; Cleo lists bill negotiation among its 2026 Autopilot actions. Hold-and-menu voice agents became dependable in 2026.",
+    "why_nobody_yet_or_wall": "Pine AI, Rocket Money, Meta Muse and Cleo (planned). Pine claims $300+ average yearly savings and a 93% negotiation success rate, but an independent test saw 2 of 3 tasks succeed within 48 hours. Scope is narrow: telecom, cable and subscriptions. Landlords, security deposits, utility hardship programs and government agencies are mostly unserved.",
+    "ios_hooks": [
+      "Share sheet extension (forward a bill PDF or screenshot)",
+      "VisionKit / Foundation Models OCRTool (read the bill)",
+      "User Notifications",
+      "ActivityKit (hold and progress status)"
+    ],
+    "nearest_existing": [
+      "Pine AI (https://www.19pine.ai/): calls, emails and web tasks to negotiate bills, cancel and file refunds",
+      "Rocket Money Rowan (https://www.pymnts.com/news/artificial-intelligence/2026/this-ai-agent-ends-subscriptions-without-a-phone-call/): cancels subscriptions by text instruction",
+      "Meta Muse (https://the-decoder.com/muse-can-shop-write-emails-and-negotiate-prices-for-users-all-through-whatsapp/): negotiates prices and bills, including through WhatsApp",
+      "Cleo Autopilot (https://www.prnewswire.com/news-releases/cleo-launches-autopilot-automating-your-money-moves-302679691.html): bill negotiation planned for 2026"
+    ],
+    "unsaid_assumption": "That retention desks keep offering discounts once most of their callers are agents that never give up.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "Retention desks were designed around humans who hang up after 40 minutes on hold; an agent that doesn't mind waiting breaks that model, which is why this vertical works earlier than most."
+  },
+  {
+    "title": "Health-record reading assistants",
+    "tagline": "Assistants that read Apple Health and medical records to explain labs and prep you for appointments.",
+    "tier": "building-now",
+    "category": "Health & body",
+    "moment": "Your yearly bloodwork posts to the patient portal at 9pm. You ask the assistant what changed; it pulls last year's labs and your sleep and activity trends, and drafts three questions for Thursday's appointment.",
+    "what_it_does": [
+      "Reads HealthKit data (sleep, activity, medications through the Medications API) with your permission",
+      "Pulls connected medical records and compares lab results over time",
+      "Summarizes what changed since your last appointment and relates sleep and activity to outcomes",
+      "Drafts questions for the visit and keeps a medication list",
+      "Rarely acts outside the chat: booking, refills and appeals are still up to you"
+    ],
+    "why_now": "ChatGPT Health began broad US rollout on July 23, 2026; Claude added Apple Health analysis in beta in Jan 2026; HealthKit gained a Medications API at WWDC25. Apple shelved its own Mulberry AI coach, which left the field open.",
+    "why_nobody_yet_or_wall": "OpenAI (ChatGPT Health, US-only) and Anthropic (Claude Health beta, US Pro and Max) lead; Apple's redesigned Health app with a Readiness score is in the iOS 27.2 beta but its guidance is not live. HealthKit rules allow sharing only with services that provide health or fitness services to the user and ban ads and data mining, which limits who can build this. Today these are readers and explainers; few take actions.",
+    "ios_hooks": [
+      "HealthKit (clinical records, Medications API)",
+      "Foundation Models / Private Cloud Compute (private processing)",
+      "App Intents",
+      "User Notifications"
+    ],
+    "nearest_existing": [
+      "ChatGPT Health (https://www.macrumors.com/2026/07/23/chatgpt-apple-health-integration/): Apple Health plus medical records; US rollout July 2026",
+      "Claude Apple Health integration (https://www.macrumors.com/2026/01/22/claude-ai-adds-apple-health-connectivity/): beta for US Pro and Max users",
+      "Apple Health AI coach, shelved (https://livity-app.com/en/blog/apple-health-ai-coach-shelved)"
+    ],
+    "unsaid_assumption": "That people trust a chatbot company with their records more than their hospital's own portal.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "Apple holds the richest health data on the phone yet shelved its own coach, so the first big HealthKit agents came from chatbot companies, and they read far more than they do."
+  },
+  {
+    "title": "Wearable-driven training coaches",
+    "tagline": "Coaches that rewrite today's workout from last night's sleep, HRV and strain, and nudge you on the wrist.",
+    "tier": "building-now",
+    "category": "Health & body",
+    "moment": "You slept five hours and your HRV dropped. At 6:30am your coach swaps the interval run for an easy 30 minutes, moves the hard session to Thursday, and tells you why in two lines.",
+    "what_it_does": [
+      "Reads sleep, heart rate, HRV and readiness from its own wearable or Apple Health",
+      "Builds a training plan and adjusts daily targets",
+      "Sends daily outlooks and timely nudges",
+      "Answers questions in chat with memory of your past patterns (Oura's Memories)",
+      "Asks before big plan changes; does not book, buy or message anyone"
+    ],
+    "why_now": "Google's Gemini health coach reached iOS in Feb 2026 and the Fitbit app became Google Health in May 2026; Oura Advisor rolled out globally in 2025; WHOOP Coach focuses on training performance. HealthKit added workout zones at WWDC26 and watchOS 27 gained Foundation Models and PCC.",
+    "why_nobody_yet_or_wall": "Hardware companies own it: Google/Fitbit, Oura and WHOOP. Their coaches adapt plans and talk; the agent part stops at the plan. Apple, which has the Watch data, shelved its own coach in Feb 2026. A hardware-neutral coach on HealthKit is possible but must follow HealthKit's third-party sharing rules.",
+    "ios_hooks": [
+      "HealthKit (workout zones, HRV, sleep)",
+      "WorkoutKit (send planned workouts to Apple Watch)",
+      "Foundation Models and PCC on watchOS 27",
+      "Live Activities / Smart Stack",
+      "EventKit (block training time)"
+    ],
+    "nearest_existing": [
+      "Google Health / Fitbit Gemini coach (https://www.macrumors.com/2026/02/10/google-fitbit-ai-health-coach-ios/): adaptive training plans on iOS since Feb 2026",
+      "Oura Advisor (https://www.androidcentral.com/wearables/oura-ring/oura-rolls-out-its-ai-powered-personal-trainer): sleep- and readiness-focused coach with memories",
+      "WHOOP Coach (https://wwd.com/beauty-industry-news/wellness/wearable-wellness-devices-oura-whoop-artificial-intelligence-coaching-1236562338/): recovery- and strain-based training coach"
+    ],
+    "unsaid_assumption": "That a readiness score reflects how you actually feel well enough to justify changing your plan.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "surprise": "WHOOP says users asked for 'someone to tell me what to do': the product people pay for is permission to skip the hard workout, not more data."
+  },
+  {
+    "title": "Meeting and memory capture",
+    "tagline": "Your phone, Watch or a pendant records the conversation; the agent writes notes, to-dos and follow-ups.",
+    "tier": "building-now",
+    "category": "Learning & memory",
+    "moment": "You walk out of a hallway meeting with a supplier. You tapped Granola on your Watch when it started, and by the elevator the notes sit under the calendar event with three action items and a drafted follow-up email.",
+    "what_it_does": [
+      "Captures audio from iPhone, Apple Watch or a clip-on recorder (Plaud, Bee)",
+      "Transcribes and separates speakers, on device or in the cloud",
+      "Links notes to the calendar event and pulls out decisions and to-dos",
+      "Drafts follow-up emails and pushes tasks to your tools for you to approve",
+      "Builds a searchable memory of past conversations (Bee)"
+    ],
+    "why_now": "Granola shipped an Apple Watch app in July 2026; Plaud NotePin S launched in Jan 2026 and Plaud reports 2.5M+ users; Amazon bought Bee and made it free; Otter launched a meeting agent. iOS 26's BGContinuedProcessingTask and on-device speech models such as WhisperKit make long recordings practical.",
+    "why_nobody_yet_or_wall": "Crowded: Granola, Otter, Plaud and Amazon's Bee. The memory-pendant side is being absorbed by big platforms: Meta bought Limitless in Dec 2025 and stopped selling it. Most products stop at notes and suggested to-dos; few file follow-ups on their own. Recording laws and App Review guideline 2.5.14 require consent and a visible recording indicator.",
+    "ios_hooks": [
+      "AVAudioSession (background audio recording)",
+      "Speech framework or WhisperKit",
+      "EventKit",
+      "watchOS app",
+      "BGContinuedProcessingTask",
+      "App Intents (Action button to start capture)"
+    ],
+    "nearest_existing": [
+      "Granola (https://apps.apple.com/us/app/granola-ai-meeting-notes/id6739429409): bot-free meeting notes; Apple Watch capture since July 2026",
+      "Plaud NotePin S (https://www.plaud.ai/blogs/news/plaud-unveils-notepins-and-desktop): wearable recorder with iPhone app",
+      "Amazon Bee (https://www.layer3labs.io/gear/reviews/bee-ai-pendant): all-day recorder that extracts to-dos and builds memory",
+      "Otter Meeting Agent (https://otter.ai/blog/otter-meeting-agent-your-new-collaborative-teammate)",
+      "Limitless, discontinued after Meta's purchase (https://legendmemory.ai/blogs/the-archive/limitless-pendant-discontinued-the-best-alternatives-in-2026)"
+    ],
+    "unsaid_assumption": "That everyone else in the room is fine with being recorded.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "surprise": "Independent memory pendants keep getting bought and absorbed (Bee by Amazon, Limitless by Meta), which suggests the lasting value is the memory, not the gadget."
+  },
+  {
+    "title": "Family logistics agents",
+    "tagline": "A household agent that turns school emails and texts into shared schedules, chores and grocery orders.",
+    "tier": "building-now",
+    "category": "Family & care",
+    "moment": "The school sends a PDF about picture day, a field-trip form and a bake sale. You forward it to the family agent. It puts the dates on both parents' calendars, assigns the form to your partner and adds eggs to the grocery order.",
+    "what_it_does": [
+      "Takes in forwarded emails, texts and photos of flyers",
+      "Pulls out dates, deadlines and requests, and adds them to a shared calendar",
+      "Assigns tasks between parents and sends reminders",
+      "Plans meals and places grocery orders after approval (Ohai uses Instacart)",
+      "Asks when a detail is unclear instead of guessing"
+    ],
+    "why_now": "Menlo Ventures named family logistics as a weekly chore people 'still haven't handed off to AI'; Ohai's 'O' charges $9.99/month; share extensions, EventKit and on-device extraction with Foundation Models make capture cheap.",
+    "why_nobody_yet_or_wall": "Struggling. Milo, an SMS family assistant backed by OpenAI and YC, shut down in Jan 2026; its founder said AI was 'too early to be reliable' because small extraction errors made family scheduling more work, not less. Ohai (founded by Care.com's Sheila Lirio Marcelo) is live but mostly handles lists, SMS and groceries. Reliable extraction from school emails and co-parent coordination are still open.",
+    "ios_hooks": [
+      "EventKit (calendars and Reminders)",
+      "Share sheet extension",
+      "Foundation Models (on-device extraction)",
+      "Messages for Business or SMS number",
+      "User Notifications"
+    ],
+    "nearest_existing": [
+      "Ohai 'O' (https://apps.apple.com/us/app/ohai-ai-household-assistant/id6477802468): household manager via app and SMS; lists, tasks, meals, Instacart",
+      "Milo, shut down Jan 2026 (https://getsense.ai/blog/posts/milo-shutting-down-alternative-2026)",
+      "Poke (https://techcrunch.com/2026/06/04/apple-approves-poke-as-the-first-ai-agent-on-its-messages-for-business-platform/): general iMessage agent with calendar and email access"
+    ],
+    "unsaid_assumption": "That one wrong date costs less trust than the agent saves in time. Milo found the opposite.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "Family logistics failed on error tolerance, not capability: one missed pickup wipes out months of saved minutes, so this category needs checking-and-confirming design more than a smarter model."
+  },
+  {
+    "title": "Messaging-native personal agents",
+    "tagline": "A personal agent you text in iMessage or WhatsApp; it watches your accounts and texts you first.",
+    "tier": "building-now",
+    "category": "Social & communication",
+    "moment": "At 6:10am a text arrives from your agent: 'Your 9am moved to 9:30 and check-in for your flight is open. Check you in and tell Sam you'll be late?' You reply 'yes both' and put the phone down.",
+    "what_it_does": [
+      "Connects to Gmail, Calendar, Outlook, Notion, Slack and GitHub with OAuth",
+      "Watches for things that need action and messages you first",
+      "Takes plain-text instructions and runs the steps on a server",
+      "Asks yes or no in the thread before acting, then replies with what it did",
+      "Routes each task to the model that fits it"
+    ],
+    "why_now": "Apple approved Poke as the first AI agent on Messages for Business in June 2026; Muse runs inside WhatsApp; a16z's 6th Top 100 notes that on mobile, people reach agents mostly through text messaging rather than dedicated apps.",
+    "why_nobody_yet_or_wall": "Poke (The Interaction Company, about 100M messages relayed), Meta Muse in WhatsApp, Howie over iMessage, and OpenClaw across 29 chat channels. Third parties cannot read your iMessages on iOS, so the agent has to be the other side of the conversation, through Messages for Business or its own number. Growing; the main risk is prompt injection arriving through the mail and calendars it watches.",
+    "ios_hooks": [
+      "Messages for Business",
+      "App Intents messages schema (sendMessage, draftMessage)",
+      "Suggested Actions framework (iOS 27)",
+      "AuthenticationServices (OAuth setup)"
+    ],
+    "nearest_existing": [
+      "Poke (https://techcrunch.com/2026/06/04/apple-approves-poke-as-the-first-ai-agent-on-its-messages-for-business-platform/): proactive agent inside iMessage",
+      "Meta Muse in WhatsApp (https://the-decoder.com/muse-can-shop-write-emails-and-negotiate-prices-for-users-all-through-whatsapp/)",
+      "OpenClaw (https://openclaw.ai/): open-source agent reachable from iMessage, WhatsApp, Telegram and Signal",
+      "Howie (https://howie.com/): scheduling over email and iMessage"
+    ],
+    "unsaid_assumption": "That Apple keeps Messages for Business open to general-purpose agents, not just airlines and banks.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "The agent interface that won is the thread you already check hundreds of times a day, and the door was Apple's business-chat channel, built for airlines and banks."
+  },
+  {
+    "title": "Self-hosted agents, iPhone as node",
+    "tagline": "Run your own agent on a home server; the iPhone app lends it camera, location and your approvals.",
+    "tier": "building-now",
+    "category": "Life admin",
+    "moment": "Your agent runs on a Mac mini at home. In the store it asks, through the iPhone app, to snap the shelf so it can check prices against your list. You approve, it takes the photo, and it replies in Telegram with what to buy.",
+    "what_it_does": [
+      "Pairs the iPhone as a 'node' to a self-hosted gateway over WebSocket, with explicit approval",
+      "Lets the remote agent call phone capabilities: camera, location, contacts, calendar, reminders, photos",
+      "Shows approval prompts for each requested action",
+      "Runs the gateway's automations across 29 chat channels",
+      "Works mostly while the app is open; in the background only location events and presence continue"
+    ],
+    "why_now": "OpenClaw went viral in Jan 2026 (about 390k GitHub stars by September) and shipped iPhone, iPad and Apple Watch node apps in late June 2026; Hermes Agent from Nous Research (Feb 2026) grew quickly as a self-hosted alternative.",
+    "why_nobody_yet_or_wall": "The OpenClaw Foundation and the Hermes Agent community. Coverage credits the self-hosted, no-data-collection design for getting through App Review. Walls: iOS suspends sockets and blocks camera and screen commands in the background, setup needs Terminal skills, and a 2026 study found that poisoning OpenClaw's state raised attack success from 24.6% to 64-74%.",
+    "ios_hooks": [
+      "Core Location (geofence and significant-change events)",
+      "AVFoundation (camera)",
+      "EventKit",
+      "Contacts",
+      "PhotoKit",
+      "User Notifications (approvals)",
+      "watchOS app"
+    ],
+    "nearest_existing": [
+      "OpenClaw iOS node app (https://github.com/openclaw/openclaw): self-hosted gateway; phone is a node with approvals",
+      "OpenClaw mobile nodes coverage (https://www.marktechpost.com/2026/06/29/openclaw-releases-ios-and-android-companion-node-apps-that-connect-a-phone-to-a-self-hosted-ai-agent-gateway/)",
+      "Hermes Agent (https://www.truefoundry.com/blog/openclaw-vs-hermes): self-hosted, self-improving agent used from phone chat apps"
+    ],
+    "unsaid_assumption": "That people who self-host an agent also secure it, now that a phone node makes it more powerful.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 2
+    },
+    "surprise": "The general agent that got through App Review is the one that collects no data at all: the phone is a peripheral and the agent lives on your own machine."
+  },
+  {
+    "title": "On-phone app builders",
+    "tagline": "Describe an app on your iPhone; an agent writes it, builds it on cloud Macs and ships it to TestFlight.",
+    "tier": "building-now",
+    "category": "Creativity & media",
+    "moment": "On the train you describe a tip-splitting app for your climbing group. The agent writes SwiftUI, builds it on a cloud Mac, and 20 minutes later a TestFlight invite arrives. You try it and say 'make the buttons bigger.'",
+    "what_it_does": [
+      "Turns a text or voice prompt into a plan and code (SwiftUI, or React Native and Expo)",
+      "Compiles on cloud Macs (Rork Max) or generates and previews on the phone (Bitrig)",
+      "Iterates on your feedback and syncs to GitHub",
+      "Pushes builds to TestFlight or prepares App Store submission, with you approving the submit"
+    ],
+    "why_now": "Bitrig launched on the App Store in Oct 2025 and added a Mac app in March 2026; Rork Max (Feb 2026) generates native Swift and compiles it on a fleet of cloud Macs; Xcode 26.3 and 27 added agentic coding with Claude and Codex.",
+    "why_nobody_yet_or_wall": "Bitrig, Rork, Vibecode and Replit; Anything was pulled on March 30, 2026. Apple enforced Guideline 2.5.2 from Dec 2025 through March 2026, blocking updates for Replit and Vibecode. Reported fixes: open generated apps in an external browser instead of an in-app web view, and, for Vibecode, stop generating software for Apple devices. The category survives by moving execution off the phone.",
+    "ios_hooks": [
+      "SwiftUI",
+      "App Store Connect API / TestFlight",
+      "Speech framework (voice prompts)",
+      "SFSafariViewController or external Safari (previews)"
+    ],
+    "nearest_existing": [
+      "Bitrig (https://9to5mac.com/2026/03/06/ai-powered-coding-platform-bitrig-gets-a-mac-app-for-building-iphone-apps/): prompt-to-SwiftUI on iPhone, pushes to TestFlight",
+      "Rork Max (https://rork.com/max): native Swift built on cloud Macs, two-click App Store submission",
+      "Vibecode (https://www.vibecodeapp.com/): builds mobile and web apps from prompts; told to stop generating Apple-device software",
+      "Apple's 2.5.2 enforcement (https://www.macrumors.com/2026/03/18/apple-blocks-updates-for-vibe-coding-apps/)"
+    ],
+    "unsaid_assumption": "That Apple keeps tolerating builders as long as the generated code runs anywhere except inside the reviewed app.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 2
+    },
+    "surprise": "Apple's objection was never AI writing code; it was code running inside the reviewed app, so the builders survived by turning the iPhone into a remote for cloud Macs."
+  },
+  {
+    "title": "CarPlay voice agents",
+    "tagline": "Talk to an AI assistant through CarPlay; it answers, drafts and plans, then hands follow-ups to your phone.",
+    "tier": "building-now",
+    "category": "Physical world",
+    "moment": "You are 40 minutes from home and remember the dentist form due tomorrow. You tap the assistant on the car screen, ask it to draft the email to the office, and it is waiting in the app when you park.",
+    "what_it_does": [
+      "Holds a voice conversation through the CarPlay voice-conversation template",
+      "Answers questions, drafts messages and plans stops",
+      "Hands follow-ups to the phone app or connected services",
+      "Cannot control the car or iPhone functions and has no wake word; you tap to start"
+    ],
+    "why_now": "iOS 26.4 (March 2026) opened a CarPlay category for voice conversational apps: ChatGPT shipped on April 2, then Perplexity, Grok and Meta AI, with Gemini and Claude reported. iOS 27 lets every CarPlay app category use the Voice Control template.",
+    "why_nobody_yet_or_wall": "General chatbots got there first. Vertical in-car agents (a trip concierge, an EV charging planner, a field-service agent) are rare. Limits: voice only, no wake word, no control of car or phone functions, and Live Activities on the CarPlay Dashboard are the only glanceable status surface.",
+    "ios_hooks": [
+      "CarPlay voice-conversation app category (iOS 26.4)",
+      "CarPlay Voice Control template (iOS 27)",
+      "Live Activities on the CarPlay Dashboard",
+      "AVAudioSession",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "ChatGPT Voice in CarPlay (https://www.engadget.com/ai/openai-brings-chatgpts-voice-mode-to-carplay-191422297.html)",
+      "Apple opening CarPlay to chatbots (https://techcrunch.com/2026/02/06/apple-is-working-to-make-carplay-compatible-with-ai-chatbots-like-chatgpt)",
+      "Perplexity, Grok and Meta AI in CarPlay; Voice Control template for all categories (https://developer.apple.com/videos/play/wwdc2026/212/)"
+    ],
+    "unsaid_assumption": "That drivers want a general chatbot more than an agent that knows this particular trip.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 2
+    },
+    "surprise": "Apple opened the car to AI before it opened cross-app actions, so the first in-car agents can talk about anything but cannot touch anything."
+  },
+  {
+    "title": "AI conversation tutors",
+    "tagline": "Speak with an AI character that adapts mid-conversation; mostly talk, rarely planning your practice week.",
+    "tier": "building-now",
+    "category": "Learning & memory",
+    "moment": "Before your Lisbon trip you do a ten-minute video call with Lily. She notices you avoid the past tense, steers the chat to your weekend, and corrects you gently.",
+    "what_it_does": [
+      "Runs real-time voice or video conversations in the target language",
+      "Adjusts difficulty and topic within the session",
+      "Gives feedback on grammar and pronunciation",
+      "Roleplays scenarios such as ordering food or hotel check-in",
+      "Rarely acts outside the lesson: no real-world practice set up, no plan tied to your calendar"
+    ],
+    "why_now": "Duolingo moved Video Call from Max to Super in Feb 2026, reaching about 10x more learners, and says it more than doubled words spoken per user; speaking led its May 2026 shareholder letter. Speak and Praktika compete to replace human tutors.",
+    "why_nobody_yet_or_wall": "Duolingo, Speak and Praktika. Going well commercially, but these are conversational, not agentic: they adapt inside a conversation and barely plan or act outside it. An agentic tutor that plans the learner's week and sets up real-world practice with people is still unbuilt.",
+    "ios_hooks": [
+      "AVAudioSession (real-time voice)",
+      "Speech framework",
+      "User Notifications",
+      "Live Translation / Call Translation API (adjacent)"
+    ],
+    "nearest_existing": [
+      "Duolingo Video Call (https://blog.duolingo.com/video-call/): real-time AI conversation with Lily",
+      "Speak (https://www.forbes.com/sites/rashishrivastava/2025/11/12/this-startup-is-racing-duolingo-to-replace-human-language-tutors-with-ai/): structured AI speaking curriculum",
+      "Praktika (https://resources.rework.com/tools/ai-tools/best-ai-tools-for-language-learning-2026): avatar-led AI tutors"
+    ],
+    "unsaid_assumption": "That fluency comes from more minutes of AI conversation rather than from being pushed into real conversations with people.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "surprise": "The biggest AI-tutor win came from pricing, not intelligence: moving Video Call into a cheaper tier reached about 10x more learners, while the tutor itself stayed a conversation, not an agent."
+  },
+  {
+    "title": "Scam-call guardian agents",
+    "tagline": "An AI answers unknown callers, flags scam scripts and cloned voices, and alerts family before money moves.",
+    "tier": "building-now",
+    "category": "Safety & civic",
+    "moment": "Your mother gets a call from 'her grandson' who needs bail money. The guardian app picks up the urgency and the payment demand, warns her on screen, and texts you that a suspected voice-clone call is under way.",
+    "what_it_does": [
+      "Answers unknown calls and asks for name and purpose (Apple Call Screening, Hiya)",
+      "Scores scam signals: urgent payment demands, fake government threats, AI-generated voices",
+      "Labels or blocks numbers through Call Directory extensions or carrier call forwarding to a cloud screener",
+      "Alerts a trusted family member and suggests a verification step (elder-focused apps)",
+      "Asks the user before connecting a suspicious caller"
+    ],
+    "why_now": "iOS 26 shipped Call Screening; Hiya launched an AI call assistant that flags live and deepfake scams; voice-cloned 'grandchild' scams spread; Scammer Guardian says it launched on iPhone in early 2026.",
+    "why_nobody_yet_or_wall": "Apple (Call Screening), Hiya, Truecaller and RoboKiller, plus elder-focused apps (Scammer Guardian, SeniorShield, ZoraSafe, CareCircle Voice). On iOS a third party cannot hear live cellular audio, so it relies on forwarding calls to a cloud line, Call Directory blocking or its own VoIP. Research (PreScam) shows LLMs track how a scam escalates only moderately well.",
+    "ios_hooks": [
+      "CallKit Call Directory extension",
+      "Carrier call forwarding to a cloud screener",
+      "IdentityLookup (SMS filtering)",
+      "User Notifications",
+      "LiveCommunicationKit (VoIP)"
+    ],
+    "nearest_existing": [
+      "Apple Call Screening in iOS 26 (https://www.fastcompany.com/91349248/ios-26s-best-new-feature-iphone-better-phone-hold-contacts-unkown-number-hold-assist-call-screening)",
+      "Hiya AI Call Assistant (https://www.hiya.com/newsroom/press-releases/hiya-launches-first-ai-call-assistant-that-stops-live-and-deepfake-scams-in-real-time): screens calls and flags deepfake voices",
+      "SeniorShield.ai (https://apps.apple.com/us/app/seniorshield-ai-scam-blocker/id6738144273)",
+      "Scammer Guardian (https://www.scammerguardian.com/about/): screens scam calls before they reach seniors",
+      "ZoraSafe (https://www.zorasafe.com/for-seniors): phishing and QR checks with family alerts"
+    ],
+    "unsaid_assumption": "That older adults keep call forwarding and permissions turned on even after the app blocks a real doctor's office once.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "Apple's free built-in screener now sets the floor, so third parties are moving to what Apple does not do: alerting family and spotting cloned voices mid-call."
+  },
+  {
+    "title": "Blind-assist scene agents",
+    "tagline": "Point the camera and an AI describes the scene, reads the text, and increasingly guides a task step by step.",
+    "tier": "building-now",
+    "category": "Accessibility",
+    "moment": "You are blind and a letter arrives. You point Be My Eyes at it; Be My AI reads it, says it is a jury summons, and walks you through the date and what to bring. The online response form is another matter.",
+    "what_it_does": [
+      "Describes photos and live scenes, and reads documents and labels",
+      "Answers follow-up questions about the image",
+      "Hands off to a human volunteer or to a company's support team when AI is not enough",
+      "On the business side (Service AI), guides users through a company's own support flow",
+      "Rarely acts beyond describing: forms, purchases and portals stay manual"
+    ],
+    "why_now": "Be My AI reached iOS users in 36 languages; Be My Eyes sells Service AI to companies such as Microsoft's Disability Answer Desk; iOS 27 adds image input to Foundation Models and a Visual Intelligence camera mode, so apps can add on-device description.",
+    "why_nobody_yet_or_wall": "Be My Eyes, Microsoft Seeing AI, Envision, Aira and Lazarillo. Mature for description, thin on action. Research shows a computer-use agent's success falls from 78.3% to 28.3% under magnifier conditions (A11y-CUA), and agents silently choose among equal options for blind users (Morae). A VoiceOver-native task agent is still missing.",
+    "ios_hooks": [
+      "AVFoundation (camera)",
+      "Vision / VisionKit (text recognition)",
+      "Foundation Models image Attachment (iOS 27)",
+      "UIAccessibility / VoiceOver",
+      "Visual Intelligence (IntentValueQuery)"
+    ],
+    "nearest_existing": [
+      "Be My Eyes / Be My AI (https://apps.apple.com/us/app/be-my-eyes/id905177575): AI image description plus human volunteers",
+      "Be My Eyes Service AI (https://www.bemyeyes.com/business/bme-service-ai/): accessible AI support agent sold to companies",
+      "Microsoft Seeing AI (https://www.brailleinstitute.org/find-services/offerings/explore-the-be-my-eyes-and-seeing-ai-applications/)",
+      "Envision, Aira and others compared (https://www.lumyeye.com/en/comparison)"
+    ],
+    "unsaid_assumption": "That describing the world is still the bottleneck, when more and more it is the inaccessible website after the description.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 4
+    },
+    "surprise": "The most agentic product here is sold to companies, not to blind users: Service AI fixes a company's own support flow, while the consumer app still stops at describing."
+  },
+  {
+    "title": "Voice home-and-errands agents",
+    "tagline": "A voice assistant that orders takeout, books rides and schedules home repairs through partner services.",
+    "tier": "building-now",
+    "category": "Physical world",
+    "moment": "The dishwasher is leaking. You say 'Alexa, find someone to fix the dishwasher this week.' It pulls quotes through a home-services partner, proposes Thursday morning, and books it when you say yes.",
+    "what_it_does": [
+      "Takes spoken requests from Echo devices or the iPhone app",
+      "Orders takeout, reserves restaurants and books rides",
+      "Gets quotes and books home services through partners (Yelp, Angi), hotels via Expedia and salons via Square",
+      "Confirms price and time before booking",
+      "Controls smart-home devices and remembers household preferences"
+    ],
+    "why_now": "Alexa+ became available to everyone in the US in Feb 2026, free with Prime, running on Amazon Nova and Anthropic models; booking integrations with Expedia, Yelp, Angi and Square roll out through 2026.",
+    "why_nobody_yet_or_wall": "Amazon leads with Alexa+, with Google (Gemini and AI Mode bookings) and Poke (smart-home control) nearby. It works through negotiated partner integrations, not by operating apps, so coverage depends on deals. On iPhone it is a companion app to a speaker-first product, and Siri AI now competes for the same requests.",
+    "ios_hooks": [
+      "App Intents (launch from Siri or the Action button)",
+      "HomeKit / Matter",
+      "User Notifications",
+      "Live Activities (order and ride status)"
+    ],
+    "nearest_existing": [
+      "Alexa+ (https://www.aboutamazon.com/news/devices/alexa-plus-available-free-prime-members-us): free with Prime in the US",
+      "Alexa+ booking integrations (https://www.aboutamazon.com/news/devices/alexa-plus-voice-booking-integrations): Expedia, Yelp, Angi, Square",
+      "Consumer Reports review of Alexa+ (https://www.consumerreports.org/electronics/digital-assistants/amazon-alexa-plus-ai-assistant-review-a1667486499/)",
+      "Google AI Mode agentic booking (https://9to5google.com/2026/04/10/google-ai-mode-redesign/)"
+    ],
+    "unsaid_assumption": "That partners stay willing to let one assistant sit between them and their customers.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "Amazon's errands agent works because of business deals, not computer use: each partner API is a hand-built bridge, slower to scale but far more reliable than a cloud browser."
+  },
+  {
+    "title": "Apple's built-in agents",
+    "tagline": "Siri AI chains App Intents, Passwords changes weak passwords, and Phone waits on hold and screens calls.",
+    "tier": "building-now",
+    "category": "Life admin",
+    "moment": "A breach alert lists three weak passwords. You tap to change them automatically, and Safari signs in and rotates each one while you finish your coffee. Later, stuck on hold with the airline, your iPhone waits and buzzes when a person picks up.",
+    "what_it_does": [
+      "Siri AI uses personal context and on-screen awareness to chain App Intents across apps (for example, a recipe in email to a Reminders grocery list)",
+      "Passwords hands weak or leaked passwords to Apple Intelligence and Safari to run each site's change flow",
+      "Hold Assist waits on hold and alerts you when a person answers; Call Screening asks unknown callers why they are calling",
+      "Visual Intelligence in the Camera app identifies things and can add events, contacts and health data",
+      "Shortcuts builds multi-step automations from a plain-language description (iOS 27)"
+    ],
+    "why_now": "Siri AI shipped on Sept 14, 2026 with iOS 27 after an 18-month delay; Hold Assist and Call Screening shipped in iOS 26; Passwords auto-change was announced for iOS 27 and appeared inconsistently in betas.",
+    "why_nobody_yet_or_wall": "Apple, with Google Gemini technology under Apple Foundation Models. Gated: opt-in beta with a waitlist, daily caps, English only at launch, iPhone 15 Pro and later, no EU or China. Siri reaches third-party apps only through App Intents schemas, so coverage is patchy (named partners include WhatsApp, Audible, Outlook, Notability and Tripsy). None of these features are open to other developers as APIs.",
+    "ios_hooks": [
+      "App Intents (App Schemas, IndexedEntity, view annotations)",
+      "Siri AI",
+      "Shortcuts",
+      "Visual Intelligence (IntentValueQuery)",
+      "Passwords / iCloud Keychain"
+    ],
+    "nearest_existing": [
+      "Siri AI (https://www.apple.com/newsroom/2026/06/apple-introduces-siri-ai-a-profoundly-more-capable-and-personal-assistant/)",
+      "Passwords automatic password change (https://9to5mac.com/2026/08/27/ios-27s-passwords-app-can-change-your-passwords-for-you-automatically/)",
+      "Hold Assist and Call Screening (https://www.fastcompany.com/91349248/ios-26s-best-new-feature-iphone-better-phone-hold-contacts-unkown-number-hold-assist-call-screening)",
+      "Visual Intelligence camera mode (https://developer.apple.com/videos/play/wwdc2026/297/)",
+      "Siri AI waitlist (https://9to5mac.com/2026/09/14/ios-27-has-a-waitlist-for-accessing-new-siri-ai/)"
+    ],
+    "unsaid_assumption": "That enough apps adopt App Intents schemas for Siri AI to feel general rather than a demo with five partners.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 1,
+      "feasibility": 2,
+      "impact": 5
+    },
+    "surprise": "Apple's most dependable agents are narrow, single-job ones (wait on hold, screen a call, rotate a password) that shipped quietly, while the general Siri agent arrived 18 months late behind a waitlist."
+  },
+  {
+    "title": "Safari shopping-extension agents",
+    "tagline": "A Safari extension checks each product page against new and resale prices and applies savings for you.",
+    "tier": "building-now",
+    "category": "Money & commerce",
+    "moment": "You are about to buy a $260 jacket on your phone. Phia's 'Should I buy this?' button shows the same jacket barely worn for $140 on a resale site, plus its price history, and you save it to watch instead.",
+    "what_it_does": [
+      "Runs as a Safari Web Extension on the product pages you visit",
+      "Compares the item across retail and resale sites (Phia claims 350M+ items on 220K+ sites)",
+      "Judges whether the price is fair and applies coupons automatically",
+      "Watches saved items for price drops and notifies you",
+      "Leaves the purchase to you"
+    ],
+    "why_now": "Safari Web Extensions on iPhone are now normal for shoppers; Phia raised a $35.5M Series A; PayPal Honey and Capital One Shopping run Safari extensions and mobile apps and are adding AI chat.",
+    "why_nobody_yet_or_wall": "Phia (Phoebe Gates and Sophia Kianni), PayPal Honey and Capital One Shopping, plus agentic browsers such as Perplexity Comet on iOS. An extension is one of the few sanctioned ways to act on third-party pages on iPhone (Guideline 4.4.2 scopes extensions to sites). Going well for price checks and coupons; none of them buy for you.",
+    "ios_hooks": [
+      "Safari Web Extensions",
+      "User Notifications",
+      "Share sheet",
+      "WidgetKit"
+    ],
+    "nearest_existing": [
+      "Phia (https://apps.apple.com/us/app/phia-shop-smarter-save-money/id6739351340): price and resale comparison in Safari",
+      "PayPal Honey (https://www.nerdwallet.com/finance/learn/browser-extensions-online-shopping): coupon extension for Safari and other browsers",
+      "Capital One Shopping (https://www.moneycrashers.com/capital-one-shopping-vs-honey/): price comparison across 100K+ stores",
+      "Perplexity Comet for iOS (https://www.perplexity.ai/hub/blog/meet-comet-for-ios): agentic browser on iPhone"
+    ],
+    "unsaid_assumption": "That the extension's affiliate income never tilts which 'best price' it shows.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 2
+    },
+    "surprise": "On iPhone a Safari extension is one of the only sanctioned ways for an agent to act on someone else's web page, and the standout product used it for resale comparisons, not coupons."
+  },
+  {
+    "title": "ADHD task-breakdown planners",
+    "tagline": "Apps that turn a brain dump or screenshot into small steps, energy-aware reminders and accountability nudges.",
+    "tier": "building-now",
+    "category": "Mind & focus",
+    "moment": "You screenshot a scary insurance letter and share it to the planner. It breaks 'deal with this' into five 10-minute steps, schedules the first for your best-energy hour, and a coach checks in at 4pm.",
+    "what_it_does": [
+      "Takes chat, voice or screenshots and breaks tasks into small steps",
+      "Schedules reminders around your energy patterns",
+      "Sends accountability nudges; Shelpful pairs the AI with human coaches",
+      "Notices what slipped and re-plans",
+      "Does not do the task itself: the call, the form and the email stay with you"
+    ],
+    "why_now": "Share sheets, on-device summarization with Foundation Models and cheap cloud models made screenshot-to-plan easy; coverage says Shelpful raised $3M from Sam Altman's fund.",
+    "why_nobody_yet_or_wall": "Shelpful, Neurolist, Saner.AI, ClearMindAI, Tiimo and Goblin.tools. Crowded and working as organizers, but none carry out the dreaded admin; the call agents that could (Pine, Assindo) are not designed for ADHD users.",
+    "ios_hooks": [
+      "Share sheet extension",
+      "Foundation Models",
+      "EventKit (Reminders and Calendar)",
+      "User Notifications (time-sensitive)",
+      "Live Activities (focus sessions)",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Shelpful (https://apps.apple.com/us/app/shelpful-ai-for-adhd-tasks/id6741499362): AI plus human coaches for follow-through",
+      "Neurolist (https://apps.apple.com/us/app/neurolist-ai-planner-for-adhd/id6468689182): AI planner for ADHD",
+      "Saner.AI (https://www.saner.ai/): turns scattered notes, email and meetings into tasks",
+      "ClearMindAI (https://apps.apple.com/np/app/clearmindai-ai-to-do-tasks/id6744586488)"
+    ],
+    "unsaid_assumption": "That breaking a task down is the hard part, when for many users it is the phone call at the end.",
+    "rough_scores": {
+      "difficulty": 1,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "surprise": "Shelpful, one of the best-funded apps here, pairs its AI with human coaches: in this category a person checking in still does something the model cannot."
+  },
+  {
+    "title": "Medical-bill dispute tools",
+    "tagline": "Upload an itemized bill; the tool checks fair prices and writes the dispute letter and the phone script.",
+    "tier": "building-now",
+    "category": "Health & body",
+    "moment": "A $4,800 ER bill arrives. You photograph it; the tool flags a duplicate CT charge and a code billed far above typical rates, and writes a letter asking for review. You still make the call and track the reply.",
+    "what_it_does": [
+      "Reads itemized bills from a photo or PDF and pulls out billing codes",
+      "Compares charges with fair-price and Medicare benchmarks",
+      "Generates dispute letters and call scripts",
+      "Some work on contingency (CareRoute) and take on more of the process",
+      "Leaves most calls, follow-ups and deadline tracking to the patient"
+    ],
+    "why_now": "A widely covered Feb 2026 case showed a family using Claude to cut a $195,628 hospital bill to about $32,500 by researching Medicare rates; consumer tools such as MyMedBill (8,000+ users) and IQBill on iOS followed.",
+    "why_nobody_yet_or_wall": "MyMedBill, IQBill, CareRoute and MediSpute. Thin, and mostly letter writers: patients still make the calls and track responses. Provider-side billing and prior-authorization AI (Insight Health, Develop Health) is better funded and sold to hospitals, not patients. Liability and the handling of health data slow consumer builders.",
+    "ios_hooks": [
+      "VisionKit document scanner",
+      "Foundation Models OCRTool (on-device extraction)",
+      "Share sheet",
+      "User Notifications (follow-up reminders)",
+      "EventKit (dispute deadlines)"
+    ],
+    "nearest_existing": [
+      "MyMedBill (https://mymedbill.co/): bill checks and dispute letters; claims 8,000+ users",
+      "IQBill / Medical Bill Negotiator: IQ (https://apps.apple.com/us/app/-/id6757212060): iOS app",
+      "CareRoute Bill Defense (https://www.careroute.ai/bill-defense): contingency-based",
+      "MediSpute (https://www.medispute.com/)",
+      "The $195k Claude case (https://nationaltoday.com/us/ny/dobbs-ferry/news/2026/02/13/ai-helps-patient-negotiate-163-000-off-hospital-bill/)"
+    ],
+    "unsaid_assumption": "That hospitals respond to well-cited letters, not only to persistence on the phone.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "The category's best proof point is a family using a general chatbot for hours, not a product, which means the tools still lag behind what motivated people already do by hand."
+  },
+  {
+    "title": "Pocket supervision of work agents",
+    "tagline": "Hand a task to a work agent from your phone, watch it run elsewhere, and approve or reject each step.",
+    "tier": "building-now",
+    "category": "Work & business",
+    "moment": "You are in a cab when a client asks for a revised forecast deck. From your phone you hand the task to Copilot Cowork, watch it pull the numbers, and reject one step that would email the draft to the whole team. The deck is ready when you reach your desk.",
+    "what_it_does": [
+      "Starts long tasks on cloud sessions or your desktop from the phone (Copilot Cowork, Claude Cowork and Dispatch, Claude Code sessions)",
+      "Streams progress and intermediate results",
+      "Asks you to approve or reject specific actions: sending mail, writing files, running code",
+      "Uses reusable skills and plugins (Copilot Cowork works with HubSpot, Moody's, Notion and others)",
+      "Delivers finished documents, code changes or pull requests for review"
+    ],
+    "why_now": "Copilot Cowork added approve and reject on mobile (May 2026); Claude Cowork came to iOS in beta (July 2026) and Dispatch sends tasks from phone to desktop; the Claude app is a client for Claude Code cloud and remote sessions; ChatGPT's Work tab arrived Sept 23, 2026; Grok Bot runs always-on cloud agents.",
+    "why_nobody_yet_or_wall": "Microsoft, Anthropic, OpenAI and xAI, plus indie clients for coding agents (CCC, CodeAgents Mobile). It works because the agent never runs on the phone. Gaps: each vendor has its own approval inbox and notifications, Dispatch needs the desktop awake with the app open, and no cross-agent approval layer exists.",
+    "ios_hooks": [
+      "User Notifications (actionable approve and reject)",
+      "Live Activities (run progress)",
+      "WidgetKit",
+      "App Intents",
+      "Apple Watch notifications"
+    ],
+    "nearest_existing": [
+      "Microsoft Copilot Cowork (https://www.microsoft.com/en-us/copilot/blog/2026/05/05/copilot-cowork-from-conversation-to-action-across-skills-integrations-and-devices/): approve or reject agent actions from the M365 Copilot iOS app",
+      "Claude Cowork on mobile and Dispatch (https://support.claude.com/en/articles/13947068-assign-tasks-from-anywhere-in-claude-cowork)",
+      "Claude Code on mobile (https://code.claude.com/docs/en/mobile): the phone drives cloud, remote or desktop sessions",
+      "ChatGPT Work tab (https://techcrunch.com/2026/09/23/chatgpt-mobile-app-gets-voice-based-agentic-features/)",
+      "Grok Bot (https://www.macrumors.com/2026/08/11/grok-bot-macos-ios/): always-on cloud agents with iPhone app"
+    ],
+    "unsaid_assumption": "That approving a step on a six-inch screen is a real review and not a reflex tap.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "surprise": "At work the phone took the manager's job: it does not do the work, it signs off on it, and the main design problem is approval fatigue across five separate inboxes."
+  },
+  {
+    "title": "Offline on-device LLM apps",
+    "tagline": "Run open models entirely on your iPhone; a few now add tool calling, Shortcuts actions and local APIs.",
+    "tier": "building-now",
+    "category": "Learning & memory",
+    "moment": "You are on a flight with no Wi-Fi and need to rewrite a tense email to your landlord. You open a local model app, load a 4B model, and it redrafts the email offline; nothing leaves the phone.",
+    "what_it_does": [
+      "Downloads and runs open-weight models with llama.cpp or MLX on the device",
+      "Chats, summarizes and rewrites offline",
+      "A few run tool-calling loops (web search, calculator, device info) or expose Siri and Shortcuts actions (Private LLM)",
+      "Some expose local OpenAI- or Anthropic-compatible APIs to other devices",
+      "Rarely act on Calendar, Reminders, Health or Files"
+    ],
+    "why_now": "iPhone 17-class chips run 2-4B models at usable speed; Gemma 4 E2B and E4B target phones with native function calling; iOS 27 adds Core AI and lets MLX models plug into Foundation Models sessions; Apple's own on-device model is free through Foundation Models.",
+    "why_nobody_yet_or_wall": "PocketPal AI (about 8.4k GitHub stars), fullmoon, Private LLM, Locally AI, MLC Chat and Off Grid. Most are chat-only; tool use, App Intents actions and background tasks are largely absent, so they are bases for local agents rather than agents. Walls: RAM ceilings that need the increased-memory entitlement, thermal throttling in long sessions, and 1-8 GB model downloads.",
+    "ios_hooks": [
+      "Core AI (iOS 27)",
+      "MLX Swift / mlx-swift-lm",
+      "Foundation Models LanguageModel protocol",
+      "App Intents / Shortcuts",
+      "Increased Memory Limit entitlement",
+      "Background Assets (model downloads)"
+    ],
+    "nearest_existing": [
+      "PocketPal AI (https://github.com/a-ghorbani/pocketpal-ai): open-source local model app, mostly chat",
+      "fullmoon (https://github.com/mainframecomputer/fullmoon-ios): Swift and MLX local chat app",
+      "Private LLM (https://privatellm.app/blog/run-local-gpt-on-ios-complete-guide): 140+ on-device models with Siri and Shortcuts",
+      "Off Grid and other offline apps (https://dev.to/alichherawalla/how-to-run-llms-locally-on-your-iphone-in-2026-completely-offline-no-subscription-4b3a): tool calling added in 2026"
+    ],
+    "unsaid_assumption": "That privacy-minded users will accept a weaker model to keep their data on the phone.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 5,
+      "impact": 2
+    },
+    "surprise": "The most-starred local model apps are still chat windows, and Apple's free on-device model behind the same session API may make download-a-model apps a niche before they ever become agents."
+  }
+]

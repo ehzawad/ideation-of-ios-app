@@ -1,0 +1,463 @@
+[
+  {
+    "title": "Collector Line",
+    "tagline": "A separate number your AI answers when debt collectors, and their voice bots, call about a debt.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "A collection agency's voice bot has called five times this week about a gym debt you don't recognize. You gave them your Collector Line number, so your agent picks up, says calls are recorded, asks in writing for the validation notice, and says to contact you by letter only. By Friday a certified dispute letter is in the mail, and your Lock Screen shows the 30-day validation clock.",
+    "what_it_does": [
+      "Gives you a cloud phone number and email address to give collectors. It answers every call, says the call is recorded and that it is an AI, and records the collector, creditor, amount and reference for each debt",
+      "Reads the validation notice you photograph (the Reg F model form), flags missing fields, estimates statute-of-limitations status for your state, and warns you before you pay anything that could restart the clock on an old debt",
+      "Drafts a dispute and validation request inside the 30-day window. Once you approve, it mails the letter certified through a print-and-mail API and shows the deadline in a Live Activity",
+      "Counts contacts against Reg F's limit of 7 calls in 7 days and its time-of-day rules. It builds a dated violation timeline and drafts a CFPB or state attorney general complaint for you to approve",
+      "Always stops to ask before anything that admits the debt, agrees to a payment plan or shares bank details. It never negotiates payment on its own"
+    ],
+    "why_now": "Collectors now run AI voice and text agents that cost cents a minute (Skit.ai and others), so contact volume is cheap and constant. Reg F (in force since late 2021) already gives consumers channel restrictions, a 7-in-7 call cap and validation rights, but nobody enforces them on the consumer's side. Cloud-telephony consumer agents (Pine, Genspark Call for Me) have shown that answering and placing calls from the cloud works.",
+    "why_nobody_yet_or_wall": "Debt-collection AI money flows entirely to collectors. Consumer tools stop at letter templates and lawsuit answers. Builders fear unauthorized-practice-of-law claims and call-recording consent rules, and people in collections rarely pay for subscriptions, so the business model has to come from legal-aid partnerships, nonprofits or partner attorneys paid from FDCPA statutory damages.",
+    "ios_hooks": [
+      "CallKit Call Directory extension (labels known collector numbers calling your real line)",
+      "VisionKit document camera",
+      "Foundation Models on-device notice parsing",
+      "ActivityKit Live Activities",
+      "APNs push from the server-side call agent",
+      "App Intents",
+      "EventKit"
+    ],
+    "nearest_existing": [
+      "Pine AI (consumer-side calling agent, focused on bills and cancellations) https://apps.apple.com/us/app/pine-ai-assistant-agent/id6746403769",
+      "Skit.ai (the collector-side AI this counters) https://skit.ai/",
+      "SoloSuit (debt lawsuit answers and letter templates, not an ongoing agent)",
+      "Debt Discipline explainer on rights against AI collectors https://www.debtdiscipline.com/ai-debt-collectors-rights-2026"
+    ],
+    "unsaid_assumption": "Collectors will actually use the number you give them and honor a request to contact you in writing only, and state recording-consent laws allow a disclosed AI to take the call for you.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "It is an everyday bot-versus-bot fight where the law (Reg F) already favors the consumer, but only the collector has a bot."
+  },
+  {
+    "title": "Holdback Hunter",
+    "tagline": "After a home insurance claim, it recovers the depreciation your insurer held back, receipt by receipt.",
+    "tier": "whitespace",
+    "category": "Life admin",
+    "moment": "Eight months after your kitchen fire, the insurer has paid actual cash value and is holding back thousands in 'recoverable depreciation' across 200 line items. You have been rebuying things all along but never sent a receipt. Your agent has matched 140 purchases to line items and asks you to approve the first release request.",
+    "what_it_does": [
+      "Imports the insurer's contents settlement (a PDF or spreadsheet of line items) and pulls out each item's replacement cost, actual cash value, depreciation withheld and the policy's replacement deadline",
+      "Watches new purchases from forwarded or OAuth-connected email receipts, Apple Card and Apple Cash transactions, and photographed paper receipts, and proposes matches to line items. When a match is unclear it asks you ('Is this $89 blender the replacement for item 47?')",
+      "Flags 'like kind and quality' underpricing, where the insurer priced a cheaper substitute than what you owned, with comparable listings attached. You decide whether to contest",
+      "Batches matched receipts into a release request with the item mapping adjusters ask for, sends it once you approve, and follows up by email on a schedule",
+      "Counts down to the replacement deadline with the dollars still recoverable, so money is not lost to a missed date"
+    ],
+    "why_now": "Insurers and their vendors now use contents-valuation AI to price and depreciate claims. After the January 2025 Los Angeles fires, AI inventory tools such as Bevel appeared for the inventory step, but they stop once the claim is filed. iOS 27's on-device multimodal model can read receipts privately, and the 32K PCC model can handle long settlement spreadsheets.",
+    "why_nobody_yet_or_wall": "The money arrives months after the disaster, when attention has moved on and no app is still running. The work is unglamorous line-item matching across insurer-specific formats. Public adjusters take a percentage and focus on large claims, and inventory apps treat the claim as finished once the list is filed.",
+    "ios_hooks": [
+      "FinanceKit (Apple Card and Apple Cash transactions)",
+      "VisionKit DataScannerViewController and document camera",
+      "Foundation Models (image Attachment, OCRTool)",
+      "PrivateCloudComputeLanguageModel",
+      "ActivityKit Live Activities",
+      "BackgroundTasks",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Bevel (AI inventory built after the Palisades fire; covers inventory, not holdback) https://abc7.com/post/artificial-intelligence-driven-inventory-tool-bevelmade-serves-solution-california-wildfire-victims-document-belongings/17882452/",
+      "JustClaims (explains recoverable depreciation; only its blog was seen) https://justclaims.ai/blog/insurance-recoverable-depreciation-explained/",
+      "Insurnest Contents Valuation AI Agent (insurer side) https://insurnest.com/agent-details/insurance/claims/contents-valuation-ai-agent-in-claims-for-homeowners-insurance/",
+      "United Policyholders depreciation guidance https://uphelp.org/claim-guidance-publications/depreciation-basics/"
+    ],
+    "unsaid_assumption": "Adjusters will accept an itemized receipt-to-line-item mapping by email, and many claimants have replacement-cost policies rather than cash-value-only ones.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The money is not lost in the fire. It is lost in the months afterward, when nobody sends the receipts."
+  },
+  {
+    "title": "Coverage Clock",
+    "tagline": "When your flight slips, a Live Activity shows which card or airline protections apply, then files.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "Your 6:10 pm flight now leaves at 11:40 pm, and your Lock Screen reads: 'Hour 5 of delay. Your card's trip-delay cover starts at hour 6. Keep meal and hotel receipts.' At midnight the flight is cancelled, and the agent reminds you that the airline owes a cash refund, not a voucher, if you choose not to fly. It asks whether to request that refund or rebook.",
+    "what_it_does": [
+      "Knows your trips from forwarded or OAuth-connected confirmation emails and which card paid for each. It keeps a table of each card's trip-delay, baggage-delay and cancellation terms",
+      "Tracks flight status through a flight-data API and runs a 'coverage clock' Live Activity showing each threshold: card delay cover, US DOT refund eligibility, EU261 or UK261 compensation",
+      "During the delay, prompts you to photograph each receipt and files it to the claim, and asks the airline by email or web form for a written delay statement",
+      "After the trip, pre-fills the card benefit administrator's claim and any DOT refund or EU261 request for your approval, then tracks each one until it pays",
+      "Asks before you accept a voucher or rebooking, because either can cost you the cash refund"
+    ],
+    "why_now": "The 2024 US DOT rule made cash refunds automatic for cancelled and significantly changed flights, yet airlines still push vouchers. Live Activities now appear on the Watch Smart Stack, CarPlay and the Mac menu bar, which suits a clock that counts up through an airport night. The on-device model can read receipts offline in a terminal with bad Wi-Fi.",
+    "why_nobody_yet_or_wall": "Card benefit terms live in guide-to-benefits PDFs that differ by card and year, and claims go through benefit-administrator web portals with no API. EU261 firms take a large cut and ignore card cover, and flight trackers track but never claim. The value depends on acting during the delay, which is a product-design problem, not a model problem.",
+    "ios_hooks": [
+      "ActivityKit Live Activities with push updates",
+      "watchOS Smart Stack",
+      "Foundation Models (receipt parsing with image Attachment)",
+      "VisionKit",
+      "FinanceKit",
+      "App Intents ('add this receipt to my delay claim')",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "AirHelp (EU261 claims only, contingency fee)",
+      "Flighty (flight tracking, no claims)",
+      "RecoverKit (publishes card delay-claim guides; unclear whether it files) https://www.tryrecoverkit.com/blog/credit-card-travel-delay-insurance/",
+      "Chase trip delay guide https://www.chase.com/personal/credit-cards/education/basics/the-comprehensive-guide-to-trip-delay-reimbursement"
+    ],
+    "unsaid_assumption": "Benefit administrators will accept claims the agent assembles and the cardholder submits, and public flight-status data is accurate enough to time the thresholds.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The claim is won or lost at 11 pm in the terminal, when you would otherwise throw away the receipts, not weeks later on a form."
+  },
+  {
+    "title": "Price Twin",
+    "tagline": "Before you pay, it checks what a stranger would be charged for the same item, at the same store, right now.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "You are about to book a hotel in Safari and tap the Price Twin extension. Within 20 seconds it reports that a fresh, logged-out browser sees a lower nightly total, and that other members priced the same room today at the lower rate too. It offers to open the cheaper path or just log the gap.",
+    "what_it_does": [
+      "A Safari Web Extension reads the item, price and fees on the page you choose to check, and only that page",
+      "A cloud agent loads the same item from clean browser profiles (logged out, a different device type, a second ZIP code if you allow it) and compares the full totals, including drip fees added at checkout",
+      "With your opt-in, adds an anonymous observation (item, price, time, no identity) to a crowd panel, so gaps across many people become visible",
+      "If you are paying more, shows the cheaper path (guest checkout, logging out, another channel) and asks before doing anything. It keeps a dated evidence record",
+      "Each month, offers to draft reports to the FTC or your state attorney general for patterns you choose to report. Where state law requires a price disclosure and none was shown, it flags that"
+    ],
+    "why_now": "The FTC's January 2025 surveillance-pricing study found that personal data is used to set individual prices, and a Consumer Reports-backed investigation found Instacart charging up to 23% more for the same item, same store, same time. New York passed a 2025 law requiring a notice when personal data sets a price. Cloud browser agents became cheap and common in 2026.",
+    "why_nobody_yet_or_wall": "Price tools (Keepa, Honey, Phia) compare across stores or across time, not across people. Detecting personalization needs controlled clean sessions plus a crowd baseline. Merchants block bots, and the most personalized prices are inside native apps (ride-hail, grocery delivery) that no iOS app can see, so this version covers the web only.",
+    "ios_hooks": [
+      "Safari Web Extensions (iOS)",
+      "Action / Share extension",
+      "Foundation Models (extracting price and fees from page text on device)",
+      "App Intents",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Phia (fair-price check across sites, not across people) https://apps.apple.com/us/app/phia-shop-smarter-save-money/id6739351340",
+      "Consumer Reports on personalized pricing https://www.consumerreports.org/money/prices-price-comparison/personalized-pricing-surveillance-ftc-policy-a9891636455/",
+      "FTC surveillance pricing study https://www.ftc.gov/news-events/news/press-releases/2025/01/ftc-surveillance-pricing-study-indicates-wide-range-personal-data-used-set-individualized-consumer"
+    ],
+    "unsaid_assumption": "A clean session is a fair baseline, even though prices also move with location, inventory and time, so some gaps will have innocent causes.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 3
+    },
+    "surprise": "Every price tool asks where an item is cheaper. This one asks whether it costs more because the buyer is you."
+  },
+  {
+    "title": "Shadow File Auditor",
+    "tagline": "Pulls the little-known reports that set your rent, insurance and bank access, and disputes the errors.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "Your car insurance renewal jumps sharply with 'claims history' as the reason, but you have never filed a claim. Your agent has already requested your LexisNexis C.L.U.E. auto report and found a claim that belongs to someone with a similar name. A dispute is drafted, and the 30-day investigation clock will start once you tap Send.",
+    "what_it_does": [
+      "Once a year, and after any denial or price jump, requests your free FCRA disclosures from specialty bureaus: LexisNexis C.L.U.E. (auto and home), ChexSystems, Early Warning Services, tenant-screening bureaus, The Work Number and MIB. You do the identity checks; it fills in everything else",
+      "Reads each report as it arrives (a scanned letter or PDF), compares it with last year and with your own records (claim emails, past addresses, accounts), and explains every entry in plain words",
+      "Drafts a dispute for each entry you mark wrong, with evidence attached, and sends it through the bureau's online form or by certified mail once you approve",
+      "Tracks the 30-day reinvestigation window and follows up. If the entry is not fixed, it adds a consumer statement and drafts a complaint, and it asks you before involving a lawyer",
+      "When an adverse-action notice arrives (a denial or a higher premium), it identifies the bureau named and requests that report within the 60-day free window"
+    ],
+    "why_now": "Decisions about housing, insurance and banking increasingly come from scores built on these files. SafeRent's 2024 settlement over its tenant-screening score brought that into public view. Federal consumer-finance enforcement shrank sharply in 2025, so self-help matters more. An on-device model can now read these reports without the data leaving the phone, which suits a population wary of giving agents financial access (only 20% have, per Menlo 2026).",
+    "why_nobody_yet_or_wall": "Credit apps (Credit Karma, Dovly) cover only Equifax, Experian and TransUnion. Each specialty bureau has its own request process, often by mail. The Credit Repair Organizations Act bans fees before services are performed, which scares builders away from anything that sounds like credit repair.",
+    "ios_hooks": [
+      "VisionKit document camera",
+      "Foundation Models on-device (sensitive reports stay local)",
+      "PDFKit",
+      "ActivityKit Live Activities (30-day windows)",
+      "UserNotifications",
+      "Data Protection / Keychain",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Consumer Action guide to specialty reports https://www.consumer-action.org/downloads/english/specialty_report_guide.pdf",
+      "LexisNexis Consumer Center https://supportcenter.lexisnexis.com/app/answers/answer_view/a_id/1127747/~/ensuring-accuracy-in-credit,-insurance,-and-identity-with-the-consumer-center",
+      "Consumer attorneys handling C.L.U.E. disputes (litigation, not self-service) https://consumerattorneys.com/lp/clue-report-dispute",
+      "Credit Karma / Dovly (big-three credit bureaus only)"
+    ],
+    "unsaid_assumption": "Specialty bureaus will process requests and disputes that an app prepares for the consumer, and errors are common enough to make a yearly sweep worthwhile.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The files that most quietly set your prices are not your credit report, and almost nobody knows they can get them for free."
+  },
+  {
+    "title": "Benefits Keeper",
+    "tagline": "Keeps Medicaid and SNAP from lapsing over paperwork: it logs hours, catches notices and files proof on time.",
+    "tier": "whitespace",
+    "category": "Life admin",
+    "moment": "It is March 2027, and your state now checks Medicaid work hours every month. You drive for two gig apps and care part-time for your disabled mother. Your agent has pulled February's earnings from email, logged 86 hours, noted that your caregiving may qualify you for an exemption, and shows a pre-filled report with one question left.",
+    "what_it_does": [
+      "Tracks renewal dates and reporting months for each program and reads every notice you photograph or forward, turning it into a dated to-do in your language",
+      "Builds monthly proof of hours or income from what you already have: gig earnings and pay-stub emails, photographed timesheets and volunteer sign-offs. It flags possible exemptions (caregiving, medical frailty, school) and asks you to confirm each one",
+      "Pre-fills the state portal submission or paper form. You sign in and press Submit, or you approve and it mails the packet and saves a dated copy",
+      "Checks case status every week. If a request for information or a termination notice arrives, it starts the appeal clock and drafts a fair-hearing request for you to approve",
+      "Runs on older iPhones and in languages Siri AI does not cover, using cloud models only with your explicit consent"
+    ],
+    "why_now": "The July 2025 federal budget law requires many Medicaid expansion adults to show work or community engagement from January 1, 2027, and moves them to six-month renewals, and SNAP work rules also expanded. During the 2023-24 Medicaid unwinding, most people who lost coverage lost it for procedural reasons. States are only now shipping helper tools (Minnesota's Renewal Lookup).",
+    "why_nobody_yet_or_wall": "Every state has a different portal with identity proofing and no API. The users cannot pay subscriptions, and a missed deadline carries real liability. Nonprofits such as Propel and Code for America mostly build with or for agencies. Propel has said it is building work-requirement tools, so the window may be short.",
+    "ios_hooks": [
+      "VisionKit document camera",
+      "Foundation Models with OCRTool",
+      "PrivateCloudComputeLanguageModel",
+      "Translation framework",
+      "EventKit",
+      "ActivityKit Live Activities (reporting deadlines)",
+      "App Intents ('log 4 hours at the food bank')",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Minnesota Renewal Lookup (state tool for 2027 work requirements) https://mn.gov/dhs/about-us/legislative-media/media/news/?id=1053-762638",
+      "Propel (SNAP app; AI reporting tools in progress) https://www.propel.app/insights/ai-to-help-simplified-reporting-reduce-error-rate/",
+      "HeyMedicaid (AI fills Medicaid applications, not ongoing reporting) https://heymedicaid.med/"
+    ],
+    "unsaid_assumption": "States will accept the evidence gig workers actually have, and the agent can keep up with 50 different state rollouts of the same federal rule.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 3,
+      "feasibility": 3,
+      "impact": 5
+    },
+    "surprise": "The people most exposed to the 2027 paperwork wave are the people Siri AI leaves out: older iPhones, non-English speakers and no paid AI plan."
+  },
+  {
+    "title": "Pack-Out Proof",
+    "tagline": "For small online sellers: signed packing videos and a check for AI-faked 'damaged item' photos.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "You sold a vintage jacket on a resale marketplace, and two days later the buyer sends a photo of a torn sleeve and asks for a refund. Your agent pulls Tuesday's signed packing video showing the sleeve intact. It notes that the buyer's photo has no camera metadata and a label that doesn't match your listing, and drafts a reply for the platform's dispute form.",
+    "what_it_does": [
+      "When you pack an order, records a short video with the shipping label in frame, signs it with a Secure Enclave key and App Attest, attaches C2PA content credentials, and logs the time",
+      "Watches marketplace emails (via a forwarding address) for claims, return requests and 'not as described' disputes, and links each one to that order's packing record",
+      "Checks the buyer's photos for signs of AI generation or reuse: reverse image matches, metadata, and details such as labels or stitching that don't match your listing photos. It reports confidence honestly, never as proof",
+      "Assembles an evidence packet for the platform or payment processor, asks you before sending it, and tracks the response deadline",
+      "Learns which claim patterns led to losses and suggests safeguards, such as signature on delivery or return-before-refund"
+    ],
+    "why_now": "In 2026 retailers and marketplaces reported a wave of AI-faked damage photos used to claim refunds (an OECD AI incident on Vinted; Modern Retail and PYMNTS coverage), and benchmarks such as FraudBench now target the problem. Image generators made faking cheap, while Secure Enclave signing and C2PA let a phone make its own footage harder to dispute.",
+    "why_nobody_yet_or_wall": "Refund-fraud tools (Ravelin, Chargeflow) sell to brands and platforms, not to one-person resellers. Packing-video tools exist for larger e-commerce sellers but are not tied to dispute packets for peer-to-peer marketplaces. Fake detection is unreliable, so builders worry about false accusations against honest buyers.",
+    "ios_hooks": [
+      "AVFoundation capture",
+      "CryptoKit (Secure Enclave P256 signing)",
+      "DeviceCheck App Attest",
+      "Vision",
+      "Foundation Models (image Attachment comparison)",
+      "Share extension",
+      "ActivityKit Live Activities (dispute deadlines)"
+    ],
+    "nearest_existing": [
+      "TrackVid (packing-video evidence for e-commerce sellers) https://trackvid.in/blogs/ai-for-ecommerce-returns.html",
+      "Ravelin (merchant-side refund-abuse detection) https://www.ravelin.com/blog/ai-powered-refund-abuse-dispute-fraud",
+      "OECD AI incident on Vinted refund fraud https://oecd.ai/en/incidents/2026-03-02-16b3",
+      "FraudBench benchmark https://pith.science/paper/2605.08820"
+    ],
+    "unsaid_assumption": "Marketplace dispute teams will give a seller's signed video more weight than an unsigned one, and signing adds credibility that a normal video lacks.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "AI fraud made the humble packing video valuable again, and the agent turns that footage into evidence a platform will act on."
+  },
+  {
+    "title": "Household Spending Constitution",
+    "tagline": "One set of spending rules, signed with Face ID, that every AI agent in your home must follow at checkout.",
+    "tier": "moonshot",
+    "category": "Money & commerce",
+    "moment": "Your partner's Alexa, your Muse agent and your teenager's school-trip agent can all buy things. You set one rule: groceries under $180 a week, nothing over $50 from a new merchant, nothing non-refundable without asking. When one agent tries to buy non-refundable concert tickets, the card network declines it and your Watch offers a one-tap approval.",
+    "what_it_does": [
+      "Turns rules you write in plain language into a policy a machine can check: amount, merchant category, refundability, one-off or recurring, and which agent is buying",
+      "Issues each agent its own scoped credential (a card-network agent token or an AP2 mandate), signed in the iPhone's Secure Enclave after Face ID",
+      "Checks every agent purchase against the policy before it is authorized, and sends out-of-policy purchases to a Live Activity or Watch approval",
+      "Keeps one ledger that ties each charge to the agent, the instruction and the mandate behind it, and starts a return or dispute when they don't match",
+      "Revokes one agent's credential instantly without replacing your card"
+    ],
+    "why_now": "The rails arrived in 2025-26: Visa Intelligent Commerce, Mastercard Agent Pay agentic tokens, AP2 mandates (including human-not-present), ACP delegated payments and UCP. Households now run several agents that can buy (Muse with one-time Stripe Link cards, Alexa Buy for Me and Auto Buy, Google agentic checkout), and each enforces its own separate limits.",
+    "why_nobody_yet_or_wall": "The wall is the platform plus the payment networks. Apple Pay and Wallet have no agent-delegation or mandate API in iOS 27, and every Apple Pay authorization needs the user present. Enforcing a policy at authorization requires issuer or network cooperation, and there is no shared policy format across AP2, ACP, UCP and the card tokens. Apple would need a Wallet agent-token or mandate API, or issuers would need to expose policy hooks, plus a common policy schema. A partial version could work today with per-agent virtual cards (Privacy.com-style merchant locks and limits).",
+    "ios_hooks": [
+      "CryptoKit Secure Enclave",
+      "LocalAuthentication (Face ID)",
+      "PassKit / Wallet",
+      "ActivityKit Live Activities",
+      "watchOS notifications",
+      "FinanceKit",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Mastercard Agent Pay https://www.mastercard.com/us/en/news-and-trends/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai.html",
+      "Google AP2 https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+      "Agentic Commerce Protocol https://github.com/agentic-commerce-protocol/agentic-commerce-protocol",
+      "Apple Wallet at WWDC26 (no agent API) https://developer.apple.com/videos/play/wwdc2026/209/",
+      "Privacy.com (per-merchant virtual cards; not agent-aware)"
+    ],
+    "unsaid_assumption": "Families want one policy that governs all their agents instead of trusting each vendor's own guardrails, and the networks will let a consumer app sit in the authorization path.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "The hard problem is not one agent buying things. It is four agents in one household spending money with no shared rules."
+  },
+  {
+    "title": "Bot-to-Bot Dispute Desk",
+    "tagline": "Your agent argues a refund or claim directly with the company's AI, using signed evidence.",
+    "tier": "moonshot",
+    "category": "Money & commerce",
+    "moment": "The airline's claims AI has denied your delayed-bag claim for 'missing receipts'. Your agent opens a session with the airline's agent, presents receipts signed at the moment you captured them, cites the rule the denial skipped, and comes back with an offer. You tap Accept or Escalate.",
+    "what_it_does": [
+      "Finds out whether the company has a claims or dispute agent it can reach (an A2A Agent Card, an MCP server or a UCP order capability)",
+      "Assembles a signed evidence bundle: receipts, photos with content credentials, order records, chat transcripts and the rule that governs the case (the contract, a statute or a card-network rule)",
+      "Negotiates within limits you set (the lowest amount you'll accept, a deadline, when to escalate) and logs every turn",
+      "Brings you the final offer to approve and gets a signed settlement record. If the talks fail, it prepares the human route: a chargeback, a regulator complaint or small claims",
+      "Treats everything the company's agent says as untrusted input, and screens for manipulation or hidden terms before anything is accepted"
+    ],
+    "why_now": "Companies already put AI in the claims and support seat (Airbnb's support agent resolves a large share of inquiries, and insurers use claims AI). A2A reached v1.0 in March 2026, and MCP Tasks and UCP give companies machine-readable interfaces. Apple's WWDC26 security guidance (onToolCall confirmations, spotlighting untrusted content) supplies the on-device guardrails.",
+    "why_nobody_yet_or_wall": "The walls are incentives, trust and research. Companies gain nothing by exposing negotiable dispute endpoints to consumer agents, and no one has shown that two adversarial agents reach fair outcomes rather than the stronger model exploiting the weaker one. UETA already recognizes contracts formed between electronic agents, so binding settlement is less the problem. The blockers are authenticated evidence standards and prompt-injection between hostile agents. It would take regulators requiring machine-readable complaint channels (as they have required human ones in places), plus robust adversarial-negotiation safeguards.",
+    "ios_hooks": [
+      "Foundation Models with onToolCall confirmations and historyTransform spotlighting",
+      "CryptoKit",
+      "DeviceCheck App Attest",
+      "ActivityKit Live Activities",
+      "App Intents",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "A2A protocol https://github.com/a2aproject/A2A",
+      "Universal Commerce Protocol https://github.com/Universal-Commerce-Protocol/ucp",
+      "Apple WWDC26 'Secure your app' agent guidance https://developer.apple.com/videos/play/wwdc2026/347/",
+      "Pine AI (human-channel calls and email, not agent-to-agent)"
+    ],
+    "unsaid_assumption": "Adversarial agent negotiation will converge on fair outcomes, and the company's agent will be authorized to make binding offers.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "Companies already have an AI deciding claims, while the consumer is still a human typing into a chat window."
+  },
+  {
+    "title": "Renewal Reverse Auction",
+    "tagline": "A month before a renewal, your agent posts an anonymous request and providers' agents bid for your business.",
+    "tier": "moonshot",
+    "category": "Money & commerce",
+    "moment": "Your broadband and car insurance both renew in October. Instead of you shopping around, your agent posts two anonymized requests: '1 Gbps, this address block, no contract' and 'two drivers, clean records, these limits'. Providers' agents bid, and you see the three best real offers, including your current provider's retention bid.",
+    "what_it_does": [
+      "Watches renewal dates (from bills in email and recurring charges) and pulls in your current terms and usage",
+      "Writes an anonymized request with only what quoting needs, and reveals your identity only to the winner after you approve",
+      "Runs the auction with providers over agent protocols (A2A, UCP) and checks that each offer is complete: fees, when the promo ends, contract length",
+      "Shows you the top offers against what you pay now. Once you approve, it handles the switch: starts the new service, cancels the old one and ports your number",
+      "Remembers when promo pricing ends and runs the auction again next year"
+    ],
+    "why_now": "Providers price loyal customers higher. The UK banned 'price walking' in home and motor insurance in 2022, which shows the problem is real. Agent protocols (A2A v1.0, UCP) make machine offers possible, and consumer agents such as Pine and Cleo Autopilot already negotiate one provider at a time.",
+    "why_nobody_yet_or_wall": "The wall is regulation plus incentives. In US insurance, prices must follow rating plans filed with state regulators, and anti-rebating laws limit individually negotiated discounts, so insurers cannot legally bid freely. Accurate quotes need identity-linked underwriting data (claims history, insurance scores), which breaks anonymity, and providers have no agent endpoints. It would take open-insurance and open-finance quote APIs, verified attributes that can be disclosed privately (for example from a Wallet ID), and regulators accepting bids inside filed rate bands. Broadband and energy could come first.",
+    "ios_hooks": [
+      "FinanceKit",
+      "PassKit identity (Verify with Wallet, entitlement required)",
+      "ActivityKit Live Activities",
+      "BackgroundTasks",
+      "App Intents",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Transparent Energy reverse auction (for businesses) https://transparentedge.com/solutions/software-advantage/",
+      "Cleo Autopilot (acts within limits, one provider at a time) https://web.meetcleo.com/blog/introducing-autopilot",
+      "Pine AI (bill negotiation by phone)",
+      "Jerry (insurance comparison shopping)"
+    ],
+    "unsaid_assumption": "Providers would rather bid below their public price for a verified switcher than let their own pricing algorithms quietly match each other.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "It turns shopping around: instead of your agent visiting providers, their agents line up at yours."
+  },
+  {
+    "title": "Posthumous Admin Agent",
+    "tagline": "An agent you set up while alive that closes your accounts and guards your identity after you die.",
+    "tier": "moonshot",
+    "category": "Life admin",
+    "moment": "You spend one evening with the agent labeling your subscriptions, autopays, policies and accounts: close, transfer or memorialize. It keeps that map current from your email and bank feeds for years. When you die and your executor confirms it, it starts work, freezing credit files, cancelling subscriptions, filing benefit claims and delivering your notes, with your executor approving each batch.",
+    "what_it_does": [
+      "While you are alive, keeps building a map of your accounts, autopays, policies, loyalty balances and digital assets from email and transactions, and asks you to set wishes item by item",
+      "After a verified death (a death certificate, plus confirmation from the executor and trusted contacts), places credit freezes, cancels subscriptions, stops autopays and files life, accidental-death and card-benefit claims",
+      "Gives the executor a queue: any action that needs legal authority arrives as a pre-filled request waiting for their signature",
+      "Watches for identity theft in your name for a year or more",
+      "Delivers the messages and instructions you left, on the dates you chose"
+    ],
+    "why_now": "Agentic estate services have started (Sunset takes a limited power of attorney from the executor to find and close accounts). Digital IDs now live in Wallet, and server-side agents that push to a phone are cheap to run for years. The paperwork after a death has not gotten lighter.",
+    "why_nobody_yet_or_wall": "The wall is legal authority. A power of attorney ends at death, and until probate grants letters testamentary, no one (let alone an agent) can act for the estate. Institutions demand certified paper and each has its own process, and RUFADAA covers fiduciaries' access to digital assets, not autonomous agents. It would take court-issued verifiable credentials for estate authority that a Wallet can present, institutions accepting them from software, and law that gives effect to instructions the person set up in advance.",
+    "ios_hooks": [
+      "FinanceKit",
+      "CloudKit sharing (executor and trusted contacts)",
+      "CryptoKit",
+      "LocalAuthentication",
+      "BackgroundTasks",
+      "UserNotifications",
+      "EventKit"
+    ],
+    "nearest_existing": [
+      "Sunset (executor-authorized account discovery and closure; building-now for the after-death part) https://learn.hellosunset.com/sunset-vs-empathy-vs-goodtrust-closing-accounts",
+      "Empathy (guidance plus care managers; the family does the outreach) https://www.meetalix.com/resources/alix-vs-empathy-estate-settlement",
+      "EstateExec (executor task app) https://www.estateexec.com/"
+    ],
+    "unsaid_assumption": "People will do the uncomfortable setup while healthy, and executors will trust software to act in their dead parent's name.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "Every estate tool serves the grieving family. This one is hired by the person who will die, before they die."
+  },
+  {
+    "title": "Consumer Agent Union",
+    "tagline": "Thousands of personal agents pool private proof of the same unfair fee and bargain with the company as one.",
+    "tier": "moonshot",
+    "category": "Money & commerce",
+    "moment": "Your agent notices a small 'service fee' that began showing up on your delivery orders without clear disclosure. Thousands of other members' agents found the same fee. The union's negotiator presents the company with a refund demand backed by private proofs, not raw bank data, and your share lands as a credit without you ever filling in a form.",
+    "what_it_does": [
+      "Scans your own transactions and receipts on the device for patterns: undisclosed fees, price rises on auto-renewal, charges after you cancelled",
+      "Creates a privacy-preserving proof that you were charged (merchant, amount, date) without revealing anything else, and joins a pool only with your consent",
+      "When a pool is large enough, a coordinating agent run with a law firm or nonprofit opens talks with the company's agent or support channel, backed by the threat of mass arbitration",
+      "Brings every member the proposed settlement to accept or reject, then tracks distribution of the refunds",
+      "Keeps an auditable log that members can share with regulators"
+    ],
+    "why_now": "Mass arbitration has gone industrial on the law-firm side: firms gather thousands of claimants in days, and generative AI now drafts individual filings at scale. Junk fees and drip pricing are active targets. On-device models can scan a person's transactions without uploading them.",
+    "why_nobody_yet_or_wall": "The walls are legal and research. Lawyer ethics rules restrict paying for referrals and soliciting clients, so pooling has to run through licensed attorneys, and unauthorized-practice rules limit what the app itself can do. Companies answer with batch-arbitration clauses and rule changes at arbitration providers. Proving a charge to a third party without handing over bank data needs verifiable transaction attestations (signed bank data, or TLS-proof techniques such as TLSNotary) that are not mainstream. It would take banks signing transaction attestations and bar rules that let consumers control a collective bargaining tool.",
+    "ios_hooks": [
+      "FinanceKit",
+      "Foundation Models on-device (private scanning)",
+      "CryptoKit",
+      "DeviceCheck App Attest",
+      "BackgroundTasks",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "ClassAction.org mass-arbitration sign-ups for junk fees https://www.classaction.org/illegal-hidden-junk-fees",
+      "Class Action U current mass-arbitration claims https://classactionu.org/mass-arbitrations/current-claims/",
+      "Goodwin on AI-scaled mass arbitration https://www.goodwinlaw.com/en/insights/publications/2025/12/insights-technology-cldr-mass-arbitration-the-risk-lurking-in-consumer-agreements"
+    ],
+    "unsaid_assumption": "Companies will settle faster with a verified pool than they would fight one, and the pool can keep fake claimants out.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "Companies scaled AI against consumers one person at a time. This scales the consumer side by making small harms count together."
+  }
+]

@@ -1,0 +1,399 @@
+[
+  {
+    "title": "Denial Clock",
+    "tagline": "Times your prior auths against the new CMS deadlines, then runs the whole appeal when the insurer says no.",
+    "tier": "whitespace",
+    "category": "Health & body",
+    "moment": "Your MRI has been 'pending review' for nine days and the scheduler keeps pushing your slot back. Then a letter arrives saying 'not medically necessary.' You photograph it, and the agent already knows which deadline the plan missed and what to ask for next.",
+    "what_it_does": [
+      "Connects to your plan's Patient Access API where one exists (Medicare Advantage, Medicaid, marketplace plans), or reads forwarded letters and EOBs, and puts every pending prior auth on a countdown against the 72-hour urgent and 7-day standard decision windows.",
+      "When a window lapses, drafts a status inquiry and a grievance. It asks you before calling the member line from a cloud number with a script and your member ID.",
+      "On a denial, pulls out the specific reason the plan now has to give. It requests the full claim file and the clinical criteria used (free under ERISA claim rules) and drafts a letter-of-medical-necessity request that you send your doctor from your portal.",
+      "Assembles the internal appeal and shows it to you line by line for sign-off. It files by fax or portal and tracks the response clock. If the denial is upheld, it queues the external-review request well before the 4-month deadline.",
+      "Logs every call, date and reference number, and offers to copy your state insurance regulator on the filing."
+    ],
+    "why_now": "CMS's Interoperability and Prior Authorization rule (CMS-0057-F) made 72-hour and 7-day decision windows and specific denial reasons mandatory for Medicare Advantage, Medicaid, CHIP and federal-marketplace plans from January 2026, and prior-auth status is due in Patient Access APIs in 2027. Only about 11.5% of denials are appealed, even though roughly 80% of appeals succeed, and insurers already use AI on their side of claims review.",
+    "why_nobody_yet_or_wall": "Patient-side tools stop at the letter. Counterforce Health and Claimable generate appeal text, but the clock-watching, claim-file requests, calls and external-review filing are still left to the patient. Prior-auth automation is sold to providers. Employer (ERISA) plans are outside the CMS API rules, so for them the agent has to work from scanned and forwarded paper.",
+    "ios_hooks": [
+      "VisionKit document camera",
+      "Foundation Models on-device (extracts denial codes, dates, reference numbers)",
+      "PrivateCloudComputeLanguageModel (appeal drafting)",
+      "ActivityKit Live Activities (decision and appeal countdowns)",
+      "ASWebAuthenticationSession (OAuth to payer Patient Access APIs)",
+      "HealthKit clinical records",
+      "App Intents",
+      "Server-side agent with cloud fax and telephony, reporting by push"
+    ],
+    "nearest_existing": [
+      "Counterforce Health: free AI appeal letters https://www.counterforcehealth.org/",
+      "Claimable: paid AI appeal letters and drugmaker deals https://www.pymnts.com/news/artificial-intelligence/2026/insurance-denials-meet-their-match-in-ai-powered-appeals/",
+      "Provider-side prior-auth and appeal AI such as Insight Health https://www.insighthealth.ai/blog/prior-authorization-appeal-ai",
+      "KFF tracker of rules on insurer AI https://www.kff.org/patient-consumer-protections/regulation-of-ai-in-prior-authorization-and-claims-review-a-look-at-federal-and-state-consumer-protections/"
+    ],
+    "unsaid_assumption": "That a claim-file request and appeal sent by the patient get the same treatment as one from a doctor's office, and that doctors will write the necessity letter when asked.",
+    "rough_scores": {"difficulty": 3, "novelty": 3, "feasibility": 4, "impact": 5},
+    "surprise": "The appeal letter is now a commodity. The value is in holding insurers to their own new deadlines and asking for the claim file, which most patients don't know they can get."
+  },
+  {
+    "title": "Refill Runway",
+    "tagline": "Runs the monthly relay between you, your prescriber and pharmacies so a controlled med never runs out.",
+    "tier": "whitespace",
+    "category": "Health & body",
+    "moment": "It's the 26th and you have four days of your ADHD medication left. Your pharmacy says your strength is back-ordered, your prescriber's office wants a portal message, and they can't send a new prescription until they know which pharmacy has it. You tap 'Start refill' on your Watch and go back to work.",
+    "what_it_does": [
+      "Reads your dose log through the HealthKit Medications API, counts the days you have left, and knows the earliest date a Schedule II prescription can legally be filled, so it doesn't trigger an early-fill rejection.",
+      "Five days out, it checks stock of your exact drug, strength and form at your usual pharmacy and a ranked list of backups, by calling from a cloud number or through a stock-finder service.",
+      "If your pharmacy is out, it drafts a portal message asking your prescriber to send the prescription to the pharmacy that has it, or asks that pharmacy to request a one-time electronic transfer. You approve before anything is sent.",
+      "Confirms the prescription arrived and was filled, compares your copay with the cash-discount price, and puts a pickup Live Activity on your Lock Screen.",
+      "Remembers which pharmacies actually had your med each month, so next month's search starts with them."
+    ],
+    "why_now": "The HealthKit Medications API (iOS 26) lets third-party apps read a user's medications and logged doses. A 2023 DEA rule allows a one-time transfer of electronic Schedule II-V prescriptions between pharmacies for the first fill, and the stimulant shortages that began in 2022 were still being tracked in September 2026. Cloud voice agents can now handle a short, structured pharmacy call.",
+    "why_nobody_yet_or_wall": "Stock finders like Medfinder call pharmacies and report who has the drug, then stop. The handoff between prescriber and pharmacy, the fill-date rules and the monthly repeat are still manual. Pharmacy apps see only their own chain. Controlled-substance rules vary by state, and the agent must never pressure a prescriber or pharmacist, so every outbound message needs your approval.",
+    "ios_hooks": [
+      "HealthKit Medications API",
+      "watchOS app and WidgetKit complication",
+      "ActivityKit Live Activities",
+      "App Intents ('How many days of meds do I have?')",
+      "UserNotifications with action buttons",
+      "Foundation Models on-device (parses pharmacy texts and emails)",
+      "Server-side agent with cloud telephony, reporting by push"
+    ],
+    "nearest_existing": [
+      "Medfinder: calls pharmacies to find stock https://www.medfinder.com/",
+      "Insito Medfinder's human pharmacy callers https://qz.com/ozempic-adderall-medfinder-1851532606",
+      "Medisafe and Apple Health medication reminders",
+      "GoodRx cash prices"
+    ],
+    "unsaid_assumption": "That pharmacies will keep answering stock questions from an automated caller, and that prescribers accept pharmacy changes that patients request by portal message.",
+    "rough_scores": {"difficulty": 3, "novelty": 3, "feasibility": 4, "impact": 4},
+    "surprise": "Finding stock is solved. The real monthly pain is the three-way relay between patient, prescriber and pharmacy, and none of them owns it."
+  },
+  {
+    "title": "Ghost Network Buster",
+    "tagline": "Calls down your insurer's therapist list, finds who is really taking patients, and files the gap if nobody is.",
+    "tier": "whitespace",
+    "category": "Health & body",
+    "moment": "You finally decide to find a therapist, and your plan's directory shows 180 in-network names. The first eight you call are voicemail, full, or no longer take your plan. You hand the list to the agent and tell it what matters: evenings, telehealth, someone who treats OCD.",
+    "what_it_does": [
+      "Pulls candidates from your plan's directory (Medicare Advantage and Medicaid plans must publish a Provider Directory API) and from public listings, then filters by your needs. You choose which personal details it may share, and it shares none of your history unless you say so.",
+      "Calls, emails or fills in contact forms for each practice from a cloud number. It says up front that it is an AI assistant calling for you and asks three things: are they taking new clients, are they in network for your exact plan, and when is the first slot.",
+      "Shows you the real short list with wait times. You choose, and it books the intake call or sends the intake form you approve.",
+      "Logs every dead or wrong listing with date and time. If no real option meets your state's time or distance standard, it drafts a network-gap exception or single-case agreement request to your plan and a complaint to your state regulator for you to send.",
+      "Keeps a crisis line visible throughout. If you say you are in crisis, it stops the search and shows 988 and emergency options instead of a waitlist."
+    ],
+    "why_now": "A secret-shopper study for the Senate Finance Committee found about 80% of mental-health listings in Medicare Advantage directories inaccurate or unreachable, and 2025 reporting says efforts to fix this have fallen short. Voice agents can now handle short, scripted calls, and many practices answer with AI receptionists of their own, so agent-to-agent scheduling is starting to happen.",
+    "why_nobody_yet_or_wall": "Therapy marketplaces (Headway, Alma, Rula, Grow Therapy) steer you into their own networks, and insurers use AI to clean directories on their side. Nobody works through the patient's full directory and turns the failures into a coverage exception. Calls about mental health need strict data minimization and a clear safety line.",
+    "ios_hooks": [
+      "VisionKit (scan the insurance card)",
+      "App Intents",
+      "ActivityKit Live Activities (search progress)",
+      "EventKit (books the intake)",
+      "Foundation Models on-device (summarizes call outcomes)",
+      "UserNotifications",
+      "Server-side agent with cloud telephony, reporting by push"
+    ],
+    "nearest_existing": [
+      "NBC News on ghost networks https://www.nbcnews.com/health/health-care/ghost-networks-health-insurance-companies-therapy-rcna210591",
+      "Zocdoc: bookable listings only https://www.zocdoc.com/resources/blog/article/ghost-networks-doctor-hard-to-find",
+      "Lyra Health: employer-paid network https://www.lyrahealth.com/blog/ghost-network/",
+      "Headway, Alma, Rula, Grow Therapy: their own networks"
+    ],
+    "unsaid_assumption": "That practices will talk to an AI caller that says what it is, and that a documented log of dead listings actually moves an insurer to grant an exception.",
+    "rough_scores": {"difficulty": 3, "novelty": 4, "feasibility": 4, "impact": 4},
+    "surprise": "It turns the painful search into evidence: every failed call becomes the paper trail for an out-of-network exception."
+  },
+  {
+    "title": "Chart Check",
+    "tagline": "Reads the note your doctor's AI scribe wrote about you, flags what's wrong, and files the correction.",
+    "tier": "whitespace",
+    "category": "Health & body",
+    "moment": "Two days after your visit, the note appears in your patient portal. It says you 'deny chest pain', lists a medication you stopped last year, and puts your knee surgery on the wrong side. You'd never have read it, but the agent did.",
+    "what_it_does": [
+      "Pulls new visit notes from HealthKit clinical records, or a PDF you share from the portal, and compares them with what you know: your own after-visit voice memo, your medication and allergy lists, and past records.",
+      "Flags only facts you can judge: wrong side, wrong drug or dose, a statement you didn't make, a symptom you raised that's missing. It shows the exact quote and why it looks wrong, and does not second-guess clinical judgment.",
+      "Asks you to confirm each flag, then drafts a short portal message to the clinician, or a formal HIPAA amendment request for bigger errors.",
+      "Tracks the 60-day response clock on amendment requests, re-reads the record after the fix, and checks that the error wasn't copied into later notes or other providers' records.",
+      "Keeps a correction history you can hand to an insurer or a new doctor."
+    ],
+    "why_now": "Ambient AI scribes spread quickly through US health systems in 2025-2026. Studies report errors in 4.8% to 71% of signed notes, mostly omissions, with higher error rates for some groups of speakers. The 21st Century Cures Act made notes available to patients right away, and HealthKit can pull clinical notes from participating providers.",
+    "why_nobody_yet_or_wall": "Scribe quality checks are sold to health systems and run before the note is signed, if at all. Patients can read their notes (OpenNotes), but nothing reads them on the patient's behalf and follows the amendment process through. Clinics may resent a stream of AI-generated corrections, so the agent has to be precise and flag only what matters.",
+    "ios_hooks": [
+      "HealthKit clinical records (clinical notes, medications, allergies)",
+      "SpeechAnalyzer / Speech framework (after-visit voice memo)",
+      "Foundation Models on-device (note comparison that keeps text local)",
+      "PrivateCloudComputeLanguageModel (long notes)",
+      "Share extension (portal PDFs)",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Ambient AI scribe safety research https://pmc.ncbi.nlm.nih.gov/articles/PMC13456971/",
+      "Omission blindness in AI clinical notes https://arxiv.org/pdf/2608.31016",
+      "OpenNotes movement https://en.wikipedia.org/wiki/OpenNotes",
+      "HealthKit clinical record types https://developer.apple.com/documentation/healthkit/hkclinicaltypeidentifier"
+    ],
+    "unsaid_assumption": "That, for the facts it flags, the patient's memory or memo of the visit is more reliable than the scribe's transcript.",
+    "rough_scores": {"difficulty": 3, "novelty": 5, "feasibility": 4, "impact": 3},
+    "surprise": "The hospital's AI creates a new chore, checking machine-written records about you, and only an agent on the patient's side is in a position to do it."
+  },
+  {
+    "title": "Medicaid Hours Keeper",
+    "tagline": "Keeps the 80-hour proof, exemption papers and renewal deadlines that Medicaid starts requiring in 2027.",
+    "tier": "whitespace",
+    "category": "Life admin",
+    "moment": "Your state starts checking Medicaid work hours in January. You drive for two gig apps, volunteer Saturdays at a food bank and take a night class, and none of it shows up cleanly in state wage records. The agent has been quietly building your proof since October.",
+    "what_it_does": [
+      "Builds a monthly ledger from forwarded pay stubs, gig earnings statements, photos of volunteer sign-off sheets and school enrollment letters. It checks each month against 80 hours or the income alternative ($580 a month in 2026).",
+      "Checks whether you may qualify for an exemption, such as being medically frail, caring for a young child or being pregnant. With your consent, it drafts the request and asks your clinician for the supporting note. You decide whether to file.",
+      "Before each verification month and 6-month renewal, assembles the packet and walks you through uploading it to the state portal, filling in only the fields you approve.",
+      "Reads photographed mail and forwarded email for 'request for information' notices, runs a Live Activity countdown and drafts the reply.",
+      "If coverage is cut, drafts a fair-hearing request within the deadline, plus a reapplication. It never invents or rounds up hours."
+    ],
+    "why_now": "The July 2025 reconciliation law (H.R. 1) requires Medicaid expansion adults to show 80 hours a month of work, school or service. States must start checking by the end of 2026, and renewals for this group move to every 6 months. CMS issued an interim final rule (CMS-2454-IFC). In the 2023-2024 Medicaid unwinding, most people who lost coverage lost it over paperwork, not because they were ineligible.",
+    "why_nobody_yet_or_wall": "States and their vendors are building verification on the state side. Consumer help so far is explainers and trackers such as Propel's guide and OpenMedicaid. State portals have no APIs, so filing stays in the user's hands or needs a supervised server-side browser. Users are low-income and often on older phones, so the app must work without Apple Intelligence, in several languages and at no cost.",
+    "ios_hooks": [
+      "VisionKit document camera",
+      "Foundation Models on-device where available (pay stub and notice extraction), with a server fallback for older phones",
+      "ActivityKit Live Activities",
+      "EventKit",
+      "App Intents and Shortcuts ('log 4 volunteer hours')",
+      "HealthKit clinical records (exemption evidence, opt-in)",
+      "Email forwarding address and server-side agent"
+    ],
+    "nearest_existing": [
+      "CMS interim final rule fact sheet https://www.cms.gov/newsroom/fact-sheets/medicaid-community-engagement-requirement-certain-individuals-interim-final-rule-comment-period-cms",
+      "Propel benefits app and guide https://www.propel.app/blog/medicaid-work-requirements-explained/",
+      "OpenMedicaid state tracker https://www.openmedicaid.org/insights/work-requirements-2026",
+      "CHCS summary of the requirements https://www.chcs.org/resource/a-summary-of-national-medicaid-work-requirements/"
+    ],
+    "unsaid_assumption": "That states will accept documents from members for hours their data feeds miss, instead of relying only on automated wage matches.",
+    "rough_scores": {"difficulty": 3, "novelty": 4, "feasibility": 3, "impact": 5},
+    "surprise": "A new paperwork burden reaches millions of low-income adults in about three months, and the only automation being built is on the state's side."
+  },
+  {
+    "title": "Discharge Scramble",
+    "tagline": "Told to pick a nursing home by tomorrow? It calls every one and watches the Medicare appeal deadlines.",
+    "tier": "whitespace",
+    "category": "Family & care",
+    "moment": "Your dad has been in the hospital for four days after a fall. At 4 pm the case manager hands you a printed list of 31 nursing homes and says he leaves tomorrow, so pick three. You're at his bedside with your phone and no idea which of them has a bed.",
+    "what_it_does": [
+      "Scans the list and any notices you're handed, and drafts one question for the case manager: is he an inpatient or under observation? Original Medicare only covers a nursing-home stay after three inpatient midnights.",
+      "Calls every facility's admissions line at the same time from a cloud number. Is there a bed today? Do they take his Medicare Advantage plan? Can they handle IV antibiotics or dementia care? It merges the answers with CMS Care Compare star ratings, staffing and inspection data.",
+      "Shows you the top three with their tradeoffs. You pick, and it sends the choices to the case manager and a summary to your siblings.",
+      "After admission, watches for a Notice of Medicare Non-Coverage. It works out the fast-appeal deadline (noon the day before services end), prepares the call to the Medicare QIO and dials you in to confirm.",
+      "Keeps a shared log of every notice, call and name. You or your parent approve steps on Apple Watch."
+    ],
+    "why_now": "Hospitals, nursing homes and insurers now use AI on their side. Nursing-home admissions tools auto-approve referrals within hours, and Medicare Advantage plans face lawsuits over algorithms that cut post-acute stays short (the nH Predict case against UnitedHealth). Families are the only party still working from a paper list, and cloud voice agents can now handle short, structured admissions calls.",
+    "why_nobody_yet_or_wall": "Discharge platforms (naviHealth, WellSky CarePort, Olio) serve hospitals and facilities, and referral services are paid by facilities. On the family side the job is urgent, emotional and rare for any one person, so it's hard to reach users before the crisis. The likely channels are caregiver groups, employers and hospital social workers.",
+    "ios_hooks": [
+      "VisionKit document camera",
+      "Foundation Models on-device (classifies Medicare notices)",
+      "ActivityKit Live Activities (appeal deadline)",
+      "CallKit and VoIP (bridges you into the QIO call)",
+      "watchOS app (approvals)",
+      "Share sheet and Messages for family updates",
+      "Server-side agent with cloud telephony and the CMS Provider Data Catalog"
+    ],
+    "nearest_existing": [
+      "Nursing homes using AI to approve admissions (ExaCare) https://www.mcknights.com/news/nursing-homes-greenlighting-admissions-with-ai/",
+      "NYU Langone discharge-need prediction https://nyulangone.org/news/ai-tool-helps-predict-which-patients-need-continued-care-after-leaving-hospital",
+      "CMS Care Compare (manual search)",
+      "Hospital case managers and facility-paid referral services"
+    ],
+    "unsaid_assumption": "That admissions staff will give bed and insurance answers to an automated caller, and that the family can get the parent's consent or proxy authority in time.",
+    "rough_scores": {"difficulty": 3, "novelty": 5, "feasibility": 3, "impact": 4},
+    "surprise": "Every other party in a hospital discharge is already automated. The family is the only one left with a printout and a deadline."
+  },
+  {
+    "title": "Leave Claim Wrangler",
+    "tagline": "Coordinates FMLA, short-term disability and state paid leave for one surgery, birth or caregiving stretch.",
+    "tier": "whitespace",
+    "category": "Life admin",
+    "moment": "Your knee surgery is in three weeks. HR points you to a leave administrator's portal, the disability insurer mails a claim packet and your state runs its own paid-leave claim, and all three want forms from your surgeon, whose office takes ten business days. You forward everything to the agent and it lays out one timeline.",
+    "what_it_does": [
+      "Works out which programs apply (FMLA, your employer's short-term disability policy, your state's paid leave) from your handbook, the letters you forward and state rules. It puts every deadline on one calendar, such as the 15-day window to return FMLA certification.",
+      "Pre-fills what it can on each medical form and sends one bundled request to your doctor's office by portal message or fax. You approve exactly which medical details go out.",
+      "Calls or emails to confirm the forms arrived, follows up with the office before deadlines and uploads to each portal once you give the go-ahead.",
+      "Watches forwarded email for 'missing information' requests, extension needs and return-to-work certification, and checks that each benefit payment matches what the program promised."
+    ],
+    "why_now": "More states began paying paid-leave benefits in 2026 (Minnesota and Delaware in January, Maine in May), so more workers now handle three claims at once. Employers and leave administrators already use AI, and the Department of Labor has issued guidance on AI in FMLA administration, while employees still work by fax and phone.",
+    "why_nobody_yet_or_wall": "Leave platforms (Cocoon/Tilt, AbsenceSoft) are bought by employers and serve HR. Employee-side services such as Recover (FMLA NOW) focus on finding a certifying provider. Coordinating several programs is state-specific and tedious to model, and it touches medical and employment data, so data minimization and approval of every outbound form matter.",
+    "ios_hooks": [
+      "Email forwarding address and server-side agent",
+      "VisionKit document camera",
+      "Foundation Models (form field extraction)",
+      "EventKit (deadline calendar)",
+      "ActivityKit Live Activities",
+      "App Intents",
+      "Server-side cloud fax"
+    ],
+    "nearest_existing": [
+      "Cocoon leave management for employers https://apps.adp.com/en-US/apps/429530/cocoon/features",
+      "AbsenceSoft on DOL guidance for AI in FMLA https://absencesoft.com/resources/understanding-the-dols-guidance-on-using-ai-for-fmla-management/",
+      "Recover (FMLA NOW), employee-side filing help, listed at https://altaitools.com/ai-tools-for-fmla-automation/",
+      "Thomson Reuters on a family-leave AI founder https://www.thomsonreuters.com/en-us/posts/corporates/ai-family-leave-law/"
+    ],
+    "unsaid_assumption": "That doctors' offices will complete one pre-filled bundle faster than three separate forms.",
+    "rough_scores": {"difficulty": 3, "novelty": 3, "feasibility": 3, "impact": 4},
+    "surprise": "Obvious but important: the hard part of medical leave is not the surgery but three claims waiting on one busy doctor's office."
+  },
+  {
+    "title": "Fourth Trimester Sentinel",
+    "tagline": "Watches blood pressure and warning signs for six weeks after birth and gets the OB team on the line fast.",
+    "tier": "moonshot",
+    "category": "Health & body",
+    "moment": "You're nine days postpartum, up at 3 am with the baby, and you've decided your headache is just lack of sleep. Your cuff reading synced to Health: 158/104. The agent asks two questions about your vision and breathing, then says it is calling your OB's triage line now.",
+    "what_it_does": [
+      "Reads blood pressure cuff readings and heart data from HealthKit and runs short symptom check-ins against thresholds your OB set at discharge, never thresholds it invents.",
+      "On a severe-range reading or red-flag symptom, calls the OB triage line from a cloud number with your readings, or tells you to call 911, and alerts your partner.",
+      "Shows a Lock Screen card for ER staff, who often miss that a patient recently gave birth: 'gave birth 9 days ago, preeclampsia risk'.",
+      "Sends a weekly blood pressure summary to your OB's portal and books the follow-up visit when it's due."
+    ],
+    "why_now": "Health-system programs such as Penn's Heart Safe Motherhood show that text-based postpartum blood pressure monitoring reduces complications and readmissions. FDA's January 2026 guidance on general wellness and clinical decision support loosened the rules for non-invasive wearables. Home cuffs write to HealthKit, and Live Activities and the Watch make escalation visible.",
+    "why_nobody_yet_or_wall": "Wall: clinical liability and regulation. An app that reads blood pressure and tells someone to go to the ER is a medical device unless it only applies thresholds a clinician set, and escalation only works if an OB team is on the other end. Health systems don't accept alerts from consumer apps, and Apple's own hypertension notifications are not meant for people who are pregnant or already diagnosed with hypertension. What would change it: OB practices 'prescribing' the app with their own thresholds and an inbox that receives its alerts, billed as remote patient monitoring.",
+    "ios_hooks": [
+      "HealthKit (blood pressure, heart rate, clinical records)",
+      "watchOS app (symptom check-ins, haptic alerts)",
+      "ActivityKit Live Activities",
+      "UserNotifications critical alerts (requires Apple entitlement)",
+      "App Intents",
+      "Server-side cloud telephony"
+    ],
+    "nearest_existing": [
+      "Penn Medicine Heart Safe Motherhood https://chti.upenn.edu/heart-safe-motherhood",
+      "Safety-net hospital remote blood pressure program (JAHA) https://www.ahajournals.org/doi/10.1161/JAHA.123.034031",
+      "FDA 2026 wellness guidance, Cooley summary https://www.cooley.com/news/insight/2026/2026-01-20-fda-opens-aperture-for-wearables-in-latest-general-wellness-guidance"
+    ],
+    "unsaid_assumption": "That new parents will take readings twice a day, even at 3 am, if the agent makes it easy, and that an OB team will answer the agent's call.",
+    "rough_scores": {"difficulty": 4, "novelty": 3, "feasibility": 2, "impact": 5},
+    "surprise": "The technology is simple. What's missing is someone on the other end, so the hard part is a contract with a care team, not a model."
+  },
+  {
+    "title": "Trial Inbox",
+    "tagline": "Flips trial matching: sponsors' agents query your private eligibility profile, and your phone answers.",
+    "tier": "moonshot",
+    "category": "Health & body",
+    "moment": "Your son has a rare neuromuscular condition and you've read every ClinicalTrials.gov listing twice. This morning your phone shows a new card: a Phase 2 study 90 miles away, eligible on 11 of 12 criteria, travel covered. No one at the sponsor knows who you are until you tap 'Tell them'.",
+    "what_it_does": [
+      "Keeps a structured eligibility profile on the phone, built from HealthKit clinical records and documents you add (diagnosis, genetics, labs, past treatments).",
+      "Receives criteria from registries and sponsors' recruitment agents, checks them on the device and answers only 'likely eligible' or 'not eligible', without sending any records.",
+      "Shows you each match with its visit burden, travel and open questions. You decide which sponsors learn who you are.",
+      "Then emails the coordinator a pre-screen summary you approve, schedules the screening call and files for travel reimbursement."
+    ],
+    "why_now": "Trial recruitment has gone AI on the sponsor side (Antidote, Deep 6 AI at Tempus and many vendors in 2026). LLMs can match patients to free-text eligibility criteria with no task-specific training, and on-device models can now reason over records locally.",
+    "why_nobody_yet_or_wall": "Wall: standards, regulation and adoption. Eligibility criteria are free text with no machine-readable standard. First contact with patients and any payments need IRB approval. Sponsors have no reason to query patient-held profiles until many patients hold them. Consumer health apps also sit outside HIPAA, so trust has to come from on-device evaluation. What would change it: registries requiring structured criteria (FHIR ResearchStudy or similar) and IRB templates that accept agent-mediated first contact.",
+    "ios_hooks": [
+      "HealthKit clinical records",
+      "Foundation Models on-device (criteria evaluation)",
+      "PrivateCloudComputeLanguageModel (hard criteria, with consent)",
+      "UserNotifications",
+      "EventKit",
+      "App Attest (proves answers come from a genuine app instance)"
+    ],
+    "nearest_existing": [
+      "Sponsor-side recruitment vendors compared https://intuitionlabs.ai/articles/clinical-trial-patient-recruitment-vendors-compared",
+      "Zero-shot LLM trial matching (NEJM AI) https://ai.nejm.org/doi/full/10.1056/AIcs2400360",
+      "ClinicalTrials.gov search",
+      "Antidote, Deep 6 AI (Tempus)"
+    ],
+    "unsaid_assumption": "That a patient-held record is complete enough to answer exclusion criteria such as past therapies and recent lab values.",
+    "rough_scores": {"difficulty": 5, "novelty": 5, "feasibility": 2, "impact": 4},
+    "surprise": "It reverses who searches. Instead of patients chasing trials, trial agents knock on a door only the patient can open."
+  },
+  {
+    "title": "Proxy Passport",
+    "tagline": "A scoped, revocable 'you may act for me' credential that your agent shows pharmacies, insurers and portals.",
+    "tier": "moonshot",
+    "category": "Family & care",
+    "moment": "Your daughter has type 1 diabetes and turns 18 at midnight, and your patient-portal proxy access ends with it. She still wants you handling insulin refills and insurance fights, but not reading her therapy notes. Today that means a different form at every clinic, pharmacy and insurer.",
+    "what_it_does": [
+      "Helps the person being helped, whether a new adult or an aging parent, choose exactly what each helper may do: refills yes, claims yes, therapy notes no, until a set date.",
+      "Signs that choice as a delegation credential with Face ID and the Secure Enclave, and in the meantime fills in each institution's own proxy or HIPAA authorization form.",
+      "When your agent calls the pharmacy or insurer, it presents the credential and a one-time code the institution can check. The person who granted it gets a Watch notice every time it's used.",
+      "Lets that person revoke any permission with one tap and notifies every institution that holds a copy."
+    ],
+    "why_now": "Wallet can now hold government IDs and apps can verify them with an entitlement, verifiable credentials are being proposed for consent and access rights in healthcare, and caregiving agents need a way to prove whom they act for.",
+    "why_nobody_yet_or_wall": "Wall: institutional acceptance and law. Every portal, pharmacy and insurer has its own proxy process, state law governs powers of attorney, and no one has agreed to accept a portable, machine-checkable delegation. Apple's Wallet verification covers government IDs, not third-party credentials. What would change it: a FHIR or TEFCA-level proxy and consent standard that portals must honor, and Wallet support for third-party verifiable credentials.",
+    "ios_hooks": [
+      "CryptoKit and Secure Enclave",
+      "LocalAuthentication (Face ID)",
+      "PassKit / Wallet (Verify with Wallet for the grantor's ID)",
+      "watchOS app (use notices and revocation)",
+      "App Intents",
+      "HealthKit clinical records (the grantor's own view)"
+    ],
+    "nearest_existing": [
+      "Verifiable credentials in healthcare https://noworldborders.com/2026/06/16/verifiable-credentials-in-healthcare/",
+      "Wallet in iOS 27, including Verify with Wallet https://developer.apple.com/videos/play/wwdc2026/209/",
+      "Epic MyChart proxy access (separate forms for each organization)",
+      "Paper healthcare-proxy wallet cards"
+    ],
+    "unsaid_assumption": "That institutions would rather verify a signed credential than keep their own paper forms, even though that moves liability they now avoid.",
+    "rough_scores": {"difficulty": 5, "novelty": 4, "feasibility": 1, "impact": 4},
+    "surprise": "Two groups hit the same wall from opposite ends of life: teenagers with chronic illness turning 18, and parents who are losing the capacity to decide."
+  },
+  {
+    "title": "N-of-1 Trial Runner",
+    "tagline": "Runs a blinded, randomized test of one treatment on you, with a pharmacist and your Watch doing the work.",
+    "tier": "moonshot",
+    "category": "Health & body",
+    "moment": "You've had migraines for years, and your neurologist says magnesium 'might help some people'. You don't care about some people; you want to know whether it helps you. The agent sets up twelve weeks of numbered capsule packs you can't tell apart, and your Watch and a two-tap diary do the rest.",
+    "what_it_does": [
+      "Drafts a protocol with your clinician: treatment against placebo (or two doses), randomized blocks, washout periods, and the one outcome that matters to you.",
+      "Sends the protocol to a participating pharmacy, which fills identical numbered packs and holds the key. The agent never learns which is which.",
+      "Collects outcomes from a Watch diary and HealthKit (sleep, HRV, headache days), reminds you about missed entries and flags side effects to your clinician.",
+      "At the end, unblinds with the pharmacy, runs an analysis designed for data from one person, and sends a plain report to you and your clinician, who decide what to change."
+    ],
+    "why_now": "FDA's January 2026 guidance gave clinician-facing decision support and wellness wearables more room. HealthKit and the Watch make daily outcome capture nearly free, and on-device models can run the diary conversations.",
+    "why_nobody_yet_or_wall": "Wall: logistics and regulation more than software. Blinding needs a pharmacy willing to prepare placebos and hold the key, which isn't a standard service, and compounding placebos is legally murky. Clinician time, carryover effects and correlated day-to-day wearable data make valid statistics hard, and a tool that recommends treatment changes can drift into medical-device territory. What would change it: pharmacies selling blinded N-of-1 packs as a service, plus a workflow built for clinicians.",
+    "ios_hooks": [
+      "HealthKit (sleep, HRV, State of Mind, symptoms)",
+      "watchOS app (two-tap diary)",
+      "Foundation Models on-device",
+      "ResearchKit",
+      "UserNotifications",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "StudyU (Hasso Plattner Institute platform for digital N-of-1 trials)",
+      "FDA 2026 CDS and wellness guidance, Ropes & Gray summary https://www.ropesgray.com/en/insights/alerts/2026/01/fda-adapts-with-the-times-on-digital-health-updated-guidances-on-general-wellness-products",
+      "Migraine diaries such as Migraine Buddy"
+    ],
+    "unsaid_assumption": "That the treatment starts and wears off quickly enough for alternating periods to separate its effect.",
+    "rough_scores": {"difficulty": 4, "novelty": 4, "feasibility": 2, "impact": 3},
+    "surprise": "The missing piece is a pharmacist holding a key, not a better AI coach, which is why wellness apps never get past correlation."
+  },
+  {
+    "title": "Exam Room Advocate",
+    "tagline": "Sits in on your parent's appointment, keeps the agenda, and turns what the doctor said into next steps.",
+    "tier": "moonshot",
+    "category": "Family & care",
+    "moment": "Your mom has a cardiology visit at 10:40 and you're 600 miles away. With the doctor's OK, her phone sits on the table and you listen in, and her Watch taps her when the visit is wrapping up and the dizziness question still hasn't come up. By noon the new prescription is at her pharmacy and the echocardiogram is on the calendar.",
+    "what_it_does": [
+      "Before the visit, builds a short agenda with your parent and you from symptoms logged in HealthKit, open questions and recent results.",
+      "During the visit, and only after the clinician agrees out loud, transcribes on the device and gives quiet Watch or earbud nudges while an agenda item is still open. It never speaks to the clinician.",
+      "After the visit, compares its notes with the after-visit summary and asks you to confirm each order and medication change.",
+      "Then carries out the follow-ups you approve: schedules labs and imaging, sends refill requests, updates the family log and sets reminders."
+    ],
+    "why_now": "Clinicians now bring their own AI scribes into the exam room. On-device transcription (SpeechAnalyzer) and Foundation Models on iPhone and Watch make a private patient-side record possible, and more caregivers manage a parent's care from far away.",
+    "why_nobody_yet_or_wall": "Wall: consent, liability and integration. About a dozen states require everyone's consent to record, many clinics ban patient recording, and it's unclear who is responsible if a real-time nudge misleads. The clinician's scribe output (orders, medication changes) reaches the patient hours later, not as structured data. What would change it: health systems sharing the scribe's structured summary with the patient right after the visit, and a norm that accepts patient-side AI the way clinics accept medical interpreters.",
+    "ios_hooks": [
+      "SpeechAnalyzer (on-device transcription)",
+      "Foundation Models on-device",
+      "watchOS app (haptic nudges)",
+      "AirPods",
+      "HealthKit (symptoms, clinical records)",
+      "EventKit",
+      "App Intents",
+      "VoIP call via CallKit for the remote caregiver"
+    ],
+    "nearest_existing": [
+      "Clinician-side AI scribes such as Abridge and Microsoft Dragon Copilot",
+      "Granola for iPhone and Watch (meetings, not care) https://apps.apple.com/us/app/granola-ai-meeting-notes/id6739429409",
+      "Plaud NotePin recorders https://www.plaud.ai/blogs/news/plaud-unveils-notepins-and-desktop",
+      "ChatGPT Health (pre-visit summaries) https://www.macrumors.com/2026/01/07/openai-chatgpt-health-apple-health-integration/"
+    ],
+    "unsaid_assumption": "That clinicians will accept a second AI in the room once their own scribe is already listening.",
+    "rough_scores": {"difficulty": 4, "novelty": 4, "feasibility": 2, "impact": 4},
+    "surprise": "Once the doctor's AI is listening, the new imbalance is that the patient's side has none."
+  }
+]

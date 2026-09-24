@@ -1,0 +1,796 @@
+[
+ {
+  "id": "B-01",
+  "tier": "building-now",
+  "source": "building-now#00",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Cloud-computer errand agents"
+ },
+ {
+  "id": "B-02",
+  "tier": "building-now",
+  "source": "building-now#01",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Phone-call errand agents"
+ },
+ {
+  "id": "B-03",
+  "tier": "building-now",
+  "source": "building-now#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Inbox triage-and-draft agents"
+ },
+ {
+  "id": "B-04",
+  "tier": "building-now",
+  "source": "building-now#03",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Scheduling negotiator agents"
+ },
+ {
+  "id": "B-05",
+  "tier": "building-now",
+  "source": "building-now#04",
+  "merge": [],
+  "flagship": true,
+  "why_flagship": "The pattern the whole iPhone agent industry converged on: cloud does the work, the Lock Screen asks for the OK.",
+  "title": "Trip booking and rebooking agents"
+ },
+ {
+  "id": "B-06",
+  "tier": "building-now",
+  "source": "building-now#05",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Price-watch auto-buy agents"
+ },
+ {
+  "id": "B-07",
+  "tier": "building-now",
+  "source": "building-now#06",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Money autopilot agents"
+ },
+ {
+  "id": "B-08",
+  "tier": "building-now",
+  "source": "building-now#07",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Bill-fighting and cancel agents"
+ },
+ {
+  "id": "B-09",
+  "tier": "building-now",
+  "source": "building-now#08",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Health-record reading assistants"
+ },
+ {
+  "id": "B-10",
+  "tier": "building-now",
+  "source": "building-now#09",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Wearable-driven training coaches"
+ },
+ {
+  "id": "B-11",
+  "tier": "building-now",
+  "source": "building-now#10",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Meeting and memory capture"
+ },
+ {
+  "id": "B-12",
+  "tier": "building-now",
+  "source": "building-now#11",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Family logistics agents"
+ },
+ {
+  "id": "B-13",
+  "tier": "building-now",
+  "source": "building-now#12",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Messaging-native personal agents"
+ },
+ {
+  "id": "B-14",
+  "tier": "building-now",
+  "source": "building-now#13",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Self-hosted agents, iPhone as node"
+ },
+ {
+  "id": "B-15",
+  "tier": "building-now",
+  "source": "building-now#14",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "On-phone app builders"
+ },
+ {
+  "id": "B-16",
+  "tier": "building-now",
+  "source": "building-now#15",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "CarPlay voice agents"
+ },
+ {
+  "id": "B-17",
+  "tier": "building-now",
+  "source": "building-now#16",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "AI conversation tutors"
+ },
+ {
+  "id": "B-18",
+  "tier": "building-now",
+  "source": "building-now#17",
+  "merge": [],
+  "flagship": true,
+  "why_flagship": "Where agents protect instead of act, and where iOS walls hurt the most (no call audio for third parties).",
+  "title": "Scam-call guardian agents"
+ },
+ {
+  "id": "B-19",
+  "tier": "building-now",
+  "source": "building-now#18",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Blind-assist scene agents"
+ },
+ {
+  "id": "B-20",
+  "tier": "building-now",
+  "source": "building-now#19",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Voice home-and-errands agents"
+ },
+ {
+  "id": "B-21",
+  "tier": "building-now",
+  "source": "building-now#20",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Apple's built-in agents"
+ },
+ {
+  "id": "B-22",
+  "tier": "building-now",
+  "source": "building-now#21",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Safari shopping-extension agents"
+ },
+ {
+  "id": "B-23",
+  "tier": "building-now",
+  "source": "building-now#22",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "ADHD task-breakdown planners"
+ },
+ {
+  "id": "B-24",
+  "tier": "building-now",
+  "source": "building-now#23",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Medical-bill dispute tools"
+ },
+ {
+  "id": "B-25",
+  "tier": "building-now",
+  "source": "building-now#24",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Pocket supervision of work agents"
+ },
+ {
+  "id": "B-26",
+  "tier": "building-now",
+  "source": "building-now#25",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Offline on-device LLM apps"
+ },
+ {
+  "id": "W-01",
+  "tier": "whitespace",
+  "source": "health-care#00",
+  "merge": [],
+  "flagship": true,
+  "why_flagship": "New 2026 federal deadlines give a patient-side agent something rare: hard rules to hold an insurer to.",
+  "title": "Denial Clock"
+ },
+ {
+  "id": "W-02",
+  "tier": "whitespace",
+  "source": "family-social-civic#00",
+  "merge": [],
+  "flagship": true,
+  "why_flagship": "A direct answer to why Milo shut down: a second agent whose only job is to catch the first one's mistakes.",
+  "title": "Night-Before Check"
+ },
+ {
+  "id": "W-03",
+  "tier": "whitespace",
+  "source": "agent-economy-meta#00",
+  "merge": [
+   "learning-memory-mind#05",
+   "learning-memory-mind#10"
+  ],
+  "flagship": true,
+  "why_flagship": "Everyone will have five agents by 2027. Nobody has one place to see, approve and stop them all.",
+  "title": "Agent Control Tower"
+ },
+ {
+  "id": "W-04",
+  "tier": "whitespace",
+  "source": "family-social-civic#03",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Really-You Check"
+ },
+ {
+  "id": "W-05",
+  "tier": "whitespace",
+  "source": "learning-memory-mind#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Dread Opener"
+ },
+ {
+  "id": "W-06",
+  "tier": "whitespace",
+  "source": "access-inclusion#00",
+  "merge": [
+   "learning-memory-mind#03"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Accommodations Booked Ahead"
+ },
+ {
+  "id": "W-07",
+  "tier": "whitespace",
+  "source": "access-inclusion#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Deaf-First Call Agent"
+ },
+ {
+  "id": "W-08",
+  "tier": "whitespace",
+  "source": "access-inclusion#03",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Paper Round-Trip"
+ },
+ {
+  "id": "W-09",
+  "tier": "whitespace",
+  "source": "access-inclusion#04",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Pause-and-Ask Errands"
+ },
+ {
+  "id": "W-10",
+  "tier": "whitespace",
+  "source": "access-inclusion#06",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Co-Sign, Not Guardian"
+ },
+ {
+  "id": "W-11",
+  "tier": "whitespace",
+  "source": "access-inclusion#01",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Paratransit Trip Keeper"
+ },
+ {
+  "id": "W-12",
+  "tier": "whitespace",
+  "source": "agent-economy-meta#01",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Agent Janitor"
+ },
+ {
+  "id": "W-13",
+  "tier": "whitespace",
+  "source": "agent-economy-meta#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Canary Garden"
+ },
+ {
+  "id": "W-14",
+  "tier": "whitespace",
+  "source": "agent-economy-meta#03",
+  "merge": [
+   "hard-tech-moonshots#10",
+   "agent-economy-meta#05"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Agent Doorman"
+ },
+ {
+  "id": "W-15",
+  "tier": "whitespace",
+  "source": "family-social-civic#01",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Two-House Handoff"
+ },
+ {
+  "id": "W-16",
+  "tier": "whitespace",
+  "source": "family-social-civic#04",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Ulysses Money Pact"
+ },
+ {
+  "id": "W-17",
+  "tier": "whitespace",
+  "source": "family-social-civic#06",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Ballot Cure Watch"
+ },
+ {
+  "id": "W-18",
+  "tier": "whitespace",
+  "source": "health-care#01",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Refill Runway"
+ },
+ {
+  "id": "W-19",
+  "tier": "whitespace",
+  "source": "health-care#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Ghost Network Buster"
+ },
+ {
+  "id": "W-20",
+  "tier": "whitespace",
+  "source": "health-care#03",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Chart Check"
+ },
+ {
+  "id": "W-21",
+  "tier": "whitespace",
+  "source": "health-care#05",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Discharge Scramble"
+ },
+ {
+  "id": "W-22",
+  "tier": "whitespace",
+  "source": "learning-memory-mind#00",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Errand Immersion"
+ },
+ {
+  "id": "W-23",
+  "tier": "whitespace",
+  "source": "life-admin-money#00",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Collector Line"
+ },
+ {
+  "id": "W-24",
+  "tier": "whitespace",
+  "source": "life-admin-money#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Coverage Clock"
+ },
+ {
+  "id": "W-25",
+  "tier": "whitespace",
+  "source": "life-admin-money#04",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Shadow File Auditor"
+ },
+ {
+  "id": "W-26",
+  "tier": "whitespace",
+  "source": "life-admin-money#05",
+  "merge": [
+   "health-care#04"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Benefits Keeper"
+ },
+ {
+  "id": "W-27",
+  "tier": "whitespace",
+  "source": "physical-world#00",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Leak Bill Detective"
+ },
+ {
+  "id": "W-28",
+  "tier": "whitespace",
+  "source": "physical-world#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Should This Be Free?"
+ },
+ {
+  "id": "W-29",
+  "tier": "whitespace",
+  "source": "physical-world#04",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Step-Free Scout"
+ },
+ {
+  "id": "W-30",
+  "tier": "whitespace",
+  "source": "physical-world#06",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Shelf Price Witness"
+ },
+ {
+  "id": "W-31",
+  "tier": "whitespace",
+  "source": "work-business#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Deactivation Defense File"
+ },
+ {
+  "id": "W-32",
+  "tier": "whitespace",
+  "source": "work-business#04",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Between-Clients Wage Check"
+ },
+ {
+  "id": "W-33",
+  "tier": "whitespace",
+  "source": "work-business#06",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Stuck Invoice Detective"
+ },
+ {
+  "id": "M-01",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#01",
+  "merge": [],
+  "flagship": true,
+  "why_flagship": "The hardest perception problem on a phone, with the highest stakes: warn before the danger, not after the question.",
+  "title": "Seconds-Ahead Hazard Voice"
+ },
+ {
+  "id": "M-02",
+  "tier": "moonshot",
+  "source": "life-admin-money#07",
+  "merge": [],
+  "flagship": true,
+  "why_flagship": "Apple Pay has no agent API. This is what a household's rules for AI spending could look like if it did.",
+  "title": "Household Spending Constitution"
+ },
+ {
+  "id": "M-03",
+  "tier": "moonshot",
+  "source": "learning-memory-mind#08",
+  "merge": [],
+  "flagship": true,
+  "why_flagship": "An assistant designed to make itself unnecessary: less help every week until you don't need it.",
+  "title": "Fading Whisper"
+ },
+ {
+  "id": "M-04",
+  "tier": "moonshot",
+  "source": "access-inclusion#07",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Agent That Reads VoiceOver's Map"
+ },
+ {
+  "id": "M-05",
+  "tier": "moonshot",
+  "source": "access-inclusion#08",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Assistive Agent Pass"
+ },
+ {
+  "id": "M-06",
+  "tier": "moonshot",
+  "source": "health-care#09",
+  "merge": [
+   "access-inclusion#10"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Proxy Passport"
+ },
+ {
+  "id": "M-07",
+  "tier": "moonshot",
+  "source": "agent-economy-meta#07",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Context Passport"
+ },
+ {
+  "id": "M-08",
+  "tier": "moonshot",
+  "source": "health-care#08",
+  "merge": [
+   "agent-economy-meta#08"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Trial Inbox"
+ },
+ {
+  "id": "M-09",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#06",
+  "merge": [
+   "agent-economy-meta#09",
+   "learning-memory-mind#09",
+   "agent-economy-meta#06"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Decade Memory That Moves"
+ },
+ {
+  "id": "M-10",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#04",
+  "merge": [
+   "agent-economy-meta#10"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Agent Mistake Warranty"
+ },
+ {
+  "id": "M-11",
+  "tier": "moonshot",
+  "source": "family-social-civic#07",
+  "merge": [
+   "life-admin-money#10"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Agent Will"
+ },
+ {
+  "id": "M-12",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#05",
+  "merge": [
+   "family-social-civic#08"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Household Agent Treaty"
+ },
+ {
+  "id": "M-13",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#11",
+  "merge": [
+   "family-social-civic#09"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Blackout Mode Agent"
+ },
+ {
+  "id": "M-14",
+  "tier": "moonshot",
+  "source": "family-social-civic#11",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Sextortion First Responder"
+ },
+ {
+  "id": "M-15",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#00",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Zero-Cloud Exit Planner"
+ },
+ {
+  "id": "M-16",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#02",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Mid-Call Voice Stand-In"
+ },
+ {
+  "id": "M-17",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#07",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "2 a.m. Fever Triage"
+ },
+ {
+  "id": "M-18",
+  "tier": "moonshot",
+  "source": "hard-tech-moonshots#09",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Med-Pass Witness"
+ },
+ {
+  "id": "M-19",
+  "tier": "moonshot",
+  "source": "health-care#07",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Fourth Trimester Sentinel"
+ },
+ {
+  "id": "M-20",
+  "tier": "moonshot",
+  "source": "health-care#11",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Exam Room Advocate"
+ },
+ {
+  "id": "M-21",
+  "tier": "moonshot",
+  "source": "life-admin-money#08",
+  "merge": [
+   "life-admin-money#09",
+   "work-business#07"
+  ],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Bot-to-Bot Dispute Desk"
+ },
+ {
+  "id": "M-22",
+  "tier": "moonshot",
+  "source": "life-admin-money#11",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Consumer Agent Union"
+ },
+ {
+  "id": "M-23",
+  "tier": "moonshot",
+  "source": "physical-world#07",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Kiosk Hands"
+ },
+ {
+  "id": "M-24",
+  "tier": "moonshot",
+  "source": "physical-world#10",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Pocket Public Adjuster"
+ },
+ {
+  "id": "M-25",
+  "tier": "moonshot",
+  "source": "work-business#08",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Worker-Side Dispatch Agent"
+ },
+ {
+  "id": "M-26",
+  "tier": "moonshot",
+  "source": "work-business#11",
+  "merge": [],
+  "flagship": false,
+  "why_flagship": "",
+  "title": "Scope Creep Catcher"
+ }
+]

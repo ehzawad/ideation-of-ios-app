@@ -1,0 +1,569 @@
+{
+  "summary": "Interaction design for a chat- and voice-first agentic phone OS, drawn from coding-agent CLIs (Claude Code, OpenAI Codex), full-duplex voice research and products, GUI-vs-language HCI theory, generative-UI studies, accessibility research on agents, and trust and overreliance literature. Main conclusions: (1) The CLIs have already worked out much of the delegation grammar a phone OS needs. That grammar is: plan then approve; autonomy levels that are always visible and switchable; a guardian classifier with a floor of never-auto actions; checkpoints and rewind with honest limits; queued steering vs hard interrupt; side questions in ephemeral forks; and a dashboard of background tasks whose states are working, needs you, and done. The key structural idea is Codex's separation of what the agent can reach (sandbox or scopes) from when it must ask (approval policy). (2) Voice has to be full-duplex and fast. Human turn gaps average about 230 ms and Moshi achieves about 200 ms, so aim for acknowledgement within about 200–300 ms. The conversation should continue while tools run. Barge-in vs backchannel remains unsolved, so a physical stop and push-to-talk defaults are needed. Siri- and Alexa-era research shows timeouts, verbosity that leaks private details, and whole-message re-dictation hurt users, especially blind users. (3) Language wins for discrete delegation and GUI wins for continuous values, precise selection, previews and verification. Generated UI is strongly preferred over markdown (83–84% in two studies) but is slow and error-prone when fully generated, and it adds unearned credibility, so a fast component-based generative UI with accessibility contracts fits an OS better. (4) Accessibility studies show agents collapse under assistive-tech conditions (A11y-CUA: 78% default drops to 42% keyboard-only and 28% magnified) and that pausing at decision points (Morae) improves blind users' outcomes at a time cost. (5) Trust research warns that explanations raise overreliance, while sources reduce it. Selective friction works but is disliked, and approval-level autonomy risks rubber-stamping. (6) The home screen should be a task dashboard with a 'needs you' tray, a memory ledger with provenance and scope, and agent-owned notification triage. The main gaps are older adults and people with cognitive disabilities (thin evidence), honest undo for effects outside the device, and when ephemeral generated UI should become persistent. Confidence is marked per item. Official Codex docs (developers.openai.com), nngroup.com and pair.withgoogle.com were unreachable, so Codex claims come from the openai/codex source code, and Nielsen and OpenAI VAD claims come from search snippets.",
+  "items": [
+    {
+      "name": "Plan mode with an explicit plan-approval step (Claude Code, Codex /plan)",
+      "kind": "cli_pattern",
+      "key_finding": "Both leading coding agents let the agent research and write a plan before it changes anything. In Claude Code, approving the plan also picks how much autonomy the agent gets while it carries the plan out.",
+      "evidence": "Claude Code docs: 'Plan mode tells Claude to research and propose changes without making them... edits stay blocked until you approve the plan.' The approval prompt offers 'Yes, and use auto mode', 'Yes, manually approve edits', or 'No, keep planning'. Approving 'exits plan mode and switches the session to the permission mode each approve option describes.' Plan mode is entered with Shift+Tab or a one-off '/plan' prefix. The Codex TUI source has a '/plan' command ('switch to Plan mode') and '/goal' ('set or view the goal for a long-running task').",
+      "design_implication": "Carries over well. Any multi-step or consequential request (trip booking, moving money, a bulk photo cleanup) should first produce a short plan card with three actions: 'Do it', 'Do it but check with me', and 'Change the plan'. Picking one both approves the plan and sets the autonomy level for this task. Non-programmers need plain verbs and outcomes (what will change, who is contacted, what it costs), not tool names. By voice the plan has to be chunked: a one-sentence summary, then details on request.",
+      "sources": [
+        "https://code.claude.com/docs/en/permission-modes",
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Permission modes as a visible autonomy dial (Manual / accept-edits / plan / auto / dontAsk / bypass)",
+      "kind": "cli_pattern",
+      "key_finding": "Claude Code exposes six named permission modes that trade convenience against oversight. The user can switch them mid-session, and the current mode always shows in the status bar.",
+      "evidence": "The docs table lists: default/Manual ('Reads only' run without asking), acceptEdits (reads, file edits, common filesystem commands), plan, auto ('Everything, with background safety checks', 'Best for: Long tasks, reducing prompt fatigue'), dontAsk ('anything that would prompt is denied'), and bypassPermissions ('Isolated containers and VMs only'). Shift+Tab cycles modes, and the status bar shows e.g. '⏸ manual mode on' or '⏵⏵ accept edits on'. On Pro, Max and Team plans, auto mode is the built-in starting mode.",
+      "design_implication": "The idea carries over but the number of modes does not. A phone OS should collapse them to about three plain-language levels ('Ask me first', 'Ask only for important things', 'Just do it and show me after'), always visible like the mic or location indicator and changeable in one gesture. Levels should be set per domain (money, messages to people, files, smart home) rather than globally. The bypass mode has no consumer equivalent and should not exist on a phone.",
+      "sources": [
+        "https://code.claude.com/docs/en/permission-modes"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Separate 'what the agent can reach' from 'when the agent must ask' (Codex sandbox policy vs approval policy)",
+      "kind": "cli_pattern",
+      "key_finding": "Codex models autonomy as two independent settings: a technical sandbox that limits what commands can touch, and an approval policy that decides when to ask. Network access is off by default even when writes are allowed.",
+      "evidence": "In codex-rs/protocol/src/protocol.rs, SandboxPolicy is one of 'read-only', 'workspace-write' or 'danger-full-access' ('No restrictions whatsoever. Use with caution'). The read-only and workspace-write constructors set network_access: false. AskForApproval is one of 'untrusted' ('Commands require approval unless an explicit exec policy rule allows them'), OnRequest, the default ('The model decides when to ask the user for approval'), a granular variant, and 'never' ('Failures are immediately returned to the model, and never escalated to the user for approval'). Claude Code likewise says permission modes 'decide whether Claude asks before an action, and the Bash sandbox... decide[s] what an action can reach once it runs.' Note: one third-party blog says the 'untrusted' setting has been retired from user configuration. The source still defines it as an internal policy; not verified against official docs, which were unreachable.",
+      "design_implication": "This is the most important structural lesson for an agentic phone OS. Capability scopes (which apps, accounts, contacts, money limits, and whether it can reach the internet) are OS-enforced and granted like iOS permissions. The approval policy (ask always / ask for risky / never) is a separate UX layer on top. A prompt-injected or confused agent is then still bounded by scopes even in 'just do it' mode. Scopes should be narrow by default, with outbound data flows off unless granted.",
+      "sources": [
+        "https://github.com/openai/codex/blob/main/codex-rs/protocol/src/protocol.rs",
+        "https://code.claude.com/docs/en/permission-modes",
+        "https://developers.openai.com/codex/agent-approvals-security"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Guardian classifier in auto mode, with default-blocked categories, user-stated boundaries and fallback to prompting",
+      "kind": "cli_pattern",
+      "key_finding": "Claude Code's auto mode replaces most human prompts with a second model that reviews each action. It blocks risky categories by default, honors boundaries the user states in conversation, and returns control to the human after repeated blocks.",
+      "evidence": "Docs: 'A separate classifier model reviews actions before they run, blocking anything that escalates beyond your request, targets unrecognized infrastructure, or appears driven by hostile content Claude read.' Blocked by default: 'Irreversibly destroying files that existed before the session', pushing secrets out, 'git reset --hard' and similar. Boundaries: 'If you tell Claude \"don't push\"... the classifier blocks matching actions', but 'a boundary can be lost if context compaction removes the message that stated it. For a hard guarantee, add a deny rule instead.' Approvals must 'name the action and the specific thing that makes it dangerous'; 'Naming the verb alone clears nothing.' Fallback: 'if the classifier blocks an action 3 times in a row or 20 times total, auto mode pauses and Claude Code resumes prompting.' Codex has an analogous '/auto-review' command ('approve one retry of a recent auto-review denial').",
+      "design_implication": "A consumer agent OS needs a guardian model separate from the acting model. It judges scope creep ('you asked to reschedule, not cancel'), actions driven by untrusted content (an email telling the agent to forward files), and irreversible outcomes. Boundaries the user speaks ('never text my ex', 'don't spend over $50') must be turned into persistent, visible, editable rules, not left in chat context. Overrides must name the specific object ('yes, send $400 to Alex'), not just the verb. Repeated blocks should switch the agent back to asking.",
+      "sources": [
+        "https://code.claude.com/docs/en/permission-modes",
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "A floor of actions that no mode auto-approves",
+      "kind": "cli_pattern",
+      "key_finding": "Even the most permissive Claude Code modes keep a fixed set of actions that always need a human. Explicit deny rules block in every mode.",
+      "evidence": "Docs section 'Actions no mode auto-approves': tools matched by an explicit ask rule, tools that require user interaction (AskUserQuestion, MCP tools marked requiresUserInteraction), and 'rm and rmdir removals targeting a critical path, which no allow rule or PreToolUse hook \"allow\" approves.' Also: 'Deny rules block in every mode, including bypassPermissions.'",
+      "design_implication": "Define an OS-level irreversibility floor that no autonomy setting can lower: payments and transfers above a threshold, messages or shares to new recipients, deleting data that cannot be recovered, changing account security, sharing location or health data, and accepting legal terms. These always take a fresh, specific confirmation (Face ID plus the amount or recipient spoken or shown).",
+      "sources": [
+        "https://code.claude.com/docs/en/permission-modes"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Checkpoints, rewind and backtrack, and their honest limits",
+      "kind": "cli_pattern",
+      "key_finding": "Both CLIs make the conversation rewindable and snapshot local edits. Claude Code states plainly that undo only covers state it tracked; side effects outside that cannot be rewound.",
+      "evidence": "Claude Code: 'Every prompt you send that starts a turn creates a new checkpoint.' '/rewind' or Esc twice offers 'Restore code and conversation', 'Restore conversation', 'Restore code', 'Summarize from here' and more. Limits: 'Checkpointing does not track files modified by Bash commands... These file modifications cannot be undone through rewind'; subagent edits are usually not restored; external changes are not tracked; 'Not a replacement for version control.' Codex's backtrack (app_backtrack.rs): Esc then Esc browses earlier prompts, and 'Enter requests a revert before the selected prompt and reopens it for editing.'",
+      "design_implication": "Undo is the core safety net for an agent OS, but it must be honest. The OS can checkpoint local state it owns: settings, files, photo library edits, drafts, home-screen layout. Effects that leave the device (sent messages, payments, bookings, posts) cannot be rewound, only compensated. So every action should be labeled before it runs as undoable, undoable within N seconds (delayed send or commit window), compensable (cancel booking, request refund), or permanent. Rewinding the conversation (edit my earlier request and redo) is a separate, cheap capability worth keeping.",
+      "sources": [
+        "https://code.claude.com/docs/en/checkpointing",
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/app_backtrack.rs"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Streaming progress and intermediate feedback during multi-step tool use",
+      "kind": "cli_pattern / empirical",
+      "key_finding": "Showing planned steps and intermediate results during a long agent task beats silence followed by a final answer. It improved perceived speed, trust and UX and lowered task load. Users want narration to shrink as trust grows and to return for novel or high-stakes requests.",
+      "evidence": "Kirmayr et al. 2026 (BMW/LMU/Augsburg), N=45, in-car agentic voice assistant, tasks of 26 s and 45 s, stationary vs simulated driving. Planning+Results feedback vs no intermediate feedback: perceived speed d_z=1.01, trust d_z=0.38, UX d_z=0.54, task load d_z=-0.26. Interviews: 'With more trust, it can say less' (P28); 'ambiguity requires clarification independent of trust'; strong demand for a mute control ('I should be able to tell it not to talk'). CLIs stream each tool call and its output, and Claude Code shows a toggleable task checklist (Ctrl+T).",
+      "design_implication": "The phone should never go dark while an agent works. Show a compact live-activity strip (current step, next step, elapsed time) and speak brief step results in voice mode. Default to high transparency for new users and new task types, then decay verbosity per task type as success accumulates. Restore detail automatically for money, messages to people, or first-time actions, and always offer 'quieter' and 'mute' controls.",
+      "sources": [
+        "https://arxiv.org/abs/2602.15569",
+        "https://code.claude.com/docs/en/interactive-mode"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Task checklists and long-running goals as visible progress",
+      "kind": "cli_pattern",
+      "key_finding": "Coding agents externalize their working plan as a todo list the user can view, and Codex keeps an explicit goal for long-running tasks.",
+      "evidence": "Claude Code interactive-mode docs: 'Ctrl+T — Toggle Claude's task checklist.' Codex TUI: '/goal' — 'set or view the goal for a long-running task'. Kirmayr et al. participants said progressive, chunked updates are easier to absorb than an end 'dump' ('It's the same information, but a complete dump is harder to absorb', P1).",
+      "design_implication": "For multi-hour or multi-day tasks (renew passport, plan a move, dispute a charge), the thread header should show the goal and a checklist with states (done, running, waiting on you, blocked). The checklist doubles as progress bar, resume point and audit trail, and should be readable aloud as 'step 3 of 5'.",
+      "sources": [
+        "https://code.claude.com/docs/en/interactive-mode",
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs",
+        "https://arxiv.org/abs/2602.15569"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Interrupting and steering: stop vs queue vs send-now",
+      "kind": "cli_pattern",
+      "key_finding": "The CLIs distinguish hard interruption from steering: a message typed while the agent works is queued and delivered at the next tool boundary, without killing the turn.",
+      "evidence": "Claude Code: 'Esc — Interrupt Claude'. 'Type a message and press Enter while Claude is working. Claude Code queues the message instead of interrupting the turn'; 'if you queue a message while Claude is running tool calls, Claude Code passes it to Claude as soon as those tool calls finish, within the same turn.' 'Ctrl+Enter' interrupts and sends queued messages now. 'Up' takes queued messages back for editing.",
+      "design_implication": "Voice needs the same three verbs. 'Stop' or 'wait' halts, and a physical squeeze or tap should do the same reliably in noise. 'Also...' or 'actually use the other card' steers without discarding progress. A correction mid-sentence replaces the pending instruction. The OS should confirm which one it heard ('Okay, stopping' vs 'Got it, I'll use the Visa') because the costs differ.",
+      "sources": [
+        "https://code.claude.com/docs/en/interactive-mode"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Side questions in an ephemeral fork (/btw in Claude Code, /side and /btw in Codex)",
+      "kind": "cli_pattern",
+      "key_finding": "Both CLIs independently added a way to ask a quick question while a task runs, without polluting the main thread or interrupting work.",
+      "evidence": "Claude Code: '/btw to ask a question about your current work without adding to the conversation history'. It is available while Claude is working, 'doesn't interrupt the main turn', has no tool access, and answers only from context. Codex TUI source: '/side' and '/btw' — 'start a side conversation in an ephemeral fork'.",
+      "design_implication": "Offer a 'quick question' overlay on any running task ('wait, which hotel was that?' or 'how much so far?') that answers from what the agent already knows, without derailing or re-planning the task. On a phone this also works as a peek: long-press a task row and ask it something.",
+      "sources": [
+        "https://code.claude.com/docs/en/interactive-mode",
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Background agents and an 'agent view' dashboard of task states",
+      "kind": "cli_pattern",
+      "key_finding": "Claude Code's agent view puts every background session in one table showing whether it is working, waiting on you, or done. You can peek at and answer a session inline, and the main prompt shows how many agents are waiting on you.",
+      "evidence": "Docs: 'Agent view... is one screen for all your background sessions: what's running, what needs your input, and what's done.' A row state 'Needs input' means 'Claude is waiting on something only you can provide: an answer to a question, a permission decision...'. 'Press Space to open the peek panel. It shows the session's most recent output, or the question it's waiting on... Type a reply and press Enter to send it without leaving agent view.' The prompt footer counts waiting agents, e.g. '← 2 agents'. Ctrl+B backgrounds a running task.",
+      "design_implication": "This is the most direct template for a chat-OS home screen. It shows a list of task threads with three states, sorted with 'needs you' first. You answer approvals in place (like a notification reply) without opening the thread, and the lock screen or status bar carries a 'waiting on you' count. It replaces the app grid as the primary navigation surface for delegated work.",
+      "sources": [
+        "https://code.claude.com/docs/en/agent-view",
+        "https://code.claude.com/docs/en/interactive-mode"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Extensibility layers (memory files, skills, hooks, subagents, slash commands) as a model for user automations",
+      "kind": "cli_pattern",
+      "key_finding": "Coding agents split customization into always-on context, on-demand skills, event-triggered hooks, and isolated subagents. The split maps onto consumer concepts, but the raw forms (shell scripts, JSON, keyboard chords) do not carry over.",
+      "evidence": "Claude Code features overview: 'CLAUDE.md adds persistent context Claude sees every session'; 'Skills add reusable knowledge and invocable workflows' ('You can invoke skills with a command like /deploy, or Claude can load them automatically when relevant'); 'Subagents run their own loops in isolated context, returning summaries'; 'Hooks run your script... when Claude Code reaches a lifecycle event' ('You want something to happen every time without asking — write a hook'). Codex has '/init' (AGENTS.md), '/skills', '/hooks', '/agents'.",
+      "design_implication": "Mapping: memory file becomes 'About me and my rules', a human-readable, editable page. Skills become installable capabilities or recipes ('File my expenses the way my company wants'). Hooks become deterministic automations that must always fire ('whenever a bill arrives, add it to the budget'); they should run as guaranteed OS automations like Shortcuts, not model judgment. Subagents stay invisible, apart from progress. Slash commands should become a discoverable command palette and suggestion chips, not syntax to memorize.",
+      "sources": [
+        "https://code.claude.com/docs/en/features-overview",
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Diff-before-commit and review generalize to before/after previews",
+      "kind": "cli_pattern",
+      "key_finding": "Coding agents let users inspect proposed changes as diffs and ask for a review before accepting.",
+      "evidence": "Codex slash commands: '/diff' — 'show git diff (including untracked files)'; '/review' — 'review my current changes and find issues'. Claude Code's Manual mode asks before edits, and acceptEdits auto-approves them while you review. The desktop app offers 'visual diff review' (docs index).",
+      "design_implication": "Non-programmers need diffs for their own objects: a redlined email draft, a before/after calendar week, a settings change ('Wi-Fi Assist: on → off'), and a cart total before and after. The generated confirmation UI should highlight exactly what changes, and 'review' can be a second-opinion pass ('check this contract/lease for surprises') before signing.",
+      "sources": [
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs",
+        "https://code.claude.com/docs/en/permission-modes",
+        "https://code.claude.com/docs/llms.txt"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Threads as resumable, forkable, archivable tasks",
+      "kind": "cli_pattern",
+      "key_finding": "Both CLIs treat conversations as durable work objects you can resume, rename, fork, archive and export, rather than disposable chats.",
+      "evidence": "Codex TUI: '/resume' ('resume a saved chat'), '/rename', '/fork' ('fork the current chat'), '/archive', '/delete', '/export', '/compact', '/recap'. Claude Code sessions docs: 'Name, resume, branch, and switch between Claude Code conversations', plus '/branch' to 'try a different approach while preserving the original session intact'.",
+      "design_implication": "Conversation history as a home screen works only if threads behave like task folders. Each needs a title the agent proposes and the user can edit, a status, a resume point and a recap ('where were we?'). Forking ('try the cheaper option') and archiving should be first-class. A voice 'recap' command matters most because audio has no scrollback.",
+      "sources": [
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs",
+        "https://code.claude.com/docs/en/sessions",
+        "https://code.claude.com/docs/en/checkpointing"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Full-duplex speech models remove explicit turns (Kyutai Moshi)",
+      "kind": "voice_research",
+      "key_finding": "Moshi models the user's and the system's audio as two parallel streams, so it can listen while speaking and handle overlap, interruptions and backchannels. Its latency is far below that of cascaded ASR→LLM→TTS pipelines.",
+      "evidence": "Défossez et al. 2024 (arXiv 2410.00037): 'first real-time full-duplex spoken large language model, with a theoretical latency of 160ms, 200ms in practice'. Cascaded pipelines have 'a typical global latency of several seconds'. Overlapping speech 'amounts for 10 to 20% of spoken time (Çetin and Shriberg, 2006)'. The multi-stream design 'removes the concept of speaker turns'.",
+      "design_implication": "An agentic phone's voice layer should be full-duplex: it keeps listening while speaking so 'no, the other one' works mid-sentence, and it can backchannel ('mm-hm') while the user thinks. The agent's slow tool-calling brain can sit behind a fast conversational front end that keeps the floor.",
+      "sources": [
+        "https://arxiv.org/abs/2410.00037"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Latency budgets: what feels instant in conversation vs on screen",
+      "kind": "voice_research",
+      "key_finding": "Human turn gaps average roughly 200–300 ms across languages, and GPT-4o-class speech models reached about 320 ms average. Visual UI has the classic 0.1 s / 1 s / 10 s limits. So voice needs a first response within a few hundred milliseconds, even if the substantive answer comes later.",
+      "evidence": "Moshi paper: its 160 ms theoretical latency is 'lower than the 230 ms average in natural conversations measured over 10 languages (Stivers et al., 2009)'. Stivers et al. (PNAS 2009) found 'a general avoidance of overlapping talk and a minimization of silence' in all 10 languages. OpenAI 'Hello GPT-4o' (2024): responds to audio 'in as little as 232 milliseconds, with an average of 320 milliseconds, which is similar to human response time.' Nielsen's response-time limits (0.1 s feels instantaneous, 1 s keeps flow of thought, 10 s holds attention) are long-established; not re-fetched this session because nngroup.com was blocked.",
+      "design_implication": "Set a two-tier budget. Tier 1: an audible or haptic acknowledgement (backchannel, earcon, 'Sure') within ~200–300 ms of end of speech. Tier 2: substantive content or a progress statement within ~1 s, then streamed step updates. Anything likely to exceed ~10 s becomes a background task with a live activity instead of a held conversation. The claim '~300 ms feels instant for voice' is a reasonable target consistent with this evidence, but no single study establishes it as a threshold.",
+      "sources": [
+        "https://arxiv.org/abs/2410.00037",
+        "https://www.pnas.org/doi/10.1073/pnas.0903616106",
+        "https://openai.com/index/hello-gpt-4o/",
+        "https://www.nngroup.com/articles/response-times-3-important-limits/"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Semantic end-of-turn detection instead of fixed silence timeouts",
+      "kind": "voice_product",
+      "key_finding": "Production voice APIs now estimate whether the user has finished semantically, not just by silence, and expose an 'eagerness' setting. This matters most for slow or disfluent speakers.",
+      "evidence": "OpenAI Realtime VAD guide (via search snippets; the page itself was blocked): semantic_vad 'uses a turn detection model (in conjunction with VAD) to semantically estimate whether the user has finished speaking'. If audio trails off with 'uhhm' the model 'will wait longer'. An 'eagerness' property ('low', 'medium', 'high', 'auto') controls 'how eager the model is to interrupt the user'. A secondary source gives fallback windows of about 8 s low, 4 s medium/auto, 2 s high (unverified). Abdolrahmani et al. 2018: four of 14 blind participants found assistant timeouts frustrating ('You have to be pretty quick with that one [the calendar], otherwise it'll cut you off').",
+      "design_implication": "Default to semantic turn-taking with personal calibration: learn each user's pause patterns and let users choose 'give me more time'. For older adults, people who stutter, people with dysarthria or aphasia, and people composing long messages, provide hold-to-talk as a guaranteed no-cutoff mode.",
+      "sources": [
+        "https://developers.openai.com/api/docs/guides/realtime-vad",
+        "https://dl.acm.org/doi/10.1145/3234695.3236344"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Keep talking while tools run (asynchronous function calling)",
+      "kind": "voice_product",
+      "key_finding": "OpenAI's gpt-realtime lets a voice agent keep a fluid conversation while waiting on long-running function calls, rather than freezing.",
+      "evidence": "OpenAI 'Introducing gpt-realtime' (Aug 2025), as surfaced by search: 'long-running function calls will no longer disrupt the flow of a session—the model can continue a fluid conversation while waiting on results', available natively in gpt-realtime.",
+      "design_implication": "Voice mode must decouple conversation from execution. While the agent books, searches or pays, it can say what it is doing, ask the next clarifying question, or accept a side question. Results are announced when ready, with an earcon. This is the voice equivalent of background tasks plus live activities.",
+      "sources": [
+        "https://openai.com/index/introducing-gpt-realtime/"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Barge-in vs backchannel is still an open technical problem",
+      "kind": "voice_research",
+      "key_finding": "Full-duplex systems still struggle to tell a real interruption (yield the floor) from a backchannel ('uh-huh'), and can start speaking spuriously during user pauses. A 2026 wave of benchmarks targets this directly.",
+      "evidence": "ECHO (arXiv 2609.17360, Sept 2026): full-duplex systems 'must distinguish interruptions that require yielding the floor from backchannels that permit continued speaking'. 'Continue, Adapt, or Yield' (arXiv 2609.13117) argues the stop/continue binary misses a third behavior, continuing while incorporating the listener's input. 'Causal Analysis and Mitigation of Spurious Onsets in Full-Duplex Speech LLMs' (arXiv 2609.13445) reports Moshi-derived models 'can begin speaking inappropriately during prolonged user pauses'. M3-DuplexBench (arXiv 2607.29125) targets multilingual evaluation. Evidence here is from abstracts only.",
+      "design_implication": "Do not rely on speech alone for control. Pair voice barge-in with a deterministic physical stop (squeeze, stem press, tap). Treat short acknowledgements as non-interrupting by default. When the agent is unsure whether it was interrupted, pause briefly and yield ('go ahead?'). Evaluate turn-taking on atypical speech and noisy environments, not just clean benchmarks.",
+      "sources": [
+        "https://arxiv.org/abs/2609.17360",
+        "https://arxiv.org/abs/2609.13117",
+        "https://arxiv.org/abs/2609.13445",
+        "https://arxiv.org/abs/2607.29125"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Gemini Live: interruptible, multimodal voice with on-screen visual grounding",
+      "kind": "voice_product",
+      "key_finding": "Gemini Live shows a consumer pattern where users interrupt mid-response and share camera or screen. The assistant can highlight things on the screen, combining talk with pointing.",
+      "evidence": "Google: 'You can interrupt Gemini to ask clarifying questions or change the topic mid-response'. Users can 'interrupt Gemini at any point, pause or stop sharing, and dynamically switch between sharing your front camera, rear camera, or screen'. 'When you share your camera, Gemini not only sees what you see, but it also provides visual guidance by highlighting things directly on your screen' (Google blog, Aug 2025).",
+      "design_implication": "Voice-first does not mean voice-only. The agent should point: highlight the button, the field or the object it is talking about. Camera or screen sharing into the agent needs an always-visible sharing indicator and a one-tap stop, as it is a strong privacy surface.",
+      "sources": [
+        "https://blog.google/products-and-platforms/products/gemini/gemini-live-updates-august-2025/",
+        "https://support.google.com/gemini/answer/15274899?hl=en&co=GENIE.Platform%3DiOS",
+        "https://www.android.com/articles/gemini-on-android/"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Wake words vs push-to-talk: misactivation, control and always-listening privacy",
+      "kind": "voice_research",
+      "key_finding": "Blind power users reported both missed and false wake-word activations. Several switched to physical activation or disabled the wake word to stay in control. Smart-speaker misactivation is a documented privacy risk.",
+      "evidence": "Abdolrahmani, Kuber & Branham, ASSETS 2018 (14 blind VAPA users): 'eight participants reported instances of their VAPAs not responding when wakewords were voiced, or conversely were unexpectedly activated... Their experiences had led to them favoring physically-activating Siri'. One participant 'disabled the wakeword feature altogether'. Another kept the phone in a pocket 'to muffle the microphone'. Three switched the Echo microphone off at social gatherings. A blind participant could not tell whether the Echo mic was muted because the light ring is visual only. Dubois et al., PETS 2020, 'When Speakers Are All Ears', characterizes misactivations in which speakers 'activate, transmit, and/or record audio from their environment when the wake word is not spoken' (specific rates not retrieved this session).",
+      "design_implication": "Default to explicit activation (hold or squeeze to talk, raise-to-speak, stem press on earbuds). Make an always-listening wake word opt-in, processed on-device, with a visible, audible and haptic 'listening' state. Provide a hardware-level mute whose state can be felt or heard, and let users see and delete any audio kept after a misfire. For ambient, earbud-based use, a conversation should stay open only for a short window after the agent speaks.",
+      "sources": [
+        "https://dl.acm.org/doi/10.1145/3234695.3236344",
+        "https://moniotrlab.khoury.northeastern.edu/publications/smart-speakers-study-pets20/"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Silent yes/no by head gesture for ambient earbud use",
+      "kind": "voice_product",
+      "key_finding": "AirPods already support answering Siri announcements by nodding yes or shaking no. This is a precedent for low-bandwidth, private confirmations without speaking.",
+      "evidence": "Apple Newsroom (June 2024): 'AirPods Pro users can simply nod their head yes or gently shake their head no to respond to Siri announcements', which helps in places where users may not want to speak aloud. Apple Support: nod to accept a call or reply, shake to decline or dismiss. It requires Announce Calls or Announce Notifications and works on AirPods Pro 2 and later, AirPods 4 and later.",
+      "design_implication": "Ambient agent use through earbuds can use head gestures for binary, low-stakes decisions ('Your 3 pm moved to 4, keep it?' nod). They must not be used for irreversible or financial approvals, which need an explicit spoken phrase naming the object or a biometric confirmation on the phone.",
+      "sources": [
+        "https://www.apple.com/newsroom/2024/06/airpods-introduce-convenient-ways-to-communicate-and-interact/",
+        "https://support.apple.com/guide/airpods/use-controls-and-gestures-with-your-airpods-devb2c431317/web"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Voice confirmations, read-back and error recovery: failure modes from Siri/Alexa-era research",
+      "kind": "voice_research",
+      "key_finding": "Voice assistants failed blind users on error correction (re-dictating whole messages), on verbosity that leaked private details aloud, and on slow, non-adjustable speech. Users also spent extra effort checking that commands had actually taken effect.",
+      "evidence": "Abdolrahmani et al. 2018: 'to fix an error in a long message, the entire message should be dictated again.' A participant whispered a contact's name at work, and 'Siri loudly voiced his name, revealing to her coworkers that she was making a personal call.' Participants wanted control of speech rate. Five said faster output would help privacy in public. 'Participants took additional time and effort to verify whether the commands... (e.g., calendar entries) had indeed been created.' Recommendations include 'whisper' or 'discreet' modes and customizable output. Luger & Sellen, CHI 2016 (14 users) found 'user expectations were dramatically out of step with the operation of the systems'.",
+      "design_implication": "Confirmation by voice should be short and specific ('Texting Sam: running late, send?'). Let users edit at the fragment level ('change late to ten minutes late') instead of re-dictating. Adapt output rate and detail to the user and setting, with a discreet mode that withholds names and amounts aloud and shows them on screen or watch. After execution, give a verifiable receipt ('Added: Dentist, Tue 3 pm, in Calendar') so users need not double-check manually.",
+      "sources": [
+        "https://dl.acm.org/doi/10.1145/3234695.3236344",
+        "https://dl.acm.org/doi/10.1145/2858036.2858288"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Capability discovery and expectation-setting in open-ended language interfaces",
+      "kind": "hci_theory / voice_research",
+      "key_finding": "Blank conversational interfaces hide what the system can do, which widens the expectation gap. Validated human-AI guidelines put 'make clear what the system can do' and 'how well' first.",
+      "evidence": "Amershi et al., CHI 2019: G1 'Make clear what the system can do' and G2 'Make clear how well the system can do what it can do'. A participant-cited violation: '[Voice Assistants, Product #1] \"When [the assistant] was invoked verbally...I was not given any indication of what commands I could request.\"' Subramonyam et al., CHI 2024, 'Gulf of Envisioning', names a 'capability gap' (what the LLM can do), an 'instruction gap' (how to say it) and an 'intentionality gap' (what to expect). Luger & Sellen 2016: expectation–experience gulf.",
+      "design_implication": "The chat home screen needs capability scaffolding: contextual suggestion chips ('Split this receipt', 'Find a time with Dana') and example prompts tied to what is on screen or recently received. The agent should say plainly when something is outside its scopes or ability, and explain what it would need. Confidence cues should be calibrated ('I think', 'I couldn't verify').",
+      "sources": [
+        "https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf",
+        "https://arxiv.org/abs/2309.14459",
+        "https://dl.acm.org/doi/10.1145/2858036.2858288"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Direct manipulation vs delegation: the Shneiderman–Maes debate revisited",
+      "kind": "hci_theory",
+      "key_finding": "Direct manipulation offers predictability and control through visible objects, physical actions and rapid, reversible, incremental operations. Agents offer delegation of tasks too large to manipulate. The 1997 debate framed these as rivals; an agent OS needs both.",
+      "evidence": "Shneiderman & Maes, 'Direct manipulation vs. interface agents', Interactions 4(6), 1997 (debates at IUI 97 and CHI 97). Shneiderman: direct manipulation 'affords the user control and predictability'. Maes: users will need 'extra eyes and extra ears' to which to delegate. Classic direct-manipulation properties (Shneiderman 1983; Hutchins, Hollan & Norman 1985): continuous representation of objects of interest, physical actions instead of complex syntax, and rapid, incremental, reversible operations with immediately visible effects.",
+      "design_implication": "Use language for discrete, high-level delegation ('clean up my screenshots from last year'). Use direct manipulation for continuous values (volume, brightness, temperature, crop, trim), spatial or precise selection (which photos, which part of the map), and fine adjustment of agent outputs. Pattern: the agent does the coarse step, then hands back a manipulable control pre-set to its best guess ('Set to 40%' plus a live slider), with changes visible immediately and reversible.",
+      "sources": [
+        "https://dl.acm.org/doi/10.1145/267505.267514",
+        "https://www.cs.umd.edu/users/ben/papers/Shn-Maes-v4n6-1997.pdf"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Norman's gulfs, updated for LLMs: execution narrows, evaluation (and 'envisioning') widens",
+      "kind": "hci_theory",
+      "key_finding": "LLM interfaces shrink the gulf of execution (no need to know commands) but can widen the gulf of evaluation, because outputs are probabilistic. They also add a 'gulf of envisioning': users must articulate intentions they may not have formed.",
+      "evidence": "Subramonyam, Pea, Pondoc, Agrawala & Seifert, CHI 2024: 'LLMs narrow the gulf of execution by eliminating conventional needs for action specification and execution, leaving only intention to the user. However, the gulf of evaluation may increase'. They define three gaps: 'the capability gap', 'the instruction gap' and 'the intentionality gap'. They note that simply having separate chats 'may help with the organization, but it does not close the gap'. Norman's seven-stage model is the base.",
+      "design_implication": "Close the evaluation gulf with previews before execution (what will happen), receipts after (what did happen), and representations the user can check at a glance (a calendar diff instead of a paragraph). Close the envisioning gulf with clarifying questions at genuine ambiguity, offers of 2–3 concrete options instead of an open question, and editable plans. Do not assume people arrive with well-formed intents.",
+      "sources": [
+        "https://arxiv.org/abs/2309.14459"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Intent-based outcome specification as the 'third UI paradigm' (Nielsen, 2023)",
+      "kind": "hci_theory",
+      "key_finding": "Nielsen argues generative AI introduces a third paradigm after batch processing and command-based interaction (including GUIs). The user states the desired outcome, not the steps, which 'completely reverses the locus of control'. He predicts hybrid interfaces that keep GUI elements.",
+      "evidence": "Nielsen, 'AI: First New UI Paradigm in 60 Years' (NN/g, June 18, 2023). Per search snippets (nngroup.com and Substack were blocked for direct fetch): 'The user tells the computer the desired result but does not specify how this outcome should be accomplished'; 'this completely reverses the locus of control'; future AI systems 'will likely have a hybrid user interface that combines elements of both intent-based and command-based interfaces while still retaining many GUI elements.'",
+      "design_implication": "The agentic phone is Nielsen's paradigm made into an OS, and his own caveat applies: keep command and GUI affordances for control, precision and verification. The design task is placing the handoffs, from intent in, to plan and preview (GUI), to execution (agent), to receipt and adjustment (GUI).",
+      "sources": [
+        "https://www.nngroup.com/articles/ai-paradigm/",
+        "https://jakobnielsenphd.substack.com/p/ai-is-first-new-ui-paradigm-in-60"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Generative UI is strongly preferred over markdown, when latency is ignored",
+      "kind": "genui_study",
+      "key_finding": "In Google Research's evaluation, fully generated interactive pages beat standard LLM markdown in human preference and matched expert-built pages about half the time. Generation took a minute or two, and errors still occurred.",
+      "evidence": "Leviathan et al. (Google Research), 'Generative UI: LLMs are Effective UI Generators', arXiv 2604.09577 (2026). On 100 LMArena prompts with pairwise ratings on pre-cached results ('Generation time is not a factor'), Generative UI was preferred over markdown 82.8% of the time and over markdown on information-seeking prompts 90.5%. Against human-expert pages it won 35.3% vs 50.0%; the paper says it is 'at least comparable in 50% of cases'. Limitations: 'slow generation speed, which can often take a minute or two'; streaming reduces this 'by about a half'; 'errors (Javascript errors, CSS errors, HTML errors, etc.) can occasionally occur'. The capability is model-dependent: Gemini 2.0 Flash-Lite had 60% output errors vs 0% for Gemini 3.",
+      "design_implication": "Generated UI is worth building into the OS, but not as full page generation on every turn. For everyday actions (confirm, choose, adjust, compare), use a fast library of OS-native, accessible components the model fills and composes. Reserve fully generated experiences for deliberate, dwell-worthy tasks (learning, planning a trip, comparing products), and stream them progressively.",
+      "sources": [
+        "https://arxiv.org/abs/2604.09577",
+        "https://generativeui.github.io"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "When generated interfaces beat chat, and when they don't",
+      "kind": "genui_study",
+      "key_finding": "An independent study found generated interfaces beat conversational UI overall, especially for data-dense and interactive tasks. Chat stayed competitive for simple how-to and math-heavy explanations, and the authors warn about latency, needless UI and overtrust from polish.",
+      "evidence": "Chen, Zhang, Zhang, Shao & Yang (Stanford/Georgia Tech), 'Generative Interfaces for Language Models', arXiv 2508.19227. GenUI won 84% overall vs Claude 3.7 chat and 69% vs GPT-4o chat. With 380 real-user queries from 76 participants: 50.8% win, 8.2% tie, 41.1% loss. By domain: Data Analysis & Visualization 93.8% vs Advanced AI/ML 50.0%. Concise queries 73% vs detailed 80%. 'ConvUI outperforms for easy and basic \"how-to\" queries where additional tools impose unnecessary cognitive load.' Limitations: refinement adds 'latency of up to several minutes'; 'the system generates interfaces for all queries, even when interaction is unnecessary'. Ethics: generated interfaces 'may create accessibility barriers', and 'the polished, tool-like presentation... may also increase user trust and lead to overconfidence'. Users rated GenUI as more credible even when both answers were reasonable.",
+      "design_implication": "Add a router that decides per turn whether a UI is warranted. Text or voice is best for short answers and simple how-tos. UI is best for comparison, structured data, multi-field input and anything the user will manipulate. Since polish raises perceived credibility, generated UIs must carry the same sources and uncertainty markers as text, and must pass an accessibility contract (roles, labels, focus order, headings) before they render.",
+      "sources": [
+        "https://arxiv.org/abs/2508.19227"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Ephemeral vs persistent generated UI",
+      "kind": "genui_study / design_tension",
+      "key_finding": "Generative UI suggests an 'infinite catalog' of throwaway interfaces. But guidelines on predictability and adapting cautiously, plus users' attachment to familiar layouts, argue that some generated tools should become stable and persistent.",
+      "evidence": "Leviathan et al. 2026 envision a future where users 'have access to an infinite catalog, where the right ephemeral interface is generated on the spot'. Amershi et al. 2019 G14 'Update and adapt cautiously: Limit disruptive changes when updating and adapting the AI system's behaviors'. Chen et al.: some users preferred chat because 'Chatbot interface is most people know already, while GenUI is a somewhat complex and unfamiliar app.' The paper also cites prior adaptive-UI work showing reduced 'predictability and user control' (Findlater & Gajos 2009). No direct empirical study comparing ephemeral with persistent generated UI was found this session.",
+      "design_implication": "Default generated widgets to ephemeral: they live inside the thread and expire with the task. Let users pin one (a budget tracker, a medication schedule), which freezes its layout, gives it a home-screen tile, and changes it only with the user's approval ('Want me to add a column for tips?'). Repeated generation for the same need should converge on the same layout, keeping spatial memory and muscle memory intact.",
+      "sources": [
+        "https://arxiv.org/abs/2604.09577",
+        "https://arxiv.org/abs/2508.19227",
+        "https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "A11y-CUA: computer-use agents break under assistive-technology conditions",
+      "kind": "accessibility_study",
+      "key_finding": "Agents that act by pointing and clicking are effectively 'sighted'. With keyboard-only or magnified conditions their success collapses, and they do not work the way blind users do (verify-before-commit, explicit confirmation, focus tracking).",
+      "evidence": "Gubbi Mohanbabu, Natalie, Kim, Guo & Pavel, CHI 2026 (arXiv 2602.09310). 16 participants (8 blind or low-vision, 8 sighted), 60 everyday Windows and web tasks, 40.4 h, 158,325 events. A Claude Sonnet 4.5 agent succeeded on 78.33% of tasks by default, 41.67% keyboard-only, and 28.33% at 150% magnification. Qwen3-VL fell from 20% to 0%. Blind and low-vision users succeeded on 86.9% of tasks in 211.1 s on average, vs 41.67% in 650.9 s for the screen-reader-condition agent. BLV users showed 'a consistent verify-before-commit routine' and looked for confirmations ('Saved', 'Submitted'). Agents 'often completed the intermediate steps but omitted the final confirmation' and 'lacked robust focus tracking'.",
+      "design_implication": "An agent OS must make agent activity observable through assistive technology. Every agent step should emit accessibility events (announced, focus-aware) so a VoiceOver user can follow and interrupt. Completion must be checked and announced explicitly. Control handoff must work at the user's current focus or magnification. Agents should act through semantic app intents or accessibility APIs rather than pixel clicking, which is also more reliable.",
+      "sources": [
+        "https://arxiv.org/abs/2602.09310",
+        "https://huggingface.co/datasets/berkeley-hci/A11y-CUA"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Morae: pause at decision points and present choices as accessible generated UI",
+      "kind": "accessibility_study",
+      "key_finding": "An agent that detects ambiguous choices, pauses, and presents the options as accessible, screen-reader-navigable UI led blind users to complete more tasks and make choices closer to their preferences than fully automated agents including OpenAI Operator. It took longer.",
+      "evidence": "Peng, Li, Bigham & Pavel, UIST 2025 (arXiv 2508.21456). Field study: 13% of executable tasks presented multiple options and 19% were underspecified; the agent otherwise 'pick[s] an arbitrary option'. User study with 10 BLV participants and 9 tasks: tasks completed 5.50 (Morae) vs 3.90 (Operator) vs 2.60 (TaxyAI); preference-aligned choices 4.03 vs 2.98 vs 1.92; time 129.4 s vs 86.6 s vs 55.7 s. 'All participants... expressed a clear preference for Morae.' Pause detector: 59.7% precision, 69.8% recall, against a 94% human upper bound. Choice UIs use radio buttons and text fields 'clearly labeled with proper header levels for screen reader navigation', and distinct earcons for clicking, typing, needing input and success. The authors propose graded pause thresholds (e.g., payment dialogs pause more readily than scrolling).",
+      "design_implication": "Make decision-point pausing a system behavior. The agent must stop when options tie on the user's stated criterion, when a required field is unspecified, or when preferences matter (flavor, seat, price vs speed). It then shows a compact choice card built from accessible OS components and speaks it. Tune pause thresholds by stakes and learn them per user. Accept that informed choice costs time and let the user say 'just pick' for a category.",
+      "sources": [
+        "https://arxiv.org/abs/2508.21456"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Real-world blind users with computer-use agents: about half of commands succeed, and users want collaboration, not replacement",
+      "kind": "accessibility_study",
+      "key_finding": "In a three-week in-the-wild diary study, current agents completed about half of blind users' everyday desktop commands. Failures came from grounding, hidden UI paths, dropped constraints and not knowing when a task was done. Users wanted agents that ask before important clicks and help them learn.",
+      "evidence": "Kodandaram et al. (Stony Brook / Old Dominion), arXiv 2609.00524 (Sept 2026). 8 blind screen-reader users, 1,258 commands across 12 apps. Success: GPT-5 52.5%, Claude Sonnet 48.5%, Gemini 2.5 CU 43.9%, UI-TARS 39.8%, Qwen3-VL 37.9%. Constraint-binding failures, where the agent dropped part of the request (e.g., set the font but not the size), were 20.6% of GPT-5 partial completions. A participant: 'I want it to ask me before clicking something important. I do not want it making decisions on its own.' Another: 'If it can explain how the application is organized and guide me through the steps, I can learn to do it myself the next time.'",
+      "design_implication": "Before reporting done, the agent should check every constraint in the request against the end state ('Font Arial ✓, size 14 ✓') and read back any it could not satisfy. The agent OS should also offer a 'teach me' mode that turns its plan into step-by-step guidance for the user's assistive tech, supporting skill and independence rather than only automation.",
+      "sources": [
+        "https://arxiv.org/abs/2609.00524"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Non-visual status parity: earcons and audible state for everything the agent does",
+      "kind": "accessibility_study",
+      "key_finding": "Visual-only status cues (light rings, spinners, colored badges) exclude blind users and push them to rely on sighted help. Short audio cues bridge this without overloading speech.",
+      "evidence": "Abdolrahmani et al. 2018: a blind participant could not tell if the Echo mic was muted and tested it by saying the wake word. They recommend that 'Short bursts of audio (earcons) could be used to bridge the gap between the visual and non-visual representation of notifications and alerts'. Participants worried that screen-equipped assistants 'would encourage designers to move away from improving voice-based interaction'. Morae 2025 uses distinct sounds for agent clicking, typing, needing clarification and success.",
+      "design_implication": "Define a small, consistent earcon and haptic vocabulary at OS level: listening, thinking or working, needs you, done, failed, and irreversible action about to happen. Every visual agent state must have one. Users should be able to query state by voice ('what are you doing?') at any time.",
+      "sources": [
+        "https://dl.acm.org/doi/10.1145/3234695.3236344",
+        "https://arxiv.org/abs/2508.21456"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Older adults and people with cognitive or motor disabilities: promising fit, thin evidence base",
+      "kind": "accessibility_study / evidence_gap",
+      "key_finding": "A chat or voice OS removes navigation burdens that hurt older adults and people with motor impairments. But evidence on agentic systems with these groups is sparse, and some trust interventions help cognitively motivated users more than others.",
+      "evidence": "Buçinca, Malaya & Gajos, CSCW 2021 (N=199): cognitive-forcing interventions 'benefited participants higher in Need for Cognition more', which the authors flag as 'intervention-generated inequalities'. Taheri et al. 2026: memory is 'an accessibility feature rather than a convenience' for users who type slowly or are tired of re-explaining. The OpenAI semantic VAD docs (via snippet) say it suits slower or non-fluent speakers. Many 2026 papers on older adults with LLM voice assistants, ASR for cognitive impairment and mobile agents for older adults (e.g., ElderBench, arXiv 2609.04850; 'Challenges in ASR for Adults with Cognitive Impairment', arXiv 2602.23436) were found but not read in depth. Most agent-accessibility studies found have 8–16 participants and skew young or English-speaking (A11y-CUA ages 20–60; Morae 28–55).",
+      "design_implication": "Design for these groups explicitly rather than assuming voice is accessible by default. Provide adjustable turn-taking patience, confirmation styles that do not rely on working memory (show and speak the one thing being confirmed), and simple and expert modes. Trusted-helper delegation (a family member can see the thread or approve payments) should be a supported role, not a password share. Recruit older and cognitively disabled participants early; the evidence base is too thin to design from literature alone.",
+      "sources": [
+        "https://arxiv.org/abs/2102.09692",
+        "https://arxiv.org/abs/2609.22720",
+        "https://arxiv.org/abs/2609.04850",
+        "https://arxiv.org/abs/2602.23436",
+        "https://arxiv.org/abs/2603.09012"
+      ],
+      "confidence": "low"
+    },
+    {
+      "name": "Memory is both an accessibility relief and a privacy drift for disabled users",
+      "kind": "accessibility_study / memory",
+      "key_finding": "Cross-session memory spares disabled users from repeating themselves. It also lets disclosures drift into unrelated contexts through over-anchoring, misattribution and bleed. Users want control over scope, provenance, retention and access, not per-message toggles.",
+      "evidence": "Taheri, Tazike, Carrington & Bigham, arXiv 2609.22720 (Sept 2026), 12 disabled adults. Seven welcomed memory ('I don't want to keep reminding ChatGPT that I can't see'). Drift examples: an assistant told caregivers loosen a bottle cap 'every single time', one participant kept getting 'the same wheelchair-taxi company', another had a diet persona bleed into a dinner question. Four of the eight who discussed per-message memory controls declined them ('relevance cannot be specified in advance'). Participants wanted provenance: 'Based on what you said... I'm bringing it up now because of that reason'. The paper cites a prior analysis of 2,050 ChatGPT memory entries from 80 users in which 96% were created by the system and 35% of users had health information saved.",
+      "design_implication": "Treat memory as a user-visible ledger. Each remembered item shows where it came from (thread and date), its scope (all contexts, only 'health', only 'work'), its retention ('until this project ends', one year) and who can access it. When memory shapes an answer, the agent says so briefly. Provide 'forget this', category switches ('stop the benefits warnings') and 'dump my memory'. Do not solve memory's privacy problems by weakening memory, because that cost falls on disabled users.",
+      "sources": [
+        "https://arxiv.org/abs/2609.22720"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Microsoft's 18 Guidelines for Human-AI Interaction, and where voice falls outside them",
+      "kind": "guideline_framework",
+      "key_finding": "The 18 guidelines, grouped by Initially / During interaction / When wrong / Over time, remain the most validated checklist. The authors note some do not directly apply to AI without a GUI, such as voice assistants.",
+      "evidence": "Amershi et al., CHI 2019. 168 candidate recommendations were consolidated and then validated with '49 design practitioners who tested the guidelines against 20 popular AI-infused products'. Key items for agents: G1 capabilities, G2 how well, G3 'Time services based on context', G7–G9 efficient invocation, dismissal and correction, G10 'Scope services when in doubt', G11 'Make clear why the system did what it did', G12 'Remember recent interactions', G14 'Update and adapt cautiously', G15 granular feedback, G16 'Convey the consequences of user actions', G17 'Provide global controls', G18 'Notify users about changes'. Discussion: 'some guidelines do not directly apply to AI systems that lack graphical user interfaces (e.g., voice-based virtual assistants...)'. 8 of 18 map to Horvitz's 1999 mixed-initiative principles.",
+      "design_implication": "Use the 18 guidelines as a heuristic-evaluation checklist for every agent flow. Add voice-specific and agent-specific extensions they do not cover: action approval, irreversibility labeling, multi-step progress, delegation autonomy levels, and non-visual equivalents of G1, G2 and G11. Google's People + AI Guidebook (mental models, explainability and trust, feedback and control, errors and graceful failure) is complementary; it could not be fetched this session.",
+      "sources": [
+        "https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf",
+        "https://dl.acm.org/doi/10.1145/3290605.3300233",
+        "https://pair.withgoogle.com/guidebook/"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Explanations increase reliance even on wrong answers; sources and visible inconsistencies reduce overreliance",
+      "kind": "trust_research",
+      "key_finding": "Fluent LLM explanations raise agreement with both correct and incorrect answers. Clickable sources raise appropriate reliance and lower overreliance, and inconsistencies in an explanation act as a warning cue.",
+      "evidence": "Kim, Vaughan, Liao, Lombrozo & Russakovsky, CHI 2025 (arXiv 2502.08554), pre-registered, N=308. With a correct LLM answer, adding an explanation raised agreement from 67.2% to 78.2%. With an incorrect answer, accuracy fell from 21.8% to 17.2%. Accuracy on incorrect answers was highest with sources only (31.8%). Explanations reduced follow-up questions (28.2% vs 71.4%). 'The properties that make such explanations intelligible and compelling may be precisely those that lead to overreliance.'",
+      "design_implication": "In receipts and plans, lead with evidence (the email, the price page, the bank line item, the calendar entry), not a persuasive rationale. By voice, name the source in a few words ('per your lease, page 3'). When the agent's own reasoning contains a conflict or low-confidence step, surface it rather than smoothing it over.",
+      "sources": [
+        "https://arxiv.org/abs/2502.08554"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Cognitive forcing reduces overreliance, but users dislike it and it helps some users more",
+      "kind": "trust_research",
+      "key_finding": "Making people think before accepting an AI suggestion reduced overreliance compared with simple explanations. People rated those designs least favorably, and the benefits went mostly to people high in Need for Cognition.",
+      "evidence": "Buçinca, Malaya & Gajos, CSCW 2021 (arXiv 2102.09692), N=199. 'Cognitive forcing significantly reduced overreliance compared to the simple explainable AI approaches. However... people assigned the least favorable subjective ratings to the designs that reduced the overreliance the most.' Explanations alone 'appear to be interpreted as a general signal of competence'. The authors suggest 'adaptive strategies where the most effective cognitive forcing functions are deployed only in a small fraction of cases'.",
+      "design_implication": "Use friction selectively and adaptively: only when stakes are high and the agent is uncertain or its evidence is weak. For example, ask 'How much did you expect this bill to be?' before showing the agent's proposed payment on an anomalous bill. Never add blanket friction to routine flows; it breeds rubber-stamping and dislike without improving outcomes.",
+      "sources": [
+        "https://arxiv.org/abs/2102.09692"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Autonomy is a design choice separate from capability (five levels of agent autonomy)",
+      "kind": "guideline_framework",
+      "key_finding": "Agent autonomy can be set on purpose regardless of how capable the model is. It is defined by the user's role: operator, collaborator, consultant, approver or observer. The approver level carries a specific risk of meaningless rubber-stamping.",
+      "evidence": "Feng, McDonald & Zhang (UW), arXiv 2506.12469 (2025). 'We argue that an agent's level of autonomy can be treated as a deliberate design decision, separate from its capability.' Required controls per level: L1 'Invocation or approval before actions'; L2 'Control transfer... Shared representation of progress'; L3 'Rich user feedback elicitation interfaces'; L4 'Approval elicitation for consequential actions' and 'Customizable conditions for seeking approval'; L5 'Emergency off switch'. Open question at L4: 'How to prevent user disengagement and meaningless approvals?' Claude Code's auto mode is explicitly aimed at 'reducing prompt fatigue'.",
+      "design_implication": "Let autonomy vary by domain and task instead of one global setting. A user can be an approver for groceries, a consultant for travel and an operator for anything involving money to new people. The UI should show the current role. To keep approvals meaningful, ask rarely, ask specifically (the object and consequence), vary the approval form for truly risky actions, and track approval rates as a health metric (an approval rate near 100% with near-zero dwell time signals rubber-stamping).",
+      "sources": [
+        "https://arxiv.org/abs/2506.12469",
+        "https://code.claude.com/docs/en/permission-modes"
+      ],
+      "confidence": "high"
+    },
+    {
+      "name": "Conversation history as home screen: threads are tasks with states",
+      "kind": "design_synthesis",
+      "key_finding": "The strongest precedent for a chat-first home screen comes from agent dashboards, not chat apps: task rows with states, a count of what needs you, inline peek and reply, and durable, forkable threads. The chat list alone does not organize goals.",
+      "evidence": "Claude Code agent view shows working, needs-input and done states, a peek panel, and a '← 2 agents' waiting count. Codex has /resume, /fork, /rename, /archive and /recap. Claude Code routines and channels push external events into sessions: 'Forward CI results, chat messages, and monitoring events so Claude can react while you're away' (docs index). Subramonyam et al. 2024: separate chats 'may help with the organization, but it does not close the gap'. Amershi G12: 'Remember recent interactions'.",
+      "design_implication": "Structure the home screen in three layers. (1) A 'needs you' tray: approvals, choices and questions, answerable inline. (2) Active tasks with live progress. (3) A searchable history of threads grouped by goal or person, not by time only. The input bar or mic is always present with context-aware suggestion chips. Incoming events (a bill, a delivery delay, a friend's invite) arrive as proposed tasks in threads rather than raw app notifications.",
+      "sources": [
+        "https://code.claude.com/docs/en/agent-view",
+        "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs",
+        "https://code.claude.com/docs/llms.txt",
+        "https://arxiv.org/abs/2309.14459"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Notification overload and timing: the agent as triage layer",
+      "kind": "notification_research",
+      "key_finding": "People already handle dozens of notifications a day, and more notifications go with more negative emotion. Guidelines call for timing interruptions to the user's current task and environment.",
+      "evidence": "Pielot, Church & de Oliveira, MobileHCI 2014 (15 users, one week): participants dealt with '63.5 notifications on average per day, mostly from messengers and email', and 'an increasing number of notifications was associated with an increase in negative emotions' (from the paper's abstract via search). Amershi G3: 'Time when to act or interrupt based on the user's current task and environment'. Kirmayr et al. 2026: participants wanted less speech during music or podcasts or with passengers present, but consensus that ambiguity or high stakes justify interruption.",
+      "design_implication": "In a chat OS the agent should own notification triage. Batch low-value items into digests, interrupt only for 'needs you now' (time-critical, safety, a person waiting) or items the user marked as important, and adapt the channel to context (earcon or haptic while driving or in company, a screen card at a desk). Every proactive interruption should be dismissible in one action (G8) and teachable ('don't bother me with these').",
+      "sources": [
+        "https://dl.acm.org/doi/10.1145/2628363.2628364",
+        "https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf",
+        "https://arxiv.org/abs/2602.15569"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "name": "Coding-agent patterns that do NOT carry over to a phone for non-programmers",
+      "kind": "design_synthesis",
+      "key_finding": "Several core CLI mechanisms rely on developer affordances such as version control, shell literacy, config files, keyboard chords and very long sessions. Those have no consumer equivalent, so they must be redesigned rather than copied.",
+      "evidence": "Claude Code relies on git as the durable undo ('Not a replacement for version control'). It uses settings.json allow/deny rule syntax (e.g., 'Bash(git push *)'), Shift+Tab and Esc-Esc chords, context compaction that can drop stated boundaries, and bypassPermissions 'for isolated containers and VMs only'. Codex exposes 'danger-full-access' and TOML config. These assume the user can read diffs, understand shell side effects, and recover from a bad state themselves.",
+      "design_implication": "Do not ship rule syntax, mode names, raw tool calls, token and context meters, or 'dangerous' modes to consumers. Replace git with OS-managed versioning of personal data (photos, docs, settings) plus action-type-specific compensations. Replace allow/deny syntax with natural-language rules the agent drafts and the user confirms as readable cards. Replace keyboard chords with a physical stop, a hold-to-talk control and swipe gestures. Keep the concepts (plan, approve, checkpoint, background, receipt) and drop the mechanics.",
+      "sources": [
+        "https://code.claude.com/docs/en/checkpointing",
+        "https://code.claude.com/docs/en/permission-modes",
+        "https://github.com/openai/codex/blob/main/codex-rs/protocol/src/protocol.rs"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "design_rules": [
+    "Separate reach from ask: OS-enforced capability scopes (apps, accounts, contacts, spending caps, network egress) are granted independently of the approval policy. Even 'just do it' mode stays inside scopes.",
+    "Plan before consequential or multi-step work: show a short plan card (what changes, who is contacted, what it costs) with 'Do it', 'Do it but check with me', and 'Change the plan'. Approving also sets autonomy for that task.",
+    "Keep an irreversibility floor that no mode lowers: payments, messages or shares to new recipients, unrecoverable deletions, security changes and sensitive-data sharing always need a fresh confirmation that names the object (amount, recipient, item).",
+    "Label every action before it runs as undoable, undoable within N seconds (delayed commit), compensable, or permanent. Checkpoint all local state automatically, and never imply undo exists for effects outside the device.",
+    "Every completed action produces a receipt: what was done, where, the evidence or source, and the undo or compensation path with its deadline.",
+    "Never go silent. For voice, acknowledge within about 200–300 ms; give substantive content or progress within about 1 s; stream step updates during tool use. Anything over about 10 s becomes a background task with a live activity.",
+    "Narration decays with trust per task type and returns automatically for novel, ambiguous or high-stakes actions. 'Quieter' and 'mute' are always available.",
+    "Stop must always work: a physical, non-speech stop (squeeze or tap) plus spoken barge-in. Distinguish stop (halt), steer (queue into the running task) and side question (ephemeral fork), and confirm which one was heard.",
+    "Pause at real decision points only: tied options, missing required constraints, preference-laden choices. Present choices as compact accessible cards. Let users say 'just pick' for a category, and tune thresholds by stakes.",
+    "Hand back direct manipulation for continuous or spatial input: the agent sets a slider, picker, crop or map pin to its best guess instead of asking an open 'how much?'. Changes are immediately visible and reversible.",
+    "Route per turn between speech or text and generated UI. Use UI for comparison, structured data, multi-field input and anything the user will adjust; use text or voice for short answers and simple how-tos.",
+    "Build generated UI from fast OS-native components that carry an accessibility contract (roles, labels, headings, focus order, earcons). Reserve fully generated pages for dwell-worthy tasks and stream them progressively.",
+    "Generated widgets are ephemeral by default; users can pin them to make them persistent and stable. Pinned tools change only with user approval.",
+    "Show evidence, not eloquence: sources and provenance lead, explanations follow. By voice, name the source in a few words. Surface low confidence and internal inconsistencies instead of smoothing them over.",
+    "Add friction selectively, only where stakes are high and the model is uncertain, e.g., ask the user's expectation before revealing the agent's proposal. Monitor approval rate and dwell time to detect rubber-stamping.",
+    "Autonomy is per domain and always visible, like the mic and location indicators. Users can set a role per domain (operator, consultant, approver) in plain language.",
+    "Boundaries users state in conversation ('never text my ex', 'nothing over $50') become persistent, visible, editable rules, not transient context.",
+    "The home screen is a task dashboard: a 'needs you' tray answerable inline, active tasks with live progress, and searchable goal- or person-grouped threads that can be resumed, forked, recapped and archived. Keep a count of agents waiting on you in the status bar or lock screen.",
+    "The agent owns notification triage: batch into digests, interrupt only for time-critical, safety or person-waiting items, adapt channel to context (driving, media, company), and dismiss or teach in one action.",
+    "Treat memory as a ledger. Each item has provenance, scope and retention; the agent discloses when memory shaped an answer; offer 'forget this', category switches and 'dump memory'. Do not solve privacy by crippling memory, because that burdens disabled users most.",
+    "Keep non-visual parity: every visual agent state (listening, working, needs you, done, failed, about to do something irreversible) has an earcon or haptic equivalent. Speech rate and verbosity are adjustable, and a discreet mode withholds names and amounts aloud.",
+    "Default to explicit mic activation (hold or squeeze to talk, raise-to-speak, earbud stem). A wake word is opt-in and on-device, and mic state can be heard or felt. Head-nod yes/no is for low-stakes confirmations only.",
+    "Voice editing works at the fragment level ('change Tuesday to Wednesday'), never by whole re-dictation. Read-backs are short and specific.",
+    "Before reporting done, verify each constraint in the request against the end state and read back any unmet constraints. Announce completion explicitly; agents tend to skip the final Save or Submit step.",
+    "Support 'teach me' as well as 'do it': the agent can turn its plan into step-by-step guidance for the user's assistive tech to build independence."
+  ],
+  "open_questions": [
+    "How should pause and approval thresholds be calibrated per user and per stakes without flooding users (Morae's pause detector reached only 59.7% precision and 69.8% recall)?",
+    "What OS and API contract would make undo real for effects outside the device, such as transactional app intents with declared compensations, commit windows and cancellation deadlines?",
+    "How reliable can barge-in vs backchannel detection get in noise, for accented, atypical, dysarthric or older speech, and with bystanders talking? What is the fallback when it fails?",
+    "When should an ephemeral generated interface become a persistent tool, and how do we keep generated UIs consistent enough for spatial memory while still personalizing?",
+    "At what approval frequency does rubber-stamping set in for consumers, and can a guardian classifier legitimately substitute for human approval? Who is accountable when it errs?",
+    "How can a multi-step plan be presented eyes-free through earbuds (chunking, navigation, revision) without overloading working memory?",
+    "How many parallel background agents can a non-expert meaningfully supervise, and how should conflicts between agents (two tasks touching the same calendar) be surfaced?",
+    "How should the OS communicate that an agent's behavior may have been steered by hostile content (prompt injection in an email or web page) in a way lay users can act on?",
+    "What are the privacy norms for ambient context (always-available camera or screen sharing, earbud listening), including bystanders who did not consent?",
+    "Evidence gap: how do older adults, people with cognitive disabilities, and people with speech or motor impairments fare with agentic OS flows? Current studies are small (n=8–16), young-skewed, English-only, and desktop or web rather than phone.",
+    "Generated-UI latency: full generation takes a minute or more today. What streaming or partial-render strategies keep perceived speed acceptable, and does polish-induced credibility need countermeasures?",
+    "Memory defaults: should cross-context memory be on by default, given it relieves disabled users of repetition but lets sensitive disclosures drift into unrelated contexts?"
+  ]
+}

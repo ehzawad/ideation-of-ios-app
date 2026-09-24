@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 480" width="1280" height="480" role="img" aria-labelledby="title desc">
+  <title id="title">Agentic iOS: an idea atlas</title>
+  <desc id="desc">Banner. An iPhone shows an agent working in a Live Activity: it found three flight options, held seat 14C, and is waiting for the user's OK. Lines connect the phone to the iOS frameworks the agent uses.</desc>
+  <style>
+    svg { --bg:#fcfcfb; --bg2:#f1f0ec; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --line:#d6d5ce;
+          --phone:#1c1c1e; --screen:#f2f2f7; --card:#ffffff; --b:#2a78d6; --w:#eb6834; --m:#1baf7a; --pill:#ffffff; }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#111113; --bg2:#1a1a1c; --ink:#ffffff; --ink2:#c3c2b7; --muted:#8e8e93; --line:#3a3a3c;
+            --phone:#3a3a3c; --screen:#000000; --card:#1c1c1e; --b:#3987e5; --w:#d95926; --m:#199e70; --pill:#1c1c1e; }
+    }
+    text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .bg { fill: var(--bg); }
+    .dot { fill: var(--line); }
+    .h1 { fill: var(--ink); font-size: 68px; font-weight: 750; letter-spacing: -1.5px; }
+    .h2 { fill: var(--ink2); font-size: 22px; }
+    .kicker { fill: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: 2.5px; }
+    .chip { font-size: 15px; fill: var(--ink2); }
+    .chip b { font-weight: 700; }
+    .wire { stroke: var(--line); stroke-width: 1.5; fill: none; }
+    .pill { fill: var(--pill); stroke: var(--line); stroke-width: 1; }
+    .pill-t { fill: var(--ink2); font-size: 13px; font-weight: 600; }
+    .phone { fill: var(--phone); }
+    .screen { fill: var(--screen); }
+    .card { fill: var(--card); }
+    .t-small { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.6px; }
+    .t-body { fill: var(--ink); font-size: 14px; font-weight: 600; }
+    .t-step { fill: var(--ink2); font-size: 12.5px; }
+    .btn-t { fill: #ffffff; font-size: 13px; font-weight: 700; }
+  </style>
+
+  <rect class="bg" width="1280" height="480"/>
+  <!-- dot grid, fading to the left -->
+  <g opacity="0.55">
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle class="dot" cx="2" cy="2" r="1.2"/></pattern>
+    <linearGradient id="fade" x1="0" x2="1"><stop offset="0.35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient>
+    <mask id="fadeMask"><rect width="1280" height="480" fill="url(#fade)"/></mask>
+    <rect width="1280" height="480" fill="url(#dots)" mask="url(#fadeMask)"/>
+  </g>
+
+  <!-- title block -->
+  <text x="64" y="112" class="kicker">AN IDEA ATLAS</text>
+  <text x="60" y="190" class="h1">Agentic iOS</text>
+  <text x="64" y="236" class="h2">iPhone apps that plan and act for you: what's being</text>
+  <text x="64" y="266" class="h2">built, what nobody's building yet, and what's still too hard.</text>
+
+  <g transform="translate(64 318)">
+    <rect x="0" y="0" width="14" height="14" rx="3" fill="var(--b)"/>
+    <text x="22" y="12" class="chip"><tspan font-weight="700">B</tspan> Being built now</text>
+    <rect x="170" y="0" width="14" height="14" rx="3" fill="var(--w)"/>
+    <text x="192" y="12" class="chip"><tspan font-weight="700">W</tspan> Whitespace</text>
+    <rect x="314" y="0" width="14" height="14" rx="3" fill="var(--m)"/>
+    <text x="336" y="12" class="chip"><tspan font-weight="700">M</tspan> Moonshots</text>
+  </g>
+
+  <!-- wires from frameworks to the phone -->
+  <g class="wire">
+    <path d="M846 118 C 900 118, 900 190, 960 196"/>
+    <path d="M806 186 C 880 186, 900 220, 960 226"/>
+    <path d="M790 256 C 880 256, 900 262, 960 262"/>
+    <path d="M806 326 C 880 326, 900 300, 960 296"/>
+    <path d="M846 394 C 900 394, 900 336, 960 330"/>
+  </g>
+  <g>
+    <rect class="pill" x="728" y="102" width="118" height="32" rx="16"/><text x="787" y="123" text-anchor="middle" class="pill-t">App Intents</text>
+    <rect class="pill" x="668" y="170" width="138" height="32" rx="16"/><text x="737" y="191" text-anchor="middle" class="pill-t">Foundation Models</text>
+    <rect class="pill" x="690" y="240" width="100" height="32" rx="16"/><text x="740" y="261" text-anchor="middle" class="pill-t">EventKit</text>
+    <rect class="pill" x="688" y="310" width="118" height="32" rx="16"/><text x="747" y="331" text-anchor="middle" class="pill-t">Live Activities</text>
+    <rect class="pill" x="740" y="378" width="106" height="32" rx="16"/><text x="793" y="399" text-anchor="middle" class="pill-t">Apple Pay</text>
+  </g>
+
+  <!-- phone, bleeding off the bottom edge -->
+  <g transform="translate(960 44)">
+    <rect class="phone" x="0" y="0" width="250" height="480" rx="48"/>
+    <rect class="screen" x="10" y="10" width="230" height="470" rx="39"/>
+    <rect x="89" y="22" width="72" height="22" rx="11" fill="#000"/>
+    <text x="34" y="37" class="t-body" style="font-size:13px">9:41</text>
+
+    <!-- live activity card -->
+    <rect class="card" x="22" y="70" width="206" height="238" rx="20"/>
+    <circle cx="44" cy="94" r="10" fill="var(--b)"/>
+    <path d="M39.5 94 l3 3 5.5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="62" y="98" class="t-small">AGENT · TRAVEL</text>
+    <text x="36" y="132" class="t-body">Your 6:05 flight</text>
+    <text x="36" y="151" class="t-body">was cancelled.</text>
+    <text x="36" y="170" class="t-body" style="fill:var(--muted);font-weight:500">Here's what I did:</text>
+
+    <g transform="translate(36 190)">
+      <circle cx="6" cy="6" r="6" fill="var(--m)"/><path d="M3 6 l2 2 4-4" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <text x="20" y="10" class="t-step">Found 3 same-day options</text>
+      <line x1="6" y1="14" x2="6" y2="26" stroke="var(--m)" stroke-width="2"/>
+      <circle cx="6" cy="32" r="6" fill="var(--m)"/><path d="M3 32 l2 2 4-4" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <text x="20" y="36" class="t-step">Held seat 14C, 8:20 AM</text>
+      <line x1="6" y1="40" x2="6" y2="52" stroke="var(--w)" stroke-width="2"/>
+      <circle cx="6" cy="58" r="6" fill="none" stroke="var(--w)" stroke-width="2"/>
+      <text x="20" y="62" class="t-step" style="fill:var(--ink);font-weight:600">Waiting for your OK</text>
+    </g>
+
+    <rect x="36" y="262" width="86" height="32" rx="16" fill="var(--b)"/><text x="79" y="283" text-anchor="middle" class="btn-t">Approve</text>
+    <rect x="130" y="262" width="84" height="32" rx="16" fill="none" stroke="var(--line)"/><text x="172" y="283" text-anchor="middle" class="t-step" style="font-weight:600">Change</text>
+
+    <!-- faint home-screen rows below -->
+    <g opacity="0.5">
+      <rect x="19" y="334" width="44" height="44" rx="11" fill="var(--line)"/>
+      <rect x="75" y="334" width="44" height="44" rx="11" fill="var(--line)"/>
+      <rect x="131" y="334" width="44" height="44" rx="11" fill="var(--line)"/>
+      <rect x="187" y="334" width="44" height="44" rx="11" fill="var(--line)"/>
+      <rect x="19" y="400" width="44" height="44" rx="11" fill="var(--line)"/>
+      <rect x="75" y="400" width="44" height="44" rx="11" fill="var(--line)"/>
+      <rect x="131" y="400" width="44" height="44" rx="11" fill="var(--line)"/>
+      <rect x="187" y="400" width="44" height="44" rx="11" fill="var(--line)"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,445 @@
+[
+  {
+    "title": "Accommodations Booked Ahead",
+    "tagline": "Requests the ASL interpreter, captioner or language interpreter you're owed, then chases it until confirmed.",
+    "tier": "whitespace",
+    "category": "Accessibility",
+    "moment": "You're Deaf, and your cardiology follow-up is in nine days. Last time the clinic 'forgot' the interpreter and offered to pass notes. This time, the night you book, your phone has already emailed the clinic's patient-access office, and by day three you have a written confirmation naming the interpreter agency.",
+    "what_it_does": [
+      "Watches your calendar and a personal forwarding email address for new appointments, court dates, school meetings, job interviews and flights, and asks once which accommodation you need (ASL interpreter, CART captioning, a Dari or Spanish interpreter, large print, a step-free room, wheelchair assistance and battery details for a flight, or an alternative to an automated video or game-based hiring assessment).",
+      "Finds the right contact (patient-access or ADA coordinator, court interpreter office, airline accessibility desk, recruiter) and drafts a short request that names the duty the institution has (ADA, Section 1557 language access, the Air Carrier Access Act). You approve the first request to each institution; later ones go out under that approval.",
+      "Sends by email or cloud fax, calls the office through cloud telephony if there is no reply within 72 hours, and logs every answer on a per-appointment timeline.",
+      "Two days before, asks for written confirmation of agency, interpreter type and in-person versus video. If the office offers video remote interpreting, a family member or 'we'll write notes', it pauses and asks you whether to accept or push back.",
+      "If the accommodation fails on the day, one tap builds a dated complaint packet (grievance office first, then HHS Office for Civil Rights or DOT) for you to read and approve."
+    ],
+    "why_now": "Frontier models can now write short, institution-specific requests that cite the right rule, and cloud email, fax and voice APIs let a server-side agent follow up for days. Siri AI launched English-only and not in the EU, so the people who most need language access get no system agent. Hiring and intake are increasingly automated, which adds new places where an accommodation must be asked for in advance.",
+    "why_nobody_yet_or_wall": "Interpreter platforms (Boostlingo, Sorenson) sell to hospitals and courts, not to patients, and the legal duty sits with the provider, so nobody builds for the person who in practice has to chase it. Revenue per user is small; the likely buyers are disability organisations, Medicaid plans and legal-aid groups rather than app-store subscribers.",
+    "ios_hooks": [
+      "EventKit",
+      "App Intents (a 'request accommodation for this event' intent reachable from Siri and Shortcuts)",
+      "Live Activities for request status",
+      "UserNotifications",
+      "Translation framework for the user's own language view",
+      "Foundation Models / PrivateCloudComputeLanguageModel for drafting",
+      "Server-side agent with email forwarding address, cloud fax and telephony plus push"
+    ],
+    "nearest_existing": [
+      "Boostlingo on-demand ASL interpreting (provider-side) https://boostlingo.com/solutions/interpreter-services/on-demand/asl-interpretation-services/",
+      "Ability Together guide to requesting ASL interpreters https://abilitytogether.org/scheduling-a-medical-appointment-understanding-the-ada-and-asl-interpreters/",
+      "Sorenson healthcare interpreting (provider-side) https://sorenson.com/enterprise/healthcare/"
+    ],
+    "unsaid_assumption": "Institutions act faster on a polite, dated, rule-citing written request than on a patient's phone call, and they will not treat an agent-sent request as less legitimate.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "It turns rights that exist only on paper into a recurring errand, and one agent serves Deaf, blind, wheelchair-using and non-English-speaking people at once."
+  },
+  {
+    "title": "Paratransit Trip Keeper",
+    "tagline": "Books next-day paratransit rides from your calendar, cancels in time, and fights wrongful no-show strikes.",
+    "tier": "whitespace",
+    "category": "Physical world",
+    "moment": "You use a power wheelchair, and your dialysis just moved from Tuesday to Wednesday. Normally that means a 25-minute hold on the paratransit reservation line before 5 pm and a pickup window you must remember. Tonight the agent has already cancelled Tuesday's ride before the late-cancel cutoff and booked Wednesday's.",
+    "what_it_does": [
+      "Reads your calendar and standing trips, works out each agency's booking deadline (ADA paratransit is usually booked one or more days ahead, often only by phone in office hours), and books through the agency portal or by calling the reservation line from a cloud number with your rider ID and mobility-device details.",
+      "Reads back the offered pickup window. If the drop-off would land after your appointment starts, it pauses and asks whether to accept, ask for an earlier window, or move the appointment.",
+      "Watches for changes (a moved calendar event, a clinic cancellation email, severe weather) and cancels before the late-cancel cutoff so you don't collect a no-show.",
+      "Shows the pickup window as a Live Activity with a Watch tap ten minutes before; if the vehicle is late beyond the window it records the time and offers to file a late-trip complaint.",
+      "Keeps a trip log with timestamps. If the agency records a no-show you dispute, it drafts the appeal with the evidence and waits for your approval."
+    ],
+    "why_now": "Cloud voice agents now get through reservation lines and hold queues reliably (Pine, Google's agentic calling), and LongRunningIntent plus Live Activities give a clean status surface. Agencies are rewriting no-show policies in 2026 (Green Bay, SolTrans, Kitsap), and repeated no-shows can suspend service. It works on older iPhones because the heavy work runs server-side.",
+    "why_nobody_yet_or_wall": "Every agency runs a different mix of phone lines and scheduling vendors, so there is no single API, and the few agency apps (SacRT GO relaunched in May 2026) serve one agency and don't manage your calendar, cancellations or disputes. The market is city-by-city and invisible to general agent startups.",
+    "ios_hooks": [
+      "EventKit",
+      "ActivityKit Live Activities (push-updated from the server)",
+      "App Intents with LongRunningIntent",
+      "WatchKit / Smart Stack",
+      "UserNotifications (time-sensitive)",
+      "Server-side telephony agent (e.g. Twilio) plus APNs"
+    ],
+    "nearest_existing": [
+      "SacRT GO paratransit app (single agency) https://www.sacrt.com/sacrt-go-paratransit-service/",
+      "DREDF topic guide on paratransit no-shows https://dredf.org/ADAtg/noshow.shtml",
+      "Pine AI (general calling agent, not paratransit-aware) https://apps.apple.com/us/app/pine-assistant/id6746403769"
+    ],
+    "unsaid_assumption": "Agencies will accept bookings from an AI voice acting for a registered rider instead of hanging up or requiring the rider on the line.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "Paratransit is a phone-first, day-ahead, penalty-driven system that decides whether people reach dialysis, and nobody in agent land has looked at it."
+  },
+  {
+    "title": "Deaf-First Call Agent",
+    "tagline": "Sits through phone trees and hold music, handles routine questions, then hands you the call in captions.",
+    "tier": "whitespace",
+    "category": "Social & communication",
+    "moment": "You're hard of hearing, and the pharmacy's refill line is a voice-only menu that times out before captions catch up. You type 'refill my lisinopril and ask when it's ready'; the agent calls, presses through the menu, waits 18 minutes on hold and answers the date-of-birth question from your profile. It only buzzes your Watch when the pharmacist asks something outside its brief, and then you take over with live captions while your typed replies are spoken aloud.",
+    "what_it_does": [
+      "Takes a typed goal and a business (from Maps, Contacts or a pasted number) and writes a call brief: what it may say, what it must never disclose, and what counts as done. You approve the brief.",
+      "Places the call from a cloud number, works through phone menus by keypad tones and speech, and waits on hold for as long as it takes.",
+      "Handles routine turns itself; at a decision point (a price, a new time, anything off-brief) it asks the other person to hold and pushes you a choice card on iPhone or Watch.",
+      "On request, bridges you into the live call: their speech as on-device captions, your typed text spoken aloud (in your own Personal Voice if you have speech loss and grant permission). Output also flows to a braille display through VoiceOver for DeafBlind users.",
+      "Returns a transcript and structured result (ready date, confirmation number), adds reminders, and offers a separate inbound number for offices that 'only call back', which answers, takes the message and books the callback."
+    ],
+    "why_now": "Rylo (formerly Nagish) raised $85M in 2026 on FCC-certified AI captioning, which shows Deaf users trust machine captions on calls. Calling agents from Pine, Genspark and Google showed phone-tree and hold automation works. iOS 26's SpeechAnalyzer gives fast on-device transcription, and Personal Voice lets people with speech loss be heard in their own voice.",
+    "why_nobody_yet_or_wall": "Deaf captioning apps are paid per minute through the FCC relay fund for conversations between two people, so an agent that talks on its own likely falls outside that funding model. General calling agents report a summary afterwards and are not built for a live, captioned handoff at the moment a human is needed. Caller-ID trust and pharmacy identity checks add friction.",
+    "ios_hooks": [
+      "CallKit plus PushKit for the VoIP bridge",
+      "Speech framework SpeechAnalyzer for on-device captions",
+      "AVSpeechSynthesizer with Personal Voice authorization",
+      "Live Activities",
+      "WatchKit haptics",
+      "App Intents",
+      "MapKit for business lookup"
+    ],
+    "nearest_existing": [
+      "Rylo live call captioning (formerly Nagish) https://apps.apple.com/us/app/rylo-live-call-captioning/id1514154600",
+      "Pine AI calling agent https://apps.apple.com/us/app/pine-assistant/id6746403769",
+      "Apple Hold Assist and Live Captions (first-party, not agentic for Deaf users)"
+    ],
+    "unsaid_assumption": "Businesses will stay on the line with an AI that says it is calling for a Deaf customer instead of hanging up on it as a robocall.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "Deaf users already have excellent captions; what they lack is someone to sit through the phone tree, and hearing people's call agents are not built to hand the call back live."
+  },
+  {
+    "title": "Paper Round-Trip",
+    "tagline": "Reads the letter aloud, fills the form with you by voice, then mails or faxes it back before the deadline.",
+    "tier": "whitespace",
+    "category": "Life admin",
+    "moment": "You're blind, or you read Arabic but not English, and a thick envelope arrives: a Medicaid renewal due in 30 days. You hold your phone over it and hear, in plain words and your language, what it is, the deadline and the five things it needs from you; you answer out loud while making tea. Next morning the signed form is in the mail with tracking, and a reminder is set to check that the office logged it.",
+    "what_it_does": [
+      "Scans the pages, reads them on device, and classifies the letter (renewal, bill, jury summons, benefits notice). It pulls out sender, deadline and required actions and reads a plain-language summary in your language.",
+      "Maps the form's fields and pre-fills them from an on-device profile (name, case numbers, household, address). It asks only for missing answers, one at a time by voice, and reads each answer back before writing it.",
+      "Captures a finger signature, and warns you when the agency needs ink, in which case it asks a trusted person or books help instead of pretending.",
+      "Sends it back the way the agency accepts: portal upload through a server-side browser, email, cloud fax, or printed and mailed through a print-and-mail API with tracking. If a fee is due and you have no bank account, it saves a cash-payment barcode as a Wallet pass you can pay at a store.",
+      "Sets deadline and 'confirm receipt' reminders, and drafts a follow-up if no confirmation arrives. You approve every outbound item."
+    ],
+    "why_now": "iOS 27 Foundation Models added image input and a built-in OCR tool, so a letter can be read privately on the phone, and the PCC model's 32K context handles long forms. Research such as FormBharo (2026) shows voice-driven form filling works for low-literacy users. Siri AI is English-only and needs an iPhone 15 Pro, so older adults and immigrants on older phones get nothing from Apple here; this app can use cloud models with consent.",
+    "why_nobody_yet_or_wall": "Reading apps (Seeing AI, Envision) stop at reading, and form helpers (ImmiGuide, Instafill) stop at explaining or filling. Nobody owns the return trip, because it needs a paid physical-mail and fax backend and carries blame for missed deadlines.",
+    "ios_hooks": [
+      "VisionKit document camera",
+      "Foundation Models OCRTool and image Attachment",
+      "PDFKit form annotations",
+      "PencilKit for signatures",
+      "PassKit / Wallet pass for cash-pay barcodes",
+      "EventKit reminders",
+      "Translation framework",
+      "AVSpeechSynthesizer"
+    ],
+    "nearest_existing": [
+      "ImmiGuide USCIS form helper (explains fields only) https://apps.apple.com/us/app/immiguide-uscis-form-helper/id6761538383",
+      "FormBharo voice form-filling research https://arxiv.org/pdf/2608.06027",
+      "Seeing AI and Envision (read documents, don't return them)"
+    ],
+    "unsaid_assumption": "Agencies will accept an e-signature or a printed copy of a finger signature for most routine forms.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 5
+    },
+    "surprise": "Paper is the last fully inaccessible channel, and the hard part is not reading the letter but getting the answer back into an envelope on time."
+  },
+  {
+    "title": "Pause-and-Ask Errands",
+    "tagline": "A web-errand agent built for VoiceOver: it does the task and stops at every real choice instead of guessing.",
+    "tier": "whitespace",
+    "category": "Accessibility",
+    "moment": "You're blind, and you ask for the cheapest unscented laundry pods from the store you always use. It finds three at the same price and, instead of silently picking one, reads you a short list (brand, count, rating, one line each) that you choose from with a VoiceOver custom action. Before it presses Buy, it reads the total and delivery date and waits for your double-tap and Face ID.",
+    "what_it_does": [
+      "Runs the task in a cloud browser signed into your accounts (you sign in once through an accessible hand-off), so nothing depends on how the site behaves with a screen reader.",
+      "Detects decision points (price ties, substitutions, upsells, pre-ticked consent boxes, auto-renew traps, changed terms) and pauses, the pattern from CMU's Morae research.",
+      "Presents each choice as a VoiceOver-first native card: fixed reading order with price first, headings for the rotor, custom actions for choose, hear more and cancel, and a distinct haptic for 'needs you'. The same card works as an App Intents snippet from Siri or the Action Button.",
+      "Reads a pre-commit summary (item, total, delivery, anything it changed) and requires explicit confirmation; afterwards keeps a spoken action log with undo paths such as cancel links and return windows.",
+      "Saves standing preferences (always unscented, never subscribe) only after you approve each one."
+    ],
+    "why_now": "The A11y-CUA dataset (Feb 2026) showed a state-of-the-art computer-use agent falling from 78% task success to 28% under magnifier use and 42% keyboard-only. A CHI 2026 paper studied voice computer-use agents for blind shoppers. Cloud-browser agents (Muse, ChatGPT agent) are now mainstream, but their approval screens are screenshot-heavy.",
+    "why_nobody_yet_or_wall": "Mainstream agents are tuned to interrupt as little as possible, while blind users need more interruptions at the right moments, which looks like worse UX by general-audience metrics. Blind-focused apps (Be My Eyes, Seeing AI, Envision) describe the world rather than complete tasks. Retailer bot defences can block the cloud browser.",
+    "ios_hooks": [
+      "UIAccessibility (accessibilityCustomActions, rotor headings, announcements)",
+      "App Intents SnippetIntent",
+      "Live Activities for long runs",
+      "Core Haptics",
+      "LocalAuthentication",
+      "ASWebAuthenticationSession for sign-in hand-off",
+      "Foundation Models onToolCall confirmations"
+    ],
+    "nearest_existing": [
+      "Morae, pausing UI agents at decision points (research) https://huggingface.co/papers/2508.21456",
+      "CHI 2026 voice computer-use agent for visually impaired shoppers https://dl.acm.org/doi/10.1145/3772318.3791681",
+      "A11y-CUA dataset https://huggingface.co/papers/2602.09310",
+      "Be My Eyes / Be My AI (describes, does not act)"
+    ],
+    "unsaid_assumption": "Blind users will accept a cloud browser holding their retail logins, and retailers won't block it.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "For blind users the interruptions are the product: the right agent asks more often than a sighted user would tolerate."
+  },
+  {
+    "title": "Barrier Receipt",
+    "tagline": "When an app blocks your screen reader, it finishes the task another way and files the accessibility complaint.",
+    "tier": "whitespace",
+    "category": "Safety & civic",
+    "moment": "You live in Lyon, you use VoiceOver, and your train operator's new app has an unlabeled Pay button. You say 'log this and get me the ticket'. The agent books the same ticket through the accessible web flow or the phone line, sends the operator a dated barrier report with your screen recording, and 30 days later, if nothing is fixed, hands you a ready complaint to the national enforcement body.",
+    "what_it_does": [
+      "Captures the failure from a screen recording you start from Control Center or screenshots from the share sheet, plus your spoken description, and turns it on device into a structured report: step, element, likely WCAG criterion, device, assistive tech in use.",
+      "Finds another way to finish the task now (accessible website in a cloud browser, the phone line through cloud telephony, email to support) and completes it with your approval.",
+      "Sends the report to the company's published accessibility contact and tracks the reply.",
+      "After a waiting period you choose, drafts the complaint to the right authority for your country and the type of service, and sends it only after you approve.",
+      "Optionally adds an anonymised record to a shared tracker so disability organisations can see repeat offenders."
+    ],
+    "why_now": "The European Accessibility Act has applied since 28 June 2025 to banking, e-commerce, transport ticketing and e-books, and complaints now trigger inspections (Sweden's PTS reported 124 public complaints; French blind-users' groups gave major retailers deadlines). Siri AI is not available on iPhone in the EU, so EU users need third-party agents. On-device models let screen recordings be processed without sending them to a third-party AI.",
+    "why_nobody_yet_or_wall": "EAA tooling is sold to companies (audits, overlays), and advocacy groups file complaints by hand. Each Member State names different authorities per sector, which is tedious to map, and no consumer product turns a frustrating moment into a paper trail.",
+    "ios_hooks": [
+      "ReplayKit Broadcast Upload extension (user-started screen recording)",
+      "Share extension",
+      "Foundation Models on device (image Attachment) for private report writing",
+      "App Intents ('log this barrier')",
+      "UserNotifications",
+      "Server-side email, cloud browser and telephony"
+    ],
+    "nearest_existing": [
+      "Level Access EAA compliance guide (company-side) https://www.levelaccess.com/compliance-overview/european-accessibility-act-eaa/",
+      "ADA Title III blog on EAA complaints by French organisations https://www.adatitleiii.com/2025/08/european-accessibility-act-poses-new-challenges-for-us-companies-with-customers-in-the-eu/"
+    ],
+    "unsaid_assumption": "Enforcement bodies act on well-documented individual complaints, so better paper trails change outcomes.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "surprise": "Every failed task becomes evidence, so an errand agent doubles as a quiet enforcement layer for a law most disabled consumers don't know they can use."
+  },
+  {
+    "title": "Co-Sign, Not Guardian",
+    "tagline": "Runs errands for people with cognitive disabilities under their own rules for when a supporter co-signs.",
+    "tier": "whitespace",
+    "category": "Family & care",
+    "moment": "You have Down syndrome and live in your own flat. You tap the big 'I want to buy' picture and say 'new headphones'; the agent shows three with photos and prices in Easy Read. Because your own agreement says 'over $50, ask Sam', Sam gets a co-sign request, and Sam can say yes or 'let's talk' but cannot buy anything for you or see your other purchases.",
+    "what_it_does": [
+      "Sets up, with you and the supporters you choose, a machine-readable version of your supported decision-making agreement: decisions that are yours alone, ones where you want a supporter's view, cooling-off periods and spend limits by category. You can change it, with a cooling-off delay you set.",
+      "Runs errands (orders, appointments, bill payments) inside Assistive Access: picture-first choices, read-aloud text, one decision per screen, with the heavy work done by a server-side agent.",
+      "Checks every action against your agreement: it acts, adds a waiting period, or sends a supporter a co-sign request with only the context needed.",
+      "Warns you first about patterns you asked to be warned about (a third identical order this week, a new online 'friend' asking for gift cards); a supporter hears about it only if your agreement says so.",
+      "Keeps an Easy Read log that you own; supporters see only what the agreement grants."
+    ],
+    "why_now": "iOS 26 added an AssistiveAccess SwiftUI scene, so third-party apps can run properly inside Assistive Access. The W3C cognitive accessibility group published 'Supported Decision-Making Online' (Feb 2026) with patterns such as self-set spending limits, cooling-off periods and helper double-confirmation. US states keep adding supported decision-making as an alternative to guardianship, and Foundation Models' onToolCall gives a deterministic place to enforce the rules.",
+    "why_nobody_yet_or_wall": "Products split into caregiver-control tools (restricted cards, account monitoring) that hand power to family, which self-advocates oppose, and general agents built for fully independent users. Nobody builds the permission model the disabled person writes, and the buyer (person, family, or disability services agency) is unclear.",
+    "ios_hooks": [
+      "SwiftUI AssistiveAccess scene",
+      "accessibilityAssistiveAccessEnabled environment value",
+      "Foundation Models onToolCall confirmations as the policy gate",
+      "CloudKit sharing for the supporter link",
+      "UserNotifications with actions for co-sign",
+      "App Intents",
+      "AVSpeechSynthesizer"
+    ],
+    "nearest_existing": [
+      "W3C COGA 'Supported Decision-Making Online' https://www.w3.org/TR/coga-sdm",
+      "SupportedDecisionMaking.org tools https://supporteddecisionmaking.org/resource-library/",
+      "Caregiver-controlled prepaid cards and elder account-monitoring services (control sits with family, not the person)"
+    ],
+    "unsaid_assumption": "Supporters answer co-sign requests quickly enough that the waiting doesn't make the person give up or route around the app.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "It flips caregiver apps: the disabled person writes the permission policy, and the supporter is the one who gets asked."
+  },
+  {
+    "title": "Agent That Reads VoiceOver's Map",
+    "tagline": "An on-device agent that works any app through its accessibility tree, as VoiceOver does, for blind users.",
+    "tier": "moonshot",
+    "category": "Accessibility",
+    "moment": "You're blind, and your pharmacy's app has no App Intents and takes about 40 VoiceOver swipes to refill a prescription. You say 'refill everything that's due'. The agent walks the app's accessibility elements itself, stops at an unlabeled button or a real choice, and tells you exactly what it did.",
+    "what_it_does": [
+      "Reads the foreground app's accessibility tree (labels, traits, values, custom actions), the same structure VoiceOver uses, and plans a path to the goal.",
+      "Acts with accessibility actions (activate, adjust, custom actions) rather than pixel taps, so it survives Dynamic Type, zoom and layout changes.",
+      "When an element is unlabeled, looks at just that element with an on-device vision model and tells you it is guessing.",
+      "Pauses at decision points and before any payment, deletion or message send, then returns control with VoiceOver focus on the exact element.",
+      "Saves a replayable route per app and, with your consent, reports unlabeled controls to the developer."
+    ],
+    "why_now": "iOSWorld (June 2026) and A11y-CUA show pixel-driven agents fail on iPhone and under assistive tech, while Ferret-UI Lite shows a 3B on-device model can ground UI elements. Apple's BCI HID protocol (2025) shows Apple will add new input classes to Switch Control. The accessibility tree is already a semantic description of every well-built app.",
+    "why_nobody_yet_or_wall": "Platform wall: iOS gives no third-party app access to other apps' accessibility trees or any way to perform actions in them; there is no equivalent of Android's AccessibilityService, which was heavily abused by malware on Android, so Apple has reason to keep it closed. For this to change, Apple would need to ship a restricted 'assistive agent' entitlement with Switch Control-style consent, or let VoiceOver itself accept goals, or face an EU DMA Article 6(7) interoperability request from disability organisations. There is also a research wall: agents must plan on accessibility semantics, not screenshots.",
+    "ios_hooks": [
+      "UIAccessibility (today only within your own app)",
+      "Switch Control and the BCI HID precedent",
+      "App Intents as fallback",
+      "Foundation Models and Core AI for on-device planning and element vision"
+    ],
+    "nearest_existing": [
+      "mobile-mcp (reads the accessibility tree on simulators and USB-tethered iPhones, for QA) https://github.com/mobile-next/mobile-mcp",
+      "iOSWorld benchmark https://arxiv.org/html/2606.09764v1",
+      "Apple Ferret-UI Lite https://machinelearning.apple.com/research/ferret-ui",
+      "Siri AI on-screen awareness (Siri-only, depends on app annotations)"
+    ],
+    "unsaid_assumption": "Apps are labelled well enough to plan on, when the apps that are hardest for blind users are usually the worst labelled.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 1,
+      "impact": 5
+    },
+    "surprise": "Blind users' own assistive stack is the cleanest agent interface to every app on the phone, and no third party is allowed to use it."
+  },
+  {
+    "title": "Assistive Agent Pass",
+    "tagline": "Lets a disabled person's agent past CAPTCHAs and bot walls, the way sites must already admit a screen reader.",
+    "tier": "moonshot",
+    "category": "Safety & civic",
+    "moment": "You have limited hand movement, and your agent is renewing your disability parking permit on the city portal. Halfway through, a bot wall appears. Instead of failing, the agent shows a token proving that a verified person authorised this session as an accessibility accommodation, and the portal lets it finish.",
+    "what_it_does": [
+      "On the iPhone, you prove with Face ID and device attestation that a real person is delegating, and you scope it: this site, this task, 30 minutes.",
+      "The agent's cloud browser presents its own signed identity plus your delegation token, marked as assistive use.",
+      "If the site still refuses, the agent asks for the site's accessible alternative route, and records the refusal as a barrier for a complaint.",
+      "Every use is logged on your phone, and you can revoke any pass instantly."
+    ],
+    "why_now": "As agent traffic grows, sites add more bot defences, and audio CAPTCHAs and timed challenges already hit disabled users hardest. Cloudflare's signed agents and Web Bot Auth (2025) and the PACT protocol from Cloudflare, Chrome, Edge, Firefox and Shopify (June 2026) now distinguish 'a human is here' tokens from 'an agent acting for a person' tokens.",
+    "why_nobody_yet_or_wall": "Standards, regulation and abuse. Current tokens identify the agent but have no 'assistive use' class, and sites may lawfully block all agents. Changing that needs a regulator to say that blocking an assistive agent is disability discrimination under the ADA or EAA, anonymous credentials that prove a need without building a registry of disabled people, and Apple to let a Private Access Token-style attestation flow to a delegated cloud session. If the pass works, everyone will want one, so fraud controls are part of the wall.",
+    "ios_hooks": [
+      "DeviceCheck App Attest",
+      "LocalAuthentication",
+      "CryptoKit with Secure Enclave keys",
+      "AuthenticationServices passkeys",
+      "Wallet / Verify with Wallet (entitlement-gated) as a possible credential holder"
+    ],
+    "nearest_existing": [
+      "Cloudflare signed agents https://blog.cloudflare.com/signed-agents/",
+      "Private Access Control Tokens (PACT) overview https://prosopo.io/blog/private-access-control-tokens-pact/",
+      "Amazon Bedrock AgentCore Browser Web Bot Auth https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-bedrock-agentcore-browser-web-bot-auth-preview"
+    ],
+    "unsaid_assumption": "A need for accommodation can be proven without anyone learning what the disability is or who has one.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "The fight against bots is turning into a fight against assistive agents, and disabled users lose first unless the tokens learn to say 'accommodation'."
+  },
+  {
+    "title": "Sign It, Done",
+    "tagline": "Sign your errand in ASL to the front camera; the agent does it and confirms back in sign, not English text.",
+    "tier": "moonshot",
+    "category": "Accessibility",
+    "moment": "ASL is your first language and English your second. You prop the phone up and sign 'move my dentist to next week, afternoon, and tell them I need an interpreter'. The agent signs back a short confirmation, then emails the office, rebooks and adds it to your calendar.",
+    "what_it_does": [
+      "Recognises continuous ASL on device from the front camera (handshape, movement, facial grammar) and turns it into a structured task, not an English sentence.",
+      "Confirms what it understood in sign (clips recorded by Deaf signers or an avatar the user chooses) plus simple English, and asks in sign when unsure.",
+      "Carries out the task through the normal agent tools: calendar, email, cloud calls, forms.",
+      "Lets you correct recognition errors, which adapt a personal model kept on the phone."
+    ],
+    "why_now": "Google opened a limited SignGemma preview but said in May 2026 it had not met its quality bar, and a Pixel 11 sign-to-text feature was reported in August 2026. iOS 27's Core AI can run custom vision models on device, and Vision already tracks hand and body pose.",
+    "why_nobody_yet_or_wall": "Research and community wall. Continuous sign recognition across signers, lighting, regional variants and facial grammar is still below usable quality even for Google, and datasets are small and consent-sensitive. Signing avatars are widely disliked by Deaf people, and each national sign language needs its own data. What would change it: large consented Deaf-led datasets, better evaluation than translation scores, and Deaf-owned governance of the models.",
+    "ios_hooks": [
+      "AVFoundation front camera",
+      "Vision hand and body pose requests",
+      "Core AI for on-device sign models",
+      "Foundation Models for task planning",
+      "EventKit and App Intents for actions"
+    ],
+    "nearest_existing": [
+      "Google SignGemma preview https://slator.com/google-invites-feedback-for-signgemma-a-new-ai-sign-language-translation-model/",
+      "Report of Pixel 11 sign-language-to-text https://liamodell.com/2026/08/13/google-deepmind-artificial-intelligence-ai-sign-language-to-text-sl2t-american-sign-language-asl-live-transcribe-gboard/",
+      "'Beyond BLEU' sign translation evaluation paper https://arxiv.org/pdf/2609.03734"
+    ],
+    "unsaid_assumption": "Deaf users want machine signing in both directions, which is contested within the community.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "Open translation is the wrong target: an agent only needs to understand a signed instruction in a known domain, which is a narrower and more reachable problem."
+  },
+  {
+    "title": "Delegation Agencies Accept",
+    "tagline": "A revocable, signed credential that lets your agent act for you with Social Security, Medicare or your bank.",
+    "tier": "moonshot",
+    "category": "Life admin",
+    "moment": "Your father is 81, hard of hearing, and keeps failing the Social Security phone identity check. He Face IDs and signs a narrow credential in Wallet: 'my agent may ask about my payment date and change my address, until December'. The agent calls, presents it, and the agency verifies the credential instead of asking him to shout his mother's maiden name down a bad line.",
+    "what_it_does": [
+      "Issues a scoped, time-limited delegation (which agent, which institution, which actions) signed with a Secure Enclave key and bound to a verified identity such as a Digital ID in Wallet.",
+      "Presents the credential over whatever channel the institution uses: an API, a portal, or a phone call with a one-time verification code.",
+      "The institution verifies and logs each use; the person sees every use on the phone and can revoke at once.",
+      "Lets a caregiver hold a narrower sub-delegation, with the principal notified each time it is used."
+    ],
+    "why_now": "Payment networks built signed mandates for agents that spend money (AP2, Mastercard Agent Pay), and iOS 27 Wallet added Verify with Wallet. Voice cloning makes phone identity checks unsafe, and those checks already shut out Deaf, speech-disabled and older people. A September 2026 report of an agent-related breach of an Australian Medicare database shows why agencies will not simply let agents in.",
+    "why_nobody_yet_or_wall": "Regulation and institutional adoption. Agencies recognise only human representatives appointed on paper (for example SSA-1696 or IRS Form 2848), and none define a 'digital agent of the principal' or who is liable when it errs. Apple would also have to let Wallet carry delegation credentials, not only identity, to third parties.",
+    "ios_hooks": [
+      "PassKit / Wallet and Verify with Wallet (entitlement)",
+      "CryptoKit Secure Enclave keys",
+      "LocalAuthentication",
+      "DeviceCheck App Attest",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Google AP2 agent payment mandates https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+      "Mastercard Agent Pay https://www.mastercard.com/us/en/news-and-trends/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai.html",
+      "WWDC26 What's new in Wallet https://developer.apple.com/videos/play/wwdc2026/209/"
+    ],
+    "unsaid_assumption": "Institutions would rather verify a cryptographic delegation than keep knowledge-based checks that shift fraud liability onto the customer.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 1,
+      "impact": 5
+    },
+    "surprise": "Agents already have mandates to spend money but none to speak for a person to a government office, and disabled and older people need the second far more."
+  },
+  {
+    "title": "Intent Layer for BCI",
+    "tagline": "For people with ALS on a brain implant: choose a goal in a few selections and the agent does the hundred taps.",
+    "tier": "moonshot",
+    "category": "Health & body",
+    "moment": "You have ALS and control your iPhone through an implanted brain-computer interface and Switch Control, at a few selections a minute. Ordering groceries used to take an hour of scanning. Now you pick 'usual groceries, Thursday' from a predicted menu in three selections, and confirm the total with one more.",
+    "what_it_does": [
+      "Predicts a short menu of likely goals from time of day, calendar and history, so you select an intent, not interface elements.",
+      "Expands the intent into a plan and runs it through App Intents, a server-side agent and cloud calls.",
+      "Confirms through the lowest-bandwidth channel you have: one selection for 'yes', no action if nothing arrives, and a distinct second confirmation for anything irreversible.",
+      "Adapts as ability changes: fewer choices per screen, longer timeouts, and routines you pre-approved while you could still communicate in detail.",
+      "Speaks results and messages in your banked Personal Voice. The same layer also serves eye-tracking and switch users today."
+    ],
+    "why_now": "Apple announced a BCI Human Interface Device protocol in May 2025, and Synchron showed a thought-controlled iPad in August 2025. Personal Voice lets people bank their voice before they lose it, and App Intents schemas give more apps a structured action surface.",
+    "why_nobody_yet_or_wall": "Hardware, platform and consent. Implanted BCIs are still in trials (Synchron reports about 10 implanted patients), and the channel is so narrow that errors are costly. The agent needs cross-app reach that only Siri has. Knowing that a 'yes' through a noisy neural channel was really meant is unsolved, and if the agent becomes part of the medical device, FDA rules apply.",
+    "ios_hooks": [
+      "Switch Control",
+      "BCI HID protocol",
+      "Eye Tracking (iOS 18 accessibility feature)",
+      "App Intents",
+      "AVSpeechSynthesizer with Personal Voice",
+      "Foundation Models",
+      "Live Activities"
+    ],
+    "nearest_existing": [
+      "Synchron and Apple BCI HID integration https://www.businesswire.com/news/home/20250513927084/en/Synchron-To-Achieve-First-Native-Brain-Computer-Interface-Integration-with-iPhone-iPad-and-Apple-Vision-Pro",
+      "MacRumors: brain-controlled iPad demo https://www.macrumors.com/2025/08/04/watch-brain-controlled-ipad/"
+    ],
+    "unsaid_assumption": "Intent prediction is good enough that the right goal is on the first menu most of the time.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "BCI work chases faster cursors, but at a few selections a minute the bigger gain is an agent that makes each selection worth a hundred taps."
+  }
+]

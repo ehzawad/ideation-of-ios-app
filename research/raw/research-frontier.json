@@ -1,0 +1,440 @@
+{
+  "angle": "research-frontier",
+  "summary": "As of late September 2026 the research frontier for phone agents has split into two tracks that barely touch on iOS. Track one is pixel-level GUI agents: Android benchmarks are close to saturated. MobileWorld's authors report that recent agents exceed 90% on AndroidWorld. Open models such as UI-TARS-2 (73.3), Mobile-Agent-v3 (73.3) and MAI-UI (76.7) have moved the field toward harder long-horizon, cross-app, MCP-augmented and personalized tasks (MobileWorld, KnowU-Bench, MobileMem). Apple's own research (Ferret-UI -> Ferret-UI 2 -> the 3B Ferret-UI Lite) shows a small on-device GUI agent can ground UI well but still fails at multi-step navigation (28% on AndroidWorld). The first native-iOS benchmark, CMU's iOSWorld (June 2026), had to build 26 of its own apps and drive them through Appium/XCUITest in the simulator. The best configuration reaches 52% overall and only 37% on multi-app tasks. That is itself evidence that third-party pixel agents cannot drive real iPhone apps. Track two is structured, sanctioned action surfaces, and this is where iOS actually moved. At WWDC26 Apple rebuilt the on-device model (8K context, now with vision and better tool calling) and added a free-to-small-developers Private Cloud Compute model (32K context, reasoning). Apple also opened the Foundation Models framework to third-party LLMs through a LanguageModel protocol (Anthropic and Google Swift packages were announced, along with MLX and Core AI local backends) and shipped DynamicProfile agent orchestration, Evaluations, and explicit prompt-injection guidance (onToolCall confirmations, spotlighting and redaction, schema-inherited risk and authentication policies). The rebuilt Siri chains actions across apps only through App Intents, App Schemas and view annotations.\n\nOff-device, the protocol layer consolidated quickly. MCP went stateless in its 2026-07-28 spec, with MCP Apps (sandboxed HTML UI) and Tasks as official extensions. A2A reached v1.0 (March 2026) under the Linux Foundation. Commerce now has several overlapping standards: AP2 (mandates, v0.2 'human-not-present', reportedly donated to FIDO), OpenAI and Stripe's ACP (spec 2026-04-17, with MCP compatibility, even though ChatGPT's Instant Checkout was reportedly retired in March 2026), Google and Shopify's UCP (January 2026), and card-network agent tokens (Mastercard Agent Pay, Visa Intelligent Commerce, and Visa inside ChatGPT from June 2026). Apple Pay and Wallet have no agent-payment API in iOS 27. Security research is sobering: environmental and prompt-injection attacks succeed 40-67% of the time on Android agents (MobileWorldSafety), and memory-poisoning attacks on personal agents inject about 98% of the time (GhostWriter). No iOS-specific safety benchmark exists. Voice research is moving to full-duplex speech-to-speech models that delegate tool calls to a text backend. Wearables research (egocentric proactive assistants) is ahead of product: Meta's iOS Wearables Device Access Toolkit (developer preview, v0.9, including Ray-Ban Display output) is the main real bridge from glasses to an iPhone agent. What works in principle, a private on-device agent that sees your screen and acts across apps, is blocked on iOS in practice for everyone except Siri. The buildable path is App Intents + Foundation Models + MCP or remote tools, plus careful confirmation UX.",
+  "items": [
+    {
+      "name": "Ferret-UI lineage -> Ferret-UI Lite (Apple on-device GUI agent research)",
+      "kind": "research",
+      "description": "Apple's Ferret-UI (Apr 2024) and Ferret-UI 2 (Oct 2024) are multimodal LLMs for grounded mobile and cross-platform UI understanding. Ferret-UI Lite (arXiv 2509.26539, Sept 30 2025, Zhe Gan et al.) is a 3B end-to-end GUI agent built for on-device use with real and synthetic GUI data, chain-of-thought, visual tool use (crop and zoom) and SFT followed by RL. It scores 91.6% on ScreenSpot-V2, 53.3% on ScreenSpot-Pro and 61.2% on OSWorld-G for grounding. For navigation it reaches only 28.0% on AndroidWorld and 19.8% on OSWorld, and the authors state plainly that long-horizon multi-step navigation stays weak at this size.",
+      "date": "2025-09",
+      "ios_relevance": "This is the clearest public signal that Apple is researching an on-device agent that operates app UIs. In principle a 3B model can ground iPhone UI elements locally and privately. In practice no public iOS API lets a third-party app capture or act on other apps' screens, so only Apple (inside Siri or the OS) could ship this. Third parties are limited to their own app's UI or to the simulator.",
+      "sources": [
+        "https://machinelearning.apple.com/research/ferret-ui",
+        "https://arxiv.org/pdf/2509.26539",
+        "https://huggingface.co/papers/2509.26539",
+        "https://machinelearning.apple.com/research/ferret-ui-2",
+        "https://huggingface.co/papers/2410.18967",
+        "https://huggingface.co/papers/2404.05719"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Apple Intelligence Foundation Models Tech Report 2025 (on-device ~3B model internals)",
+      "kind": "research",
+      "description": "Apple's July 2025 tech report (arXiv 2507.13575) describes a ~3B-parameter on-device model optimized for Apple silicon with KV-cache sharing (a 5:3 layer split in which the second block reuses the first block's KV cache) and 2-bit quantization-aware training. It also describes a server Parallel-Track MoE model for Private Cloud Compute. The report cites about 0.6 ms per prompt token for time-to-first-token and about 30 tokens/s generation on iPhone 15 Pro. Apple positions the model for summarization, extraction and tool calling rather than world knowledge.",
+      "date": "2025-07",
+      "ios_relevance": "This sets the baseline budget for fully local agent loops on iPhone: fast enough for short tool-calling turns, but the small parameter count and limited world knowledge mean multi-step planning should be routed to PCC or cloud models.",
+      "sources": [
+        "https://arxiv.org/abs/2507.13575",
+        "https://machinelearning.apple.com/research/apple-foundation-models-tech-report-2025",
+        "https://huggingface.co/papers/2507.13575"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "iOS 27 Foundation Models framework: rebuilt on-device model, PCC model, DynamicProfile agents, system tools, Evaluations",
+      "kind": "platform_api",
+      "description": "At WWDC26 Apple shipped a rebuilt on-device model with better reasoning and tool calling and new vision input (images as attachments), with a context size of 8,192 tokens. A new PrivateCloudComputeLanguageModel offers a 32K context and reasoning levels. It needs no API keys, is free for Small Business Program apps under 2M first-time downloads, and is also available on watchOS 27. The new DynamicProfile API lets one LanguageModelSession switch models, tools and instructions by app state, and Apple documented baton-pass and phone-a-friend (sub-session) multi-agent patterns, tool-calling modes (allowed, disallowed, required), session properties for shared memory, and history transforms for context compaction. Built-in system tools include OCR, barcode reading and a Spotlight Search tool for fully local RAG, alongside a new Evaluations framework, Instruments support and an fm CLI and Python SDK.",
+      "date": "2026-06",
+      "ios_relevance": "This is the first first-party agent runtime on iPhone: planner and executor loops, tool calls, local RAG over Spotlight, and a free hosted reasoning model. It makes agent loops that live inside one app, orchestrating that app's own capabilities and APIs, practical. It still gives no power to act in other apps.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/241/",
+        "https://developer.apple.com/videos/play/wwdc2026/242/",
+        "https://developer.apple.com/ios/whats-new/",
+        "https://developer.apple.com/videos/wwdc2026/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Foundation Models LanguageModel protocol: third-party LLM providers (Anthropic, Google) and local MLX and Core AI backends",
+      "kind": "platform_api",
+      "description": "iOS 27 adds LanguageModel and LanguageModelExecutor protocols so any provider can ship a Swift package that plugs into the same session, tool and guided-generation APIs. The WWDC26 session names Anthropic (Claude) and Google (Gemini) as publishing official packages. Open-source CoreAILanguageModel and MLXLanguageModel implementations are mentioned for local inference on the Neural Engine and GPU. Providers map transcripts (instructions, prompts, tool calls and outputs, reasoning), stream deltas, report token usage, can expose server-side tools (web search, code execution), and are told to use OAuth or Keychain plus App Attest instead of hardcoded keys.",
+      "date": "2026-06",
+      "ios_relevance": "Developers can now write one agent loop and route between on-device AFM, PCC, a local open model and a frontier cloud model, which is the device-cloud collaboration pattern research such as MAI-UI shows helps. This matters a lot for hybrid private and capable iOS agents.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/339/",
+        "https://developer.apple.com/videos/play/wwdc2026/241/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "iOS 27 Siri + App Intents / App Schemas / view annotations (cross-app action chaining)",
+      "kind": "platform_api",
+      "description": "The rebuilt Siri in iOS 27 takes multi-step actions that span apps ('Email my wife this reply from Bubbles'). It uses app entities indexed into a system semantic index (IndexedEntity), intent schemas grouped by domain (for example messages.sendMessage and draftMessage), Transferable and IntentValueRepresentation for moving content between apps, and a view-annotation API (appEntityIdentifier) for on-screen awareness. Xcode enforces complete schema adoption at build time, and a new AppIntentsTesting framework validates integrations. Secondary reports say SiriKit was formally deprecated at WWDC26. Apple's keynote-adjacent video also lists a Siri app with conversation history and one-tap updates of compromised passwords.",
+      "date": "2026-06",
+      "ios_relevance": "This is the only sanctioned way for an agent to act inside other people's apps on iOS, and the agent is Siri. Third-party apps can make themselves agent-ready by exposing entities and intents, but they cannot themselves orchestrate other apps' App Intents the way Siri does (the Shortcuts app remains the user-built exception).",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/240/",
+        "https://developer.apple.com/ios/whats-new/",
+        "https://developer.apple.com/videos/play/wwdc2026/121/",
+        "https://developer.apple.com/videos/play/wwdc2026/343/",
+        "https://dracode.dev/blog/2026-06-08-09-wwdc-2026-siri-2-app-intents/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Apple guidance and APIs for mitigating prompt injection in agentic features (WWDC26 'Secure your app')",
+      "kind": "policy",
+      "description": "Apple names indirect prompt injection as the main agent threat and divides it into data poisoning (attacker-controlled parameters) and action poisoning (attacker-chosen actions). It cites Simon Willison's 'lethal trifecta'. Mitigations include a deterministic .onToolCall checkpoint that can require user confirmation and block execution, and .historyTransform for spotlighting untrusted tool output with delimiters and redacting PII before inference. On the App Intents side, schemas carry risk metadata that intents inherit (for example deleteAssets is destructive). authenticationPolicy can require an unlocked device, and it can only be made stricter than the schema default; weakening it is a build error.",
+      "date": "2026-06",
+      "ios_relevance": "This defines the confirmation and authentication UX that any iOS agent handling money, messages or deletion should follow. It also shows Apple treats deterministic gates as the baseline and model-side defenses as probabilistic extras.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/347/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "iOSWorld: first native-iOS benchmark for personally intelligent phone agents (CMU)",
+      "kind": "research",
+      "description": "iOSWorld (arXiv 2606.09764, June 2026, Jang, Koh, Salakhutdinov et al., CMU) builds 26 native SwiftUI apps with one persistent persona's connected data (a purchase produces a bank charge and a receipt email, flights match hotel bookings). It defines 133 tasks: 27 single-app, 60 multi-app spanning 2-8 apps, and 46 memory and personalization tasks. Agents are driven through Appium/XCUITest on the iOS 26 simulator on a Mac. The best configuration reaches 52% overall (82% single-app, 54% memory, 37% multi-app). Privileged vision plus accessibility-XML input helps frontier models by up to 26 points but does not help smaller models.",
+      "date": "2026-06",
+      "ios_relevance": "This is the only iOS-native agent benchmark found. It had to use purpose-built apps and developer test tooling, which shows real third-party iOS apps cannot be instrumented for agent evaluation or control. Its 'personal intelligence' framing (reasoning over the user's own cross-app data) matches what Siri with App Schemas is aiming for.",
+      "sources": [
+        "https://arxiv.org/html/2606.09764v1",
+        "https://huggingface.co/papers/2606.09764",
+        "https://github.com/ljang0/iOSWorld"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "AndroidWorld saturation -> MobileWorld (MCP-augmented, agent-user interactive benchmark)",
+      "kind": "research",
+      "description": "AndroidWorld (Google, 2024) became the dominant online mobile benchmark. MobileWorld's authors (Alibaba Tongyi, Dec 2025) note that recent agents exceed 90% on it. MobileWorld adds 201 tasks across 20 apps with about 2x more steps on average (27.8 vs 14.3) and 62.2% multi-app tasks. It also introduces task categories for agent-user interaction (asking clarifying questions) and MCP-augmented hybrid tool use, and success rates drop sharply compared with AndroidWorld.",
+      "date": "2025-12",
+      "ios_relevance": "The research frontier has moved from 'can it tap the right button' to hybrid GUI plus tool (MCP) plus clarification agents. That mix maps better onto iOS, where tools (App Intents, MCP servers, APIs) are the only practical action path.",
+      "sources": [
+        "https://huggingface.co/papers/2512.19432",
+        "https://huggingface.co/papers/2405.14573"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "UI-TARS-2 (ByteDance Seed) native GUI agent with multi-turn RL",
+      "kind": "research",
+      "description": "The UI-TARS-2 technical report (arXiv 2509.02544, Sept 2025) combines a data flywheel (continual pretraining, SFT and multi-turn RL), a stabilized multi-turn RL framework, and a hybrid GUI environment with file system and terminal access. It reports 73.3 on AndroidWorld, 47.5 on OSWorld, 50.6 on WindowsAgentArena and 88.2 on Online-Mind2Web, plus about 60% of human-level performance on a 15-game suite.",
+      "date": "2025-09",
+      "ios_relevance": "This is the state of the art in cloud-scale GUI agents. It is relevant to iOS only indirectly, through web and remote-browser agents, or through Mac-hosted automation of the simulator or iPhone Mirroring, not on-device control.",
+      "sources": [
+        "https://arxiv.org/abs/2509.02544",
+        "https://huggingface.co/papers/2509.02544"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "AppAgent -> Mobile-Agent v1/v2/E/v3 + GUI-Owl (open-source mobile agent lineage)",
+      "kind": "open_source",
+      "description": "Tencent's AppAgent (Dec 2023) introduced explore-then-act smartphone agents, and Alibaba's Mobile-Agent (Jan 2024) went vision-only. Mobile-Agent-E (Jan 2025) added a hierarchical, self-evolving multi-agent design that accumulates Tips and Shortcuts across tasks. Mobile-Agent-v3 (arXiv 2508.15144, Aug 2025) is built on the GUI-Owl model. GUI-Owl-7B scores 66.4 on AndroidWorld, and the v3 planner, reflector and memory framework reaches 73.3, with training environments spanning Android, Ubuntu, macOS and Windows.",
+      "date": "2023-12 to 2025-08",
+      "ios_relevance": "Its reusable ideas are planners, reflection, cross-task memory, and learned 'shortcuts'. On iOS the 'shortcuts' idea maps naturally onto App Intents and Shortcuts, but the pixel-driving executor has no iOS equivalent outside the simulator.",
+      "sources": [
+        "https://huggingface.co/papers/2312.13771",
+        "https://huggingface.co/papers/2401.16158",
+        "https://huggingface.co/papers/2501.11733",
+        "https://arxiv.org/abs/2508.15144",
+        "https://github.com/X-PLUG/MobileAgent"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MAI-UI: device-cloud collaborative GUI agents (2B-235B) with MCP tool calls",
+      "kind": "research",
+      "description": "Alibaba Tongyi's MAI-UI (arXiv 2512.22047, Dec 2025) ships 2B, 8B, 32B and 235B-A22B GUI agents trained on navigation data expanded with user-interaction turns and MCP tool calls. It reports 76.7% on AndroidWorld (a new SOTA at the time) and 41.7% on MobileWorld. Its native device-cloud router sends execution to on-device or cloud models by task state, which improved on-device performance by 33% and cut cloud calls by over 40% while keeping sensitive steps local.",
+      "date": "2025-12",
+      "ios_relevance": "This is a research template for the hybrid routing iOS 27 now enables (on-device AFM or a local MLX model for private steps, PCC or a cloud model through the LanguageModel protocol for hard reasoning).",
+      "sources": [
+        "https://arxiv.org/pdf/2512.22047",
+        "https://huggingface.co/papers/2512.22047"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "2026 mobile-agent research wave: self-evolving, long-horizon memory, proactive and personalized, real-device training",
+      "kind": "trend",
+      "description": "Papers from 2026 move past single-shot tapping. UI-Voyager (Mar 2026) learns from failed trajectories. MemGUI-Agent (Jun 2026) treats context management as an action for long-horizon tasks. Xiaomi-GUI-0 (Jun 2026) trains in real-device environments. KnowU-Bench (Apr 2026) evaluates interactive, proactive and personalized mobile agents. PhoneWorld (May 2026) turns real trajectories into verifiable environments. The field is converging on proactivity, personalization and memory rather than raw grounding.",
+      "date": "2026",
+      "ios_relevance": "Proactive, personalized behavior is exactly where iOS has native assets (Spotlight semantic index, App Entities, HealthKit, on-device models), though proactive background execution is still constrained by iOS background limits.",
+      "sources": [
+        "https://huggingface.co/papers/2603.24533",
+        "https://huggingface.co/papers/2606.19926",
+        "https://huggingface.co/papers/2606.31410",
+        "https://arxiv.org/pdf/2604.08455",
+        "https://huggingface.co/papers/2605.29486"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Environmental and prompt-injection attacks on mobile GUI agents (GhostEI-Bench, MIRAGE, MobileWorldSafety, real-world threats)",
+      "kind": "research",
+      "description": "GhostEI-Bench (Oct 2025) injects spoofed notifications, overlays and pop-ups into live Android emulators and finds that state-of-the-art VLM agents systematically fail. 'Mobile GUI Agents under Real-world Threats' instruments commercial apps with third-party content (ads, user posts) across 122 dynamic tasks and more than 3,000 static states. MIRAGE (May 2026) auto-generates context-aware injections inside user-generated content, and all five evaluated agents were vulnerable. MobileWorldSafety (Aug 2026) reports attack success rates of 40.4%-66.9% across 142 risk tasks on real Android apps.",
+      "date": "2025-10 to 2026-08",
+      "ios_relevance": "All of these benchmarks are Android-only. Any iOS agent that reads messages, mail, web pages or notifications as context is exposed to the same attacks. That argues for Apple's deterministic confirmation gates and the whitespace for an iOS-specific safety benchmark.",
+      "sources": [
+        "https://huggingface.co/papers/2510.20333",
+        "https://huggingface.co/papers/2507.04227",
+        "https://arxiv.org/html/2605.28116v1",
+        "https://arxiv.org/abs/2608.17659"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Memory poisoning of personal agents (GhostWriter) and memory governance",
+      "kind": "research",
+      "description": "'When Agents Remember Too Much' (arXiv 2607.06595, Jul 2026) introduces GhostWriter. A hidden payload sent to a tool-using personal agent (via email, calendar and similar channels) gets written into long-term memory and later retrieved, with about 98% injection and about 60% activation against state-of-the-art agents. The proposed AM-Sentry defense combines a memory-saving policy with a retrieval screen and sharply reduces success while keeping utility.",
+      "date": "2026-07",
+      "ios_relevance": "Any iOS 'second brain' or assistant that auto-memorizes from Messages, Mail or share-sheet content needs write-policy governance. Apple's historyTransform and session properties give hooks, but no memory-safety primitive exists.",
+      "sources": [
+        "https://huggingface.co/papers/2607.06595"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Long-term personal memory benchmarks for mobile agents (MobileMem, Memora, MEMPROBE, LongMemEval-V2)",
+      "kind": "research",
+      "description": "MobileMem (arXiv 2608.13606, Aug 2026) is a benchmark and framework for on-device long-term memory built from year-scale, multimodal mobile experience trajectories that need temporal reasoning, knowledge updates and preference inference. Related 2026 work covers memory consolidation and forgetting (Memora, Apr 2026), auditing memory by reconstructing hidden user state (MEMPROBE, Jun 2026), and experience memory for agents (LongMemEval-V2, May 2026).",
+      "date": "2026",
+      "ios_relevance": "Evaluation tools for a personal-memory agent on iPhone now exist. The iOS building blocks are the Spotlight semantic index and IndexedEntity, the Foundation Models Spotlight tool for local RAG, and SwiftData or Core Data. The hard parts (knowledge updates, forgetting, preference drift) are still open.",
+      "sources": [
+        "https://huggingface.co/papers/2608.13606",
+        "https://huggingface.co/papers/2604.20006",
+        "https://huggingface.co/papers/2606.24595",
+        "https://huggingface.co/papers/2605.12493"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Full-duplex speech-to-speech voice agents with tool use",
+      "kind": "trend",
+      "description": "Research in 2026 targets voice agents that listen and speak at the same time and still complete tasks. A Sept 2026 paper proposes a duplex speech frontend that emits a delegation token and hands tool calls to a text LLM backend, reporting 92-97% tool-call recall and results above GPT-realtime-mini on EVA-Bench. Benchmarks such as τ-Voice (Mar 2026) and DuplexSpeechBench-IFEval (Sept 2026) find that persona and implicit turn-taking behavior and safety overrides remain weak across GPT-Realtime, PersonaPlex, MiniCPM-o and others. OpenAI's open-source realtime-agents demo documents a similar 'chat-supervisor' split (realtime voice model plus a text supervisor for tools).",
+      "date": "2025-09 to 2026-09",
+      "ios_relevance": "The practical iPhone and AirPods pattern is a low-latency voice front end (cloud realtime API over WebRTC, or on-device ASR) with a delegated tool-calling backend. iOS audio sessions, background-audio rules and the lack of a third-party always-on wake word limit ambient use.",
+      "sources": [
+        "https://huggingface.co/papers/2609.19334",
+        "https://huggingface.co/papers/2609.03423",
+        "https://huggingface.co/papers/2603.13686",
+        "https://huggingface.co/papers/2602.06053",
+        "https://github.com/openai/openai-realtime-agents"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "On-device full-duplex speech on iPhone: Kyutai moshi-swift (Moshi/Hibiki on MLX Swift)",
+      "kind": "open_source",
+      "description": "Kyutai's moshi-swift ports the Moshi full-duplex speech-text model and the Hibiki streaming speech-translation model to MLX Swift, with an experimental iOS proof-of-concept app. The Mimi codec runs 24 kHz audio at 12.5 Hz and 1.1 kbps with 80 ms latency. The repo does not publish device performance numbers.",
+      "date": "ongoing",
+      "ios_relevance": "It shows fully local speech-to-speech is technically possible on iPhone. Sustained full-duplex inference on a phone is still limited by thermal throttling and battery, and the model has no agentic tool-calling layer yet.",
+      "sources": [
+        "https://github.com/kyutai-labs/moshi-swift"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Gemma 4 E2B/E4B (and Gemma 3n) small multimodal models for phones",
+      "kind": "open_source",
+      "description": "Google's Gemma 4 family (E2B, E4B, 12B, 26B-A4B, 31B; Apache 2.0; tech report arXiv 2607.02770) targets phones with the E2B and E4B 'effective parameter' models. These accept native image and audio input, have 128K context, configurable thinking and native function calling, and are pitched as 'local agentic intelligence'. Gemma 3n (mid-2025) was the earlier mobile-first generation. Third-party pages claim about 40 tok/s for E2B and about 30 tok/s for E4B on iPhone 17 Pro under good thermal conditions. Those figures are not independently verified here.",
+      "date": "2026-04",
+      "ios_relevance": "An open, audio- and vision-capable model with function calling can now run locally on recent iPhones through MLX or Core AI, and can plug into Foundation Models through the LanguageModel protocol. That enables private offline agents beyond Apple's 8K-context AFM. Sustained throughput and RAM are the practical limits.",
+      "sources": [
+        "https://huggingface.co/google/gemma-4-E2B-it",
+        "https://android-developers.googleblog.com/2026/04/gemma-4-new-standard-for-local-agentic-intelligence.html",
+        "https://developers.googleblog.com/en/introducing-gemma-3n-developer-guide/",
+        "https://modelfit.io/iphone/iphone-17-pro/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Local inference stack on Apple silicon: Core AI (iOS 27), MLX Swift / mlx-swift-lm, llama.cpp",
+      "kind": "platform_api",
+      "description": "iOS 27 introduces Core AI, a Swift framework for loading, specializing and running on-device models with ahead-of-time compilation, zero-copy data paths and stateful execution. WWDC26 also featured MLX sessions (local agentic AI on Mac, distributed inference). MLX Swift's LLM and VLM libraries moved to a dedicated mlx-swift-lm repo, with iOS chat and eval sample apps. A comparative study (Oct 2025) found MLX had the highest throughput among Apple-silicon runtimes, while MLC-LLM had better time-to-first-token.",
+      "date": "2026-06",
+      "ios_relevance": "Third-party developers get a supported path to ship open-weight agent models on iPhone, with Core AI and MLX backends usable as Foundation Models LanguageModel implementations.",
+      "sources": [
+        "https://developer.apple.com/ios/whats-new/",
+        "https://developer.apple.com/videos/wwdc2026/",
+        "https://github.com/ml-explore/mlx-swift-examples",
+        "https://huggingface.co/papers/2511.05502"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MCP spec evolution: 2025-11-25 (Tasks, URL elicitation, OAuth CIMD) -> 2026-07-28 (stateless core, extensions)",
+      "kind": "protocol",
+      "description": "The 2025-11-25 MCP spec, released on MCP's first anniversary, added an experimental Tasks primitive (call now, fetch later), URL-mode elicitation, tool calling inside sampling, OAuth Client ID Metadata Documents, OIDC discovery, and icons. The 2026-07-28 spec removes the initialize handshake and Mcp-Session-Id so any request can hit any server instance. It makes extensions first-class (reverse-DNS IDs, independent versioning), graduates Tasks and MCP Apps to official extensions, hardens authorization (for example mandatory iss validation per RFC 9207), and starts a deprecation clock of at least 12 months for Roots, Sampling and Logging. MCP is governed under LF Projects.",
+      "date": "2026-07",
+      "ios_relevance": "Stateless HTTP and Tasks suit mobile clients that sleep and resume, since iOS suspends apps. An iPhone agent app can act as an MCP host that polls long-running tasks. Apple's WWDC26 Foundation Models and App Intents sessions did not mention MCP, so any bridging is up to developers.",
+      "sources": [
+        "https://modelcontextprotocol.io/specification/2025-11-25/changelog",
+        "https://blog.modelcontextprotocol.io/posts/2025-11-25-first-mcp-anniversary/",
+        "https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/",
+        "https://blog.modelcontextprotocol.io/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MCP Apps (SEP-1865): interactive server-rendered UI in agent hosts",
+      "kind": "protocol",
+      "description": "MCP Apps was proposed on Nov 21 2025 by MCP maintainers from Anthropic and OpenAI together with the MCP-UI and OpenAI Apps SDK creators. It declares ui:// HTML resources linked from tool metadata and rendered in sandboxed iframes, with auditable JSON-RPC between the UI and the host and user consent required for tool calls the UI initiates. The initial spec covers HTML only, and external URLs, remote DOM and native widgets are explicitly deferred. MCP Apps became an official extension in the 2026-07-28 spec.",
+      "date": "2025-11 to 2026-07",
+      "ios_relevance": "An iOS agent host can render MCP Apps in WKWebView today. Native SwiftUI widgets are out of scope, so an MCP Apps to SwiftUI or Live Activity bridge is open design space.",
+      "sources": [
+        "https://blog.modelcontextprotocol.io/posts/2025-11-21-mcp-apps/",
+        "https://modelcontextprotocol.io/seps/1865-mcp-apps-interactive-user-interfaces-for-mcp",
+        "https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "A2A (Agent2Agent) protocol v1.0 under the Linux Foundation",
+      "kind": "protocol",
+      "description": "A2A, contributed by Google to the Linux Foundation (Apache 2.0), defines Agent Cards for discovery and Tasks for long-running collaboration over JSON-RPC 2.0 over HTTP(S), carrying text, files and structured data. It reached v1.0.0 on March 12 2026 and v1.0.1 on May 28 2026 (application/a2a+json HTTP binding, TaskStatus fixes). It complements MCP (agent-to-tool) as the agent-to-agent layer, and UCP and AP2 can ride on it.",
+      "date": "2026-03",
+      "ios_relevance": "A personal iPhone agent could hand off to merchant or service agents over A2A (for example booking or customer service), keeping the phone as the user's identity and consent anchor. Receiving inbound A2A requests on a suspended iPhone app, however, needs a server relay or push.",
+      "sources": [
+        "https://github.com/a2aproject/A2A",
+        "https://github.com/a2aproject/A2A/releases"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "AP2 (Agent Payments Protocol) by Google: mandates, human-not-present, FIDO donation",
+      "kind": "protocol",
+      "description": "AP2 was announced in Sept 2025 with 60+ partners (Mastercard, AmEx, PayPal, Coinbase and others). It uses signed Intent, Cart and Payment mandates as a tamper-evident audit trail, with human-present and human-not-present flows. Secondary reports say v0.2.0 (Apr 2026) added human-not-present autonomous purchases, that Google updated AP2 alongside 'Universal Cart' at I/O 2026, and that Google donated AP2 to the FIDO Alliance together with a Mastercard co-developed 'Verifiable Intent' standard. Security papers in 2026 red-team AP2 through prompt injection and identify mandate replay and context-binding gaps at runtime.",
+      "date": "2025-09 to 2026-05",
+      "ios_relevance": "Mandate signing is a natural fit for iPhone Secure Enclave, passkeys and Face ID, so the phone could become the user's mandate-signing device. No Apple API or Apple Pay integration for AP2 was found.",
+      "sources": [
+        "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+        "https://github.com/google-agentic-commerce/AP2",
+        "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/",
+        "https://thenextweb.com/news/google-universal-cart-agent-payments-shopping-io-2026",
+        "https://huggingface.co/papers/2601.22569",
+        "https://huggingface.co/papers/2602.06345"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Agentic Commerce Protocol (ACP) by OpenAI + Stripe",
+      "kind": "protocol",
+      "description": "ACP was released on Sept 29 2025 (Apache 2.0) with ChatGPT Instant Checkout (Etsy first, Shopify merchants announced). It defines an agentic Checkout API and a Delegate Payment spec (shared or delegated payment tokens), with OpenAI and Stripe as founding maintainers. The latest stable spec, 2026-04-17, adds cart, feed, orders, authentication and MCP compatibility. Trade press reports that OpenAI retired or sidelined Instant Checkout around March 2026 in favor of merchant checkouts through ChatGPT apps, while ACP continues.",
+      "date": "2025-09 to 2026-04",
+      "ios_relevance": "An iOS shopping agent can implement the ACP client side and use Stripe delegated tokens. Apple Pay is not part of the ACP spec as reviewed. Because Apple's rules require its in-app purchase system for digital goods, ACP is realistically limited to physical goods and services on iOS.",
+      "sources": [
+        "https://github.com/agentic-commerce-protocol/agentic-commerce-protocol",
+        "https://stripe.com/blog/developing-an-open-standard-for-agentic-commerce",
+        "https://openai.com/index/buy-it-in-chatgpt/",
+        "https://www.digitalcommerce360.com/2026/03/06/openai-shifts-checkout-plans-agentic-commerce-strategy/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Universal Commerce Protocol (UCP) by Google + Shopify",
+      "kind": "protocol",
+      "description": "UCP was announced at NRF on Jan 11 2026 and co-developed by Google and Shopify with Etsy, Wayfair, Target and Walmart. It is an open standard (Apache 2.0) through which agents discover merchant capabilities (Checkout, Identity Linking, Order, Payment Token Exchange) over REST, MCP or A2A, and it supports AP2 mandates. It is live in Google AI Mode and Gemini for US shoppers.",
+      "date": "2026-01",
+      "ios_relevance": "Any iOS agent app can in principle act as a UCP client. The protocol explicitly supports MCP and A2A transports, so the same merchant integration works for a phone-resident agent.",
+      "sources": [
+        "https://github.com/Universal-Commerce-Protocol/ucp",
+        "https://shopify.engineering/UCP",
+        "https://developers.googleblog.com/under-the-hood-universal-commerce-protocol-ucp/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Card-network agent rails: Mastercard Agent Pay, Visa Intelligent Commerce / Trusted Agent Protocol, Visa in ChatGPT",
+      "kind": "product",
+      "description": "Mastercard announced Agent Pay on Apr 29 2025. Its Agentic Tokens bind a tokenized card to a specific agent, merchant scope and consent policy, and secondary sources say US rollout completed in Nov 2025. Visa announced Intelligent Commerce on Apr 30 2025 and a Trusted Agent Protocol in Oct 2025, then unveiled an agent-payments platform in Apr 2026. On June 10 2026 Visa and OpenAI announced tokenized Visa credentials for agent-initiated checkout in ChatGPT and Codex, with spending limits and dispute rights.",
+      "date": "2025-04 to 2026-06",
+      "ios_relevance": "These are the practical payment rails for an iPhone agent today (issuer-provisioned agent tokens instead of Apple Pay). Apple Pay uses similar network tokenization under the hood but exposes no agent-delegation API.",
+      "sources": [
+        "https://www.mastercard.com/us/en/news-and-trends/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai.html",
+        "https://www.axios.com/2026/04/08/visa-ai-agent-payments-platform",
+        "https://thenextweb.com/news/openai-visa-chatgpt-agentic-commerce-payments",
+        "https://techinformed.com/visa-opens-one-integration-for-ai-agent-payments/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Apple Pay / Wallet: no agentic-payment surface in iOS 27",
+      "kind": "policy",
+      "description": "The WWDC26 'What's new in Wallet' session covers Poster-style passes, new barcode types, a Featured Actions API, Pass Designer and Pass Builder. It says nothing about AI agents, delegated payments, mandates, or Siri-initiated purchases. None of ACP, UCP or AP2 materials reviewed name Apple Pay as a supported agent credential.",
+      "date": "2026-06",
+      "ios_relevance": "iOS agents cannot use Apple Pay autonomously (each Apple Pay authorization needs the user's biometric or double-click). Agent commerce on iPhone therefore runs on third-party tokens (Stripe, Visa, Mastercard), which is both a wall and an opening Apple may fill later.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/209/",
+        "https://github.com/agentic-commerce-protocol/agentic-commerce-protocol",
+        "https://github.com/Universal-Commerce-Protocol/ucp"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Meta Wearables Device Access Toolkit for iOS (Ray-Ban Meta / Ray-Ban Display -> iPhone apps)",
+      "kind": "platform_api",
+      "description": "Meta's iOS SDK (developer preview) lets iPhone apps connect to Meta AI glasses for photo capture and video streaming. Its changelog runs from v0.1.0 (Oct 30 2025) through background streaming (v0.3.0, Dec 2025), raw CMSampleBuffer frames, Ray-Ban Display support (v0.4.0, Feb 2026), HEVC background streaming and app attestation (v0.5.0), a display capability for rendering UI on the glasses (v0.7.0, May 2026), and Wi-Fi transport (v0.8.0), up to v0.9.0 (Aug 3 2026). The changelog documents no audio-input or Neural Band input API.",
+      "date": "2025-10 to 2026-08",
+      "ios_relevance": "This is the most concrete path to a glasses-plus-iPhone agent today. The glasses stream first-person video to an iPhone app, a local or cloud VLM reasons, and results render on the Ray-Ban Display. Apple itself has no glasses product or SDK.",
+      "sources": [
+        "https://github.com/facebook/meta-wearables-dat-ios",
+        "https://github.com/facebook/meta-wearables-dat-ios/blob/main/CHANGELOG.md"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Egocentric proactive-assistant research for smart glasses and hearables",
+      "kind": "research",
+      "description": "Work includes EgoLife and EgoButler (Mar 2025, a life-assistant dataset with EgoRAG memory), proactive hearing assistants that isolate conversation partners from binaural audio (Nov 2025), Vinci2 (Jul 2026, multi-scale memory that decides when to intervene in continuous egocentric video), and an Aug 2026 survey that frames smart glasses as first-person intelligence platforms with perception, state, interaction and action loops.",
+      "date": "2025-03 to 2026-08",
+      "ios_relevance": "The algorithms (when to interrupt, egocentric memory) are ready to prototype with iPhone as the compute hub and Meta glasses or AirPods as sensors. Apple offers no third-party continuous-camera wearable and restricts background mic and camera use.",
+      "sources": [
+        "https://huggingface.co/papers/2503.03803",
+        "https://huggingface.co/papers/2511.11473",
+        "https://huggingface.co/papers/2607.11523",
+        "https://huggingface.co/papers/2608.24877"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Apple Watch as an agent surface: Foundation Models + PCC on watchOS 27",
+      "kind": "platform_api",
+      "description": "watchOS 27 brings the Foundation Models framework to the wrist for glanceable summaries, workout feedback and smart replies. Private Cloud Compute is available there, and on-device Vision runs on watch (smart crop, barcode reading). Provider packages can target watchOS 27 through the LanguageModel protocol. HealthKit adds workout-zone and menopause APIs.",
+      "date": "2026-06",
+      "ios_relevance": "The Watch is a natural approval and notification surface for iPhone agents (confirm a purchase, answer a clarifying question) and a sensor source for health agents, now with a model API directly on the Watch.",
+      "sources": [
+        "https://developer.apple.com/watchos/whats-new/",
+        "https://developer.apple.com/videos/play/wwdc2026/241/",
+        "https://developer.apple.com/videos/play/wwdc2026/339/"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "constraints_or_walls": [
+    "No iOS equivalent of Android's AccessibilityService: a third-party app cannot read other apps' screens or inject taps. iOS GUI-agent research (iOSWorld) runs only on the simulator through Appium/XCUITest on a Mac with purpose-built apps, so the entire AndroidWorld-style GUI-agent literature does not transfer to shipping iPhone apps.",
+    "Cross-app agentic actions are reserved for Siri: App Intents, App Schemas and view annotations make apps reachable by Siri, but third-party agent apps cannot invoke other apps' intents directly. The user-built Shortcuts app is the only generic bridge.",
+    "On-device AFM context is 8,192 tokens and the model is about 3B parameters and not meant for world knowledge. Longer agent loops must use the 32K PCC model, a third-party cloud model or a larger local model, which brings privacy and latency tradeoffs.",
+    "Sustained local LLM inference on iPhone hits thermal throttling and RAM ceilings. Third-party claims of 30-40 tok/s for 2-4B models on iPhone 17 Pro assume a cool phone, and long agent sessions or full-duplex speech degrade.",
+    "Background execution limits: iOS suspends apps, so long-running autonomous agents cannot keep running on the device. They need server-side execution with push notifications, MCP Tasks or A2A tasks polled later, or user-initiated background work.",
+    "No third-party always-on wake word or continuous background camera. Ambient voice or vision agents must keep a foreground or audio session active or rely on external wearables (for example the Meta DAT SDK), with visible recording indicators.",
+    "Apple Pay and Wallet expose no agent-delegation or mandate API in iOS 27, and each Apple Pay authorization needs user presence. Agent commerce on iOS must use Stripe, Visa or Mastercard agent tokens, and App Store in-app-purchase rules still apply to digital goods.",
+    "Prompt and environmental injection is unsolved. Android agents show 40-67% attack success (MobileWorldSafety) and memory poisoning about 98% injection (GhostWriter). Apple's mitigations (onToolCall confirmations, spotlighting, redaction, auth policies) reduce the risk but are partly probabilistic.",
+    "MCP Apps renders HTML in sandboxed iframes, and native widgets are explicitly deferred. iOS hosts must use WKWebView, and nothing maps cleanly to SwiftUI, Live Activities or widgets.",
+    "Apple's WWDC26 agent APIs (Foundation Models, App Intents) do not mention MCP or A2A, so interop with the broader agent-protocol ecosystem is left to developers."
+  ],
+  "whitespace_signals": [
+    "No iOS-specific agent safety or injection benchmark exists (all of GhostEI-Bench, MIRAGE, MobileWorldSafety and AnTrap are Android). An iOSWorld-style safety suite built on App Intents and Foundation Models tool calls is open.",
+    "An App Intents <-> MCP bridge: expose an app's App Intents and entities as an MCP server, or let an in-app Foundation Models agent consume remote MCP servers with confirmation gates. Apple did not ship this.",
+    "A mandate-signing 'agent wallet' on iPhone: Secure Enclave, passkeys and Face ID to sign AP2 or Verifiable Intent mandates and issue scoped Visa or Mastercard agent tokens, filling the gap Apple Pay leaves.",
+    "Hybrid device-cloud router apps using the iOS 27 LanguageModel protocol (on-device AFM or Gemma 4 for private steps; PCC, Claude or Gemini for reasoning), a pattern MAI-UI reports cuts cloud calls by 40% or more.",
+    "Personal-memory agents with memory governance (write policies and retrieval screens like AM-Sentry) built on the Spotlight semantic index and the FM Spotlight tool, evaluated against MobileMem-style year-long tasks.",
+    "A full-duplex voice front end with a delegated tool-calling backend for iPhone and AirPods (the research pattern from 2609.19334 and OpenAI's chat-supervisor), with confirmations pushed to Apple Watch.",
+    "Glasses-to-iPhone agents built on Meta's DAT SDK (camera stream, Ray-Ban Display output) plus an on-device VLM, for hands-free task agents such as cooking, repair and shopping.",
+    "Agent-readiness tooling for iOS developers: App Schema adoption audits, AppIntentsTesting and Evaluations-based regression suites, and threat-model generators following Apple's 'Secure your app' guidance.",
+    "Privacy-preserving mobile agents that anonymize PII before cloud calls ('available but invisible' style research) packaged as a drop-in historyTransform for Foundation Models sessions."
+  ],
+  "open_questions": [
+    "Will Apple ever let third-party assistants (not just Siri) invoke other apps' App Intents and App Schemas, for example under EU DMA interoperability pressure?",
+    "What model powers the iOS 27 Siri and PCC? Reports of a Google Gemini-based Apple Foundation Model deal (early 2026) could not be verified from primary sources in this pass.",
+    "Parameter count and benchmark numbers for the rebuilt iOS 27 on-device model and the new PCC model: WWDC26 sessions gave context sizes (8K and 32K) but no size or tech report.",
+    "Will Apple add an Apple Pay agent or mandate API, or join AP2, FIDO Verifiable Intent, UCP or ACP?",
+    "Apple smart glasses and AirPods sensing roadmap (rumored) could not be verified here. When will Apple offer a third-party wearable camera or continuous-sensing API comparable to Meta's DAT?",
+    "Will MCP Apps add native-widget content types that iOS hosts can render as SwiftUI?",
+    "Can small on-device GUI agents (Ferret-UI Lite at 28% on AndroidWorld) close the long-horizon gap, or will on-device agents stay limited to grounding and routing while planning runs in PCC or the cloud?",
+    "How do iOS 27 Siri cross-app chains hold up against prompt injection in real use? Apple has not published an evaluation."
+  ]
+}

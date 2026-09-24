@@ -1,0 +1,453 @@
+{
+ "angle": "apple-platform",
+ "summary": "As of late September 2026, Apple has split its agent strategy into two layers. The first is a first-party orchestrator: Siri AI. It was announced at WWDC26 on June 8, 2026 and shipped September 14, 2026 as an opt-in, English-only beta with a waitlist, on iPhone 15 Pro and later, outside the EU and China. It is built on Apple Foundation Models that Google Gemini helped create (joint statement, January 12, 2026). Siri AI combines personal context, on-screen awareness and cross-app actions, but it only reaches into third-party apps through App Intents. App Schemas, entity indexing and view annotations make that possible, and press reports say SiriKit is being deprecated. The second layer is a strong toolkit for building agents inside your own app. The Foundation Models framework now has a rebuilt on-device model with a 4,096-token context and multimodal Attachment input, plus built-in OCR, barcode and Spotlight-search tools. Dynamic Profiles add agent orchestration (ToolCallingMode .required loops, baton-pass and phone-a-friend patterns, history transforms). A free PrivateCloudComputeLanguageModel offers 32K context and reasoning levels, with per-user daily quotas, for apps under 2M downloads. A LanguageModel/LanguageModelExecutor protocol lets Claude, Gemini (via Firebase) or local Core AI and MLX models run behind the same session API. The platform also added LongRunningIntent, BGContinuedProcessingTask, Live Activities (push-to-start, broadcast, CarPlay/Mac/Watch surfaces), Visual Intelligence hooks, the CarPlay voice-conversation template, the Call Translation API and a WWDC26 session on securing agentic features (onToolCall confirmations, intent authenticationPolicy, spotlighting untrusted content).\n\nThe key walls for independent agent builders still stand. There is no public, shipped way for a third-party agent to call other apps' App Intents: MCP support is only groundwork seen in iOS 26.1 beta code, and it shipped in Xcode 27 as a developer bridge, not in iOS. The Apple Intelligence \"Extensions\" that would let Claude or Gemini power Siri are reported but not live beyond ChatGPT as of September 2026. On-screen awareness is Siri-only and depends on annotations each app adds. Background execution is still bounded: intents get 30 seconds unless they use LongRunningIntent with progress reporting, continued tasks must be user-initiated, and Foundation Models has a background rate budget. App Review blocks self-extending, code-generating apps under guideline 2.5.2 (the vibe-coding removals of March 2026) and requires explicit consent before sending personal data to third-party AI (5.1.2(i), November 2025). Apple is shipping its own vertical agents: the Passwords auto-change agent, Hold Assist and Call Screening, Shortcuts built from natural language, and Visual Intelligence in the Camera app. Meanwhile it has delayed or scaled back the Health AI coach and has shipped no agentic-payments API. That leaves clear gaps in health coaching, commerce and payments, cross-app orchestration outside Siri, and security tooling for App Intents.",
+ "items": [
+  {
+   "name": "Siri AI (iOS 27): personal context, on-screen awareness, cross-app actions",
+   "kind": "product",
+   "description": "The new Siri was announced at WWDC26 (June 8, 2026) and shipped September 14, 2026 as an opt-in beta with a waitlist and its own Siri app for revisiting conversations. Siri AI can use personal context (Messages, Mail, Photos), understand what is on screen, and chain App Intents across several apps to finish multi-step tasks. Apple named third-party apps with system-wide actions, including WhatsApp, Audible, Outlook, Notability and Tripsy. Reviewers say coverage beyond Apple's own apps depends on each developer adopting the new App Intents features, and that Spotlight indexing is slow.",
+   "date": "2026-06 (announced) / 2026-09-14 (beta release)",
+   "ios_relevance": "This is the system-level agent that third-party apps must plug into. Apps cannot drive Siri, but they can be driven by it. It requires iPhone 15 Pro or later, English, a region outside the EU and China, and a place off the waitlist. French, Japanese, Korean, Portuguese and Spanish were planned for October 2026.",
+   "sources": [
+    "https://www.apple.com/newsroom/2026/06/apple-unveils-next-generation-of-apple-intelligence-siri-ai-and-more/",
+    "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+    "https://developer.apple.com/videos/play/wwdc2026/121/",
+    "https://9to5mac.com/2026/09/14/ios-27-has-a-waitlist-for-accessing-new-siri-ai/",
+    "https://www.techtimes.com/articles/327504/20260914/ios-27-launches-today-siri-ai-requires-waitlist-not-just-compatible-iphone.htm",
+    "https://www.macstories.net/stories/ios-and-ipados-27-review/4/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Apple and Google Gemini partnership for Apple Foundation Models",
+   "kind": "policy",
+   "description": "A joint Apple and Google statement on January 12, 2026 said that Google's technology provides 'the most capable foundation for the Apple Foundation Models'. Those models power Siri AI and Apple Intelligence and still run on-device and on Private Cloud Compute, not as the Gemini app. Bloomberg reported about $1B per year for a custom model of about 1.2T parameters, which Apple has not confirmed. The personalized Siri was absent from iOS 26.4, slipped past spring 2026, and arrived with iOS 27.",
+   "date": "2026-01-12",
+   "ios_relevance": "This explains the capability jump and the timing of Siri AI. Developers do not call Gemini through Siri; they reach Apple's models through the Foundation Models framework or Private Cloud Compute (PCC).",
+   "sources": [
+    "https://blog.google/company-news/inside-google/company-announcements/joint-statement-google-apple/",
+    "https://www.cnbc.com/2026/01/12/apple-google-ai-siri-gemini.html",
+    "https://www.macrumors.com/2026/01/30/apple-explains-how-gemini-powered-siri-will-work/",
+    "https://www.macrumors.com/2026/02/17/ios-26-4-no-new-siri-features/",
+    "https://daringfireball.net/linked/2026/01/12/apple-google-foundation-models-cnbc"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Foundation Models framework (iOS 26 baseline)",
+   "kind": "platform_api",
+   "description": "Launched at WWDC25, this Swift API gives apps free, offline access to the ~3B-parameter on-device model behind Apple Intelligence. It supports guided generation (@Generable, constrained decoding), streaming, stateful LanguageModelSession, and tool calling, where the model autonomously calls Tool types you define. The context window is 4,096 tokens per session, and exceeding it throws an error, so you must trim history or start a new session.",
+   "date": "2025-06",
+   "ios_relevance": "This is the on-device agent loop for iOS 26+, iPadOS, macOS and visionOS, with no token cost. It only works on Apple Intelligence devices (iPhone 15 Pro and later) with Apple Intelligence enabled, and apps must check availability and provide a fallback.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2025/286/",
+    "https://machinelearning.apple.com/research/apple-foundation-models-2025-updates",
+    "https://developer.apple.com/documentation/FoundationModels",
+    "https://developer.apple.com/documentation/foundationmodels/managing-the-context-window"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Foundation Models in iOS 27: new model, multimodal input, built-in system tools",
+   "kind": "platform_api",
+   "description": "WWDC26 shipped a rebuilt on-device model with better reasoning, tool calling and guardrails. It adds image input through Attachment (UIImage, CGImage, CVPixelBuffer, file URL) and the contextSize and tokenCount(for:) APIs, back-deployed to iOS 26.4. It also adds built-in tools the model can call directly: a Vision-backed BarcodeReaderTool and OCRTool, and a Spotlight search tool for fully local RAG. Responses now report token usage, including cached and reasoning tokens.",
+   "date": "2026-06",
+   "ios_relevance": "Camera-to-action agents that read receipts, labels or documents and local-RAG agents over app data can now run fully on-device on iPhone. watchOS 27 also gains the framework.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/241/",
+    "https://developer.apple.com/wwdc26/guides/ios/",
+    "https://developer.apple.com/documentation/FoundationModels"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Dynamic Profiles and agentic orchestration primitives (Foundation Models)",
+   "kind": "platform_api",
+   "description": "LanguageModelSession.DynamicProfile lets one session switch instructions, tools, model (on-device or PCC) and reasoning level based on app state. ToolCallingMode (.allowed, .disallowed, .required) lets an agent be forced into a tool loop, and Apple warns that the developer must supply an exit condition. The session shows 'baton-pass' (a shared transcript handed between profiles) and 'phone-a-friend' (a sub-session spawned from a tool) patterns. Other additions are historyTransform, onResponse and onToolCall hooks, @SessionPropertyEntry state, TranscriptErrorHandlingPolicy (.preserveTranscript), and a Skills type in the open-source utilities package.",
+   "date": "2026-06",
+   "ios_relevance": "These are Apple's first official primitives for multi-agent, multi-model workflows inside an iOS app, with Instruments and the Evaluations framework for tuning. Apple notes that rewriting the transcript invalidates the KV cache and can confuse the model.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/242/",
+    "https://developer.apple.com/videos/play/wwdc2026/241/",
+    "https://developer.apple.com/videos/play/wwdc2026/243/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "PrivateCloudComputeLanguageModel (Apple server model for third-party apps)",
+   "kind": "platform_api",
+   "description": "Starting in iOS/macOS/visionOS/watchOS 27, changing one line routes a Foundation Models session to Apple's server model on Private Cloud Compute (PCC). It has a 32K-token context, reasoning levels (.light/.deep, plus .moderate per the PCC session), and the same tool-calling API. Developers need no API keys and pay no token costs if the app has under 2M first-time downloads and has applied for the com.apple.developer.private-cloud-compute managed entitlement. Each user gets a daily request quota that iCloud+ raises, and the framework exposes quotaUsage status plus system UI for upgrading.",
+   "date": "2026-06 (API) / 2026-09 (release)",
+   "ios_relevance": "Indie agentic apps can get a larger private cloud LLM for free. It needs a network connection and an Apple Intelligence device, and apps must handle a user hitting the quota, which is a hard error until the quota resets or the user upgrades.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/319/",
+    "https://developer.apple.com/documentation/foundationmodels/adding-server-side-intelligence-with-private-cloud-compute",
+    "https://developer.apple.com/wwdc26/guides/apple-intelligence/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "LanguageModel / LanguageModelExecutor protocol with Claude and Gemini packages",
+   "kind": "platform_api",
+   "description": "Foundation Models now has a public LanguageModel protocol, so any provider can plug into the same LanguageModelSession, tools and @Generable API. Anthropic's ClaudeForFoundationModels (beta, iOS 27+) supports streaming, guided generation, client and server tools (web search, web fetch, code execution), reasoning effort levels, and App Attest authentication with no key shipped in the app. Google ships GeminiLanguageModel through Firebase AI Logic (preview). CoreAILanguageModel and MLXLanguageModel cover local models.",
+   "date": "2026-06 / 2026-07",
+   "ios_relevance": "Agent apps can mix a private on-device model with frontier cloud models, one profile each, without rewriting their tool code. Guideline 5.1.2(i) consent still applies whenever personal data goes to a third-party model.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/339/",
+    "https://github.com/anthropics/ClaudeForFoundationModels",
+    "https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/apple-foundation-models",
+    "https://firebase.blog/posts/2026/06/apple-foundation-models-gemini/",
+    "https://firebase.google.com/docs/ai-logic/apple-foundation-models-framework/get-started"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Core AI framework (on-device inference for your own models)",
+   "kind": "platform_api",
+   "description": "Core AI is the inference engine behind Apple Intelligence, opened to developers at WWDC26 and widely described as the successor to Core ML. It has a memory-safe Swift API, PyTorch conversion, ahead-of-time compilation, stateful KV caches and a repository of optimized open models (press cites Qwen, Mistral and SAM3). Apple demoed an agentic assistant running a 70B-parameter LLM, presumably on a Mac, and CoreAILanguageModel plugs such models into Foundation Models sessions.",
+   "date": "2026-06",
+   "ios_relevance": "Specialized or uncensored local models (vision-language models, diarization, domain LLMs) can serve as an iPhone agent's brain. Practical model size on iPhone is still limited by memory and thermals.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/324/",
+    "https://developer.apple.com/wwdc26/guides/ios/",
+    "https://www.infoq.com/news/2026/06/apple-core-ai-wwdc/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Evaluations framework, Foundation Models Instruments, fm CLI and Python SDK",
+   "kind": "platform_api",
+   "description": "The new Evaluations Swift framework scores intelligence features against sample sets and quantifies how prompt changes affect results. It includes guidance for agentic apps (WWDC26 sessions 298, 299 and 335), and Instruments now traces agentic flows. macOS 27 adds an fm CLI and an apple_fm_sdk Python package for scripting against the on-device model and PCC, and the core Foundation Models framework is being open-sourced to run wherever Swift runs, including Linux.",
+   "date": "2026-06",
+   "ios_relevance": "Tooling for testing iOS agent behavior before shipping, which matters because Siri may chain your intents in ways you did not anticipate.",
+   "sources": [
+    "https://developer.apple.com/wwdc26/guides/apple-intelligence/",
+    "https://developer.apple.com/videos/play/wwdc2026/241/",
+    "https://developer.apple.com/videos/play/wwdc2026/334/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "App Intents App Schemas and domains for Siri AI",
+   "kind": "platform_api",
+   "description": "Apps adopt schema-conforming entities (e.g., @AppEntity(schema: .messages.message) with IndexedEntity) and intents grouped into domains. The messages domain, for example, requires both sendMessage and draftMessage, and Xcode enforces that completeness. Siri can then answer questions and act using natural language, with no predefined phrases. Content goes into the Spotlight semantic index, EntityStringQuery covers server-side data, and Transferable with IntentValueRepresentation moves content between apps. View annotations (.appEntityIdentifier) and NSUserActivity let Siri resolve references like 'this message'.",
+   "date": "2026-06",
+   "ios_relevance": "This is the only way to make an iOS app agent-operable by Siri AI. Siri can only act on entities and intents your app explicitly exposes, and only on content another app has explicitly exported.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/240/",
+    "https://developer.apple.com/videos/play/wwdc2026/344/",
+    "https://developer.apple.com/wwdc26/guides/ios/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Advanced App Intents for Siri: ownership, donations, system annotations",
+   "kind": "platform_api",
+   "description": "OwnershipProvidingEntity marks entities as private, shared or public, and Siri automatically asks for confirmation before side-effecting actions, especially on shared content. IntentDonationManager.donate() records UI interactions so Apple Intelligence learns habits and ongoing activities. appEntityIdentifiers on UNNotificationContent, Now Playing and AlarmKit configurations enable commands like 'reply to that' or 'snooze it'. A system.searchInApp schema re-runs Siri searches inside the app's own UI.",
+   "date": "2026-06",
+   "ios_relevance": "These APIs make an app's notifications, playback and alarms addressable by the system agent. They are useful for agent apps that want Siri to act on their Live Activities and notifications.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/343/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "App Intents iOS 27 runtime: LongRunningIntent, CancellableIntent, RelevantEntities, ExecutionTargets",
+   "kind": "platform_api",
+   "description": "On iOS, an intent's background run is normally capped at 30 seconds. LongRunningIntent (iOS 27+) extends that through performBackgroundTask, requires regular progress reporting, and shows progress as a Live Activity. The system can cancel the extension if progress stalls. CancellableIntent adds onCancel cleanup and background GPU on supported devices, and RelevantEntities surfaces entities in context (e.g., during a workout). SyncableEntity keeps IDs stable across devices, EntityCollection passes large sets by ID, @UnionValue gives parameters multiple types, and ExecutionTargets picks whether an intent runs in the app, its extension or a widget.",
+   "date": "2026-06",
+   "ios_relevance": "Agent actions triggered by Siri or Shortcuts can now run minutes-long jobs such as uploads, sync or ML inference in the background, but only with visible progress. No persistent, silent daemon is allowed.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/345/",
+    "https://developer.apple.com/documentation/appintents/longrunningintent"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Interactive snippets and intent modes (App Intents, iOS 26)",
+   "kind": "platform_api",
+   "description": "In iOS 26, SnippetIntent lets an intent return interactive SwiftUI snippets in Siri, Spotlight and Shortcuts, where each button fires another intent. That enables confirm and follow-up flows without opening the app. supportedModes (.background, .foreground(.immediate/.dynamic/.deferred)), continueInForeground(), requestChoice(), @DeferredProperty and AppIntentsPackage give finer control. Siri AI's ShowsSnippetView and ProvidesDialog build on these in iOS 27.",
+   "date": "2025-06",
+   "ios_relevance": "This is the standard UI surface for human-in-the-loop checkpoints (approve, choose) in agent flows on iPhone that don't need the app opened.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2025/275/",
+    "https://superwall.com/blog/app-intents-interactive-snippets-in-ios-26",
+    "https://github.com/artemnovichkov/xcode-27-system-prompts/blob/main/AdditionalDocumentation/AppIntents-Updates.md"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Securing agentic features: onToolCall confirmations, authenticationPolicy, risk-based confirmations",
+   "kind": "platform_api",
+   "description": "WWDC26 session 347 lists the threats as indirect prompt injection, data poisoning and action poisoning, and frames the risk with Simon Willison's 'lethal trifecta'. For Foundation Models, the mitigations are .onToolCall to deterministically block or confirm tool calls such as purchases, and .historyTransform to spotlight untrusted content or redact personal data. For App Intents they are IntentAuthenticationPolicy (.requiresAuthentication blocks execution on a locked device), schema-inherited risk metadata, and confirmations the system triggers automatically, where a schema's policy can only be made stricter. NowSecure found that 24% of apps it tested in June to August 2026 exposed functionality to Siri AI.",
+   "date": "2026-06 / 2026-09",
+   "ios_relevance": "Apple now expects agentic apps to design against prompt injection, and any high-side-effect action such as payment, deletion or posting publicly needs deterministic confirmation.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/347/",
+    "https://www.globenewswire.com/news-release/2026/09/14/3361568/0/en/nowsecure-finds-1-in-4-mobile-apps-may-expose-functionality-to-ai-agents-ahead-of-ios-27.html",
+    "https://www.nowsecure.com/blog/2026/08/05/what-appsec-teams-need-to-know-about-app-intents-siri-ai-and-the-new-ios-27-attack-surface/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Visual Intelligence integration (camera Siri mode, IntentValueQuery)",
+   "kind": "platform_api",
+   "description": "Apps implement IntentValueQuery over a SemanticContentDescriptor, whose pixelBuffer is the captured image, and return AppEntities. They can also adopt the .visualIntelligence.semanticContentSearch schema to continue the search in the app. In iOS 27, Visual Intelligence moved into a Siri mode in the Camera app and expanded to iPad and Mac, where the input is screenshots. It can also write events, contacts and health readings into EventKit, Contacts and HealthKit, which apps observe.",
+   "date": "2025-06 (API) / 2026-06 (iOS 27 expansion)",
+   "ios_relevance": "This gives a system-sanctioned hook for 'point your phone at X and act' agents, such as product lookup, parts identification or bill scanning. Apps get one image and return results; they do not get a continuous camera feed.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/297/",
+    "https://www.macrumors.com/guide/ios-27-visual-intelligence/",
+    "https://www.cultofmac.com/news/ios-27-debuts-at-wwdc26"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Apple Intelligence 'Extensions' (Claude, Gemini, Grok and ChatGPT as selectable model providers)",
+   "kind": "platform_api",
+   "description": "Code and reports indicate an iOS 27 Extensions system through which installed AI apps such as Claude, Gemini, Grok and ChatGPT can be picked in Settings as the model behind Siri fallbacks, Writing Tools and Image Playground, possibly with a distinct voice. Apple did not demo it at WWDC26. Reports from September 2026 say ChatGPT is still the only live integration, so rollout is expected in iOS 27.x.",
+   "date": "2026-05 (code reports) / ongoing",
+   "ios_relevance": "If it ships with a developer API, AI companies could plug their agents into system surfaces. It is not currently available to general third-party developers, and whether Extensions can invoke other apps' App Intents is unknown.",
+   "sources": [
+    "https://www.macrumors.com/2026/05/05/ios-27-third-party-chatbots-apple-intelligence/",
+    "https://www.macrumors.com/2026/09/14/siri-can-be-swapped-out-for-chatgpt-claude/",
+    "https://thenextweb.com/news/apple-siri-extensions-third-party-ai-missing-wwdc",
+    "https://andrew.ooo/answers/ios-27-siri-extensions-hidden-claude-chatgpt-gemini-june-2026/"
+   ],
+   "confidence": "uncertain"
+  },
+  {
+   "name": "Model Context Protocol (MCP) on Apple platforms: iOS groundwork, Xcode 27 mcpbridge",
+   "kind": "protocol",
+   "description": "In September 2025, code in the iOS/macOS 26.1 betas showed Apple building MCP support into App Intents, so external AI agents could call app actions at the system level. At WWDC26 Apple shipped MCP only in Xcode 27, where an mcpbridge binary lets Claude Code, Codex, Cursor and other agents access diagnostics, previews and the REPL. No MCP support for App Intents was announced in iOS 27; beta code reportedly continues the groundwork.",
+   "date": "2025-09 (beta code) / 2026-06 (Xcode 27)",
+   "ios_relevance": "End users have no system MCP on iPhone, so third-party agents cannot discover or call other apps' intents. App Intents adopted today are the likely future MCP surface.",
+   "sources": [
+    "https://9to5mac.com/2025/09/22/macos-tahoe-26-1-beta-1-mcp-integration/",
+    "https://appleinsider.com/articles/25/09/22/ios-26-could-get-a-major-ai-boost-with-the-model-context-protocol",
+    "https://codex.danielvaughan.com/2026/06/11/xcode-27-codex-cli-mcp-bridge-apple-agentic-coding-ios-macos-development/",
+    "https://andrew.ooo/answers/apple-mcp-xcode-27-vs-anthropic-mcp-vs-microsoft-mcp-june-2026/",
+    "https://www.ithinkdiff.com/apple-betas-lay-mcp-groundwork-for-agentic-ai/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Shortcuts: 'Use Model' action (iOS 26) and natural-language shortcut creation (iOS 27)",
+   "kind": "product",
+   "description": "In iOS 26, Shortcuts gained Intelligent Actions and a 'Use Model' action that sends Shortcut variables to the on-device model, PCC or ChatGPT and can return structured output for the next step. In iOS 27, 'Describe a Shortcut' has Apple Intelligence build multi-step automations from plain language, with new triggers and custom actions for core apps.",
+   "date": "2025-09 / 2026-09",
+   "ios_relevance": "For users this is the most capable no-code agent builder on iPhone, and it is the only user-sanctioned way to chain one app's intents into another's. Every intent an app exposes becomes a building block.",
+   "sources": [
+    "https://support.apple.com/guide/iphone/use-apple-intelligence-in-shortcuts-iph78c41eaf8/26/ios/26",
+    "https://club.macstories.net/posts/automation-academy-apple-intelligence-gpt-5-and-the-use-model-action-in-shortcuts",
+    "https://9to5mac.com/2026/06/30/ios-27-makes-apples-shortcuts-app-exactly-what-ive-always-wanted/",
+    "https://www.macrumors.com/guide/ios-27-shortcuts/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "BGContinuedProcessingTask (iOS 26)",
+   "kind": "platform_api",
+   "description": "A BGContinuedProcessingTask starts in the foreground from a user action and continues after the app is backgrounded. The system shows its progress in a Live Activity, and the user can cancel it. It must report progress through ProgressReporting, may request GPU if BGTaskScheduler.supportedResources includes .gpu, and is terminated first under resource pressure if it shows no progress. BGProcessingTask and BGAppRefreshTask remain system-scheduled and opportunistic.",
+   "date": "2025-06",
+   "ios_relevance": "Lets 'go do this' agent jobs, such as batch research, exports or on-device inference, survive the user leaving the app. Jobs must be user-initiated and visible, so there is no speculative or always-on background agent.",
+   "sources": [
+    "https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtask",
+    "https://developer.apple.com/videos/play/wwdc2025/227/",
+    "https://www.theswift.dev/posts/bgcontinuedprocessingtask-background-urlsession/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Live Activities / ActivityKit as the agent status surface (push-to-start, broadcast, scheduled)",
+   "kind": "platform_api",
+   "description": "Live Activities can start directly, on a schedule, or from an APNs push-to-start. They update through direct calls, targeted pushes or broadcast channels, and LiveActivityIntent adds buttons. From iOS 26 they appear on Apple Watch's Smart Stack, the macOS menu bar and the CarPlay Dashboard, and iOS 27 adds landscape Dynamic Island and StandBy scaling.",
+   "date": "2025-09 / 2026-09",
+   "ios_relevance": "A server-side agent can start and update a Lock Screen status for tasks like 'booking in progress' or 'waiting on hold' without the app running. This is the main way agents stay visible on iPhone.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/223/",
+    "https://9to5mac.com/2025/12/04/ios-26-made-live-activities-even-better-on-iphone-heres-whats-new/",
+    "https://developer.apple.com/documentation/ActivityKit/starting-and-updating-live-activities-with-activitykit-push-notifications"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "SiriKit deprecation in favor of App Intents (reported)",
+   "kind": "policy",
+   "description": "Press reports from WWDC26 say Apple deprecated SiriKit with compile-time warnings and a two-to-three-year migration window, and that SiriKit-only apps are invisible to Siri AI. Apple's SiriKit documentation as fetched in September 2026 shows no framework-level deprecation banner, though it points to migrating custom intents to App Intents.",
+   "date": "2026-06",
+   "ios_relevance": "Any app with legacy SiriKit intents (messaging, payments, ride booking) must move to App Intents and schemas to be reachable by the new agent.",
+   "sources": [
+    "https://www.techtimes.com/articles/318005/20260608/wwdc-2026-app-intents-replaces-sirikit-gemini-siri-migration-clock-starts.htm",
+    "https://www.softwareseni.com/why-apple-is-retiring-sirikit-and-what-app-intents-means-for-developers/",
+    "https://developer.apple.com/documentation/sirikit"
+   ],
+   "confidence": "uncertain"
+  },
+  {
+   "name": "CarPlay voice-conversational apps and Voice Control template for all categories",
+   "kind": "platform_api",
+   "description": "iOS 26.4 opened a CarPlay category for voice-based conversational apps, and ChatGPT shipped first, followed by Perplexity, Grok and Meta AI. In iOS 27, any CarPlay app category can use the Voice Control template (full-screen or overlay, up to two buttons, audio cues for waiting and processing). Navigation apps gain route sharing with the car's driver-assistance systems. Siri AI's first third-party live data examples were EV apps (Tessie, Ford).",
+   "date": "2026-03 / 2026-06",
+   "ios_relevance": "Hands-free agents in the car, extending an iPhone app, are now allowed. Screen content is limited while driving, and video is allowed only when parked.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/212/",
+    "https://9to5mac.com/2026/04/01/carplays-latest-upgrades-offer-exciting-glimpse-of-whats-coming-in-ios-27/",
+    "https://www.cultofmac.com/news/siri-ai-third-party-apps-ios-27"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Call Translation API, AirPods Live Translation, and first-party Hold Assist and Call Screening",
+   "kind": "platform_api",
+   "description": "iOS 26 added Live Translation in Messages, FaceTime and Phone, and on AirPods (AirPods Pro 2/3, AirPods 4 with ANC, paired with an Apple Intelligence iPhone). A CallKit Call Translation API (CXSetTranslatingCallAction) lets VoIP and communication apps turn on on-device call translation. Apple's own Phone app now runs agent-like features: Call Screening answers unknown callers and asks their purpose, and Hold Assist waits on hold and alerts you when a human picks up. iOS 27 adds AirPods head-gesture call answering and Siri AI on AirPods.",
+   "date": "2025-06 / 2026-09",
+   "ios_relevance": "Third-party calling apps can offer translated calls, but no public API lets an app autonomously place or handle cellular calls. Hold Assist and screening remain Apple-only.",
+   "sources": [
+    "https://developer.apple.com/forums/thread/789314",
+    "https://developer.apple.com/documentation/callkit/cxsettranslatingcallaction/",
+    "https://www.macrumors.com/2025/06/09/apple-live-translation-messages-facetime-phone/",
+    "https://support.apple.com/en-us/123185",
+    "https://www.fastcompany.com/91349248/ios-26s-best-new-feature-iphone-better-phone-hold-contacts-unkown-number-hold-assist-call-screening",
+    "https://www.macrumors.com/guide/ios-27-airpods/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "HealthKit (Medications API, workout zones) and the delayed Apple Health AI coach",
+   "kind": "platform_api",
+   "description": "HealthKit added a Medications API (WWDC25) and workout zones (WWDC26) for coaching-style apps. Apple's own AI health coach (Project Mulberry) slipped from iOS 26.4 and was reportedly scaled back after leadership changes. The iOS 27.2 beta (September 2026) previews a redesigned Health app with a Readiness score and Apple Intelligence summaries, but its personalized guidance is not live, and the Health+ subscription is unclear.",
+   "date": "2025-06 / 2026-06 / 2026-09",
+   "ios_relevance": "Third-party health-coaching agents can read HealthKit data, including medications and zones, and reason over it with Foundation Models or PCC. Apple's delay leaves the category open, although medical-advice regulation applies.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2025/321/",
+    "https://developer.apple.com/videos/play/wwdc2026/207/",
+    "https://9to5mac.com/2026/05/24/apple-improving-heart-rate-tracking-in-watchos-27-mulberry-health-coach-delays/",
+    "https://www.macrumors.com/2026/09/16/ios-27-2-beta-health-app/",
+    "https://sahha.ai/blog/wwdc-2026-apple-health-developers/"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Wallet and Apple Pay in iOS 27 (featured pass actions, Verify with Wallet; no agentic payments API)",
+   "kind": "platform_api",
+   "description": "iOS 27 Wallet adds a featuredActions array (up to two actions per pass for all pass styles), a Poster Generic pass style, new barcode formats, and the Pass Designer and Pass Builder tools. Apple Pay checkout now surfaces rewards, balances and pay-later options. Verify with Wallet for ID checks requires an entitlement. Apple announced no agent-initiated payment or tokenized-mandate API, even as Visa, Mastercard, Stripe and Google shipped agent-payment infrastructure in 2026.",
+   "date": "2026-06",
+   "ios_relevance": "Agents can generate and update passes and hand users to Apple Pay, but every Apple Pay transaction still needs the user's biometric confirmation. There is no delegated spending for agents.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/209/",
+    "https://developer.apple.com/wallet/get-started-with-verify-with-wallet/",
+    "https://www.macrumors.com/2026/06/10/ios-27-new-apple-wallet-features/",
+    "https://www.paymentsdive.com/news/apple-delves-deeper-into-payments-ai-iphone-siri-retail-merchants/822664/"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Passwords app automatic password change (Apple's first-party web agent)",
+   "kind": "product",
+   "description": "In iOS 27, a single tap hands a compromised or weak password to Apple Intelligence and Safari. They open the site, sign in, run its password-change flow, and save a new strong password to iCloud Keychain. It requires an Apple Intelligence device and supported sites, and it appeared inconsistently across betas, so it may arrive in a 27.x update.",
+   "date": "2026-06 (announced) / 2026-09",
+   "ios_relevance": "Apple is doing browser-driving automation itself but offers third-party apps no equivalent automation API. Websites can only make themselves easier for the agent to navigate.",
+   "sources": [
+    "https://9to5mac.com/2026/08/27/ios-27s-passwords-app-can-change-your-passwords-for-you-automatically/",
+    "https://www.bleepingcomputer.com/news/apple/new-apple-feature-automatically-changes-your-compromised-passwords/",
+    "https://www.techradar.com/pro/new-ios-27-passwords-app-can-automatically-change-your-passwords-for-you"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "Japan: third-party voice assistant on the Side Button (iOS 26.2, via App Intents)",
+   "kind": "policy",
+   "description": "To comply with Japan's Mobile Software Competition Act, iOS 26.2 lets users in Japan assign a third-party voice assistant such as Gemini or Alexa to the Side Button long-press. Assistant apps opt in through App Intents, and the user needs a Japanese Apple Account region and a location in Japan.",
+   "date": "2025-12",
+   "ios_relevance": "This is the only market where a third-party agent can take Siri's hardware entry point, a precedent other regulators could follow.",
+   "sources": [
+    "https://www.macrumors.com/2025/11/17/ios-26-2-iphone-users-japan-siri/",
+    "https://appleinsider.com/articles/25/11/17/ios-262-side-button-virtual-assistant-settings-were-actually-meant-for-japan"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "App Review guideline 5.1.2(i): explicit consent before sharing personal data with third-party AI",
+   "kind": "policy",
+   "description": "From November 13, 2025, apps must clearly disclose, and get explicit permission in the app, before sending personal data (messages, photos, voice, documents) to third-party AI such as OpenAI, Anthropic or Gemini, with enforcement from December 2025. Apple's own on-device model and PCC are not third parties.",
+   "date": "2025-11",
+   "ios_relevance": "Every cloud-LLM agent app needs a consent step, which gives Apple's own models a friction advantage.",
+   "sources": [
+    "https://developer.apple.com/news/?id=ey6d8onl",
+    "https://techcrunch.com/2025/11/13/apples-new-app-review-guidelines-clamp-down-on-apps-sharing-personal-data-with-third-party-ai",
+    "https://dev.to/arshtechpro/apples-guideline-512i-the-ai-data-sharing-rule-that-will-impact-every-ios-developer-1b0p"
+   ],
+   "confidence": "verified"
+  },
+  {
+   "name": "Guideline 2.5.2 enforcement against vibe-coding and self-extending apps",
+   "kind": "policy",
+   "description": "Starting in December 2025, Apple blocked updates to vibe-coding apps such as Replit, Vibecode and Anything, and it pulled Anything on March 30, 2026. It cited guideline 2.5.2, which bans downloading or executing code that adds features after review. Apple said it was enforcing a rule against apps changing their behavior after review, not targeting a category.",
+   "date": "2026-03",
+   "ios_relevance": "Agents that generate and run new mini-apps or tools on the device are effectively banned in the App Store. Agent capabilities must be declared as native tools or intents at review time.",
+   "sources": [
+    "https://www.macrumors.com/2026/03/18/apple-blocks-updates-for-vibe-coding-apps/",
+    "https://9to5mac.com/2026/03/30/apple-steps-up-crackdown-on-vibe-coding-apps-pulls-anything-from-the-app-store/",
+    "https://futurism.com/artificial-intelligence/apple-block-vibe-coding-apps"
+   ],
+   "confidence": "likely"
+  },
+  {
+   "name": "visionOS 27: Siri AI and Visual Intelligence on Vision Pro; camera access still enterprise-gated",
+   "kind": "platform_api",
+   "description": "visionOS 27 brings Apple Intelligence, a spatial Siri AI and Visual Intelligence to Vision Pro. It also adds enhanced object and accessory tracking, cross-platform ARKit, and the Foundation Models, PCC and Core AI stacks. Raw main-camera frame access has historically required the Enterprise API license, and nothing found shows that changed for general developers in visionOS 27.",
+   "date": "2026-06",
+   "ios_relevance": "Vision Pro works as an extension surface for an iPhone agent, for example spatial task guidance. Continuous perception by agents is still limited to enterprise use or Apple's own Visual Intelligence.",
+   "sources": [
+    "https://developer.apple.com/videos/play/wwdc2026/287/",
+    "https://appleinsider.com/articles/26/06/08/spatial-computing-apple-intelligence-upgrades-collide-in-visionos-27",
+    "https://github.com/Waley-Z/visionos-main-camera"
+   ],
+   "confidence": "uncertain"
+  }
+ ],
+ "constraints_or_walls": [
+  "There is no public API for one third-party app to discover or invoke another app's App Intents. Only Siri AI, or user-built Shortcuts, can orchestrate across apps. MCP for App Intents is unshipped groundwork, and Apple's MCP support is limited to Xcode 27's mcpbridge.",
+  "Siri AI is gated: opt-in beta with a waitlist, iPhone 15 Pro or later, English only at launch, not available in the EU (DMA) or China. Most iPhone owners cannot use the system agent yet.",
+  "Siri AI reaches third-party apps only through the new App Intents schemas, indexed entities and view annotations. SiriKit-only apps are reportedly invisible to it, and reviewers report slow Spotlight indexing and patchy third-party coverage.",
+  "On-screen awareness is a Siri-only capability built from app-supplied annotations. Third-party apps cannot read other apps' screens or UI, and there is no computer-use or Accessibility-style automation of other apps on iOS.",
+  "The on-device model has a 4,096-token context per session, and exceeding it throws. Long agent loops need history transforms or summarization, and editing history invalidates the KV cache.",
+  "PCC for developers needs a managed-entitlement application, has a threshold of under 2M first-time downloads for free use, needs a network connection and an Apple Intelligence device, and has a per-user daily quota. Hitting the quota is a hard error until it resets or the user buys iCloud+.",
+  "Background limits: intents get 30 seconds unless they use LongRunningIntent with regular progress. BGContinuedProcessingTask must be user-initiated, visible and cancellable, and the system may kill it. Foundation Models has a background rate budget. No always-on autonomous agent daemon is allowed.",
+  "Guideline 2.5.2 bans downloading or executing code that adds features after review, which kills agents that generate and run new tools or mini-apps on the device (the vibe-coding removals of March 2026).",
+  "Guideline 5.1.2(i) requires in-app disclosure and explicit consent before sending personal data to any third-party AI provider.",
+  "There is no agentic payments API. Apple Pay requires per-transaction user biometric authentication, and there is no delegated spending or mandate for agents on iOS.",
+  "Sending an SMS or iMessage, email or cellular call from a third-party app still requires a user-facing compose or call UI. Autonomous outbound communication means cloud telephony and email or the messaging app's own intents.",
+  "Apple's own agentic features (Passwords auto-change through Safari, Hold Assist, Call Screening, Visual Intelligence camera mode) are not exposed as APIs to third parties.",
+  "Security: Siri can chain intents from multiple apps, which opens a prompt-injection path (calendar events, feeds, tool outputs). Apple expects deterministic confirmations (onToolCall, authenticationPolicy), and a schema's default policy can only be made stricter.",
+  "Third-party model 'Extensions' for Siri, Writing Tools and Image Playground are unconfirmed for developers and not live beyond ChatGPT as of September 2026.",
+  "Vision Pro main-camera frames appear to remain enterprise-only, and Visual Intelligence hands apps a single pixel buffer rather than a continuous feed."
+ ],
+ "whitespace_signals": [
+  "Cross-app orchestration by independent agents is missing: every agent other than Siri is walled off from other apps' intents. There is room for 'Shortcuts-as-agent-runtime' products and for a user-controlled intent router once MCP-style App Intents ship.",
+  "Personal health coaching: Apple's Mulberry AI coach was delayed and scaled back while HealthKit gained Medications and workout-zone APIs. A privacy-first coach built on Foundation Models or PCC with HealthKit, Watch and Live Activities has a clear opening.",
+  "Agentic commerce on iPhone: Visa, Mastercard, Stripe and Google shipped agent-payment rails in 2026 but Apple has no agent API. Apps that use those rails with a Wallet pass or Live Activity confirmation step are largely unbuilt.",
+  "Tooling for App Intents adoption: MacStories reports patchy third-party coverage in Siri AI and NowSecure says a quarter of apps expose functionality. Generators, testers and security scanners for App Schemas, beyond Apple's AppIntentsTesting, are underserved.",
+  "Prompt-injection defense kits for iOS agents, such as prebuilt historyTransform spotlighting and redaction, onToolCall policy engines, and audit logs, are needed now that Apple has made this the developer's responsibility.",
+  "Siri AI excludes pre-iPhone-15-Pro devices, non-English users, the EU and China. Agent apps that fall back to cloud LLMs, with consent, can serve the large population Apple's agent does not.",
+  "A free PCC tier for apps under 2M downloads, 32K context and Dynamic Profiles make indie on-device plus cloud agents cheap to run, but few apps visibly use multi-profile orchestration yet.",
+  "Phone agents: Apple's Hold Assist and Call Screening show demand, but third parties cannot touch cellular calls. Cloud-telephony agents that call businesses on the user's behalf and report back through Live Activities are a gap.",
+  "Voice agents in CarPlay are newly allowed for every app category in iOS 27. Few vertical in-car agents exist yet, such as a trip concierge, an EV charging planner, or a fleet or field-service agent.",
+  "Visual Intelligence camera-mode integrations for scan-to-act uses (repairs, parts ordering, receipts and expense filing, pantry to grocery order) are available but thinly adopted.",
+  "Watch-first agents: watchOS 27 gains Foundation Models via PCC, so wrist-native agents are possible for the first time.",
+  "Web-task agents like Apple's Passwords auto-change are impossible for third parties. That leaves a possible niche for server-side browser agents paired with iPhone approval UIs (interactive snippets and Live Activities)."
+ ],
+ "open_questions": [
+  "When, if ever, will Apple ship MCP, or an equivalent, so that third-party agents can call App Intents on iOS (iOS 27.x or iOS 28 at WWDC 2027)?",
+  "Will the Apple Intelligence 'Extensions' for Claude, Gemini and Grok ship in iOS 27.x, and will extension providers get access to personal context or be able to invoke App Intents?",
+  "Exact PCC eligibility and quota numbers: is the 2M-download threshold lifetime or annual, what are the per-user daily request limits, and are there paid tiers for larger apps?",
+  "Is SiriKit formally deprecated in the SDK headers? Press says yes, but the documentation page shows no framework-level banner.",
+  "What is the Foundation Models background token budget, and can a LongRunningIntent or BGContinuedProcessingTask run PCC or third-party model agent loops for many minutes?",
+  "When will Siri AI leave beta and the waitlist, and when will it reach the EU under the DMA?",
+  "Will Apple's Health AI coach or Health+ ship at all in the iOS 27 cycle, and will any of it be exposed to developers?",
+  "Will Apple enter agentic payments (for example Apple Pay agent tokens) or keep requiring per-transaction biometric authentication?",
+  "Does the Japan Side Button precedent spread to other jurisdictions such as the EU or UK, and does it let third-party assistants reach App Intents?",
+  "Will Apple relax guideline 2.5.2 for sandboxed agent-generated tools, for example sandboxed JavaScript or on-device 'skills'?"
+ ]
+}

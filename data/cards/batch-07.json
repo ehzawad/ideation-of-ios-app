@@ -1,0 +1,647 @@
+[
+  {
+    "id": "W-28",
+    "slug": "should-this-be-free",
+    "title": "Should This Be Free?",
+    "tagline": "Before you pay for a car repair, it checks recalls, the emissions warranty and quiet coverage extensions.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Physical world",
+    "moment": "Your check-engine light comes on during the commute, and you say 'check this' in CarPlay. The app reads the code from a Bluetooth dongle and tells you it's a catalyst code: not an emergency, but worth fixing this week. That afternoon a shop quotes $1,900 for a catalytic converter, and when you photograph the estimate at the counter, the app points out that at 71,000 miles the converter is still under the federal 8-year, 80,000-mile emissions warranty. It offers to call the nearest dealer to confirm and book.",
+    "problem": "Carmakers often owe you repairs you never hear about: open recalls, the federal emissions warranty on major parts like the catalytic converter and engine computer, and quiet warranty extensions sent to dealers as bulletins. Independent shops have no reason to mention them, and owners don't know where to look. Code-reader apps explain the fault and estimate the cost, and estimate-reader apps say whether the price is fair, but none asks whether someone else should be paying.",
+    "loop": {
+      "trigger": "Check-engine light or an estimate photo",
+      "senses": "OBD codes, VIN, mileage, estimate lines",
+      "decides": "Is this repair covered, and by whom?",
+      "checks_with_you": "Before calling a dealer or booking",
+      "acts": "Calls dealers, books, drafts reimbursement",
+      "remembers": "Car file: codes, repairs, receipts"
+    },
+    "ios_blocks": [
+      {
+        "name": "Core Bluetooth",
+        "why": "reads trouble codes and live data from a Bluetooth LE OBD-II dongle"
+      },
+      {
+        "name": "CarPlay (CPVoiceControlTemplate)",
+        "why": "talks you through a warning light while you drive"
+      },
+      {
+        "name": "VisionKit (DataScannerViewController)",
+        "why": "scans the VIN barcode or text on the door jamb or windshield"
+      },
+      {
+        "name": "Vision (RecognizeDocumentsRequest)",
+        "why": "turns the estimate photo into line items with parts, labor and prices"
+      },
+      {
+        "name": "Foundation Models (PrivateCloudComputeLanguageModel)",
+        "why": "matches estimate lines to the codes and to long coverage documents"
+      },
+      {
+        "name": "Visual Intelligence (IntentValueQuery)",
+        "why": "lets you point the Camera at an estimate and hand it straight to the app"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows the dealer call in progress and its answer on the Lock Screen"
+      },
+      {
+        "name": "EventKit",
+        "why": "adds the booked service slot to your calendar"
+      }
+    ],
+    "hard_parts": [
+      "Coverage documents are messy. NHTSA publishes recalls in structured form, but warranty extensions reach the public as PDFs of dealer bulletins with VIN ranges, mileage caps and part numbers. Deciding which ones apply to this VIN and this line item is the core engineering job.",
+      "The emissions warranty depends on mileage, and not every car reports the odometer over OBD-II. The app needs a dashboard photo or a service record, and it must know which parts count as major emission parts for this model.",
+      "Hardware and entitlements: only Bluetooth LE OBD-II adapters work through Core Bluetooth; classic-Bluetooth dongles need Apple's MFi program. CarPlay needs an entitlement Apple grants per category, and a repair helper (most likely a driving-task app) is not guaranteed one.",
+      "Dealer calls go out through cloud telephony, not the phone. Service advisers often won't confirm coverage without the car in the bay, so the call should aim for a diagnosis appointment with the document on file, not a yes on the phone."
+    ],
+    "risks": [
+      "Safety line: the app never tells you a flashing check-engine light, a brake fault or overheating is fine to ignore to save money. When in doubt it says stop driving and get help.",
+      "A wrong 'this should be free' costs a tow to the dealer and a diagnosis fee. Show the document and the reasoning, and say 'likely covered', never 'covered'.",
+      "Flagging line items can sour you with a shop you depend on. Stick to evidence (this part doesn't match this code), not accusations of fraud."
+    ],
+    "assumptions": [
+      "Public coverage documents are complete and current enough to act on.",
+      "Dealers honor coverage when a customer arrives with the document in hand.",
+      "Owners will pair a dongle once and leave it plugged in."
+    ],
+    "unknowns": [
+      "What share of repairs people pay for were actually covered by a recall, the emissions warranty or an extension?",
+      "How often do carmakers reimburse owners who already paid an independent shop for a repair an extension covers?",
+      "Will dealer service desks talk to a disclosed AI caller, or hang up?"
+    ],
+    "prior_art": [
+      {
+        "name": "FIXD",
+        "url": "https://www.fixdapp.com/",
+        "note": "Bluetooth OBD-II sensor and app that explains codes, estimates repair costs and surfaces recalls. It stops there: it doesn't read the shop's estimate, check warranty coverage for the part, or call a dealer."
+      },
+      {
+        "name": "Car AI",
+        "url": "https://www.car-ai.app/",
+        "note": "Upload a photo or PDF of a repair estimate and it explains each line and whether the price looks fair. It answers 'is this price fair?', not 'should someone else pay?', and it takes no action."
+      },
+      {
+        "name": "NHTSA recall lookup (and SaferCar app)",
+        "url": "https://www.nhtsa.gov/recalls",
+        "note": "Free VIN lookup and alerts for open safety recalls. Recalls only: it doesn't cover the emissions warranty or warranty extensions, and it doesn't connect a recall to the repair on the counter in front of you."
+      }
+    ],
+    "first_version": "No dongle and no CarPlay at first. You photograph the estimate and the VIN and enter the mileage; the app returns open recalls, any line that falls under the federal emissions warranty, and any NHTSA-posted extension that names the part, each with the document to show the service adviser. Dealer calls come in version two, once the matching is proven.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-16",
+      "B-02",
+      "B-08"
+    ],
+    "notes_for_editor": "Estimate reading alone is not whitespace: Car AI (car-ai.app) and several App Store apps already explain repair estimates. The untaken part is matching the estimate to coverage (recalls, the 8-year/80,000-mile federal emissions warranty on major emission parts, warranty extensions) and calling dealers. Car AI's site was blocked by the egress proxy; its description comes from a search snippet. FIXD's recall feature is from the candidate and was not re-checked. The claim that iOS 27 opens CPVoiceControlTemplate to every CarPlay category comes from the research digest; Apple's class page still describes it as a navigation-app template. Candidate listed RepairPal without a URL; left out."
+  },
+  {
+    "id": "W-29",
+    "slug": "step-free-scout",
+    "title": "Step-Free Scout",
+    "tagline": "For wheelchair users: it calls venues about access, then reroutes you live when a station elevator breaks.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Accessibility",
+    "moment": "You have concert tickets across town tonight. On Monday the agent called the venue and learned that the step-free entrance is on 5th Street, around the corner from the box office, and that companion seats must be booked by phone. At 6:40 your wrist taps: the elevator at your transfer station just went out, so take the bus two stops and use the ramp on 5th. You still get in before the doors open.",
+    "problem": "For a wheelchair user, one broken elevator or one stepped entrance can end a night out. Routing apps treat access as a fixed tag on a station, and venue websites say 'accessible' without saying where the ramp is or whether the lift works. Checking both means phone calls and watching outage pages all day, and that work falls on the person with the least slack.",
+    "loop": {
+      "trigger": "A ticket or event lands in your calendar",
+      "senses": "Event, venue answers, elevator outage feeds",
+      "decides": "Is the route and entrance still step-free?",
+      "checks_with_you": "Before booking a ride or paratransit",
+      "acts": "Calls the venue, reroutes, alerts your Watch",
+      "remembers": "Venue access cards, your access needs"
+    },
+    "ios_blocks": [
+      {
+        "name": "EventKit",
+        "why": "finds the event, venue and start time to plan around"
+      },
+      {
+        "name": "MapKit",
+        "why": "shows the venue, the entrance pin and walking legs; MapKit gives transit ETAs only, so routes are planned on a server"
+      },
+      {
+        "name": "Core Location (CLMonitor)",
+        "why": "notices when you reach the transfer station or the venue block"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "push-updated trip status on the Lock Screen and the Apple Watch Smart Stack"
+      },
+      {
+        "name": "UserNotifications (time-sensitive interruption level)",
+        "why": "breaks through Focus when an elevator on your route fails"
+      },
+      {
+        "name": "App Intents",
+        "why": "lets you ask Siri whether tonight's route is still step-free"
+      }
+    ],
+    "hard_parts": [
+      "Outage data is uneven. New York publishes a live elevator and escalator feed for developers; many cities publish nothing, or update late. The app must show how fresh each status is and fall back to 'call ahead' when it can't know.",
+      "Routing with live outages has to run on a server (for example OpenTripPlanner over GTFS schedules plus the outage feed), because MapKit's transit mode only estimates arrival times. Watching the feed for hours before an event also needs a server and push, not background refresh.",
+      "Venue calls go through cloud telephony. Front-desk staff often don't know where the ramp is, so the agent must ask concrete questions, note who answered and when, and mark answers unconfirmed until a user checks them in person.",
+      "Access needs are personal: a power chair, a manual chair and a walker user need different answers about door widths, lifts and seating. The profile has to be precise without becoming a medical form."
+    ],
+    "risks": [
+      "A wrong 'step-free' answer can strand someone at night. Every venue card and route shows its source and time, and the app never hides uncertainty.",
+      "Disability status is sensitive. Keep the access profile on the device, and share venue corrections to a community map only with consent and without identity.",
+      "Rides and paratransit cost money and paratransit has booking windows; the app shows the fare and asks before booking anything."
+    ],
+    "assumptions": [
+      "Transit outage feeds outside New York are timely enough to act on.",
+      "Venue staff answer access questions accurately on the phone.",
+      "Users will trust an agent's call notes enough to rely on them at the door."
+    ],
+    "unknowns": [
+      "How many transit agencies publish machine-readable elevator status, and how quickly does it update?",
+      "Do venues answer a disclosed AI caller as well as they answer a person?",
+      "Can crowd corrections to venue cards stay accurate without a moderation team?"
+    ],
+    "prior_art": [
+      {
+        "name": "StepFree NYC",
+        "url": "https://apps.apple.com/us/app/stepfree-nyc/id6758830177",
+        "note": "iPhone app with live elevator and escalator status for every NYC subway station, alerts for saved stations, and accessible routes with bus alternatives. It covers New York transit only; it doesn't know your plans for the evening, check the venue, or arrange a fallback ride."
+      },
+      {
+        "name": "MTA accessible subway travel and elevator status",
+        "url": "https://www.mta.info/accessibility/subway",
+        "note": "Official outage information with per-station email and text alerts, plus a public developer feed. Station by station, not tied to your trip or your deadline."
+      },
+      {
+        "name": "MTA elevator-outage settlement (coverage)",
+        "url": "https://www.disabled-world.com/disability/legal/mta-settlement.php",
+        "note": "A July 2026 class-action settlement requires real-time outage details, alerts and a rerouting phone line. It improves the information; it doesn't give riders an agent that watches their route for them."
+      }
+    ],
+    "first_version": "New York only: subway, bus and one venue per trip. From a calendar event, the agent calls the venue with your questions and saves a venue card; a server plans a step-free route from the MTA elevator feed and pushes a reroute to your Watch if an elevator on that route fails in the three hours before the event. No booking yet; it shows the paratransit and accessible-taxi numbers.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 3,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "W-11",
+      "W-06",
+      "B-02"
+    ],
+    "notes_for_editor": "Partial overlap found: StepFree NYC (App Store) already offers live NYC elevator status, saved-station outage alerts and accessible routing with bus alternatives, so the transit-watch half is taken in New York. The whitespace is the venue calls, tying the watch to a specific event and deadline, other cities, and fallback booking. Novelty scored 3 for that reason; consider narrowing the card to 'venue access calls plus event-anchored rerouting'. StepFree NYC's features come from search snippets (App Store pages were blocked by the egress proxy). The MTA settlement details are from the candidate's source and were not re-verified. The candidate's claim that Google Maps and Citymapper lag during sudden outages was dropped as unverified. MapKit's transit transport type is documented as ETA-only (checked on developer.apple.com)."
+  },
+  {
+    "id": "W-30",
+    "slug": "shelf-price-witness",
+    "title": "Shelf Price Witness",
+    "tagline": "Catches checkout overcharges by matching shelf tags you photographed to your receipt, then claims the refund.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "You grab a coffee tagged $8.99 on sale, and it rings up at $12.49. You don't notice, but the app does: it matches your tag photo to the receipt and buzzes before you reach the car. It shows a service-desk card with the tag photo, the time and the receipt line, and because you shop in Michigan, it adds the bonus the state's scanner law allows.",
+    "problem": "Checkout overcharges are small, frequent and hard to prove. With electronic shelf labels, the tag you saw can change before you get home, and a receipt alone proves nothing about the price offered. Receipt apps store receipts for expenses and cashback, and price-audit tools are sold to stores, so nothing sits on the shopper's side of the scanner.",
+    "loop": {
+      "trigger": "You enter a store or snap a shelf tag",
+      "senses": "Tag photos, receipt lines, store location",
+      "decides": "Does each charge match the tag you saw?",
+      "checks_with_you": "Before sending a refund request",
+      "acts": "Flags errors, builds a desk card or letter",
+      "remembers": "Per-store error log and past claims"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (DataScannerViewController)",
+        "why": "reads shelf-tag prices and product names live in the camera"
+      },
+      {
+        "name": "Vision (RecognizeDocumentsRequest)",
+        "why": "reads receipt lines while keeping the table layout"
+      },
+      {
+        "name": "Foundation Models (Attachment)",
+        "why": "matches a tag photo to an abbreviated receipt line on device"
+      },
+      {
+        "name": "Core Location (CLMonitor)",
+        "why": "notices when you enter a saved store and starts a shopping session"
+      },
+      {
+        "name": "CryptoKit (SHA256)",
+        "why": "hashes each photo with its time and store so the evidence can't be quietly edited"
+      },
+      {
+        "name": "App Intents",
+        "why": "an Action button press snaps a tag without opening the app"
+      },
+      {
+        "name": "Meta Wearables Device Access Toolkit",
+        "why": "Meta's iOS SDK (not Apple's) that pulls photo frames from Ray-Ban Meta glasses for hands-free capture"
+      }
+    ],
+    "hard_parts": [
+      "Matching is the hard part. Receipts abbreviate names, sale tags carry conditions (member card, buy two), and produce is priced by weight. The app must say 'can't tell' often rather than cry wolf.",
+      "Capture has to cost almost nothing. Phone snaps work for a few items; passive capture needs glasses, and Meta's toolkit has been a developer preview, so check that apps built on it can ship to everyone.",
+      "Digital receipts arrive by email or inside a store's own app, and an iOS app can read neither. It needs a forwarding address, a share-sheet import or a photo of the paper receipt.",
+      "Rules differ by place and chain. Michigan's scanner law pays a bonus of ten times the difference ($1 to $5) if you notify the seller with evidence within 30 days; many states give only the refund; some chains have their own policies. The rules table must be kept current."
+    ],
+    "risks": [
+      "Filming in aisles, especially with glasses, can bother staff and other shoppers. Capture tags only, never keep faces, and respect a store's no-photo policy.",
+      "A false accusation at the service desk is embarrassing. Show confidence and evidence, and let the shopper decide whether to raise it.",
+      "A per-store history of what you buy is personal data. Keep it on the device and never sell or share it."
+    ],
+    "assumptions": [
+      "Stores honor photo evidence at the service desk.",
+      "Shoppers will snap tags, or wear glasses, while they shop.",
+      "Overcharges happen often enough that a shopper sees a payoff within a few trips."
+    ],
+    "unknowns": [
+      "How often does a typical grocery trip include an overcharge once electronic shelf labels are common?",
+      "Will stores accept a claim sent after the shopper has left, or only at the desk?",
+      "Is Meta's glasses toolkit open for general App Store release, and what does continuous capture cost in battery?"
+    ],
+    "prior_art": [
+      {
+        "name": "Using receipt apps to catch store overcharges",
+        "url": "https://www.theappnote.com/blog/catch-store-overcharges-with-receipt-apps",
+        "note": "Explains how to spot overcharges with receipt-scanning apps. Fully manual: you compare prices yourself, nothing records the tag price, and nothing files the claim."
+      },
+      {
+        "name": "Michigan Scanner Law",
+        "url": "https://www.michigan.gov/consumerprotection/protect-yourself/consumer-alerts/shopping/michigans-scanner-law",
+        "note": "Gives shoppers the difference plus a bonus of ten times the difference ($1 minimum, $5 maximum) when they notify the seller with evidence within 30 days. The right exists; no tool gathers the evidence for it."
+      },
+      {
+        "name": "Scanner Price Accuracy Code (Canada)",
+        "url": "https://en.wikipedia.org/wiki/Scanner_Price_Accuracy_Code",
+        "note": "Voluntary Canadian retail code that gives the item free, up to a cap, when it scans above the shelf price. Shoppers still have to catch and prove the error themselves."
+      },
+      {
+        "name": "ShopRite ScanRite policy",
+        "url": "https://www.shoprite.com/scanrite-policy",
+        "note": "A chain's own promise for scanning errors. It only pays if the shopper notices the error and can show the tag price."
+      },
+      {
+        "name": "Consumer Reports Kroger price-tag findings",
+        "url": "https://www.yahoo.com/news/consumer-reports-visited-26-krogers-104700792.html",
+        "note": "Found more than 150 expired or misleading price tags across 26 Kroger stores in 14 states. Documents the problem; gives shoppers no tool."
+      }
+    ],
+    "first_version": "Phone only. An Action button press snaps a tag; after checkout you photograph the receipt, and the app lists any line priced above a tag you captured, with a desk card showing the photo, time and store. Start with Michigan's rules and one grocery chain; add glasses capture and mailed claims later.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-06",
+      "B-08"
+    ],
+    "notes_for_editor": "Dropped the candidate's claim that New York City requires a bonus on top of the refund: could not verify it. Michigan's rule (30-day notice with evidence, bonus of 10x the difference, $1 to $5) comes from search snippets of the state's page and a Michigan State University Extension article; the state page itself was blocked by the egress proxy. ShopRite and Consumer Reports URLs are from the candidate and could not be opened here. Meta toolkit status is from the research digest. Canada's Scanner Price Accuracy Code URL came from search results; the exact cap was not checked, so the card says 'up to a cap'."
+  },
+  {
+    "id": "W-31",
+    "slug": "deactivation-defense-file",
+    "title": "Deactivation Defense File",
+    "tagline": "Keeps a gig worker's own evidence ledger and drafts the appeal when a platform's algorithm cuts them off.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "Your delivery account is deactivated at 6 p.m. on a Friday for 'multiple customer reports' you never saw, and rent is due. You forward the email to the app, which already holds 14 months of your own records: drop-off photos, times, ratings and support chats. Before you finish reading, it has matched the three disputed orders to your photos and drafted an appeal and a data-access request for you to review.",
+    "problem": "Gig platforms cut workers off through automated systems, often with a one-line reason and a short appeal window. Workers rarely hold their own records, because the evidence lives inside the platform's app. Earnings trackers log pay and miles, and guides explain how to appeal, but nothing keeps evidence ready and turns it into an appeal on the day it's needed.",
+    "loop": {
+      "trigger": "A saved screenshot or a cutoff email",
+      "senses": "Screenshots, stops, the stated reason",
+      "decides": "Which records contradict the reason?",
+      "checks_with_you": "Before any appeal or request is sent",
+      "acts": "Drafts appeal and data request, tracks dates",
+      "remembers": "A private, hash-chained evidence ledger"
+    },
+    "ios_blocks": [
+      {
+        "name": "App Intents",
+        "why": "an Action button or Back Tap shortcut files a screenshot into the ledger in one press"
+      },
+      {
+        "name": "Visual Intelligence (IntentValueQuery)",
+        "why": "receives a screenshot from Visual Intelligence and returns the matching order entry"
+      },
+      {
+        "name": "Foundation Models (on-device, PrivateCloudComputeLanguageModel)",
+        "why": "pulls order, time and address on device; drafts long appeals on Private Cloud Compute"
+      },
+      {
+        "name": "Core Location (CLVisit)",
+        "why": "records where you stopped and for how long, as a second witness"
+      },
+      {
+        "name": "CryptoKit (SHA256)",
+        "why": "hash-chains entries so the ledger shows nothing was edited later"
+      },
+      {
+        "name": "Foundation Data Protection (FileProtectionType.complete)",
+        "why": "keeps the ledger encrypted while the phone is locked"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "reminds you of appeal and review deadlines"
+      }
+    ],
+    "hard_parts": [
+      "iOS can't read the driver apps, so capture depends on the worker saving screenshots. The ledger has to pay off every day (mileage, weekly pay checks) or nobody builds it up before the crisis.",
+      "Each platform wants a different appeal format and length, and many route appeals through in-app forms the app can't fill. The output must be text the worker can paste, plus a packet for human helpers.",
+      "Rights differ by place. Seattle's App-Based Worker Deactivation Rights Ordinance (in force since January 2025) gives app-based workers notice and a way to challenge; the EU Platform Work Directive must be in national law by 2 December 2026 and requires a human to decide account suspensions and terminations. Most US workers have neither, and the app must say so plainly.",
+      "Screenshots and location history contain customers' addresses. Redact them from anything that leaves the phone."
+    ],
+    "risks": [
+      "Unauthorized practice of law: the app drafts in the worker's own voice, hands off to driver guilds, worker centers and legal aid, and never promises an outcome.",
+      "Evidence that looks altered can sink a case. Keep originals untouched, show the hash chain, and never help create or edit evidence.",
+      "Never contact customers, and never scrape or automate the platform's app."
+    ],
+    "assumptions": [
+      "Workers will capture evidence before they need it.",
+      "Platforms read appeals, and specific evidence changes outcomes.",
+      "Guilds, worker centers and legal aid will accept a packet assembled by an app."
+    ],
+    "unknowns": [
+      "How much more often do appeals with specific evidence succeed than generic ones?",
+      "Will platforms treat an app-drafted appeal differently, or flag it?",
+      "How will EU member states put the human-review right into practice, and will US cities copy it?"
+    ],
+    "prior_art": [
+      {
+        "name": "Gridwise deactivation appeal guide",
+        "url": "https://gridwise.io/blog/gig-driver-deactivation-appeal",
+        "note": "Gridwise tracks gig earnings and mileage and publishes appeal guides. Advice only: no evidence ledger and no drafted appeal."
+      },
+      {
+        "name": "Independent Drivers Guild deactivation representation",
+        "url": "https://driversguild.org/deactivation/",
+        "note": "Represents deactivated drivers in New York City. Human help that works best when the worker has records; this app should feed it, not replace it."
+      },
+      {
+        "name": "Worker Info Exchange",
+        "url": "https://www.workerinfoexchange.org/request-data",
+        "note": "London nonprofit that files data-access requests for gig workers and backs challenges to automated dismissals. Strong on data rights, but no day-to-day evidence capture on the worker's phone."
+      },
+      {
+        "name": "Fini: AI agents for marketplace driver deactivations",
+        "url": "https://www.usefini.com/guides/ai-agents-marketplace-driver-deactivations-fee-refunds",
+        "note": "The other side of the table: AI agents sold to marketplaces to score and process deactivation appeals. Workers have no equivalent."
+      },
+      {
+        "name": "terms.law deactivation appeals FAQ",
+        "url": "https://terms.law/FAQ/gig-economy/deactivation-appeals-faq.html",
+        "note": "Legal FAQ on appeals at Uber, Lyft and DoorDash; notes there is no dedicated appeal product for workers."
+      }
+    ],
+    "first_version": "A one-press screenshot ledger with automatic mileage and weekly pay totals, so it earns its keep every day. When you forward a deactivation email, it drafts an appeal that cites matching entries and, where the law gives one, a data-access request, and lists local help. US rideshare and delivery first; Seattle and EU rules as they apply.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "M-25",
+      "W-25",
+      "W-32"
+    ],
+    "notes_for_editor": "Seattle ordinance effective date (January 1, 2025) is from seattle.gov and Seyfarth search results. The EU Platform Work Directive transposition date and human-decision rule are from general knowledge of Directive (EU) 2024/2831, not re-fetched. Fini's role comes from a search result title and snippet. Left out the candidate's claim that Uber added an in-app review center that accepts driver evidence: not verified. Possible extra prior art: Fair Work Center's Seattle deactivation resources (https://www.fairworkcenter.org/legal-clinic/deactivation-resources/), seen in search."
+  },
+  {
+    "id": "W-32",
+    "slug": "between-clients-wage-check",
+    "title": "Between-Clients Wage Check",
+    "tagline": "For home-care aides: logs the drive between clients and checks each paycheck for unpaid travel time.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "You see four clients a day across town, and the agency's visit-verification app clocks you in and out at every door. The 25-minute drives in between never show up on your paystub. At the end of the pay period your phone shows $118 of travel time that looks unpaid, with the log behind it, and asks whether you want to raise it with your coordinator.",
+    "problem": "When an agency employs a home-care aide, federal law counts travel between clients during the workday as paid work time. Agencies record every visit through electronic visit verification, but that record stays on the agency's side and stops at the client's door. Aides have no easy way to see what's missing from a paystub, and every mileage, scheduling and payroll tool is sold to the agency.",
+    "loop": {
+      "trigger": "You leave one client for the next",
+      "senses": "Visit times, drives, paystub lines",
+      "decides": "Were the gaps between clients paid?",
+      "checks_with_you": "Before any message to the agency",
+      "acts": "Logs drives, flags gaps, drafts a message",
+      "remembers": "Pay-period logs, rates, past replies"
+    },
+    "ios_blocks": [
+      {
+        "name": "Core Location (CLVisit)",
+        "why": "records arrivals and departures at client homes with little battery"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "captures a clean scan of each paystub"
+      },
+      {
+        "name": "Vision (RecognizeDocumentsRequest)",
+        "why": "reads hours, rates and mileage from the paystub table"
+      },
+      {
+        "name": "Foundation Models (on-device)",
+        "why": "compares the log with the paystub without sending pay data off the phone"
+      },
+      {
+        "name": "Translation",
+        "why": "shows results and drafts messages in the aide's own language"
+      },
+      {
+        "name": "WidgetKit",
+        "why": "a Home Screen widget with this period's unpaid-looking minutes"
+      },
+      {
+        "name": "Foundation Data Protection (FileProtectionType.complete)",
+        "why": "keeps logs encrypted while the phone is locked"
+      }
+    ],
+    "hard_parts": [
+      "Telling client stops from personal ones. CLVisit logs a pharmacy run the same as a client visit, so the app needs the schedule plus a quick end-of-day review.",
+      "Paystubs vary by payroll provider, and many don't list travel time at all. The app compares totals (hours worked vs hours paid) and says clearly when a stub can't answer the question.",
+      "Rules vary. Federal law makes travel between clients paid time for agency employees; mileage repayment depends on the state (California requires employers to reimburse work expenses; federal law only steps in if costs push pay below minimum wage). Live-in and privately hired aides fall under different rules.",
+      "Aides fear retaliation, so nothing leaves the phone by default and the app works without an account."
+    ],
+    "risks": [
+      "Retaliation can cost an aide shifts. The app explains that retaliation for wage complaints is illegal, points to worker centers and unions, and never sends anything on its own.",
+      "False alarms damage trust with the agency. Show the log, the rule and any doubt, in calm wording.",
+      "A location log of client homes is sensitive for clients too. Keep the minimum, store it on the device, and let the aide delete it."
+    ],
+    "assumptions": [
+      "The aide is an agency employee covered by federal wage law, not a privately hired or live-in worker.",
+      "Aides will spend a minute a day confirming the log.",
+      "Agencies correct errors when shown a clear record."
+    ],
+    "unknowns": [
+      "How much unpaid travel time does a typical multi-client aide lose per week?",
+      "Will agencies accept a worker-side log when it disagrees with their visit-verification data?",
+      "Could a union or worker center distribute the app, and who pays for it?"
+    ],
+    "prior_art": [
+      {
+        "name": "US DOL Fact Sheet #79D (hours worked in domestic service)",
+        "url": "https://www.dol.gov/agencies/whd/fact-sheets/79d-flsa-domestic-service-hours-worked",
+        "note": "States the rule with an example: 30 minutes driving between two clients is hours worked the agency must pay. A rule, not a tool that checks your pay against it."
+      },
+      {
+        "name": "Goldberg Segalla on the Third Circuit travel-time ruling",
+        "url": "https://www.goldbergsegalla.com/news-and-knowledge/knowledge/third-circuit-affirms-home-health-care-aides-must-be-paid-for-travel-between-clients/",
+        "note": "Law-firm summary of an appeals ruling that home-care aides must be paid for travel between clients. Shows the rule is enforced; aides still need their own records to use it."
+      },
+      {
+        "name": "Phillips & Garcia travel-time cases",
+        "url": "https://www.phillipsgarcialaw.com/practice_areas/travel-time-compensation-for-home-health-aides.cfm",
+        "note": "A firm that takes aide travel-time cases. Lawyers need a day-by-day log the aide rarely has."
+      },
+      {
+        "name": "Carevoyant on caregiver travel-time payroll",
+        "url": "https://www.carevoyant.com/home-health-blog/caregiver-travel-time-payroll-bottom-line",
+        "note": "A home-care software vendor writing to agencies about paying travel time. The tooling is built for the employer, not the aide."
+      }
+    ],
+    "first_version": "An automatic drive log between scheduled clients, a paystub scan, and a pay-period view of hours worked versus hours paid, in English and Spanish, all on the device. No claims in version one: just a calm draft message the aide can copy if they choose.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 5,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-31",
+      "M-25"
+    ],
+    "notes_for_editor": "Third Circuit ruling details (case name, date) come from the candidate's source and were not re-verified. DOL Fact Sheet #79D and its between-clients example were confirmed via search results. Agency-side EVV and mileage vendors named in the candidate (HHAeXchange, Sandata, Timeero) had no verified URLs, so Carevoyant stands in as the agency-side example. The California expense-reimbursement point is general knowledge (Labor Code 2802), not re-checked."
+  },
+  {
+    "id": "W-33",
+    "slug": "stuck-invoice-detective",
+    "title": "Stuck Invoice Detective",
+    "tagline": "Finds out why a big client hasn't paid (no PO, vendor not set up, wrong portal) and fixes that step.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "Your invoice to a big media company is 47 days old, and your reminders go to a producer who has left. The agent emails accounts payable and learns that the company pays only through a supplier portal, your vendor profile was never approved because the W-9 was unsigned, and the invoice needs a PO number only the budget owner can issue. It asks you to sign the W-9 on your phone and sends the rest.",
+    "problem": "Large companies pay through accounts-payable systems that reject invoices without a PO number, an approved vendor record or the right portal. A freelancer usually knows only the creative contact, who has no idea why payment stalled. Invoicing apps send polite reminders to that same person, which doesn't fix a missing form.",
+    "loop": {
+      "trigger": "An invoice passes its due date",
+      "senses": "Your sent mail, AP replies, portal status",
+      "decides": "Which step blocks payment, and who owns it?",
+      "checks_with_you": "Before legal notices or going above contact",
+      "acts": "Emails AP, fills forms, resubmits invoice",
+      "remembers": "Each client's payment path and pay runs"
+    },
+    "ios_blocks": [
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "connects Gmail or Outlook by OAuth, since iOS apps can't read the Mail app"
+      },
+      {
+        "name": "Foundation Models (PrivateCloudComputeLanguageModel)",
+        "why": "reads long AP threads and invoice PDFs with a 32K-token context"
+      },
+      {
+        "name": "PDFKit",
+        "why": "fills vendor forms and the W-9"
+      },
+      {
+        "name": "PencilKit",
+        "why": "captures your signature on the phone"
+      },
+      {
+        "name": "WebKit (WKWebView)",
+        "why": "opens the client's supplier portal in the app so you sign in yourself while the agent guides each step"
+      },
+      {
+        "name": "App Intents (SnippetIntent)",
+        "why": "approve a drafted email from a Siri or Spotlight snippet without opening the app"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "asks for a signature or an approval when a step needs you"
+      }
+    ],
+    "hard_parts": [
+      "Supplier portals (Coupa, SAP Ariba and many in-house ones) offer no API to one-person vendors, and signing in for the user raises terms-of-service and trust problems. The design keeps the human on portal steps; the agent writes the checklist and checks the result.",
+      "Finding the real AP contact. Many companies use a shared inbox, a web form or a ticketing system that replies from no-reply addresses. The agent must track ticket numbers and keep threads straight.",
+      "Tax and bank forms are sensitive: a W-9 carries a tax ID, and banking forms carry account numbers. The agent must confirm it is talking to the client's real domain before sending either.",
+      "The mail loop runs on a server with Gmail or Microsoft Graph access. If a third-party model reads that mail, App Review guideline 5.1.2(i) requires naming the provider and getting consent first."
+    ],
+    "risks": [
+      "Fake 'accounts payable' requests for bank details are a common fraud. Verify domains, and confirm any request to change payment details by a second channel.",
+      "Emailing over your contact's head, or citing the law too early, can cost the client. The app asks first and suggests the mildest step likely to work.",
+      "Legal notices must be accurate. The app drafts under the freelancer's name, cites only laws that apply to that client, and says when a lawyer or the city agency is the better route."
+    ],
+    "assumptions": [
+      "Most late invoices at large clients are stuck on a fixable process step, not held back on purpose.",
+      "AP teams answer vendor emails that carry the right invoice and vendor numbers.",
+      "Freelancers will give an agent access to their mailbox."
+    ],
+    "unknowns": [
+      "What share of late invoices are process failures rather than deliberate cash-flow delays?",
+      "As AP teams deploy their own AI agents, does this become agent-to-agent, and will their agents answer ours?",
+      "Can portal checklists stay current as clients switch systems?"
+    ],
+    "prior_art": [
+      {
+        "name": "ChaseAI",
+        "url": "https://chaseai.app/",
+        "note": "Automated invoice reminders. It chases, often the original contact, but doesn't find out why the invoice is stuck or fix the blocking step."
+      },
+      {
+        "name": "Tipalti supplier self-onboarding",
+        "url": "https://tipalti.com/mass-payments/self-service-onboarding/",
+        "note": "Payer-side portal where vendors upload W-9s and bank details. Built for the company paying, so it can't help a freelancer whose invoice sits unnoticed in someone else's system."
+      },
+      {
+        "name": "PaymentWorks",
+        "url": "https://www.paymentworks.com/",
+        "note": "Vendor onboarding and identity checks sold to large payers. On AP's side of the table, not the vendor's."
+      },
+      {
+        "name": "NYC DCWP settlement with BuzzFeed over late freelancer pay",
+        "url": "https://www.nyc.gov/site/dca/news/017-25/dcwp-settlement-buzzfeed-late-payments-freelancers",
+        "note": "New York City enforces its Freelance Isn't Free Act against late payers. The law has teeth, but the freelancer has to know it applies and act on it."
+      },
+      {
+        "name": "Bonsai late-fee guidance",
+        "url": "https://www.hellobonsai.com/blog/discover-how-to-charge-late-fees-as-a-freelancer",
+        "note": "Invoicing tool with advice on charging late fees. A late fee doesn't help when the invoice never entered the client's AP system."
+      }
+    ],
+    "first_version": "Connect Gmail or Outlook and pick one overdue invoice. The agent drafts a single email to the client's AP address with a short checklist (PO, vendor ID, portal, pay-run date), reads the reply, and turns it into a to-do list with the W-9 ready to sign. Nothing goes out until you tap Send.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-03",
+      "B-01",
+      "M-26"
+    ],
+    "notes_for_editor": "Dropped the candidate's CarPlay Voice Control approvals: approving payment or legal emails while driving is a poor fit. Tipalti and PaymentWorks URLs come from a search this pass; ChaseAI, NYC DCWP and Bonsai URLs come from the candidate and were not opened. Freelance Isn't Free Act specifics (payment deadline, double damages) are general knowledge and are kept out of the card text. No product was found that investigates a client's AP process for a one-person vendor."
+  }
+]

@@ -1,0 +1,891 @@
+[
+  {
+    "id": "B-01",
+    "slug": "cloud-errand-agents",
+    "title": "Cloud-computer errand agents",
+    "tagline": "Tell one app a goal; it works in a cloud browser and pings your iPhone for logins and the Pay button.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Life admin",
+    "moment": "It is Sunday night and you have three errands: return a jacket, book a haircut, renew a parking permit. You dictate them into one app, lock the phone, and a Live Activity ticks through each one while the agent works in its own cloud browser. It stops twice: once for a password, once before paying.",
+    "problem": "Small online errands each take ten minutes of logins, forms and hunting for the right page, and they pile up. Chat assistants can explain how to do them but not do them. An iPhone app cannot operate Safari or other apps, so any agent that clicks through websites has to run somewhere else and still needs you at the risky moments.",
+    "loop": {
+      "trigger": "You say or type a goal, or a schedule fires",
+      "senses": "Pages in its cloud browser, linked accounts",
+      "decides": "The next step, and whether it needs you",
+      "checks_with_you": "Logins, CAPTCHAs and every payment",
+      "acts": "Fills forms, sends email, books, checks out",
+      "remembers": "Your sizes, sites, preferences, past runs"
+    },
+    "ios_blocks": [
+      {
+        "name": "ActivityKit (Live Activities, push-to-start)",
+        "why": "shows each step of a cloud run on the Lock Screen, started by the server"
+      },
+      {
+        "name": "UserNotifications (UNNotificationAction)",
+        "why": "approval prompts with Approve and Decline buttons"
+      },
+      {
+        "name": "App Intents (App Shortcuts, SnippetIntent)",
+        "why": "start an errand from Siri or the Action button and confirm it in an interactive snippet"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "OAuth into mail, calendar and store accounts without handing over passwords"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID before a payment or a shared login"
+      },
+      {
+        "name": "CryptoKit (SecureEnclave)",
+        "why": "signs each approval so the server can prove it came from your phone"
+      }
+    ],
+    "hard_parts": [
+      "Long runs break. Sites change layouts, time out and throw CAPTCHAs; CNN's test of Muse saw a purchase stall at a store that required a professional licence.",
+      "Logins. Many sites block cloud-browser traffic or send 2FA codes by SMS, which a third-party iOS app cannot read, so the user has to relay codes or approve each sign-in by hand.",
+      "The phone cannot host the loop. Every state change has to come back by push, and a Live Activity lasts at most 8 hours, so multi-day errands fall back to plain notifications.",
+      "Cost. A long run on a frontier model in a cloud VM costs real money per task, while Meta, OpenAI and Google bundle the same thing into free or $20 plans."
+    ],
+    "risks": [
+      "Prompt injection: a page or email the agent reads can tell it to send data or buy something. Confirmations must be drawn by the app from the real action, not written by the model.",
+      "One service holds sessions and cookies for many accounts, so one breach exposes all of them.",
+      "Many sites forbid automated access in their terms, and App Review guideline 5.2.2 expects apps to have permission to use the third-party services they act on."
+    ],
+    "assumptions": [
+      "People will hand one company the logins to many services, as long as money and passwords still need their tap.",
+      "Websites keep tolerating agent traffic instead of blocking it or demanding agent-only APIs.",
+      "The cost of a 30-step run keeps falling fast enough to fit inside a consumer subscription."
+    ],
+    "unknowns": [
+      "Who pays when the agent submits the wrong form or buys the wrong item?",
+      "Will Apple ever let a third-party agent act in Safari, the way its own Passwords agent changes passwords?",
+      "Does one general agent keep winning once each errand type has a specialist app?"
+    ],
+    "prior_art": [
+      {
+        "name": "Meta Muse",
+        "url": "https://9to5mac.com/2026/09/17/meta-ai-launches-muse-personal-agent-including-a-new-mobile-app-for-iphone/",
+        "note": "Email, travel, forms, checkout with one-time cards and business calls from Meta's cloud computer; US and 18+ only."
+      },
+      {
+        "name": "ChatGPT agent and Work tab",
+        "url": "https://techcrunch.com/2026/09/23/chatgpt-mobile-app-gets-voice-based-agentic-features/",
+        "note": "Cloud-browser tasks started by voice on iPhone since Sept 23, 2026; Work tab is for Plus and Pro."
+      },
+      {
+        "name": "Gemini Spark",
+        "url": "https://support.google.com/gemini/answer/17094507?hl=en&co=GENIE.Platform%3DiOS",
+        "note": "24/7 agent across Gmail, Docs and signed-in sites; loads checkout pages but hands payment back to you. Pro and Ultra only."
+      },
+      {
+        "name": "Manus",
+        "url": "https://apps.apple.com/us/app/manus-ai-agent-automation/id6740909540",
+        "note": "Virtual-computer agent whose iPhone app shows every step; bought by Meta in December 2025."
+      },
+      {
+        "name": "Genspark Super Agent",
+        "url": "https://apps.apple.com/us/app/genspark-super-ai-agent/id6739554054",
+        "note": "80+ tools including Call for Me; strong on documents and research, less on logged-in errands."
+      }
+    ],
+    "first_version": "Pick one errand family with stable web flows, such as returns and exchanges at the 50 biggest US retailers. Run it in a cloud browser, stream each step to a Live Activity, and stop for login and a Face ID approval before any submit. Keep a replayable screenshot log of every run.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-25",
+      "W-03",
+      "W-09"
+    ],
+    "notes_for_editor": "Muse download and chart figures come from 9to5Mac and other press, not Apple. The CNN Muse test (https://www.cnn.com/2026/09/23/tech/meta-muse-ai-agent) is cited from the research notes; I did not open it. The Manus price (reported $2B+) is unconfirmed."
+  },
+  {
+    "id": "B-02",
+    "slug": "phone-call-errand-agents",
+    "title": "Phone-call errand agents",
+    "tagline": "An agent phones businesses from a cloud number to get quotes, hold slots and wait on hold, then reports back.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Life admin",
+    "moment": "Your car needs brakes and you hate calling around. You give the agent the car, your zip code and a budget. Twenty minutes later you have three shop quotes and a Thursday slot on hold, and you never dialed.",
+    "problem": "Many small businesses still give quotes and bookings only by phone. Calling around eats an afternoon of phone trees, hold music and repeating your details. iOS gives third-party apps no way to place or listen to cellular calls, and Apple's own Hold Assist only waits; it never talks.",
+    "loop": {
+      "trigger": "You ask for quotes, a booking or a fix",
+      "senses": "Business listings and the live call audio",
+      "decides": "Who to call, what to ask, what to accept",
+      "checks_with_you": "Before booking, paying or sharing IDs",
+      "acts": "Calls from a cloud number, works phone trees",
+      "remembers": "Quotes, reference numbers, who picked up"
+    },
+    "ios_blocks": [
+      {
+        "name": "MapKit (MKLocalSearch)",
+        "why": "finds nearby businesses and their phone numbers to build the call list"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows dialing, on hold and talking states on the Lock Screen"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "delivers results and asks before the agent commits to anything"
+      },
+      {
+        "name": "App Intents",
+        "why": "start a call task from Siri or the Action button"
+      },
+      {
+        "name": "LiveCommunicationKit",
+        "why": "lets you join the cloud call over VoIP when the business insists on the customer"
+      }
+    ],
+    "hard_parts": [
+      "Calls have to come from cloud telephony (Genspark runs on Twilio), so caller ID shows an unknown number that busy shops ignore or that carriers may label as spam.",
+      "Handoff. When a clerk needs the customer, the agent has to bridge you in over VoIP within seconds or the call is lost.",
+      "Identity checks. Account PINs, last-four digits and 'are you the account holder?' stop the agent cold unless the user is patched in.",
+      "Recording and transcription rules differ by US state, and some states require every party to agree before a call is recorded."
+    ],
+    "risks": [
+      "The agent must say it is an AI calling for a customer. Letting it pass as the customer invites fraud claims and angry businesses.",
+      "Accidental commitments: a 'hold' turns into a booking with a cancellation fee. Keep holding and booking as separate, approved steps.",
+      "Businesses may start blocking agent calls or answering with their own AI, turning calls into bot-to-bot loops."
+    ],
+    "assumptions": [
+      "Businesses keep answering calls from AI agents instead of blocking them or putting their own AI receptionist on the line.",
+      "Real-time voice stays cheap enough to spend 30 minutes on hold for one task."
+    ],
+    "unknowns": [
+      "Will carrier spam labeling start flagging agent calls at scale?",
+      "How often does a call end up needing the human after all, and do users pick up when patched in?",
+      "Will Apple ever open Hold Assist or call audio to third-party apps?"
+    ],
+    "prior_art": [
+      {
+        "name": "Google 'Let Google Call'",
+        "url": "https://blog.google/products-and-platforms/products/shopping/how-to-agentic-calling-let-google-call/",
+        "note": "Calls local businesses about prices and availability from Search; grew out of the 'Ask for Me' Labs test. Information calls only."
+      },
+      {
+        "name": "Genspark Call for Me",
+        "url": "https://www.genspark.ai/helpcenter/call-for-me",
+        "note": "Multilingual outbound calls for bookings and customer service, on Twilio Programmable Voice."
+      },
+      {
+        "name": "Meta Muse calls",
+        "url": "https://9to5mac.com/2026/09/17/meta-ai-launches-muse-personal-agent-including-a-new-mobile-app-for-iphone/",
+        "note": "Outbound calls to US businesses switched on around Sept 17, 2026, inside a general agent."
+      },
+      {
+        "name": "Assindo",
+        "url": "https://assindo.com/news/never-wait-on-hold-ai-phone-calls",
+        "note": "Consumer call agent that waits on hold and works IVR menus on iOS, Android and web; claims are from its own site."
+      }
+    ],
+    "first_version": "Quote calls only. The user names a service and an area; the agent calls up to five local shops from a cloud number with a fixed script and returns a comparison table. It never books; it only asks a shop to hold a slot for an hour, with a one-tap VoIP join if the shop wants the customer.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-08",
+      "W-07",
+      "M-16"
+    ],
+    "notes_for_editor": "The Muse call launch date (about Sept 17, 2026) comes from 9to5Mac. Assindo's features are self-described. The Genspark and Twilio link comes from a Business Wire release listed in the research notes."
+  },
+  {
+    "id": "B-03",
+    "slug": "inbox-triage-drafts",
+    "title": "Inbox triage-and-draft agents",
+    "tagline": "An agent sorts your mail, writes replies in your voice and leaves them in Drafts for you to send.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "You open your mail app at 7am and 14 replies are already drafted in your tone. You fix one sentence, send nine, and see that the agent filed the newsletters and flagged the one invoice that needs you.",
+    "problem": "Email is a stream of small decisions: reply, file, pay or ignore. Most AI mail features summarize and leave the work to you. On iPhone, no app can read Mail.app (MailKit is macOS-only), so an inbox agent must connect to Gmail or Outlook servers directly or be your mail client.",
+    "loop": {
+      "trigger": "New mail lands in Gmail or Outlook",
+      "senses": "Threads, your sent mail, your calendar",
+      "decides": "Label, draft, flag, or leave alone",
+      "checks_with_you": "You send every draft yourself",
+      "acts": "Labels threads, saves replies to Drafts",
+      "remembers": "Your tone, VIPs, rules you corrected"
+    },
+    "ios_blocks": [
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "OAuth sign-in to Gmail or Microsoft Graph for the server-side agent"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "pushes only the few threads that need you"
+      },
+      {
+        "name": "App Intents mail schema (AppSchema.MailIntent: createDraft, sendDraft)",
+        "why": "lets Siri AI act on drafts, but only if the app is itself the mail client"
+      },
+      {
+        "name": "WidgetKit",
+        "why": "a Home Screen count of drafts waiting and threads that need you"
+      }
+    ],
+    "hard_parts": [
+      "Gmail's read and draft scopes are restricted: Google requires app verification and a recurring third-party security assessment before a public app can read mail.",
+      "Sounding like you. Drafts need your sent mail as examples and a way to learn from your edits without mixing in anyone else's mail.",
+      "Prompt injection through mail. An incoming message can carry instructions; the EchoLeak flaw (CVE-2025-32711) showed one crafted email could make Microsoft 365 Copilot leak data.",
+      "No iOS mail hook. The agent runs on a server and writes into your mailbox; the phone only gets pushes and a review screen."
+    ],
+    "risks": [
+      "A draft that promises something you never agreed to, sent in a hurry. Sending should stay a human tap by default.",
+      "Mail holds password resets and bank alerts, so a breach of the agent is an account-takeover risk.",
+      "App Review guideline 5.1.2(i) requires naming the AI provider and getting consent before mail content goes to a third-party model."
+    ],
+    "assumptions": [
+      "Google and Microsoft keep granting broad read-and-draft API scopes to third-party agents.",
+      "People actually read drafts before sending instead of rubber-stamping them."
+    ],
+    "unknowns": [
+      "Will Gmail's own AI Inbox make third-party triage redundant for most people?",
+      "What share of drafts get sent unedited, and does it hold after the first month?"
+    ],
+    "prior_art": [
+      {
+        "name": "Superhuman Go",
+        "url": "https://www.grammarly.com/blog/company/superhuman-go-new-partner-agents/",
+        "note": "Directs first-party and partner agents (Box, Gamma and others) and has an iOS app; built for heavy email users."
+      },
+      {
+        "name": "Gmail AI Inbox",
+        "url": "https://fortune.com/2026/01/08/google-ai-inbox-gmail-gemini-3-integration-email-new-view-features/",
+        "note": "Summaries, topics and to-dos inside Gmail; went to trusted testers first in January 2026."
+      },
+      {
+        "name": "Fyxer",
+        "url": "https://tldv.io/blog/fyxer-ai-review/",
+        "note": "Sorts and drafts inside Gmail and Outlook; no iPhone app, but its drafts show up in any mail app."
+      },
+      {
+        "name": "Shortwave",
+        "url": "https://www.usecarly.com/blog/fyxer-vs-shortwave/",
+        "note": "AI-native Gmail client with a multi-step assistant; web-first."
+      }
+    ],
+    "first_version": "A server-side Gmail connector that sorts each new thread into four buckets and drafts replies only to people you have written to before. The iPhone app shows a morning stack of drafts to send, edit or discard with a swipe. The agent never sends anything itself.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-04",
+      "B-13",
+      "W-05"
+    ],
+    "notes_for_editor": "Fyxer and Shortwave details come from review blogs, not the companies. I did not re-check the current terms of Google's restricted-scope security assessment (CASA); the wording is kept general on purpose."
+  },
+  {
+    "id": "B-04",
+    "slug": "scheduling-negotiators",
+    "title": "Scheduling negotiator agents",
+    "tagline": "CC or text an assistant; it trades times with the other side, sends the invite and chases replies.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "A client emails asking to meet next week. You reply-all, copy your scheduling assistant with 'find 30 minutes', and go back to your run. By lunch the invite is on both calendars with a video link and a note about the time zone.",
+    "problem": "Finding a time takes three to six messages, and each one waits on somebody. Booking links push the work onto the other person, and some find them rude. AI calendars that rearrange your week mostly plan on a laptop, and their iPhone apps only view and edit.",
+    "loop": {
+      "trigger": "You CC or text the assistant on a thread",
+      "senses": "The thread, your calendar, your rules",
+      "decides": "Which times to offer, and in what order",
+      "checks_with_you": "Only when a request breaks your rules",
+      "acts": "Emails times, sends invite, adds video link",
+      "remembers": "Who gets priority, your focus blocks"
+    },
+    "ios_blocks": [
+      {
+        "name": "EventKit (EKEventStore)",
+        "why": "reads free time and writes the final event to the phone's calendars"
+      },
+      {
+        "name": "App Intents calendar schema (AppSchema.CalendarIntent: createEvent, updateEvent)",
+        "why": "lets Siri AI hand scheduling requests to the app"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "asks rule-clash questions with quick-answer buttons"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "OAuth to Google Calendar or Microsoft Graph for server-side availability"
+      }
+    ],
+    "hard_parts": [
+      "Replies arrive while the phone sleeps, so the agent has to run on a server against Google or Microsoft calendars; on-device EventKit is only a mirror.",
+      "Time zones, travel time and soft holds are where these agents embarrass you. One wrong offer costs more than five manual emails.",
+      "The other side is more and more often an agent too. Two assistants can loop, double-book or each wait for the other to propose.",
+      "Texting is gated: a native iMessage thread for a business agent needs Apple Messages for Business approval (Poke was the first AI agent approved, in June 2026)."
+    ],
+    "risks": [
+      "Leaking your schedule: offered times, event titles or other attendees reveal more than you meant to share.",
+      "Commitments in your name to the wrong person or at the wrong hour, especially across time zones."
+    ],
+    "assumptions": [
+      "The other side accepts negotiating with an assistant, and will more and more often be one.",
+      "People keep their calendars accurate enough for an agent to trust what looks free."
+    ],
+    "unknowns": [
+      "When both sides have agents, who proposes, and what shared protocol will they use?",
+      "Will Siri AI's calendar actions turn standalone scheduling assistants into a feature instead of a product?"
+    ],
+    "prior_art": [
+      {
+        "name": "Howie",
+        "url": "https://howie.com/",
+        "note": "Scheduling assistant with its own email address and phone number; negotiates over email and iMessage. Reports 1,000+ paying customers."
+      },
+      {
+        "name": "Motion",
+        "url": "https://efficient.app/compare/motion-vs-reclaim",
+        "note": "Auto-scheduling calendar; its iPhone app views and edits while the planning engine runs on desktop."
+      },
+      {
+        "name": "Reclaim.ai",
+        "url": "https://get-alfred.ai/blog/best-ai-calendar-assistants",
+        "note": "Habit and focus-time blocking; no native iOS app."
+      },
+      {
+        "name": "Claude on iOS (Calendar)",
+        "url": "https://support.claude.com/en/articles/11869619-use-claude-with-ios-apps",
+        "note": "Creates and edits Calendar events on the phone, but does not negotiate with other people."
+      },
+      {
+        "name": "Clockwise",
+        "url": "https://get-alfred.ai/compare/motion-vs-clockwise",
+        "note": "Team calendar optimizer, reportedly shut down in March 2026."
+      }
+    ],
+    "first_version": "An email address you CC. It reads the thread, checks your Google Calendar over the API, offers three times in one reply and sends the invite when the other side picks one. The iPhone app lists open negotiations and asks you only when a request breaks a rule you set.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-03",
+      "B-12",
+      "B-13"
+    ],
+    "notes_for_editor": "The Clockwise shutdown and its purchase by Salesforce come from a comparison blog and are unconfirmed. Howie's customer and meeting counts are self-reported. The candidate said Reclaim is owned by Dropbox; I did not re-verify that, so I left it out."
+  },
+  {
+    "id": "B-05",
+    "slug": "trip-rebooking-agents",
+    "title": "Trip booking and rebooking agents",
+    "tagline": "Agents that search and book trips and, when a flight dies, propose a rebooking before you reach the desk.",
+    "tier": "building-now",
+    "flagship": true,
+    "category": "Physical world",
+    "moment": "Your 6pm connection is cancelled while you are still in the air. When you land, a notification already lists two rebooking options and a hotel hold near the airport. You tap the second one, confirm with Face ID, and walk past the rebooking line.",
+    "problem": "Booking a trip is a solved search problem; fixing one that breaks is not. After a cancellation you race hundreds of other passengers through a phone queue, the airline app and the desk. Travel apps tell you the flight is cancelled but rarely hold a seat or a room, and the airline's automatic rebooking picks what suits the airline.",
+    "loop": {
+      "trigger": "Flight delay, cancel or schedule change",
+      "senses": "Flight status, open seats, hotels, rules",
+      "decides": "Best options for arrival time and cost",
+      "checks_with_you": "Any change that costs money or moves dates",
+      "acts": "Rebooks, holds a hotel, updates the trip",
+      "remembers": "Airlines, seats, connections you prefer"
+    },
+    "ios_blocks": [
+      {
+        "name": "ActivityKit (Live Activities, push-to-start)",
+        "why": "a disruption card on the Lock Screen and Watch with options and countdowns"
+      },
+      {
+        "name": "UserNotifications (time-sensitive interruption level)",
+        "why": "breaks through Focus when a flight is cancelled"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID on any change that costs money"
+      },
+      {
+        "name": "CryptoKit (SecureEnclave)",
+        "why": "signs the approval so the server can verify it came from your phone"
+      },
+      {
+        "name": "PassKit (PKPass, PKDeferredPaymentRequest)",
+        "why": "updates boarding passes in Wallet and sets up an Apple Pay hotel hold"
+      },
+      {
+        "name": "EventKit",
+        "why": "moves flight and hotel events when the plan changes"
+      },
+      {
+        "name": "App Intents (AppEntity, IndexedEntity)",
+        "why": "exposes trips and legs to Siri AI, as Tripsy does"
+      }
+    ],
+    "hard_parts": [
+      "Write access. Changing a ticket needs airline or agency access (NDC or a GDS). A plain consumer app can only relay the carrier's offer or deep-link into its app.",
+      "Speed. Seats go within minutes of a mass cancellation, so the agent needs status and inventory faster than the airline's own push.",
+      "App Review guideline 5.1.1(ix) says apps in regulated fields such as air travel must be submitted by the entity that provides the service, so a booking agent must be, or partner with, a licensed seller.",
+      "The airline often rebooks you automatically first, and the agent has to reconcile that before proposing anything."
+    ],
+    "risks": [
+      "Two tickets or none, if the agent books a new flight without cleanly releasing the old one.",
+      "Under US rules, accepting a rebooking after a cancellation can waive the cash refund the traveller was owed; the agent must show that trade-off.",
+      "The agent turns into a messenger for the airline's offer and misses better fixes, such as another airline or a train."
+    ],
+    "assumptions": [
+      "Airlines will let a third-party agent change a ticket rather than routing every change through their own app.",
+      "Stressed travellers will trust one Face ID tap to spend money on a new plan."
+    ],
+    "unknowns": [
+      "Will airlines expose rebooking offers to outside agents through NDC or agent protocols?",
+      "Who is liable when the agent's rebooking breaks a connection the airline would have protected?",
+      "Will 'self-healing' trips come from booking platforms like Expedia, or from independent agents?"
+    ],
+    "prior_art": [
+      {
+        "name": "Expedia + Layla",
+        "url": "https://ir.expediagroup.com/news-and-events/news/news-details/2026/Expedia-Group-acquires-Layla-accelerating-its-AI-powered-trip-planning-and-booking-strategy/default.aspx",
+        "note": "Conversational planner and booker bought in July 2026; 'self-healing' trips are planned, not shipped, and tied to Expedia inventory."
+      },
+      {
+        "name": "Google AI Mode hotel booking",
+        "url": "https://skift.com/2026/08/27/googles-agentic-hotel-booking-tool-comes-to-ai-mode/",
+        "note": "Agentic hotel booking in Search since August 2026; booking, not disruption handling."
+      },
+      {
+        "name": "Meta Muse travel",
+        "url": "https://www.phocuswire.com/news/technology/meta-launches-ai-agent-travel-booking",
+        "note": "Books flights through the Duffel API inside a general agent; no reported disruption monitoring."
+      },
+      {
+        "name": "Hopper HTS Assist",
+        "url": "https://venturebeat.com/infrastructure/hoppers-ai-agent-can-book-flights-and-cancel-trips-without-human-help",
+        "note": "Cancels, refunds and rebooks through airline systems without a human, but is sold to travel businesses rather than working for the traveller."
+      }
+    ],
+    "first_version": "Watch flights the user forwards by email. On a cancellation or long delay, pull same-day options from a flight data API, rank them by arrival time, and push a Live Activity with two choices and deep links to the airline's own rebooking page. Add a one-tap hotel hold through a booking partner before attempting any ticket changes.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-01",
+      "W-24",
+      "M-21"
+    ],
+    "deep_dive": "## Deep dive\n\nTrip disruption is the clearest case of the pattern most iPhone agents now follow. A server watches and does the work. The phone is where you see the problem and say yes. The window to act is short and a wrong move costs a night in an airport, so every weak spot in the design shows.\n\n```mermaid\nsequenceDiagram\n  participant Feed as \"Flight status feed\"\n  participant Agent as \"Cloud agent\"\n  participant Seller as \"Booking partner\"\n  participant Phone as \"iPhone app\"\n  participant You as \"You\"\n  Feed->>Agent: \"Your 6pm connection is cancelled\"\n  Agent->>Seller: \"Search same-day seats and nearby hotels\"\n  Seller-->>Agent: \"Three flights, two hotels\"\n  Agent->>Agent: \"Rank by arrival time, cost and your rules\"\n  Agent->>Phone: \"Push-to-start Live Activity\"\n  Phone->>You: \"Two options and a hotel hold\"\n  You->>Phone: \"Pick option 2, confirm with Face ID\"\n  Phone->>Agent: \"Signed approval\"\n  Agent->>Seller: \"Book seat and hold room\"\n  Seller-->>Agent: \"Confirmed, new record locator\"\n  Agent->>Phone: \"Update Live Activity, Wallet and Calendar\"\n  Phone->>You: \"New boarding pass and hotel address\"\n```\n\nThe phone never hosts the loop. iOS will not keep an app running for hours, so the agent lives on a server that follows flight status. The phone gets a push-to-start Live Activity, which appears even when the app is not running. After Face ID, the app signs the approval with a Secure Enclave key, so the server can prove the yes came from this phone and not from a stolen session.\n\n### What the first 90 days look like\n\n- Weeks 1-4: import trips from forwarded confirmation emails and watch every leg. Measure how many minutes ahead of the airline's own alert you spot a problem.\n- Weeks 5-8: on a cancellation or long delay, show ranked options with deep links to the airline's rebooking page, and hold a hotel room through a booking partner. The traveller still makes the ticket change in the airline's app.\n- Weeks 9-12: sign an agency partner that can change tickets for one or two carriers, and turn on one-tap rebooking for them. Track how often travellers take the first option, and how often the airline's automatic rebooking was better.\n\n### The hardest engineering problem\n\nKeeping one true version of the trip while three parties change it. The airline often rebooks you on its own within minutes. Your agent is proposing something else. The traveller may be at the desk doing a third thing. The agent has to reconcile all of that before it books, or someone ends up with two tickets or none. That takes idempotent booking calls, holds that expire on a timer, a fresh check of the ticket right before any change, and a log of which record locator is live. The agent also has to know when not to act. Under US rules, accepting a new flight after a cancellation can mean giving up the cash refund the traveller was owed, so \"take the refund and book elsewhere\" must stay on the menu.\n\n### How it makes money\n\n- Booking commissions and hotel affiliate fees on the rebooked flight and the emergency room.\n- A yearly subscription for frequent travellers, priced like a lounge pass.\n- Deals with card issuers and travel insurers, which pay out less when stranded travellers are rebooked fast.\n",
+    "why_flagship": "The pattern the whole iPhone agent industry converged on: cloud does the work, the Lock Screen asks for the OK.",
+    "notes_for_editor": "That Muse uses Duffel comes from PhocusWire; I did not check it independently. Expedia's 'self-healing' trips wording comes from Expedia and Skift coverage. Hopper HTS Assist details come from VentureBeat. The US refund point describes DOT's general cancellation-refund rule and is not tied to one source in the research notes."
+  },
+  {
+    "id": "B-06",
+    "slug": "price-watch-auto-buy",
+    "title": "Price-watch auto-buy agents",
+    "tagline": "Set a target price once; the agent watches the item and buys when it drops, within a budget you set.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "You want a specific stroller, but not at $480. You tell the shopping agent 'buy it at 30% off, black, ship to home.' Three weeks later a notification says it bought it for $329 and shows the return window.",
+    "problem": "Prices on big purchases swing, and the best price can last only hours. Price-alert apps tell you about a drop, but by the time you look the deal may be gone, and you still have to check the seller, the color and the delivery date. A standing order that buys on your terms takes the watching off your plate.",
+    "loop": {
+      "trigger": "The price crosses your target",
+      "senses": "Price, seller, variant, delivery date",
+      "decides": "Does this offer meet every rule you set?",
+      "checks_with_you": "One tap, or none if under your cap",
+      "acts": "Checks out with saved payment and address",
+      "remembers": "Orders, return windows, price history"
+    },
+    "ios_blocks": [
+      {
+        "name": "Visual Intelligence (IntentValueQuery, SemanticContentDescriptor)",
+        "why": "snap a product with the camera to start tracking it"
+      },
+      {
+        "name": "Share extension (NSExtensionContext)",
+        "why": "send a product link from Safari or another app to the watch list"
+      },
+      {
+        "name": "PassKit (Apple Pay, PKPaymentAuthorizationController)",
+        "why": "user-confirmed checkout; Apple Pay needs a Face ID tap per purchase"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "'price hit' and 'bought it' alerts with approve and cancel actions"
+      },
+      {
+        "name": "WidgetKit",
+        "why": "tracked items and their current prices on the Home Screen"
+      },
+      {
+        "name": "App Intents",
+        "why": "'watch this price' from Siri and Shortcuts"
+      }
+    ],
+    "hard_parts": [
+      "Apple has no agent-payment API. True auto-buy on iPhone runs on a store's saved card (Amazon), Google Pay, one-time cards (Stripe Link) or card-network agent tokens, not Apple Pay.",
+      "Matching the exact item. Variant, condition, seller rating and delivery date all have to match, or the 'deal' is a different product.",
+      "Buying on stores you don't control. Buy for Me-style checkout breaks on login walls, bot checks and redesigns, and merchant protocols such as UCP and ACP cover only some stores."
+    ],
+    "risks": [
+      "The agent ranks results for the store, not for you, when the platform that sells is also the one running the agent.",
+      "A stale rule fires months later after your needs changed. Rules need expiry dates and a spend cap.",
+      "Price-glitch or marketplace-fraud listings that trigger a buy the merchant later cancels, leaving holds on your card."
+    ],
+    "assumptions": [
+      "The agent works for you and not for the store whose search results it ranks.",
+      "Stores treat agent-placed orders and returns the same as human ones."
+    ],
+    "unknowns": [
+      "Will Apple add spend limits or agent mandates to Apple Pay?",
+      "Do people with auto-buy rules end up spending more, not less?"
+    ],
+    "prior_art": [
+      {
+        "name": "Amazon Alexa for Shopping (Auto Buy, Buy for Me)",
+        "url": "https://www.cnbc.com/2026/05/13/amazon-ditches-rufus-ai-chatbot-in-favor-of-alexa-shopping-agent.html",
+        "note": "Replaced Rufus in May 2026; buys at your target price and checks out on other sites. Works for Amazon's own catalog first."
+      },
+      {
+        "name": "Google agentic checkout and Universal Cart",
+        "url": "https://blog.google/products-and-platforms/products/shopping/agentic-checkout-holiday-ai-shopping/",
+        "note": "Buys through Google Pay at your target price after you confirm; limited to participating merchants."
+      },
+      {
+        "name": "ChatGPT Instant Checkout (discontinued)",
+        "url": "https://www.digitalcommerce360.com/2026/03/06/openai-shifts-checkout-plans-agentic-commerce-strategy/",
+        "note": "In-chat buying dropped in March 2026 after Walmart saw it convert about 3x worse than a click-through to its site."
+      },
+      {
+        "name": "Meta Muse checkout",
+        "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+        "note": "Pays with one-time Stripe Link cards inside a general agent; no standing price rules reported."
+      }
+    ],
+    "first_version": "A share-sheet 'watch this' for any product link, with a target price, a variant check and an expiry date. When the price hits, send a time-sensitive notification that opens a prefilled Apple Pay sheet, so buying takes one Face ID tap. Offer true auto-buy only at merchants that support an agent checkout protocol.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-22",
+      "M-02",
+      "B-01"
+    ],
+    "notes_for_editor": "The 3x conversion figure is Walmart's measurement as reported by Digital Commerce 360. Visa and Mastercard agent-token rollout details come from secondary sources in the research notes."
+  },
+  {
+    "id": "B-07",
+    "slug": "money-autopilot",
+    "title": "Money autopilot agents",
+    "tagline": "Link your accounts; the agent plans goals and moves money within your limits, then texts you what it did.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "Payday lands on a Friday. Before you check your balance, the agent has paid the card in full, moved $180 to your trip fund and texted: 'Held back $60 because your car insurance renews Tuesday. Undo?'",
+    "problem": "Most people know they should pay the card in full, save for the trip and keep a buffer for bills, but doing it every payday takes attention. Budgeting apps draw charts and leave the moves to you. Bank auto-transfers move fixed amounts and ignore what is about to come due.",
+    "loop": {
+      "trigger": "Payday lands or a bill comes due",
+      "senses": "Balances, transactions, upcoming bills",
+      "decides": "What to pay, save or hold back",
+      "checks_with_you": "Anything outside your pre-set rules",
+      "acts": "Moves money between your own accounts",
+      "remembers": "Goals, bill dates, what you undid"
+    },
+    "ios_blocks": [
+      {
+        "name": "FinanceKit (FinanceStore, BackgroundDeliveryExtension)",
+        "why": "reads Apple Card, Apple Cash and Savings data on device and wakes when it changes (iOS 26); needs a managed entitlement"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "'held back $60, undo?' messages with an undo action"
+      },
+      {
+        "name": "App Intents (UndoableIntent)",
+        "why": "registers undo for each money move so it can be reversed from the app or Siri"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID to change rules or raise caps"
+      },
+      {
+        "name": "WidgetKit",
+        "why": "a safe-to-spend number on the Home Screen"
+      }
+    ],
+    "hard_parts": [
+      "Moving money needs a licensed bank or payments partner and account-to-account rails; the app cannot move funds by itself.",
+      "Data coverage. FinanceKit covers Apple's own card products and requires Apple's approval; other banks come through aggregators such as Plaid, with gaps and delays.",
+      "Timing. Transfers take days and bills post late, so a plan built on today's balance can overdraw tomorrow.",
+      "Undo is not really undo. Reversing a transfer means a new transfer, which can also take days."
+    ],
+    "risks": [
+      "Safety line: never make a move that could overdraw an account or miss a bill, and never move money to third parties without a fresh approval.",
+      "Recommending investments, loans or insurance can become regulated financial advice.",
+      "A stolen phone or hijacked account turns the autopilot into a drain; rule changes need Face ID and a cooling-off delay."
+    ],
+    "assumptions": [
+      "Regulators keep treating an agent that moves money between your own accounts as a feature, not as financial advice.",
+      "Aggregator data stays accurate and timely enough to act on."
+    ],
+    "unknowns": [
+      "How much will people let an agent move before they stop trusting the undo button?",
+      "Will US open-banking rules (CFPB section 1033) settle in a form that gives agents stable data access?"
+    ],
+    "prior_art": [
+      {
+        "name": "Cleo Autopilot",
+        "url": "https://web.meetcleo.com/blog/introducing-autopilot",
+        "note": "Plans goals and acts within user-set limits since February 2026; US-focused, mostly moves between the user's own accounts."
+      },
+      {
+        "name": "ChatGPT finances",
+        "url": "https://techcrunch.com/2026/05/15/openai-launches-chatgpt-for-personal-finance-will-let-you-connect-bank-accounts/",
+        "note": "Plaid-linked dashboard and Q&A across 12,000+ institutions for US Plus and Pro users; explains, does not move money."
+      },
+      {
+        "name": "Rocket Money Rowan",
+        "url": "https://www.pymnts.com/news/artificial-intelligence/2026/this-ai-agent-ends-subscriptions-without-a-phone-call/",
+        "note": "Reportedly texts savings opportunities and takes text instructions; details come from one trade report."
+      }
+    ],
+    "first_version": "Read-only first: connect accounts, forecast the next 30 days of bills, and on each payday propose three moves with amounts that the user approves with one tap. After four weeks of approvals, offer to make the same moves automatically under a cap, with undo.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-08",
+      "M-02",
+      "W-16"
+    ],
+    "notes_for_editor": "Rowan's details come from one PYMNTS report and are unconfirmed. Cleo's capabilities come from its own blog and press release. The Menlo 2026 figures (20% of AI users have given an agent a financial account, 36% email) are from the research notes. FinanceKit country availability was not verified."
+  },
+  {
+    "id": "B-08",
+    "slug": "bill-fighting-agents",
+    "title": "Bill-fighting and cancel agents",
+    "tagline": "An agent calls, emails and chats with companies to lower bills, cancel subscriptions and chase refunds.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "Your internet bill jumped $25 when the promo ended. You forward the bill and tap 'negotiate.' Two days later the agent reports it waited 40 minutes on hold, got a $20-a-month credit, and needs your OK before accepting a 12-month term.",
+    "problem": "Companies make cancelling and negotiating slow: long holds, retention menus and 'call during business hours'. People who push get discounts, and most people don't have the time. Services that negotiate for a cut of the savings have existed for years, but they cover a short list of providers.",
+    "loop": {
+      "trigger": "You forward a bill or tap 'lower this'",
+      "senses": "Bill PDF, account details, current offers",
+      "decides": "Target price, and when to walk away",
+      "checks_with_you": "Before new contracts, PINs or offers",
+      "acts": "Calls, emails and chats with the company",
+      "remembers": "Offers won, promo end dates, follow-ups"
+    },
+    "ios_blocks": [
+      {
+        "name": "Share extension (NSExtensionContext)",
+        "why": "forward a bill PDF or screenshot from Mail, Files or Photos"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scan a paper bill"
+      },
+      {
+        "name": "Vision OCRTool with Foundation Models",
+        "why": "reads amounts, dates and the account number on device before anything is uploaded"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "hold and progress status during a long call"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "'accept this offer?' approvals"
+      },
+      {
+        "name": "EventKit",
+        "why": "a reminder to recheck before the new promo ends"
+      }
+    ],
+    "hard_parts": [
+      "Account verification. Providers ask for PINs, last-four digits or the account holder, so the agent needs the user pre-authorized on the account or patched into the call.",
+      "Retention desks push new contracts, bundles and equipment swaps. The agent has to tell which 'savings' cost more over 12 months.",
+      "Follow-through. Credits show up on the next bill or not at all, so the agent must check the next statement and call back.",
+      "Calls come from cloud telephony because iOS gives apps no access to cellular calls."
+    ],
+    "risks": [
+      "Signing the user up for a contract, early-termination fee or price lock they didn't want.",
+      "A third party holding account PINs and ID numbers; a breach makes SIM-swap fraud easier.",
+      "Fees based on a share of savings can reward small cuts that come with long contracts."
+    ],
+    "assumptions": [
+      "Retention desks keep offering discounts once most of their callers are agents that never give up.",
+      "Providers keep accepting an authorized third party acting on the account."
+    ],
+    "unknowns": [
+      "After a US court struck down the FTC's click-to-cancel rule in 2025, will state laws make cancelling easy enough that agents aren't needed?",
+      "What success rate do these agents reach across providers, beyond self-reported numbers?"
+    ],
+    "prior_art": [
+      {
+        "name": "Pine AI",
+        "url": "https://www.19pine.ai/",
+        "note": "Calls, emails and web tasks to negotiate bills, cancel and file refunds. Claims $300+ average yearly savings; an independent test saw 2 of 3 tasks succeed in 48 hours."
+      },
+      {
+        "name": "Rocket Money Rowan",
+        "url": "https://www.pymnts.com/news/artificial-intelligence/2026/this-ai-agent-ends-subscriptions-without-a-phone-call/",
+        "note": "Reportedly cancels subscriptions by text instruction; unconfirmed."
+      },
+      {
+        "name": "Meta Muse",
+        "url": "https://the-decoder.com/muse-can-shop-write-emails-and-negotiate-prices-for-users-all-through-whatsapp/",
+        "note": "Negotiates prices and bills, including through WhatsApp, as one feature of a general agent."
+      },
+      {
+        "name": "Cleo Autopilot",
+        "url": "https://www.prnewswire.com/news-releases/cleo-launches-autopilot-automating-your-money-moves-302679691.html",
+        "note": "Bill negotiation is on the 2026 roadmap, not shipped."
+      }
+    ],
+    "first_version": "Cancellations only, for the 30 most common subscriptions and a few big US cable and phone providers. The user forwards a bill; the agent cancels through the cheapest channel (web, chat, email, then phone) and reports a confirmation number. Add negotiation once cancelling is reliable.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-02",
+      "B-24",
+      "W-27"
+    ],
+    "notes_for_editor": "Pine's 93% success rate and $300+ savings are self-reported; the 2-of-3 test comes from a third-party review listed in the research notes, which I did not open. Rowan is unconfirmed. The FTC click-to-cancel point is from general knowledge (the Eighth Circuit vacated the rule in July 2025), not from the research notes."
+  },
+  {
+    "id": "B-09",
+    "slug": "health-record-readers",
+    "title": "Health-record reading assistants",
+    "tagline": "Assistants that read Apple Health and medical records to explain labs and prep you for appointments.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Health & body",
+    "moment": "Your yearly bloodwork posts to the patient portal at 9pm. You ask the assistant what changed; it pulls last year's labs and your sleep and activity trends, and drafts three questions for Thursday's appointment.",
+    "problem": "Lab results often arrive before the doctor explains them, as a wall of numbers and red flags. Records are split across portals, the Health app and paper. Patient portals show results but don't compare them over time or connect them to how you sleep and move.",
+    "loop": {
+      "trigger": "New results, or an appointment is near",
+      "senses": "Records, labs, meds, sleep, activity",
+      "decides": "What changed and what is worth asking",
+      "checks_with_you": "You pick which data types it can read",
+      "acts": "Explains results, drafts visit questions",
+      "remembers": "Med list, past results, open questions"
+    },
+    "ios_blocks": [
+      {
+        "name": "HealthKit (HKClinicalRecord)",
+        "why": "reads FHIR labs, conditions and medications downloaded from providers; read-only"
+      },
+      {
+        "name": "HealthKit Medications API (HKUserAnnotatedMedication, HKMedicationDoseEvent)",
+        "why": "reads the med list and logged doses (iOS 26)"
+      },
+      {
+        "name": "Foundation Models (PrivateCloudComputeLanguageModel)",
+        "why": "summarizes on Apple's servers with a 32K context, without sending records to a third-party AI"
+      },
+      {
+        "name": "EventKit",
+        "why": "finds the next appointment and attaches the questions"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "a prep reminder the evening before a visit"
+      }
+    ],
+    "hard_parts": [
+      "HealthKit rules. Data may go only to services that provide health or fitness services to the user, never to ads or data mining, and App Review 5.1.2(i) requires consent that names any third-party AI.",
+      "Coverage. Health Records only work when the user's provider supports the download, and coverage varies by provider and country.",
+      "Context size. A few years of FHIR labs plus daily sleep data overflow the 4,096-token on-device model; it needs summarizing or PCC's 32K context.",
+      "The Health store is encrypted while the phone is locked, so a background job cannot read new records until the user next opens the phone."
+    ],
+    "risks": [
+      "Safety line: explain and compare, never diagnose or suggest changing a medication, and send urgent values straight to a clinician.",
+      "Records in a chatbot company's cloud may fall outside HIPAA, which mostly covers providers and insurers, not consumer apps.",
+      "Features that interpret results for treatment can become a regulated medical device, and Apple now asks health apps to declare regulated-device status."
+    ],
+    "assumptions": [
+      "People trust a chatbot company with their records more than their hospital's own portal.",
+      "Providers keep sending records into Apple Health in a usable FHIR format."
+    ],
+    "unknowns": [
+      "Will Apple's own Health app summaries, previewed in the iOS 27.2 beta, make third-party readers redundant?",
+      "Does reading records change health outcomes, or mostly lower anxiety before visits?"
+    ],
+    "prior_art": [
+      {
+        "name": "ChatGPT Health",
+        "url": "https://www.macrumors.com/2026/07/23/chatgpt-apple-health-integration/",
+        "note": "Apple Health plus medical records, lab comparisons and visit prep; US rollout began July 23, 2026. Reads and explains, rarely acts."
+      },
+      {
+        "name": "Claude Apple Health integration",
+        "url": "https://www.macrumors.com/2026/01/22/claude-ai-adds-apple-health-connectivity/",
+        "note": "Apple Health analysis in beta for US Pro and Max users since January 2026."
+      },
+      {
+        "name": "Apple Health AI coach (shelved)",
+        "url": "https://livity-app.com/en/blog/apple-health-ai-coach-shelved",
+        "note": "Apple's own coach (Project Mulberry) was delayed and scaled back, leaving the field to chatbot companies."
+      }
+    ],
+    "first_version": "An on-device lab diff. Read clinical lab records from HealthKit, show what changed since last time with plain-language notes and reference ranges, and add three draft questions to the next appointment in Calendar. Nothing leaves the phone except through Apple's Private Cloud Compute.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "suggest",
+    "related": [
+      "W-20",
+      "B-10",
+      "M-20"
+    ],
+    "notes_for_editor": "The redesigned Health app and Readiness score in the iOS 27.2 beta are reported, not confirmed. The Mulberry shelving comes from press reports. The regulated-device declaration (Health & Fitness and Medical apps, since March 2026) comes from the research notes."
+  }
+]

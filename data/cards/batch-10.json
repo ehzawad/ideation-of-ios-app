@@ -1,0 +1,850 @@
+[
+  {
+    "id": "M-19",
+    "slug": "fourth-trimester-sentinel",
+    "title": "Fourth Trimester Sentinel",
+    "tagline": "Watches blood pressure and warning signs for six weeks after birth and gets the OB team on the line fast.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Health & body",
+    "moment": "You're nine days postpartum, up at 3 a.m. with the baby, and you've decided your headache is just lack of sleep. Your cuff reading lands in Health: 164/102, over the line your OB set at discharge. The agent asks two quick questions about your vision and breathing, wakes your partner, and puts you through to the OB triage line with your last three readings already in the care team's inbox.",
+    "problem": "Postpartum preeclampsia can start days or weeks after you leave the hospital, when you're exhausted and nobody is checking. Its warning signs, a headache or swollen feet, look like ordinary new-parent misery. Hospital programs that have parents text in home blood pressure readings work, but most practices don't run one, and consumer blood pressure apps log numbers with nobody on the other end.",
+    "loop": {
+      "trigger": "New BP reading or a scheduled check-in",
+      "senses": "HealthKit BP, heart rate, symptom answers",
+      "decides": "Is it past the OB's own thresholds?",
+      "checks_with_you": "Two symptom questions, then escalates",
+      "acts": "Calls OB triage, alerts partner, logs it",
+      "remembers": "Readings, symptoms, calls, OB thresholds"
+    },
+    "ios_blocks": [
+      {
+        "name": "HealthKit (HKCorrelationType blood pressure, HKObserverQuery with background delivery)",
+        "why": "picks up cuff readings soon after they sync to Health"
+      },
+      {
+        "name": "HealthKit clinical records (HKClinicalRecord)",
+        "why": "delivery date, diagnoses and discharge meds where the hospital supports Health Records"
+      },
+      {
+        "name": "UserNotifications (critical alerts, managed entitlement)",
+        "why": "breaks through silent mode and Focus for a threshold hit"
+      },
+      {
+        "name": "WatchKit (WKInterfaceDevice haptics)",
+        "why": "wrist taps for twice-daily readings and night symptom check-ins"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows an escalation in progress: triage called, partner alerted"
+      },
+      {
+        "name": "App Intents",
+        "why": "'log my pressure' or 'I have a headache' from Siri or the Action button"
+      }
+    ],
+    "hard_parts": [
+      "Wall (trust and regulation): an app that reads blood pressure and tells someone to go to the ER is very likely a medical device, and escalation only works if an OB team is on the other end. Health systems don't accept alerts from consumer apps. What would have to change: OB practices 'prescribing' the app with their own thresholds and an inbox that receives its alerts, paid for as remote patient monitoring.",
+      "Someone has to answer at 3 a.m. That is a staffing contract and a clinical protocol, not an API. The call itself runs from a cloud phone number on the server, because an iPhone app can't place a cellular call on its own.",
+      "Readings are only as good as the cuff and the technique. Cuff size, a validated device and a recheck rule after a single high reading all have to be written by clinicians, not guessed by a model.",
+      "HealthKit background delivery is not instant or guaranteed, and postpartum preeclampsia can appear up to six weeks after birth. The agent has to keep an exhausted parent taking readings twice a day for weeks without nagging them into ignoring it."
+    ],
+    "risks": [
+      "Medical safety line: it never invents thresholds, never tells anyone a reading is fine, and never talks anyone out of care. A red-flag symptom (severe headache, vision changes, chest pain, trouble breathing, a seizure) always means 'call 911 or go to the ER now', with the OB call running alongside.",
+      "Regulatory status: under FDA's software policy, logging readings and sharing them with a clinician is low risk, but alarms meant to prompt urgent clinical action look like a regulated device function. That needs FDA clearance or has to run inside a clinician-run monitoring program. Apple's own FDA-cleared hypertension notifications are not intended for pregnant people or people already diagnosed with hypertension.",
+      "False reassurance: if the app stays quiet, people may skip the postpartum blood pressure check their OB scheduled. It must say plainly that it doesn't replace that visit."
+    ],
+    "assumptions": [
+      "New parents will take readings twice a day, even at 3 a.m., if logging takes one tap and a Watch nudge.",
+      "An OB practice will write thresholds into the app, answer its escalations, and find someone to pay for that time.",
+      "The home cuff is validated and syncs to Health reliably."
+    ],
+    "unknowns": [
+      "Does an app that only applies a clinician's own thresholds count as a regulated device, or as part of that clinician's practice? There's no clear FDA answer for this exact setup.",
+      "Will a triage nurse act on a call started by software, or insist on hearing from the patient first?",
+      "Do outcomes from academic programs (fewer readmissions, better follow-up) hold for practices without research staff?"
+    ],
+    "prior_art": [
+      {
+        "name": "Penn Medicine Heart Safe Motherhood",
+        "url": "https://chti.upenn.edu/heart-safe-motherhood",
+        "note": "Health-system program where new parents text in home blood pressure readings and clinicians act on high ones. Proves the model, but it lives inside one system and isn't an app anyone can get."
+      },
+      {
+        "name": "Remote postpartum BP program at a safety-net hospital (JAHA)",
+        "url": "https://www.ahajournals.org/doi/10.1161/JAHA.123.034031",
+        "note": "Published remote blood pressure monitoring program for postpartum patients. Again a hospital program with its own staff, not a tool a small OB practice can switch on."
+      },
+      {
+        "name": "Apple Watch hypertension notifications",
+        "url": "https://support.apple.com/en-us/117296",
+        "note": "FDA-cleared alerts for possible undiagnosed hypertension. Not intended for pregnant people or people already diagnosed, and not built for acute escalation."
+      },
+      {
+        "name": "Cooley on FDA's January 2026 general wellness guidance",
+        "url": "https://www.cooley.com/news/insight/2026/2026-01-20-fda-opens-aperture-for-wearables-in-latest-general-wellness-guidance",
+        "note": "Law-firm summary of FDA widening what non-invasive wearables can do as wellness products. A disease-specific alarm for postpartum preeclampsia still sits outside general wellness."
+      }
+    ],
+    "first_version": "Ship it through one OB practice as the practice's tool, not as a consumer app. At discharge the practice enters each patient's thresholds and triage number; the app reads cuff readings from HealthKit, runs a two-question symptom check, and on a threshold hit shows a full-screen 'call triage now' button with the readings, plus a 911 button for red-flag symptoms. Every reading also flows into a weekly summary the practice reviews.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 3,
+      "feasibility": 2,
+      "impact": 5
+    },
+    "horizon": "1-2y",
+    "autonomy": "act-report",
+    "related": [
+      "M-17",
+      "B-09",
+      "W-21"
+    ],
+    "notes_for_editor": "Changed the moment's reading from 158/104 to 164/102 so it clearly crosses a severe-range line (160 systolic) rather than relying on the headache alone; thresholds in the product still come from the OB. The FDA points (tracking and sharing BP is low risk; alarms for urgent clinical action look like active patient monitoring, a device function) are my reading of FDA's software guidance, not legal advice, and were not re-checked this session. Apple's hypertension-notification restrictions were confirmed from Apple Support search results. I did not open the JAHA article or the Cooley summary; their descriptions follow the candidate research. Critical alerts need Apple's managed entitlement, which Apple grants case by case."
+  },
+  {
+    "id": "M-20",
+    "slug": "exam-room-advocate",
+    "title": "Exam Room Advocate",
+    "tagline": "Sits in on your parent's appointment, keeps the agenda, and turns what the doctor said into next steps.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Family & care",
+    "moment": "Your mom has a cardiology visit at 10:40 and you're 600 miles away. With the doctor's OK, her phone sits on the table and you listen in, and her Watch taps her when the visit is wrapping up and the dizziness question still hasn't come up. By noon you've approved three follow-ups the agent drafted: a refill request, a call to book the echocardiogram, and a note to her pharmacist about the new dose.",
+    "problem": "Adult children managing a parent's care from far away hear about visits secondhand, if at all. Questions get forgotten in a 15-minute slot, and the after-visit summary shows up later in a portal the parent can't find. Clinicians now have AI scribes writing their notes; the patient's side still has a paper list and a tired memory.",
+    "loop": {
+      "trigger": "Visit on calendar, clinician says OK",
+      "senses": "Agenda, on-device transcript, visit notes",
+      "decides": "Which agenda items are still open",
+      "checks_with_you": "Every order and med change before acting",
+      "acts": "Nudges, then drafts refills and bookings",
+      "remembers": "Open questions, meds, orders, who said what"
+    },
+    "ios_blocks": [
+      {
+        "name": "Speech (SpeechAnalyzer, SpeechTranscriber)",
+        "why": "on-device transcription so visit audio never leaves the phone"
+      },
+      {
+        "name": "Foundation Models (on-device)",
+        "why": "matches the transcript to agenda items and pulls out orders and med changes"
+      },
+      {
+        "name": "WatchKit (WKInterfaceDevice haptics)",
+        "why": "a quiet wrist tap while an agenda item is still open"
+      },
+      {
+        "name": "HealthKit (clinical records, symptoms)",
+        "why": "builds the agenda from logged symptoms, current meds and recent labs"
+      },
+      {
+        "name": "App Intents (AudioRecordingIntent)",
+        "why": "starts visit mode with the system recording indicator and a Live Activity"
+      },
+      {
+        "name": "CallKit",
+        "why": "lets the remote caregiver listen in over a VoIP call the app controls"
+      },
+      {
+        "name": "EventKit",
+        "why": "puts the visit and each follow-up on the family calendar"
+      }
+    ],
+    "hard_parts": [
+      "Wall (consent, liability and integration): about a dozen US states require everyone's consent to record, many clinics ban patient recordings, and nobody knows who is responsible if a live nudge steers a visit wrong. What would have to change: health systems sharing the scribe's structured summary (orders, med changes) with the patient right after the visit, and a norm that accepts patient-side AI the way clinics accept medical interpreters.",
+      "Orders and med changes come back hours later as portal text or a PDF, not structured data. Health Records in HealthKit update on the hospital's schedule, so the agent can't confirm a new prescription until the portal or pharmacy shows it.",
+      "Exam rooms are noisy, voices overlap, and drug names are easy to mishear. A transcript that says 'stop metoprolol' when the doctor said 'start' is dangerous, so every extracted change is checked against the official summary before anything happens.",
+      "Follow-ups have no API. Most portals don't let an app book imaging or request refills, so the agent drafts portal messages for the caregiver (with proxy access) to send, or calls the scheduling line from a cloud number after approval."
+    ],
+    "risks": [
+      "Medical safety line: it never gives clinical advice, never speaks to the clinician, and never acts on a medication change heard only in audio. Nudges point only at items the family put on the agenda, and any mismatch goes back to the clinic as a question.",
+      "Regulatory status: a note-taker and agenda keeper is generally not a medical device, but it drifts toward FDA-regulated decision support if it starts suggesting diagnoses or questions from symptom analysis. The app isn't covered by HIPAA, so the FTC's Health Breach Notification Rule applies, and a leak of visit audio would be serious.",
+      "The parent is the patient. They decide who listens, what gets shared with the adult child, and when it's off; the app must not become a way to monitor them."
+    ],
+    "assumptions": [
+      "Clinicians will accept a second AI in the room once their own scribe is already listening.",
+      "The parent wants a family member on the visit and has given portal proxy access.",
+      "On-device transcription is good enough in a small room with two or three voices."
+    ],
+    "unknowns": [
+      "Do live nudges help, or do they break the patient's attention on the doctor?",
+      "Will health systems ever send the scribe's structured output to the patient's own agent?",
+      "Who is liable if the agent's summary and the clinician's note disagree and the family follows the wrong one?"
+    ],
+    "prior_art": [
+      {
+        "name": "Abridge",
+        "url": "https://www.abridge.com/",
+        "note": "Clinician-side ambient scribe that also produces plain-language visit summaries. It works for the clinic, on the clinic's schedule, and doesn't carry the family's agenda or act on follow-ups."
+      },
+      {
+        "name": "Granola for iPhone and Apple Watch",
+        "url": "https://apps.apple.com/us/app/granola-ai-meeting-notes/id6739429409",
+        "note": "Meeting notes on phone and Watch. Shows the capture pattern works, but knows nothing about care, meds or follow-ups."
+      },
+      {
+        "name": "Plaud NotePin",
+        "url": "https://www.plaud.ai/blogs/news/plaud-unveils-notepins-and-desktop",
+        "note": "Wearable recorder with transcripts and summaries. No consent ritual for clinics, no agenda, no follow-up actions."
+      },
+      {
+        "name": "ChatGPT Health",
+        "url": "https://www.macrumors.com/2026/01/07/openai-chatgpt-health-apple-health-integration/",
+        "note": "Reads Apple Health data to help prepare for visits. Doesn't sit in the room or act on what was decided."
+      }
+    ],
+    "first_version": "Skip the live room. Before the visit, build a one-page agenda with the parent and caregiver from HealthKit and open questions; after it, the parent shares or photographs the after-visit summary, and the agent turns it into a checklist of orders and med changes the caregiver confirms, then drafts the portal messages and reminders. Add consented, on-device recording only for clinics that opt in.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-20",
+      "B-11",
+      "M-06"
+    ],
+    "notes_for_editor": "'About a dozen' all-party-consent states is the commonly cited figure; the exact list differs by source and by in-person versus phone recording. Abridge's patient-summary feature is described from its site as shown in search results. The FTC Health Breach Notification Rule's coverage of non-HIPAA health apps is from FTC's 2024 amendment, stated from general knowledge and not re-checked this session. Candidate listed Microsoft Dragon Copilot as prior art; left out because I had no verified URL."
+  },
+  {
+    "id": "M-21",
+    "slug": "bot-to-bot-dispute-desk",
+    "title": "Bot-to-Bot Dispute Desk",
+    "tagline": "Your agent argues a refund or claim directly with the company's AI, using signed evidence.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "The airline's claims AI has denied your delayed-bag claim for 'missing receipts'. Your agent opens a session with the airline's agent, presents receipts your phone signed the moment you photographed them, cites the delay rule the denial skipped, and comes back with an offer. You tap Accept or Escalate.",
+    "problem": "Companies already put AI in the support and claims seat, and it answers in seconds. You still type into a chat box, dig for receipts, and give up when the bot says no. Consumer agents that fight bills today, such as Pine, work through human channels (calls, emails, web forms) one company at a time, with evidence the company can simply doubt.",
+    "loop": {
+      "trigger": "A denial, a renewal date, or a job done",
+      "senses": "Signed evidence, terms, the other agent",
+      "decides": "Offer vs. your floor; is it manipulation?",
+      "checks_with_you": "Final offer: Accept or Escalate",
+      "acts": "Negotiates over A2A; preps human escalation",
+      "remembers": "Every turn, signed settlement, what worked"
+    },
+    "ios_blocks": [
+      {
+        "name": "Foundation Models (tool calling with onToolCall checks)",
+        "why": "deterministic gates on every tool call, with the other agent's text treated as untrusted"
+      },
+      {
+        "name": "CryptoKit (SecureEnclave P256 signing keys)",
+        "why": "signs evidence at capture and signs the settlement record"
+      },
+      {
+        "name": "DeviceCheck (DCAppAttestService)",
+        "why": "shows the evidence came from a genuine app on a real device"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID before accepting a settlement or signing a spending mandate"
+      },
+      {
+        "name": "FinanceKit",
+        "why": "finds the disputed charge and upcoming renewals on Apple Card and Apple Cash (managed entitlement)"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows a negotiation in progress and its deadline"
+      },
+      {
+        "name": "App Intents",
+        "why": "'dispute this charge' from Siri or the share sheet"
+      }
+    ],
+    "hard_parts": [
+      "Wall (incentives, trust and research): companies gain nothing by opening negotiable dispute endpoints to consumer agents, and no one has shown that two adversarial agents reach fair outcomes rather than the stronger model wearing down the weaker one. What would have to change: regulators requiring machine-readable complaint channels (as some already require human ones), a shared standard for signed evidence, and tested safeguards for agent-versus-agent negotiation.",
+      "Prompt injection between hostile agents: everything the company's agent sends is untrusted, and it can bury terms like 'accepting waives all future claims' in friendly text. Acceptance has to pass deterministic checks, not model judgment.",
+      "A receipt signed by your phone proves when you captured it, not that it's genuine. Companies will accept signed records only if a card network or regulator vouches for the format, the way chargeback rules do for card data.",
+      "The merged modes hit their own walls. Renewal auctions, where providers' agents bid for your broadband or insurance, run into US insurance rate filing and anti-rebating laws and need identity-linked underwriting data. Curbside job settlement needs pre-authorized payment, but Apple Pay has no mandate or agent-payment API in iOS 27, and holding funds in escrow is a licensed business."
+    ],
+    "risks": [
+      "Accepting a settlement can waive your rights. The agent never accepts or signs on its own, flags waiver and arbitration language in plain words, and keeps the human routes (chargeback, regulator complaint, small claims) open until you decide.",
+      "Arms race: companies tune their agents to outlast consumer agents, and the side with the bigger model wins. A full log of every turn is the defense.",
+      "Over-sharing: an evidence bundle can hold far more than the dispute needs. Send the minimum; never hand the company's agent your inbox or photo library."
+    ],
+    "assumptions": [
+      "The company's agent is authorized to make binding offers, not just to say no.",
+      "Adversarial agent negotiation converges on fair outcomes more often than it grinds consumers down.",
+      "Companies will expose agent endpoints (A2A Agent Cards, MCP servers, UCP order capabilities) for disputes, not only for sales."
+    ],
+    "unknowns": [
+      "What makes a settlement between two agents binding? UETA recognizes contracts formed by electronic agents, but agent-negotiated waivers haven't been tested in court.",
+      "Would regulators treat a company's refusal to deal with consumer agents as an unfair practice?",
+      "Can a small on-device model catch manipulation from a frontier model on the other side, or must screening run on a bigger model?"
+    ],
+    "prior_art": [
+      {
+        "name": "A2A protocol",
+        "url": "https://github.com/a2aproject/A2A",
+        "note": "Agent-to-agent standard (v1.0, March 2026) with Agent Cards and Tasks. Provides the transport, not dispute rules or evidence formats."
+      },
+      {
+        "name": "Universal Commerce Protocol",
+        "url": "https://github.com/Universal-Commerce-Protocol/ucp",
+        "note": "Merchant capabilities for checkout, identity linking and orders over REST, MCP or A2A. Built for buying; nothing for refunds or claims."
+      },
+      {
+        "name": "Pine AI",
+        "url": "https://apps.apple.com/us/app/pine-assistant/id6746403769",
+        "note": "Negotiates bills, refunds and cancellations by phone and email. Works through human channels, one company at a time."
+      },
+      {
+        "name": "Google AP2 (Agent Payments Protocol)",
+        "url": "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+        "note": "Signed intent and cart mandates for agent payments. The mandate idea fits settlements and job escrow, but there is no Apple Pay path."
+      },
+      {
+        "name": "Apple WWDC26 'Secure your app' session",
+        "url": "https://developer.apple.com/videos/play/wwdc2026/347/",
+        "note": "Apple's guidance on onToolCall confirmations and marking untrusted content. Supplies guardrails, not a negotiation design."
+      }
+    ],
+    "first_version": "Build the one-sided half now: an evidence locker that signs receipts, photos and chat screenshots at capture with a Secure Enclave key, then assembles a dispute packet (timeline, evidence, the rule that applies) and sends it through the company's human channels by email or web form, with you approving each send. Where a company offers an MCP or UCP order endpoint, read order status from it, but keep every settlement decision with you.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-08",
+      "M-22",
+      "M-10"
+    ],
+    "notes_for_editor": "Merged: 'Renewal Reverse Auction' (anonymized renewal requests that providers' agents bid on; the UK's 2022 ban on insurance price walking shows the loyalty-penalty problem; US rate filing and anti-rebating laws block free bidding) and 'Job-Done Escrow' (a tradesperson's agent and a homeowner's agent settling at the curb against photos and a Face ID-signed mandate; AP2, Mastercard Agent Pay and Visa Intelligent Commerce exist, but Apple Pay has no mandate API). The trigger line covers all three modes. I left out the candidate's claim about the share of inquiries Airbnb's support agent resolves because I couldn't verify a figure. UETA's electronic-agent provision and the UK FCA pricing rules (effective January 2022) are stated from general knowledge, not re-checked this session."
+  },
+  {
+    "id": "M-22",
+    "slug": "consumer-agent-union",
+    "title": "Consumer Agent Union",
+    "tagline": "Thousands of personal agents pool private proof of the same unfair fee and bargain with the company as one.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "Your agent notices a small 'service fee' that started appearing on your delivery orders without showing in the listed price. Thousands of other members' agents found the same fee. The consumer law firm running the pool presents the company with a refund demand backed by private proofs, not raw bank data, and weeks later you tap Accept on the settlement and your share lands as a credit.",
+    "problem": "A few dollars of junk fee isn't worth an afternoon of your time, which is why companies can keep charging it. Mass arbitration works, but law firms recruit claimants with ads and forms, and proving each person was charged means handing over statements. Your own transaction history already holds the proof; nothing turns it into a claim without exposing everything else.",
+    "loop": {
+      "trigger": "A charge pattern on your statements",
+      "senses": "Your transactions and receipts, on device",
+      "decides": "Is this a known unfair-fee pattern?",
+      "checks_with_you": "Joining a pool; accepting a settlement",
+      "acts": "Sends a minimal proof; tracks the payout",
+      "remembers": "Pools joined, proofs sent, refunds due"
+    },
+    "ios_blocks": [
+      {
+        "name": "FinanceKit",
+        "why": "reads Apple Card and Apple Cash transactions on device (managed entitlement)"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "OAuth to Gmail or Outlook for e-receipts, since FinanceKit covers only Apple's own cards"
+      },
+      {
+        "name": "Foundation Models (on-device)",
+        "why": "classifies fees and renewal price rises without uploading statements"
+      },
+      {
+        "name": "CryptoKit",
+        "why": "hashes and signs the minimal proof (merchant, amount, date) a pool receives"
+      },
+      {
+        "name": "DeviceCheck (DCAppAttestService)",
+        "why": "shows each claim came from a genuine app instance"
+      },
+      {
+        "name": "BackgroundTasks",
+        "why": "periodic rescans as new transactions arrive"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "tells you when a pool forms or a settlement needs your vote"
+      }
+    ],
+    "hard_parts": [
+      "Wall (legal and research): lawyer ethics rules restrict paying for referrals and soliciting clients, so pooling has to run through licensed attorneys, and unauthorized-practice rules limit what the app itself can say. Companies answer with batch-arbitration clauses and pressure on arbitration providers' fee rules. What would have to change: banks signing transaction attestations, and bar rules (such as Arizona's alternative business structures) that let a consumer-controlled tool coordinate claims.",
+      "Private proof of a charge isn't mainstream. Most people's transactions sit outside FinanceKit, so the app needs bank aggregation or email receipts, and proving a charge without revealing the account needs signed bank data or TLS-proof techniques such as TLSNotary that banks don't support.",
+      "Fraud: a pool worth money attracts fake claimants. App Attest proves a genuine app, not a genuine customer, so the pool needs to tie each proof to a real account without collecting identities.",
+      "Deciding a fee was 'undisclosed' is a legal judgment, and it depends on what the checkout page showed, which the phone may never have seen."
+    ],
+    "risks": [
+      "Legal safety line: the app is not a law firm. It doesn't give legal advice, promise payouts, or pay or take money for referrals.",
+      "Joining a group settlement can give up an individual claim that was worth more. The app must show what you give up before you vote.",
+      "Membership is sensitive data: it shows you're a customer and were charged. Keep lists minimal and encrypted, and never sell them."
+    ],
+    "assumptions": [
+      "Companies will settle faster with a verified pool than they would fight one.",
+      "Enough members opt in to reach the size where arbitration fees start to hurt the company.",
+      "A law firm or nonprofit will accept private proofs in place of statements."
+    ],
+    "unknowns": [
+      "Would an arbitrator or court accept a cryptographic proof of a charge instead of a bank statement?",
+      "Does coordinating claims through an app count as soliciting clients, and in which states?",
+      "Do companies respond with refunds, or with new contract terms that break pooling?"
+    ],
+    "prior_art": [
+      {
+        "name": "ClassAction.org junk-fee sign-ups",
+        "url": "https://www.classaction.org/illegal-hidden-junk-fees",
+        "note": "Law-firm-run sign-ups for mass claims over hidden fees. Claimants fill in forms by hand; no automatic detection and no private proof."
+      },
+      {
+        "name": "Class Action U current mass-arbitration claims",
+        "url": "https://classactionu.org/mass-arbitrations/current-claims/",
+        "note": "Lists open mass-arbitration claims people can join by hand."
+      },
+      {
+        "name": "Goodwin on AI-scaled mass arbitration",
+        "url": "https://www.goodwinlaw.com/en/insights/publications/2025/12/insights-technology-cldr-mass-arbitration-the-risk-lurking-in-consumer-agreements",
+        "note": "Defense-side analysis of how AI lets firms file mass arbitrations at scale. Shows the pressure exists, seen from the company's side."
+      }
+    ],
+    "first_version": "An on-device fee detector: FinanceKit plus e-receipts from Gmail flag charges that match known junk-fee and renewal patterns and explain each one. When a matching public class action or mass-arbitration campaign exists, it pre-fills the sign-up with only what the form asks for and you send it yourself. No pooling, no negotiation, no referral payments.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "horizon": "5y+",
+    "autonomy": "draft-approve",
+    "related": [
+      "M-21",
+      "B-08",
+      "W-30"
+    ],
+    "notes_for_editor": "'Union' is a metaphor: this is a consumer collective run with a law firm or nonprofit, not a labor union. Lawyer ethics points (ABA Model Rules on referral payments, solicitation and fee sharing) and Arizona's alternative business structure program are stated from general knowledge, not re-checked this session. TLSNotary is named without a URL (not verified this session). The moment avoids claiming the delivery fee is illegal, since fee-disclosure rules vary by state and the FTC's 2024 fee rule covers only live-event tickets and short-term lodging."
+  },
+  {
+    "id": "M-23",
+    "slug": "kiosk-hands",
+    "title": "Kiosk Hands",
+    "tagline": "Glasses watch a touchscreen and guide a blind user's finger, step by step, through any kiosk.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Accessibility",
+    "moment": "You're at a hospital check-in kiosk with a flat touchscreen and no audio. Through your glasses the agent reads the screen, says 'left, down, stop, tap,' and confirms each step until the wristband prints. At the screen asking you to agree to a payment plan, it stops and reads you every option.",
+    "problem": "Touchscreen kiosks for check-in, tickets, food orders and parking are everywhere, and many have no speech output or tactile keypad. Blind users either ask a stranger, handing over their birth date or card, or give up. Be My Eyes and similar apps describe the scene or connect a human, but nothing guides your finger to the right spot and checks that the tap worked.",
+    "loop": {
+      "trigger": "You say 'help me with this kiosk'",
+      "senses": "Glasses video: screen text and fingertip",
+      "decides": "Next target, and did the last tap work?",
+      "checks_with_you": "Every payment, consent or cancel screen",
+      "acts": "Speaks directions and tones to your finger",
+      "remembers": "Flows for kiosk models you've used before"
+    },
+    "ios_blocks": [
+      {
+        "name": "Meta Wearables Device Access Toolkit (third-party SDK)",
+        "why": "streams glasses camera frames to the iPhone app, including in the background"
+      },
+      {
+        "name": "Vision (RecognizeTextRequest, DetectHumanHandPoseRequest)",
+        "why": "reads the screen and finds the fingertip in each frame"
+      },
+      {
+        "name": "Core AI",
+        "why": "runs a local vision model fast enough for step-by-step guidance"
+      },
+      {
+        "name": "Foundation Models (image Attachment)",
+        "why": "understands an unfamiliar screen and plans the path through it"
+      },
+      {
+        "name": "AVFAudio (AVAudioEngine)",
+        "why": "directional tones that steer the finger"
+      },
+      {
+        "name": "Accessibility (VoiceOver announcements)",
+        "why": "speaks through the user's own VoiceOver voice and rate"
+      },
+      {
+        "name": "App Intents",
+        "why": "starts from Siri or the Action button without looking at the phone"
+      }
+    ],
+    "hard_parts": [
+      "Wall (research and hardware): finger guidance needs fingertip tracking and screen reading with well under a second of delay, from glasses video sent over a wireless link to the phone. Today's on-device models and a developer-preview glasses SDK can't do that reliably, and glare, odd angles and the hand covering the screen make it worse. What would have to change: faster local vision models, a stable glasses SDK with low-latency frames (or Apple glasses with an open camera API), and an agreed confirmation design for money and consent screens.",
+      "Closing the loop: after every tap the agent has to confirm the screen changed as expected, and recover when the finger hits the wrong button or the kiosk times out.",
+      "Every kiosk model has its own flows, pop-ups and languages. Remembered flows help most if they're shared across users, which means making sure nobody's personal data from the screen goes with them.",
+      "When confidence drops it has to hand off to a human helper quickly, while the kiosk's timeout keeps running."
+    ],
+    "risks": [
+      "A wrong tap can pay, consent or cancel. On money and consent screens the agent reads every option and waits; it never chooses for the user.",
+      "Cameras at kiosks capture other people and screens full of personal data. Frames stay on device and are dropped after each step, and venues may object to cameras near payment terminals.",
+      "Over-trust: if guidance is usually right, users stop checking. The agent must say out loud when it isn't sure."
+    ],
+    "assumptions": [
+      "Clinics, banks and stores will tolerate a camera on a customer's face at their kiosks.",
+      "Meta keeps the toolkit open to third-party iPhone apps and takes it past developer preview.",
+      "Blind users are willing to wear camera glasses in public for this."
+    ],
+    "unknowns": [
+      "What end-to-end delay can users live with for finger guidance?",
+      "Will accessibility law (the European Accessibility Act covers new self-service terminals from June 2025) make kiosks accessible faster than this can ship?",
+      "Can remembered kiosk flows be shared across users without leaking what was on anyone's screen?"
+    ],
+    "prior_art": [
+      {
+        "name": "VizLens (CMU)",
+        "url": "https://www.cs.cmu.edu/~jbigham/pubs/pdfs/2016/vizlens.pdf",
+        "note": "Phone camera plus crowd-labeled interfaces to guide a finger on appliance panels. A lab prototype, not a product."
+      },
+      {
+        "name": "StateLens",
+        "url": "https://pith.science/paper/1908.07144",
+        "note": "Extended the idea to dynamic touchscreens by learning a kiosk's screen states. Research only."
+      },
+      {
+        "name": "Toucha11y (CHI 2023)",
+        "url": "https://arxiv.org/pdf/2305.04097",
+        "note": "A small mechanical bot a blind user attaches to the kiosk; it reads the screen, shows it in a phone app, and does the tapping. Works, but you carry and mount a robot."
+      },
+      {
+        "name": "Apple Magnifier Point and Speak",
+        "url": "https://www.apple.com/newsroom/2023/05/apple-previews-live-speech-personal-voice-and-more-new-accessibility-features/",
+        "note": "Reads the label under your finger on appliance keypads using the camera and LiDAR. Built in and good, but you hold the phone up and it doesn't plan multi-screen flows."
+      },
+      {
+        "name": "Meta Wearables Device Access Toolkit for iOS",
+        "url": "https://github.com/facebook/meta-wearables-dat-ios",
+        "note": "Developer-preview SDK that gives iPhone apps glasses camera frames. The building block, not a guidance app."
+      },
+      {
+        "name": "Be My Eyes",
+        "url": "https://www.bemyeyes.com/business/bme-service-ai/",
+        "note": "AI and volunteer help for blind users. Describes what's there; doesn't guide a finger or verify taps."
+      }
+    ],
+    "first_version": "Use the iPhone camera, not glasses: a chest or lanyard mount pointed at the kiosk, with Vision reading the screen and tracking the fingertip, Point-and-Speak style. The agent reads each screen's options, tells you which label to find, and reads what's under your finger before you tap, with one-tap handoff to a human helper. No guidance on payment screens in v1, only reading them out.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "suggest",
+    "related": [
+      "B-19",
+      "M-04",
+      "M-18"
+    ],
+    "notes_for_editor": "Toucha11y's design (attachable mechanical bot plus phone app) was confirmed from the paper's abstract. Point and Speak details confirmed from Apple Support and newsroom search results. The European Accessibility Act date is stated from general knowledge; existing terminals may stay in use for years, which is why the problem persists. Latency figures for the Meta toolkit over the glasses link are not published in anything I saw, so the card doesn't give numbers."
+  },
+  {
+    "id": "M-24",
+    "slug": "pocket-public-adjuster",
+    "title": "Pocket Public Adjuster",
+    "tagline": "After a fire or flood, it rebuilds what you owned and argues the contents claim with your insurer.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "Your house burned three weeks ago, and the insurer wants an itemized list of everything you owned, with ages and prices. The agent has found 1,800 items across eleven years of your photos and purchase emails, and it flags that the insurer depreciated your two-year-old sofa as if it were ten.",
+    "problem": "After a total loss, the contents claim asks people in shock to list thousands of things from memory, room by room, with ages and prices. Insurers depreciate and price line by line, and most families don't know what to push back on. Public adjusters help but take a percentage of the payout, and inventory apps only help if you made the inventory before the disaster.",
+    "loop": {
+      "trigger": "You report a loss and share the policy",
+      "senses": "Photos, receipts, card history, the policy",
+      "decides": "Item, age, replacement price, depreciation",
+      "checks_with_you": "Uncertain items and every reply you send",
+      "acts": "Fills the schedule, drafts counteroffers",
+      "remembers": "Deadlines, offers, evidence per item"
+    },
+    "ios_blocks": [
+      {
+        "name": "PhotoKit (PHPhotoLibrary, full-library access with consent)",
+        "why": "finds years of photos taken at home"
+      },
+      {
+        "name": "Vision (ClassifyImageRequest)",
+        "why": "spots furniture, electronics and appliances in old photos"
+      },
+      {
+        "name": "Foundation Models (image Attachment)",
+        "why": "names and describes items on device"
+      },
+      {
+        "name": "PrivateCloudComputeLanguageModel",
+        "why": "reads long policies and the insurer's spreadsheet with a 32K context"
+      },
+      {
+        "name": "BackgroundTasks (BGContinuedProcessingTask)",
+        "why": "scans thousands of photos as a user-started job with visible progress"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "OAuth to Gmail or Outlook for purchase emails"
+      },
+      {
+        "name": "PDFKit",
+        "why": "reads the policy and the insurer's letters"
+      }
+    ],
+    "hard_parts": [
+      "Wall (regulation and liability): negotiating a claim on someone's behalf is public-adjuster work, which needs a license in most US states, so an app that argues the claim risks unlicensed practice. Wrong valuations create liability, and insurers can refuse to deal with a bot. What would have to change: a licensed public adjuster in the loop using the app as their tool, or a regulatory sandbox, and insurers accepting machine-built schedules with photo evidence.",
+      "Photos show rooms, not receipts. Matching a blurry 2019 photo to a model, a purchase date and today's replacement price is error-prone, and every uncertain line needs the owner's confirmation.",
+      "Rules differ by state and insurer. California, for example, requires insurers to accept grouped categories (clothing, books) after a declared-disaster total loss and to advance 30% of the dwelling limit, up to $250,000, for contents without an itemized list. The agent has to know which rules apply.",
+      "No insurer API: each company has its own spreadsheet, depreciation tables and portal, so the output is a file the owner uploads or emails."
+    ],
+    "risks": [
+      "Legal safety line: the app helps you document and respond, and you send everything. Negotiating in your name, or taking a cut of the payout, is licensed public-adjuster work.",
+      "Inflated inventories are insurance fraud. The agent never adds items without evidence or the owner's confirmation, and marks which lines rest on memory alone.",
+      "Full photo-library access in a crisis is a lot of trust. Scanning runs on device, and only confirmed items leave the phone."
+    ],
+    "assumptions": [
+      "The phone and its cloud photo library survive the disaster, and old photos show enough of the home.",
+      "Insurers will accept a machine-built schedule if every line links to evidence.",
+      "Survivors will spend the hours needed to confirm uncertain items."
+    ],
+    "unknowns": [
+      "Where exactly is the line between helping a policyholder respond and adjusting a claim, state by state?",
+      "Will insurers move toward paying contents limits without inventories after big disasters, as California's insurance commissioner urged in 2025, making the inventory matter less?",
+      "How accurate are replacement prices from photos compared with a human adjuster's?"
+    ],
+    "prior_art": [
+      {
+        "name": "Bevel (free AI inventory for LA fire survivors)",
+        "url": "https://abc7.com/post/artificial-intelligence-driven-inventory-tool-bevelmade-serves-solution-california-wildfire-victims-document-belongings/17882452/",
+        "note": "Builds a contents list after the fires. Doesn't read the policy or answer the insurer."
+      },
+      {
+        "name": "Preloss",
+        "url": "https://preloss.app/",
+        "note": "Home inventory made before a loss. After the loss it's too late to start one."
+      },
+      {
+        "name": "MovingBox AI Home Inventory",
+        "url": "https://apps.apple.com/us/app/movingbox-ai-home-inventory/id6742755218",
+        "note": "AI inventory from photos on iPhone. Built for moving and pre-loss records, not for fighting a claim."
+      },
+      {
+        "name": "HomeZada",
+        "url": "https://www.homezada.com/homeowners/home-inventory",
+        "note": "Home inventory and upkeep app. Needs the inventory done in advance."
+      }
+    ],
+    "first_version": "A post-loss inventory builder the policyholder drives: scan the photo library and purchase emails on device, propose items room by room with evidence thumbnails, let the owner confirm, and export the insurer's spreadsheet. Add a policy reader that lists deadlines and compares the insurer's depreciation line by line, with plain questions the owner can send. Point to licensed public adjusters rather than negotiating.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 3,
+      "feasibility": 2,
+      "impact": 5
+    },
+    "horizon": "1-2y",
+    "autonomy": "draft-approve",
+    "related": [
+      "M-21",
+      "W-24",
+      "B-08"
+    ],
+    "notes_for_editor": "California SB 872 (grouped-category inventories; 30% of the dwelling limit, up to $250,000, advanced for contents) confirmed from California Department of Insurance and law-blog search results. The commissioner's 2025 alert urging full contents payment without detailed inventories: https://www.insurance.ca.gov/0400-news/0102-alerts/2025/Commissioner-Lara-urges-insurance-compan.cfm. Re-tier thought: the inventory-plus-policy-reader first version is buildable today (arguably whitespace); the moonshot part is arguing the claim."
+  },
+  {
+    "id": "M-25",
+    "slug": "worker-side-dispatch-agent",
+    "title": "Worker-Side Dispatch Agent",
+    "tagline": "Works for the driver or per-diem nurse, not the platform: screens every offer and bargains back.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "You're logged into three delivery apps and a nurse-shift app, and offers flash for a few seconds each. Your agent sees them all, knows your floor of $1.50 a mile after gas, your hours cap and your kid's 3 p.m. pickup, accepts two, and declines the rest. When your pay per mile drops three days in a row, it asks the platform to explain the change.",
+    "problem": "Gig platforms use algorithms to price, dispatch and deactivate workers in real time; workers answer with a thumb and a few seconds. Juggling several apps means doing math on every offer while driving. Android workers have offer-automation tools, but on iPhone the sandbox limits them to snapshot analysis, and nothing bargains back or asks why pay changed.",
+    "loop": {
+      "trigger": "An offer arrives on any platform",
+      "senses": "Offer details, miles, gas, your calendar",
+      "decides": "Net pay per hour and mile vs. your floor",
+      "checks_with_you": "Only offers near your floor, by voice",
+      "acts": "Accepts, declines, or asks why pay dropped",
+      "remembers": "Your rules and real pay by platform, area"
+    },
+    "ios_blocks": [
+      {
+        "name": "Visual Intelligence",
+        "why": "stopgap: you select an offer in a screenshot and the app receives it"
+      },
+      {
+        "name": "CarPlay (CPVoiceControlTemplate)",
+        "why": "hands-free 'take it?' prompts while driving; iOS 27 opens the template to all CarPlay app categories"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shift earnings and the pending offer on the Lock Screen, Watch and CarPlay"
+      },
+      {
+        "name": "Core Location",
+        "why": "tracks miles and time for true net pay"
+      },
+      {
+        "name": "Foundation Models (on-device)",
+        "why": "scores an offer without a network round trip"
+      },
+      {
+        "name": "App Intents",
+        "why": "set rules and answer prompts through Siri"
+      }
+    ],
+    "hard_parts": [
+      "Wall (platform and regulation): iOS doesn't let a third-party app read or tap other apps, which is why tools like Maxymo keep automation on Android. Platforms expose no offer API to worker agents and ban automation in their terms. What would have to change: a legal duty to give workers (or their agents) a machine-readable interface to algorithmic management, or iOS letting a user-authorized agent call other apps' App Intents, which today only Siri can do.",
+      "The EU Platform Work Directive, due to be written into national law by 2 December 2026, requires transparency about automated monitoring and decisions and human review of significant ones. It doesn't require a real-time interface an agent could use, and US law has nothing comparable.",
+      "Stopgaps are too slow: a screenshot through Visual Intelligence or a screen-broadcast extension can read an offer but can't accept it, and offers expire in seconds.",
+      "Platforms can redesign offers to beat agents (hiding destinations, shortening windows), turning dispatch into an agent-versus-agent game."
+    ],
+    "risks": [
+      "Deactivation: platforms ban offer bots, so an agent that taps for you can cost you your account. Where terms forbid automation, it advises and you tap.",
+      "Driving safety: nothing should pull a driver's eyes to the phone. Voice only on CarPlay, no long text while moving.",
+      "Pooled pay data can identify individual workers to platforms. Share only aggregated, delayed figures, and only with opt-in."
+    ],
+    "assumptions": [
+      "Platforms would keep working if every worker had an agent enforcing a pay floor, instead of redesigning offers to beat the agents.",
+      "Workers will trust software to decline offers for them.",
+      "Regulators will extend transparency rights toward real-time, machine-readable access."
+    ],
+    "unknowns": [
+      "Will any EU member state's transposition require a machine-readable interface rather than written explanations?",
+      "Do pay floors enforced by many agents raise pay, or shift work to workers without agents?",
+      "How will platforms respond to agent-filed data-access and explanation requests at scale?"
+    ],
+    "prior_art": [
+      {
+        "name": "Maxymo",
+        "url": "https://maxymoapp.com/",
+        "note": "Offer analysis on iPhone through snapshots; full automation only on Android."
+      },
+      {
+        "name": "Mystro driver app",
+        "url": "https://apps.apple.com/us/app/mystro-driver-drive-deliver/id1524407919",
+        "note": "Markets rule-based multi-apping for drivers on iPhone. Covers ride and delivery apps only, doesn't bargain or request explanations, and how it reaches platforms on iOS isn't public."
+      },
+      {
+        "name": "EU Platform Work Directive transposition tracker",
+        "url": "https://remoteworkeurope.eu/news/2026/platform-work-directive-enforcement-divergence-2026/",
+        "note": "Tracks how member states are implementing the directive. Transparency and human-review rights, but no agent interface."
+      }
+    ],
+    "first_version": "An iPhone shift co-pilot that never touches other apps: you set your floor and rules, it tracks miles and time with Core Location, and when you screenshot or share an offer it scores it aloud on CarPlay. After each shift it shows real hourly pay by platform, and it drafts data-access and explanation requests to platforms (under GDPR or the new EU rules) for you to send.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 1,
+      "impact": 5
+    },
+    "horizon": "3-5y",
+    "autonomy": "act-report",
+    "related": [
+      "W-31",
+      "W-32",
+      "B-16"
+    ],
+    "notes_for_editor": "How Mystro reaches ride and delivery platforms on iPhone is not documented in anything I saw; described neutrally. The Platform Work Directive's transposition date (2 December 2026) and its transparency and human-review provisions are stated from general knowledge plus the candidate research. The CarPlay Voice Control template opening to all categories in iOS 27 comes from the research digest; the Apple doc page still describes it as a navigation-app template. Feasibility 1 reflects that the core loop (reading and tapping other apps' offers) is blocked on iOS."
+  },
+  {
+    "id": "M-26",
+    "slug": "scope-creep-catcher",
+    "title": "Scope Creep Catcher",
+    "tagline": "Hears 'while you're here, could you also...' on the job and gets a change order signed before you start it.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "You're under the sink with wet hands when the homeowner asks if you can also swap the garbage disposal. You say sure. Before you reach for it, your AirPods say: 'Change order: disposal swap, $285 plus the part. Send to Dana to sign?' You nod twice, Dana signs on her phone, and the invoice is right when you leave.",
+    "problem": "Small extras agreed in passing are where tradespeople lose money and where disputes start: the customer remembers 'free', the tech remembers '$285'. Some states, California among them, require signed written change orders before extra home-improvement work begins, but nobody stops mid-job with wet hands to type one. Field-service apps handle quotes and signatures, but only if you remember to open them.",
+    "loop": {
+      "trigger": "Job-site mode on, customer agreed to it",
+      "senses": "Short speech snippets, price book, truck",
+      "decides": "Was new work just agreed? What's it cost?",
+      "checks_with_you": "Nod or Watch tap before it's sent",
+      "acts": "Sends change order for e-signature",
+      "remembers": "Signed text only; audio deleted"
+    },
+    "ios_blocks": [
+      {
+        "name": "App Intents (AudioRecordingIntent)",
+        "why": "starts job-site mode with the system recording indicator and a required Live Activity"
+      },
+      {
+        "name": "AVFAudio (AVAudioSession)",
+        "why": "keeps capture going in the background after starting in the foreground"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer, SpeechTranscriber)",
+        "why": "on-device transcription of short snippets"
+      },
+      {
+        "name": "Foundation Models (on-device, Generable)",
+        "why": "pulls a structured change order out of a snippet"
+      },
+      {
+        "name": "Core Motion (CMHeadphoneMotionManager)",
+        "why": "reads a head nod from AirPods as the tech's confirmation"
+      },
+      {
+        "name": "WatchKit",
+        "why": "tap to confirm or cancel on the wrist"
+      },
+      {
+        "name": "PDFKit",
+        "why": "renders the signed change order to attach to the job"
+      }
+    ],
+    "hard_parts": [
+      "Wall (regulation, trust and research): about a dozen US states, California among them, require every party's consent to record a conversation, so ambient listening in someone's home needs a clear consent ritual. California law also requires change orders in writing and signed before the extra work starts, so a bad extraction produces a wrong legal document. What would have to change: a body-cam-style consent norm for job sites, reliable on-device speaker separation in noise, and low-power listening hardware (AirPods or glasses) open to approved apps.",
+      "Job sites are loud: running water, power tools, two speakers and trade jargon. On-device speech still mishears prices and part names, and a missed 'no' flips the meaning.",
+      "Battery and background limits: iOS keeps a microphone session alive in the background only if it started in the foreground, with a visible indicator, and hours of capture drain the battery. Listening in short windows saves power but misses the casual ask.",
+      "A nod is a weak confirmation. It only approves sending; the customer's e-signature is what binds, and it has to land before the work starts."
+    ],
+    "risks": [
+      "Recording customers in their homes without clear consent is illegal in all-party-consent states and destroys trust. The customer hears the consent script at the door and can say no, and then the app stays off.",
+      "Wrong prices or scope in a signed change order can hurt either side. The tech reviews every line before it goes out.",
+      "Audio from inside private homes is sensitive. It stays on device and is deleted once the change is extracted; only the signed text is kept."
+    ],
+    "assumptions": [
+      "Homeowners will agree to be recorded in their own home if the tradesperson explains it protects both sides.",
+      "Customers will sign on their phone within a minute of being asked.",
+      "Techs will leave the mode on rather than turning it off after one false alarm."
+    ],
+    "unknowns": [
+      "Can on-device speaker separation tell tech from customer in a noisy kitchen well enough?",
+      "Does a software-drafted change order signed by e-signature meet each state's home-improvement rules?",
+      "Will field-service platforms open APIs so the change order lands in the job record automatically?"
+    ],
+    "prior_art": [
+      {
+        "name": "Housecall Pro estimate approvals and signatures",
+        "url": "https://help.housecallpro.com/en/articles/918072-estimate-or-job-approval-signature-on-mobile",
+        "note": "Techs capture customer signatures on estimates in the field. Someone has to create the change by hand, so small extras slip through."
+      },
+      {
+        "name": "Jobber",
+        "url": "https://www.getjobber.com/comparison/jobber-vs-housecall-pro/",
+        "note": "Field-service app with mobile quotes, one-tap client approval and signatures. Same manual step: nothing notices that scope changed."
+      },
+      {
+        "name": "Plaud NotePin",
+        "url": "https://www.plaud.ai/blogs/news/plaud-unveils-notepins-and-desktop",
+        "note": "Ambient recording hardware with summaries. No consent ritual for customers and no structured change orders."
+      }
+    ],
+    "first_version": "Skip ambient listening. Give techs push-to-talk on the Watch or AirPods: they say 'change order, swap disposal', the on-device model drafts it from the price book, the tech confirms, and the customer gets a text link to sign before work starts. The audio is dropped as soon as the tech confirms the text.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "1-2y",
+    "autonomy": "draft-approve",
+    "related": [
+      "M-21",
+      "W-33",
+      "B-11"
+    ],
+    "notes_for_editor": "California Business and Professions Code 7159 (change orders in writing and signed before the covered work starts) confirmed from search results: https://california.public.law/codes/business_and_professions_code_section_7159. 'About a dozen' all-party-consent states is the usual figure; the exact list varies by source. The Jobber link is Jobber's own comparison page, the only Jobber page I saw. Re-tier thought: the push-to-talk first version is buildable today and could be whitespace; the moonshot part is ambient capture with consent."
+  }
+]

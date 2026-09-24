@@ -1,0 +1,302 @@
+[
+  {
+    "title": "Leak Bill Detective",
+    "tagline": "Turns a shocking water bill into a found leak, a fixed pipe, and the utility's leak credit.",
+    "tier": "whitespace",
+    "category": "Physical world",
+    "moment": "Your water bill is $412 when it's usually $70, and you can't see water anywhere. You forward the bill, and the agent asks you to photograph the meter at 11pm and again at 6am, before anyone showers.",
+    "what_it_does": [
+      "Reads the forwarded bill (email address or photo), compares usage with your history, and looks up your utility's leak-adjustment rules: what counts, what proof it wants, and the deadline (some utilities want the application within weeks of the high bill).",
+      "Runs a timed meter test: schedules two meter photos, reads the dial on the device, and computes overnight flow. If water is moving, it walks you through isolation tests one photo at a time (toilet dye test, fixture shutoffs, irrigation valve).",
+      "Asks before calling: shortlists plumbers, calls them through cloud telephony for price and earliest slot, and books only the one you pick.",
+      "After the fix, collects the plumber's invoice and a second meter test as proof, fills the utility's leak-adjustment form (PDF or web), and submits it once you approve.",
+      "Watches the next bill for the credit and follows up once if it's missing."
+    ],
+    "why_now": "iOS 27's Foundation Models take image input and ship a built-in OCR tool, so meter dials and bills can be read on the device, and Visual Intelligence lets the app answer when you point the Camera at a meter. Cloud calling agents (Google's agentic calling, Genspark Call for Me) showed that calling local businesses for prices works. Utilities such as SFPUC and Seattle Public Utilities publish leak-allowance rules online.",
+    "why_nobody_yet_or_wall": "Leak startups sell hardware (Flume, Phyn, Moen Flo) and stop at the alert; none handle the billing relief. Credit programs are per-utility, often paper forms, and worth a few hundred dollars, so nobody has built the paperwork side. The job spans three parties (you, a plumber, a municipal utility), and no single app owns that path.",
+    "ios_hooks": ["Foundation Models (image Attachment, OCR tool)", "Visual Intelligence (IntentValueQuery)", "VisionKit DataScannerViewController", "UserNotifications (timed meter prompts)", "EventKit", "ActivityKit Live Activities", "PDFKit", "App Intents", "Email-forwarding address (server side)"],
+    "nearest_existing": [
+      "Flume, Phyn, Moen Flo (leak-detection hardware; no billing relief)",
+      "SFPUC Leak Allowance https://www.sfpuc.gov/accounts-services/bill-relief/leak-allowance",
+      "Seattle Public Utilities Leak Adjustments https://seattle.gov/utilities/your-services/accounts-and-payments/bills-and-payments/my-bill-seems-too-high/leak-adjustments"
+    ],
+    "unsaid_assumption": "That the user's utility has a leak-adjustment program and accepts a plumber's invoice plus a photographed meter test as proof.",
+    "rough_scores": {"difficulty": 2, "novelty": 5, "feasibility": 4, "impact": 3},
+    "surprise": "The money isn't in finding the leak; it's in a little-known utility credit with a deadline most people miss."
+  },
+  {
+    "title": "Pothole Payback",
+    "tagline": "After a pothole wrecks your tire, it files the claim with the right agency before the deadline.",
+    "tier": "whitespace",
+    "category": "Safety & civic",
+    "moment": "You hit a crater on the way home and now you're on the shoulder with a flat and a bent rim. While you wait for roadside help, you photograph the hole, the tire and the street sign, and the agent opens the claim.",
+    "what_it_does": [
+      "Pins the location and works out who owns the road (city, county or state DOT), then finds that agency's claim form, notice rules and filing deadline.",
+      "Searches the city's 311 records (Open311 where available) for earlier reports of the same pothole, because some places (Ohio, for example) only pay if the city had prior notice. It saves those ticket numbers as evidence.",
+      "Files a new 311 report right away so the hole gets fixed and the next driver has a record.",
+      "Collects tow and repair receipts (forwarded email or photo), fills the claim, and asks you to review and sign before it submits.",
+      "Tracks the claim, answers requests for more documents, and reminds you when the agency goes quiet past its stated response time."
+    ],
+    "why_now": "Cities now take pothole claims online (Cincinnati runs a 311 pothole damage claim; Memphis has an online claims portal), and many publish 311 data. iOS 27's multimodal Foundation Models can sort several photos into a structured claim, and Apple's free Private Cloud Compute model can reason over jurisdiction rules without per-token cost for small developers.",
+    "why_nobody_yet_or_wall": "Each claim is small, every jurisdiction differs, and payouts are unreliable (a CBS investigation found Chicago paid pothole claims only about half the time), so no company sees a business. 311 apps stop at reporting, and lawyers only take injury cases.",
+    "ios_hooks": ["Core Location + MapKit (reverse geocoding to find the road owner)", "Foundation Models (image Attachment)", "App Intents (\"I hit a pothole\" from Siri or the Action button)", "ActivityKit Live Activities (claim status)", "PDFKit", "Email-forwarding address (server side)"],
+    "nearest_existing": [
+      "SeeClickFix and city 311 apps (reporting only)",
+      "Cincinnati 311 pothole damage claim https://www.cincinnati-oh.gov/311/requests/dmgpoth/",
+      "CBS Chicago: city paying pothole claims only about half the time https://www.cbsnews.com/chicago/news/2-investigators-city-paying-pothole-claims-only-about-half-the-time"
+    ],
+    "unsaid_assumption": "That 311 history can be searched by location precisely enough to prove the same pothole was reported before.",
+    "rough_scores": {"difficulty": 3, "novelty": 5, "feasibility": 4, "impact": 3},
+    "surprise": "The winning evidence isn't your photo; it's a database record showing someone else reported the same hole first."
+  },
+  {
+    "title": "Should This Be Free?",
+    "tagline": "Before you pay for a car repair, it checks recalls, the emissions warranty and quiet coverage extensions.",
+    "tier": "whitespace",
+    "category": "Physical world",
+    "moment": "The check-engine light comes on during your commute, and that afternoon a shop quotes $1,900 for a catalytic converter. You say \"check this\" in CarPlay, then point your phone at the estimate at the counter.",
+    "what_it_does": [
+      "Reads live trouble codes over a Bluetooth OBD-II dongle and tells you by voice in CarPlay whether it's safe to keep driving or only to get off the highway.",
+      "Scans the VIN and the shop's estimate, then checks open recalls, NHTSA-posted manufacturer communications that describe extended or special coverage, and the federal emissions warranty (8 years or 80,000 miles on major parts such as the catalytic converter and engine computer).",
+      "If the repair looks covered, it calls nearby dealers through cloud telephony to confirm coverage and the earliest slot, and asks you before booking.",
+      "If it isn't covered, it gets two competing quotes and flags line items on the estimate that don't match the codes.",
+      "Keeps a car file (codes, repairs, receipts) for later warranty claims and resale."
+    ],
+    "why_now": "iOS 27 lets apps in every CarPlay category use the Voice Control template, so a car agent can talk with you while you drive. NHTSA publishes recalls and manufacturer communications by vehicle. Cheap Bluetooth OBD-II dongles already work with iPhone apps, and iOS 27's on-device model can read an estimate photo.",
+    "why_nobody_yet_or_wall": "FIXD and similar scanners explain codes, estimate cost and mention recalls, then stop. None reads the shop's estimate, checks coverage programs against it, or calls a dealer to claim the free fix. Dealers and independent shops have little reason to volunteer that a repair is covered.",
+    "ios_hooks": ["CarPlay Voice Control template (CPVoiceControlTemplate)", "Core Bluetooth (OBD-II dongle)", "Visual Intelligence (IntentValueQuery on an estimate or VIN)", "VisionKit DataScannerViewController (VIN barcode)", "Foundation Models (image Attachment)", "App Intents", "EventKit"],
+    "nearest_existing": [
+      "FIXD (OBD scanner, repair cost, recalls; no coverage claims or dealer calls) https://www.fixdapp.com/",
+      "NHTSA recall lookup https://www.nhtsa.gov/recalls",
+      "RepairPal (fair-price estimates)"
+    ],
+    "unsaid_assumption": "That public coverage documents are complete and current enough to act on, and that dealers honor coverage when a customer asks with the document in hand.",
+    "rough_scores": {"difficulty": 3, "novelty": 4, "feasibility": 4, "impact": 4},
+    "surprise": "The best repair the agent can find is one you don't pay for, and the proof sits in public NHTSA files almost nobody reads."
+  },
+  {
+    "title": "Pet Passport Countdown",
+    "tagline": "Plans a pet's move abroad backward from the flight: shots, titer test, 180-day waits and vet forms.",
+    "tier": "whitespace",
+    "category": "Family & care",
+    "moment": "Your PCS orders say Okinawa in seven months, and the dog is coming. You photograph her vaccine records and microchip tag, and the agent says the titer blood draw has to happen this month, and that the military exception to Japan's 180-day wait won't cover you because you'll live off base.",
+    "what_it_does": [
+      "Reads vaccine certificates, the microchip number, and your orders or flight dates (photos, forwarded email), then builds a dated plan from the destination's rules. For Japan that means two rabies shots, a titer test, a 180-day wait, and a health certificate within 10 days of travel.",
+      "Books vet visits (online booking or a cloud-telephony call) after you approve times, and puts them on your calendar.",
+      "Checks lab results as they arrive by email against the rules and flags anything out of order, such as a blood draw dated before the second shot.",
+      "Checks airline pet policies and seasonal heat embargoes for your route, and warns you if the plan breaks.",
+      "Assembles the final document packet and keeps a Live Activity countdown to each deadline; it can plan the return trip under the CDC's stricter dog import rules too."
+    ],
+    "why_now": "iOS 27's on-device model reads documents and photos, and Private Cloud Compute gives free long-context reasoning for rule-heavy plans. Pet import rules have tightened (the CDC's dog import rules of August 2024), and families still learn about Japan's 180-day clock too late, according to the relocation services that serve them.",
+    "why_nobody_yet_or_wall": "Pet relocation is sold as a human service costing thousands, and websites publish static checklists. Rules differ by country, base and airline, and one wrong date can cost months, which makes builders wary of automating it.",
+    "ios_hooks": ["Foundation Models (image Attachment, OCR tool)", "VisionKit DataScannerViewController (microchip barcode)", "EventKit", "ActivityKit Live Activities (countdown)", "UserNotifications", "App Intents", "Email-forwarding address (server side)"],
+    "nearest_existing": [
+      "PetRelocation (human service and country guides) https://www.petrelocation.com/country/japan",
+      "USDA APHIS pet travel rules, US to Japan https://www.aphis.usda.gov/pet-travel/us-to-another-country-export/pet-travel-us-japan",
+      "FindPetShippers military PCS guide https://findpetshippers.com/guides/military-pcs"
+    ],
+    "unsaid_assumption": "That the rules database (country, airline, base) can be kept current enough that a missed update never strands a pet in quarantine.",
+    "rough_scores": {"difficulty": 3, "novelty": 4, "feasibility": 4, "impact": 3},
+    "surprise": "The hard part of moving a pet isn't the flight; it's a 180-day clock that starts with a blood draw most families book too late."
+  },
+  {
+    "title": "Step-Free Scout",
+    "tagline": "For wheelchair users: it calls venues about access, then reroutes live when a station elevator breaks.",
+    "tier": "whitespace",
+    "category": "Accessibility",
+    "moment": "You have concert tickets across town tonight. The agent already called the venue about the accessible entrance, and at 6:40 it taps your wrist: the elevator at your transfer station just went out, so take the bus two stops and use the ramp on 5th.",
+    "what_it_does": [
+      "From a ticket email or calendar event, finds the venue and asks what matters to you: step-free entrance, accessible restroom, companion seat, drop-off point.",
+      "Calls the venue through cloud telephony with those exact questions, keeps a transcript, and saves the answers as a venue card you can show staff at the door.",
+      "Plans a step-free route from live elevator-outage feeds, not only static accessibility tags.",
+      "On the day, watches outage feeds along your route and sends a reroute to your Watch and a Live Activity. It asks before booking an accessible ride or paratransit as a fallback.",
+      "Afterwards asks whether the venue's answers were right and, with your OK, shares corrections with a community map."
+    ],
+    "why_now": "A July 2026 MTA class-action settlement requires real-time elevator-outage details, alerts and a rerouting phone line. Wheelchair modes in Google Maps and Citymapper can lag during sudden outages. Cloud calling agents can now ask venues specific questions, and iOS Live Activities reach the Apple Watch Smart Stack.",
+    "why_nobody_yet_or_wall": "Accessibility apps are crowdsourced review maps, and routing apps treat access as a fixed tag on a station. Calling venues and watching elevators all day is labor no one has automated for this group, and the market looks small to generalist builders.",
+    "ios_hooks": ["EventKit", "MapKit", "Core Location (CLMonitor)", "ActivityKit Live Activities (Watch Smart Stack)", "watchOS notifications", "BackgroundTasks", "App Intents"],
+    "nearest_existing": [
+      "Google Maps and Citymapper wheelchair-accessible routing",
+      "MTA accessible subway travel and outage info https://www.mta.info/accessibility/subway",
+      "MTA elevator-outage settlement coverage https://www.disabled-world.com/disability/legal/mta-settlement.php",
+      "Wheelmap (crowdsourced accessibility map)"
+    ],
+    "unsaid_assumption": "That transit outage feeds are timely outside New York and that venue staff answer access questions accurately on the phone.",
+    "rough_scores": {"difficulty": 3, "novelty": 4, "feasibility": 4, "impact": 4},
+    "surprise": "For a wheelchair user one broken elevator rewrites the whole trip, yet no routing app treats it as an event worth watching."
+  },
+  {
+    "title": "Own Your Moving Survey",
+    "tagline": "Scan your home once, then make movers bid on your inventory instead of theirs.",
+    "tier": "whitespace",
+    "category": "Physical world",
+    "moment": "You're moving in six weeks and three movers each want to send someone for a walk-through. Instead you walk each room with your phone for ten minutes, and the agent warns you the sectional won't make the turn in the new stairwell.",
+    "what_it_does": [
+      "Scans each room with RoomPlan and the camera to build an itemized inventory with dimensions, and maps the new place's doors and stairwells if you can visit or have a floor plan.",
+      "Decides with you what fits and what doesn't, then drafts resale listings or donation pickups for what you won't move; you approve each one.",
+      "Sends the same inventory to several movers, requests binding estimates, and compares them line by line, flagging vague or suspiciously low quotes.",
+      "Handles the move-day details that go wrong: the building's elevator reservation and, where the city requires it, a temporary no-parking permit for the truck.",
+      "After delivery, checks items off against the inventory and drafts a damage claim with the before photos if something arrives broken."
+    ],
+    "why_now": "Movers already price jobs from AI video surveys of customers' homes (Yembo), which proves the inventory can be machine-built, but the mover owns it. RoomPlan on LiDAR iPhones and iOS 27's image-capable Foundation Models make a customer-owned version possible.",
+    "why_nobody_yet_or_wall": "Survey AI is sold to movers and serves the mover's quote. Consumer moving apps focus on address changes and utilities. Getting movers to bid on a customer's own inventory needs a format they trust, and home-inventory apps were built for insurance, not for bidding.",
+    "ios_hooks": ["RoomPlan", "ARKit", "Foundation Models (image Attachment)", "VisionKit", "EventKit", "PDFKit", "App Intents", "MFMailComposeViewController"],
+    "nearest_existing": [
+      "Yembo (AI video surveys sold to movers) https://yembo.ai/moving/surveys",
+      "HomeSurvey.ai (survey tool for movers) https://homesurvey.ai/compare/homesurvey-vs-yembo/",
+      "MovingBox AI Home Inventory (inventory, no bidding) https://apps.apple.com/us/app/movingbox-ai-home-inventory/id6742755218"
+    ],
+    "unsaid_assumption": "That movers will commit to binding estimates from a customer-made inventory rather than insisting on their own survey.",
+    "rough_scores": {"difficulty": 3, "novelty": 4, "feasibility": 4, "impact": 3},
+    "surprise": "The AI survey movers use to price you can be turned around so the customer owns the inventory and the movers compete for it."
+  },
+  {
+    "title": "Shelf Price Witness",
+    "tagline": "Catches checkout overcharges by matching shelf tags you saw to your receipt, then claims the refund.",
+    "tier": "whitespace",
+    "category": "Money & commerce",
+    "moment": "You grab a coffee tagged $8.99 on sale and it rings up at $12.49. You don't notice, but the agent does: it matched the tag photo to your receipt and tells you to stop at the service desk before you reach the car.",
+    "what_it_does": [
+      "Captures shelf tags as you shop, with quick phone snaps or hands-free frames from Meta glasses, stamped with time and store.",
+      "Reads the receipt (photo, or a digital receipt forwarded by email) and matches each line to a tag.",
+      "Flags overcharges and expired sale tags, and tells you what the local rule gives you: some places, such as New York City, require a bonus on top of the refund, and Michigan has a scanner law.",
+      "Shows a service-desk card with the evidence. If you're already home, it drafts a refund request to the store and asks before sending.",
+      "Keeps a per-store error log and warns you when you walk into a store that often overcharges."
+    ],
+    "why_now": "Consumer Reports found more than 150 expired or misleading price tags across 26 Kroger stores in 14 states. Electronic shelf labels let prices change quickly, so the tag you saw is harder to prove later. iOS 27's on-device OCR reads tags and receipts cheaply, and Meta's Wearables Device Access Toolkit lets an iPhone app pull glasses frames without taking out the phone.",
+    "why_nobody_yet_or_wall": "Receipt apps store receipts for expenses and cashback, and price-verification tools are sold to retailers for staff audits. Each overcharge is a few dollars, and capturing tags by hand was tedious until glasses made it passive.",
+    "ios_hooks": ["Foundation Models (OCR tool, image Attachment)", "VisionKit DataScannerViewController", "Core Location (CLMonitor store geofence)", "ActivityKit Live Activities", "CryptoKit (hash evidence)", "Meta Wearables Device Access Toolkit", "App Intents"],
+    "nearest_existing": [
+      "Receipt apps used to catch overcharges by hand https://www.theappnote.com/blog/catch-store-overcharges-with-receipt-apps",
+      "ShopRite ScanRite policy https://www.shoprite.com/scanrite-policy",
+      "Michigan Scanner Law https://www.michigan.gov/consumerprotection/protect-yourself/consumer-alerts/shopping/michigans-scanner-law",
+      "Consumer Reports Kroger price-tag findings https://www.yahoo.com/news/consumer-reports-visited-26-krogers-104700792.html"
+    ],
+    "unsaid_assumption": "That stores honor photo evidence at the desk and that shoppers will snap tags, or wear glasses, while they shop.",
+    "rough_scores": {"difficulty": 2, "novelty": 5, "feasibility": 4, "impact": 3},
+    "surprise": "As shelf prices go electronic and change quickly, a timestamped photo of the tag becomes the shopper's only proof of the price offered."
+  },
+  {
+    "title": "Kiosk Hands",
+    "tagline": "Glasses watch a touchscreen and guide a blind user's finger, step by step, through any kiosk.",
+    "tier": "moonshot",
+    "category": "Accessibility",
+    "moment": "You're at a hospital check-in kiosk with a flat touchscreen and no audio. Through your glasses the agent reads the screen, says \"left, down, stop, tap,\" and confirms each step until the wristband prints.",
+    "what_it_does": [
+      "Streams frames from Meta glasses to the iPhone and tracks both the kiosk screen and your fingertip.",
+      "Asks what you want to do, plans the path through the kiosk's screens, and remembers that flow for the next time you meet the same kiosk model.",
+      "Guides your finger with speech or tones, and checks the screen after each tap to confirm the state changed as expected.",
+      "Stops at decision points (payment amounts, consent screens) and reads out every option instead of choosing for you.",
+      "Hands off to a human helper when its confidence drops."
+    ],
+    "why_now": "Meta's Wearables Device Access Toolkit gives iPhone apps glasses camera frames, including background streaming. Vision-language models can read screens they have never seen. Research prototypes (VizLens, StateLens, Toucha11y) showed that finger guidance on inaccessible touchscreens works in the lab.",
+    "why_nobody_yet_or_wall": "Research and hardware wall. Guidance needs real-time fingertip tracking and screen reading at sub-second latency from glasses frames, which today's on-device models and a developer-preview SDK can't reliably deliver. There is also a liability wall: a wrong tap can pay, consent or cancel. It needs faster local vision models, a stable glasses SDK, and a confirmation design for money and consent screens.",
+    "ios_hooks": ["Meta Wearables Device Access Toolkit", "Core AI / MLX local vision models", "Foundation Models", "AVAudioSession (audio cues)", "UIAccessibility / VoiceOver", "App Intents"],
+    "nearest_existing": [
+      "VizLens (CMU) https://www.cs.cmu.edu/~jbigham/pubs/pdfs/2016/vizlens.pdf",
+      "StateLens https://pith.science/paper/1908.07144",
+      "Toucha11y https://arxiv.org/pdf/2305.04097",
+      "Be My Eyes (scene description and human help, no finger guidance)"
+    ],
+    "unsaid_assumption": "That clinics, banks and stores will tolerate a camera on a customer's face at their kiosks.",
+    "rough_scores": {"difficulty": 5, "novelty": 4, "feasibility": 2, "impact": 4},
+    "surprise": "The agent can't press anything, so it borrows your hand: you are the actuator and the agent is the eyes."
+  },
+  {
+    "title": "Advocate Interpreter",
+    "tagline": "Translates both ways abroad, and quietly tells only you when the price or the story is off.",
+    "tier": "moonshot",
+    "category": "Physical world",
+    "moment": "Your rental car dies outside a village in Turkey, and a tow driver quotes a price in fast Turkish. Your AirPods translate him, and then whisper that the price is about three times the usual rate and that your rental contract includes free towing.",
+    "what_it_does": [
+      "Runs two-way speech translation: the other person hears the iPhone speaker, and you hear your AirPods.",
+      "In parallel, pulls your context (rental contract, travel insurance, booking), local price references and your consumer rights, and gives advice only in your ears.",
+      "On request, calls the rental company's roadside line or your insurer through cloud telephony while the conversation continues, then summarizes their answer.",
+      "Asks before you agree to anything that costs money (a head nod through AirPods motion can confirm), and logs the exchange with receipts for a later claim."
+    ],
+    "why_now": "AirPods Live Translation (iOS 26) made in-ear translation normal. Full-duplex speech research and on-device ports such as Kyutai's Hibiki in MLX Swift show streaming translation is close. Private Cloud Compute gives apps cheap reasoning over contracts and prices.",
+    "why_nobody_yet_or_wall": "Platform and research wall. Apple's AirPods Live Translation pipeline isn't open to third parties, and the Call Translation API only covers VoIP calls inside your own app, so a builder must run its own low-latency translation and split audio between speaker and earbuds. Adding a private advice channel on top, under about a second, is unsolved. There is also a trust wall: bad advice in a tense moment can make a dispute worse. It needs an Apple API to add a private assistant audio lane to Live Translation, or on-device duplex models good enough to replace it.",
+    "ios_hooks": ["AVAudioSession (split speaker and AirPods routing)", "Speech (SpeechAnalyzer)", "Translation framework", "Foundation Models / PrivateCloudComputeLanguageModel", "CMHeadphoneMotionManager (nod to confirm)", "CallKit Call Translation API (in-app VoIP only)", "ActivityKit Live Activities"],
+    "nearest_existing": [
+      "Apple AirPods Live Translation (neutral translation, closed to third parties)",
+      "Kyutai moshi-swift / Hibiki streaming translation https://github.com/kyutai-labs/moshi-swift",
+      "Google Translate conversation mode"
+    ],
+    "unsaid_assumption": "That it's acceptable for one side of a conversation to get private coaching the other side can't hear.",
+    "rough_scores": {"difficulty": 5, "novelty": 4, "feasibility": 2, "impact": 3},
+    "surprise": "Every translator is neutral by design; the useful one abroad takes your side."
+  },
+  {
+    "title": "Charger Queue Pact",
+    "tagline": "Drivers' agents agree on a fair queue at any busy EV charger, across brands, before anyone arrives.",
+    "tier": "moonshot",
+    "category": "Physical world",
+    "moment": "Four cars low on charge are heading to a six-stall station on a holiday Friday. Your CarPlay agent says you're third, due at 6:12 for stall 4, because the Kia ahead of you agreed to stop at 80% since you have 90 more miles to go.",
+    "what_it_does": [
+      "With your consent, shares your ETA, state of charge and needed range with other drivers' agents heading to the same site.",
+      "Negotiates queue order and charge caps under a rule you pick (first come, or need-based with trades).",
+      "Reroutes you to a nearby site when the wait passes your limit, and asks before any paid swap.",
+      "Holds everyone to the deal with a Live Activity countdown and a reputation score for agents that break the queue."
+    ],
+    "why_now": "Tesla began piloting a virtual Supercharger queue at five sites in May 2026, open to non-Tesla EVs through the Tesla app, after fights over queue-jumping. iOS 27 lets any CarPlay app use the Voice Control template, and A2A v1.0 (March 2026) gives agents a standard way to talk to each other.",
+    "why_nobody_yet_or_wall": "Coordination and enforcement wall. A queue only works if most drivers at a site use the same protocol, and nothing stops a non-participant from pulling into the stall; even Tesla's pilot is an honor system on one network. Charging networks don't expose cross-brand reservation or queue APIs. It needs networks, or funding rules for public chargers, to open queue endpoints, plus a shared queue standard across apps.",
+    "ios_hooks": ["CarPlay Voice Control template", "CarPlay Dashboard Live Activities", "Core Location", "MapKit", "ActivityKit push updates", "App Intents"],
+    "nearest_existing": [
+      "Tesla Supercharger virtual queue pilot https://electrek.co/2026/05/12/tesla-supercharger-virtual-queue-pilot-5-locations/",
+      "PlugShare (crowdsourced charger status)",
+      "A2A protocol https://github.com/a2aproject/A2A"
+    ],
+    "unsaid_assumption": "That drivers will share location and battery level with strangers' agents in exchange for a shorter wait.",
+    "rough_scores": {"difficulty": 5, "novelty": 4, "feasibility": 2, "impact": 3},
+    "surprise": "The scarce resource is a parking stall, so the agent's real job is diplomacy with other agents, not route planning."
+  },
+  {
+    "title": "Pocket Public Adjuster",
+    "tagline": "After a fire or flood, it rebuilds what you owned and argues the contents claim with your insurer.",
+    "tier": "moonshot",
+    "category": "Money & commerce",
+    "moment": "Your house burned three weeks ago, and the insurer wants an itemized list of everything you owned, with ages and prices. The agent has found 1,800 items across eleven years of your photos and purchase emails, and it flags that the insurer depreciated your two-year-old sofa as if it were ten.",
+    "what_it_does": [
+      "Rebuilds the contents list room by room from your photo library, purchase emails and card history (with consent), and asks you to confirm uncertain items.",
+      "Prices each item at replacement cost and fills in the insurer's contents spreadsheet.",
+      "Reads the policy, tracks every deadline, and compares the insurer's depreciation and pricing line by line against your evidence.",
+      "Drafts replies and counteroffers for you to send, and escalates to a licensed public adjuster or a state insurance department complaint when talks stall."
+    ],
+    "why_now": "After the January 2025 Los Angeles fires, free AI tools (Bevel) and apps (Preloss, MovingBox) showed that photos and video can become an insurance inventory. Private Cloud Compute and Claude through the Foundation Models LanguageModel protocol can handle long policies and big spreadsheets.",
+    "why_nobody_yet_or_wall": "Regulation and liability wall. Negotiating a claim for someone is public-adjuster work, which requires a license in most US states, so an app that argues the claim risks unlicensed practice. Wrong valuations create liability, and insurers can refuse to deal with an agent. It needs a licensed adjuster in the loop, or a regulatory sandbox, and insurer acceptance of machine-built schedules.",
+    "ios_hooks": ["PhotoKit (full-library access with consent)", "Vision", "Foundation Models (image Attachment, Spotlight tool)", "PrivateCloudComputeLanguageModel", "FinanceKit", "ASWebAuthenticationSession (OAuth to Gmail or Outlook)", "PDFKit"],
+    "nearest_existing": [
+      "Bevel (free AI inventory for LA fire survivors) https://abc7.com/post/artificial-intelligence-driven-inventory-tool-bevelmade-serves-solution-california-wildfire-victims-document-belongings/17882452/",
+      "Preloss https://preloss.app/",
+      "MovingBox AI Home Inventory https://apps.apple.com/us/app/movingbox-ai-home-inventory/id6742755218",
+      "HomeZada https://www.homezada.com/homeowners/home-inventory"
+    ],
+    "unsaid_assumption": "That the phone and its cloud photo library survive the disaster, and that old photos show enough of the home.",
+    "rough_scores": {"difficulty": 4, "novelty": 3, "feasibility": 2, "impact": 5},
+    "surprise": "Building the inventory is now the easy part; the hard part is that arguing the claim is a licensed profession."
+  },
+  {
+    "title": "Ambient 311",
+    "tagline": "Your glasses notice broken streets as you walk, and your agent files and follows up on the city reports.",
+    "tier": "moonshot",
+    "category": "Safety & civic",
+    "moment": "You walk to work past a blocked curb ramp, a dead streetlight and a new pothole, and you don't stop for any of them. That evening the agent shows three draft reports with photos and locations, already checked against open tickets, and you tap to send two.",
+    "what_it_does": [
+      "If you opt in, samples glasses frames on walks and flags street defects (potholes, blocked curb ramps, dead lights), blurring faces and plates on the device.",
+      "Checks each one against open 311 tickets and adds to an existing ticket instead of filing a duplicate.",
+      "Batches the drafts for your approval, then files through Open311 or the city's own app.",
+      "Re-checks the spot the next time you pass and confirms the fix or reopens the ticket."
+    ],
+    "why_now": "Meta's Wearables Device Access Toolkit gives iPhone apps glasses frames, including background streaming. On-device vision can blur bystanders before anything leaves the phone. Many cities accept 311 reports through APIs, and the 2026 MTA settlement shows accessibility failures now carry legal weight.",
+    "why_nobody_yet_or_wall": "Second-order and regulatory wall. If millions of agents file reports, cities drown in tickets, and every report creates the 'prior notice' that can make a city liable for damage (see Pothole Payback), so cities may refuse automated reports. Bystander-privacy rules limit continuous capture in public, and glasses battery and iOS background limits cap how much can be sampled. It needs city-side intake agents, a confidence and dedup standard in Open311, and clear rules for passive capture.",
+    "ios_hooks": ["Meta Wearables Device Access Toolkit", "Vision (face and plate detection for blurring)", "Core AI local models", "Core Location (significant-change and CLMonitor)", "BackgroundTasks", "UserNotifications", "App Intents"],
+    "nearest_existing": [
+      "SeeClickFix and city 311 apps (manual reporting)",
+      "Project Sidewalk (University of Washington crowdsourced sidewalk accessibility research)",
+      "MTA elevator-outage settlement coverage https://www.disabled-world.com/disability/legal/mta-settlement.php"
+    ],
+    "unsaid_assumption": "That cities want more reports, when many already have backlogs they can't clear.",
+    "rough_scores": {"difficulty": 4, "novelty": 5, "feasibility": 2, "impact": 3},
+    "surprise": "The agent works too well: passive reporting shifts legal liability onto cities, which could make them refuse the help."
+  }
+]

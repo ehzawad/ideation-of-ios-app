@@ -1,0 +1,193 @@
+<!doctype html>
+<!-- Local rendering of the Figma mockups (file "Agentic iOS Apps — Idea Atlas", page "Flagship mockups").
+     The Figma file is the design source; this page reproduces the same layouts so PNGs can be rendered
+     without network access to Figma. Render with: node scripts/mockups/render.mjs -->
+<html><head><meta charset="utf-8"><title>Mockups</title>
+<style>
+@font-face { font-family: Inter; font-weight: 400; src: url(../pdf/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2); }
+@font-face { font-family: Inter; font-weight: 500; src: url(../pdf/node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2); }
+@font-face { font-family: Inter; font-weight: 600; src: url(../pdf/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2); }
+@font-face { font-family: Inter; font-weight: 700; src: url(../pdf/node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2); }
+@font-face { font-family: Inter; font-weight: 800; src: url(../pdf/node_modules/@fontsource/inter/files/inter-latin-800-normal.woff2); }
+* { box-sizing: border-box; }
+body { margin: 0; background: #fcfcfb; font-family: Inter, sans-serif; -webkit-font-smoothing: antialiased; }
+#root { display: flex; flex-wrap: wrap; gap: 60px; padding: 60px; width: 1908px; }
+.slot { width: 402px; display: flex; flex-direction: column; gap: 16px; }
+.phone { position: relative; width: 402px; height: 874px; border-radius: 55px; overflow: hidden; border: 1px solid rgba(0,0,0,.12); }
+.status { position: absolute; top: 0; left: 0; right: 0; height: 54px; }
+.status .time { position: absolute; left: 51px; top: 17px; font-weight: 600; font-size: 17px; letter-spacing: -0.1px; }
+.status .icons { position: absolute; right: 38px; top: 22px; display: flex; gap: 6px; }
+.island { position: absolute; left: 138px; top: 11px; width: 126px; height: 37px; border-radius: 18.5px; background: #000; }
+.home { position: absolute; bottom: 8px; left: 131.5px; width: 139px; height: 5px; border-radius: 3px; }
+.body { position: absolute; top: 62px; left: 0; width: 402px; height: 778px; padding: 0 16px; display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; }
+.col { display: flex; flex-direction: column; }
+.grow { flex: 1; }
+.card { border-radius: 22px; background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.08); display: flex; }
+.glass { background: rgba(255,255,255,.74); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 8px 24px rgba(0,0,0,.10); border: .5px solid rgba(255,255,255,.6); }
+.dglass { background: rgba(28,28,30,.8); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: none; }
+.pill { display: flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border-radius: 22px; padding: 0 18px; font-weight: 600; font-size: 15px; white-space: nowrap; }
+.tile { display: flex; align-items: center; justify-content: center; flex: none; }
+.cap-chip { font-weight: 700; font-size: 14px; color: #0b0b0b; padding: 3px 8px; border-radius: 6px; }
+.cap-title { font-weight: 700; font-size: 20px; color: #0b0b0b; letter-spacing: -0.3px; }
+.cap-line { font-size: 15px; line-height: 21px; color: #52514e; }
+</style></head>
+<body><div id="root"></div><div id="patterns" style="display:flex;gap:60px;padding:60px;width:1506px"></div>
+<script>
+const C = { blue: '#0a84ff', blueL: '#007aff', green: '#34c759', orange: '#ff9500', red: '#ff3b30', purple: '#af52de', teal: '#30b0c7', gray: '#8e8e93', gray2: '#aeaeb2', label2: '#3c3c43' };
+const TB = '#2a78d6', TW = '#eb6834', TM = '#1baf7a';
+const ICONS = {
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  plane: '<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+  send: '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>',
+  alert: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  doc: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8M16 17H8M10 9H8"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  dollar: '<path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+  book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+  pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+  undo: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+  pin: '<path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  wave: '<path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  sparkles: '<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/>',
+};
+const el = (tag, cls, parent, style = {}) => { const e = document.createElement(tag); if (cls) e.className = cls; Object.assign(e.style, style); if (parent) parent.appendChild(e); return e; };
+const WEIGHT = { Regular: 400, Medium: 500, Semibold: 600, Bold: 700, Heavy: 800 };
+function txt(parent, s, o = {}) {
+  const { size = 17, w = 'Regular', color = '#000', op = 1, width = null, align = 'left', lh = null, ls = null } = o;
+  const t = el('div', null, parent, { fontSize: size + 'px', fontWeight: WEIGHT[w], color, opacity: op, textAlign: align, letterSpacing: (ls != null ? ls : (size >= 28 ? -0.025 * size : size >= 20 ? -0.015 * size : -0.006 * size)) + 'px', lineHeight: lh ? lh + 'px' : '1.25' });
+  if (width) t.style.width = width + 'px';
+  t.textContent = s; return t;
+}
+function svgIcon(parent, name, { size = 18, color = '#000', sw = 2 } = {}) { const d = el('div', null, parent, { width: size + 'px', height: size + 'px', flex: 'none' }); d.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`; return d; }
+function badge(parent, name, bg, { size = 20 } = {}) { const d = el('div', null, parent, { width: size + 'px', height: size + 'px', flex: 'none' }); d.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="${bg}"/><g transform="translate(5 5) scale(0.5833)" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</g></svg>`; return d; }
+function ring(parent, color, { size = 20, dashed = false } = {}) { const d = el('div', null, parent, { width: size + 'px', height: size + 'px', flex: 'none' }); d.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="${color}" stroke-width="2.4" ${dashed ? 'stroke-dasharray="3 3"' : ''}/></svg>`; return d; }
+function al(parent, dir = 'col', { gap = 0, pad = null, padX = null, padY = null, radius = 0, bg = null, align = null } = {}) { const f = el('div', dir === 'row' ? 'row' : 'col', parent, { gap: gap + 'px', borderRadius: radius + 'px' }); if (pad != null) f.style.padding = pad + 'px'; if (padX != null) { f.style.paddingLeft = f.style.paddingRight = padX + 'px'; } if (padY != null) { f.style.paddingTop = f.style.paddingBottom = padY + 'px'; } if (bg) f.style.background = bg; if (align) f.style.alignItems = align; return f; }
+function card(parent, { dir = 'col', pad = 16, gap = 10, radius = 22, bg = '#fff', shadow = true, stroke = null } = {}) { const f = el('div', 'card', parent, { flexDirection: dir === 'row' ? 'row' : 'column', padding: pad + 'px', gap: gap + 'px', borderRadius: radius + 'px', background: bg }); if (!shadow) f.style.boxShadow = 'none'; if (stroke) f.style.outline = stroke; if (dir === 'row') f.style.alignItems = 'center'; return f; }
+function glass(parent, o = {}) { const f = card(parent, o); f.classList.add('glass'); f.style.background = ''; return f; }
+function darkGlass(parent, o = {}) { const f = card(parent, o); f.classList.add('dglass'); f.style.background = ''; return f; }
+function pill(parent, label, { bg = C.blueL, color = '#fff', size = 15, h = 44, icon = null, grow = false, op = 1 } = {}) { const b = el('div', 'pill', parent, { height: h + 'px', borderRadius: h / 2 + 'px', color, fontSize: size + 'px' }); b.style.background = op < 1 ? hexA(bg, op) : bg; if (grow) { if (parent.classList.contains('row') || parent.style.flexDirection === 'row') b.style.flex = '1'; else b.style.alignSelf = 'stretch'; } if (icon) svgIcon(b, icon, { size: size + 1, color, sw: 2.4 }); el('span', null, b).textContent = label; return b; }
+function hexA(h, a) { h = h.replace('#', ''); return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`; }
+function row(parent, o = {}) { const r = al(parent, 'row', Object.assign({ gap: 10 }, o)); return r; }
+function spacer(parent) { return el('div', 'grow', parent); }
+function tile(parent, name, bg, { size = 28, radius = 7, symSize = 15, color = '#fff' } = {}) { const t = el('div', 'tile', parent, { width: size + 'px', height: size + 'px', borderRadius: radius + 'px', background: bg }); svgIcon(t, name, { size: symSize, color, sw: 2.2 }); return t; }
+function step(parent, state, label, detail = null, { dark = false, width = null } = {}) { const r = al(parent, 'row', { gap: 10, align: 'flex-start' }); if (state === 'done') badge(r, 'check', C.green, { size: 19 }); else if (state === 'ask') badge(r, 'alert', C.orange, { size: 19 }); else ring(r, state === 'active' ? C.blue : C.gray2, { size: 19, dashed: state === 'active' }); const c = al(r, 'col', { gap: 2 }); txt(c, label, { size: 15, w: state === 'ask' ? 'Semibold' : 'Regular', color: dark ? '#fff' : '#000', op: state === 'todo' ? 0.45 : 1, width }); if (detail) txt(c, detail, { size: 13, color: dark ? '#fff' : C.label2, op: 0.62, width }); return r; }
+const SIG = c => `<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="${c}"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="${c}"/><rect x="10" y="3" width="3" height="9" rx="1" fill="${c}"/><rect x="15" y="0" width="3" height="12" rx="1" fill="${c}"/></svg>`;
+const WIFI = c => `<svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l2.4-2.9a3.6 3.6 0 0 0-4.8 0L8 11.5zM3.6 6.2a6.6 6.6 0 0 1 8.8 0l1.5-1.8a9 9 0 0 0-11.8 0l1.5 1.8zM.2 2.3a11.9 11.9 0 0 1 15.6 0" fill="${c}"/></svg>`;
+const BATT = c => `<svg width="27" height="13" viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="23" height="12" rx="3.8" fill="none" stroke="${c}" stroke-opacity="0.4"/><rect x="2" y="2" width="20" height="9" rx="2.5" fill="${c}"/><path d="M25 4.5v4a2.2 2.2 0 0 0 0-4z" fill="${c}" fill-opacity="0.4"/></svg>`;
+const root = document.getElementById('root');
+function phone(id, { bg = '#f2f2f7', dark = false, gradient = null, gap = 14, time = '9:41', target = root } = {}) {
+  const slot = el('div', 'slot', target); slot.dataset.id = id;
+  const p = el('div', 'phone', slot); p.dataset.id = id;
+  p.style.background = gradient ? `linear-gradient(180deg, ${gradient.join(', ')})` : bg;
+  const col = dark ? '#fff' : '#000';
+  const st = el('div', 'status', p); const t = el('div', 'time', st, { color: col }); t.textContent = '9:41';
+  const ic = el('div', 'icons', st); ic.innerHTML = SIG(col) + WIFI(col) + BATT(col);
+  el('div', 'island', p); el('div', 'home', p, { background: col });
+  const body = el('div', 'body', p, { gap: gap + 'px' });
+  return { slot, body };
+}
+function lockClock(body, time = '9:41', date = 'Thursday, September 24') { const c = al(body, 'col', { align: 'center' }); c.style.padding = '6px 0 16px'; txt(c, date, { size: 20, w: 'Semibold', color: '#fff', op: 0.85 }); txt(c, time, { size: 92, w: 'Bold', color: '#fff', op: 0.92, lh: 100 }); return c; }
+function navTitle(body, title, sub = null) { const c = al(body, 'col', { gap: 2 }); c.style.paddingTop = '8px'; txt(c, title, { size: 34, w: 'Bold' }); if (sub) txt(c, sub, { size: 15, color: C.label2, op: 0.6, width: 370 }); return c; }
+function notif(body, ic, icColor, app, when, title, text, actions = []) { const n = glass(body, { gap: 6, radius: 22, pad: 14 }); const h = row(n, { gap: 8 }); tile(h, ic, icColor, { size: 22, radius: 6, symSize: 13 }); txt(h, app.toUpperCase(), { size: 12, w: 'Semibold', color: C.label2, op: 0.7, ls: 0.3 }); spacer(h); txt(h, when, { size: 12, color: C.label2, op: 0.6 }); txt(n, title, { size: 15, w: 'Semibold' }); txt(n, text, { size: 15, op: 0.85, lh: 20 }); if (actions.length) { const a = row(n, { gap: 8 }); a.style.paddingTop = '4px'; for (const [label, icon, primary] of actions) pill(a, label, { h: 36, size: 14, grow: true, icon, bg: '#000000', op: primary ? 0.85 : 0.07, color: primary ? '#fff' : '#000' }); } return n; }
+function caption(slot, id, title, line, tier) { const col = al(slot, 'col', { gap: 6 }); const r = row(col, { gap: 8 }); const chip = el('div', 'cap-chip', r, { background: tier }); chip.textContent = id; el('div', 'cap-title', r).textContent = title; el('div', 'cap-line', col).textContent = line; }
+function bar(parent, width, fillW, bg, fg) { const b = el('div', null, parent, { width: width + 'px', height: '8px', borderRadius: '4px', background: bg, flex: 'none' }); el('div', null, b, { width: fillW + 'px', height: '8px', borderRadius: '4px', background: fg }); return b; }
+
+// ---------------- screens (mirror the Figma frames) ----------------
+{ const { slot, body } = phone('B-05', { gap: 12 });
+  navTitle(body, 'Rebooking', 'Flight 1482 · 6:05 AM was cancelled');
+  const rule = al(body, 'row', { gap: 6, padX: 12, padY: 6, radius: 14, bg: '#e8f1fc', align: 'center' }); rule.style.alignSelf = 'flex-start'; svgIcon(rule, 'shield', { size: 14, color: '#2a78d6', sw: 2.4 }); txt(rule, 'Your rule: same day, under $150, aisle', { size: 13, w: 'Medium', color: '#1c5cab' });
+  for (const [t, d, price, best] of [['8:20 AM · nonstop', 'Seat 14C held for 18 min', '+$40', true], ['11:05 AM · via Denver', 'Arrives 2 h 40 m later', '+$0', false], ['Tomorrow 6:05 AM', 'Airline covers the hotel', '+$0', false]]) {
+    const c = card(body, { dir: 'row', gap: 12, radius: 18, pad: 14, stroke: best ? '2px solid #34c759' : null }); if (best) c.style.outlineOffset = '-2px';
+    tile(c, 'plane', best ? C.green : C.gray, { size: 34, radius: 9, symSize: 18 }); const col = al(c, 'col', { gap: 2 }); txt(col, t, { size: 16, w: 'Semibold' }); txt(col, d, { size: 13, color: C.label2, op: 0.65 }); if (best) txt(col, 'Recommended', { size: 12, w: 'Semibold', color: '#248a3d' }); spacer(c); txt(c, price, { size: 16, w: 'Semibold', color: best ? '#000' : '#8e8e93' }); }
+  spacer(body);
+  const b = glass(body, { gap: 8, radius: 30, pad: 10 }); pill(b, 'Approve 8:20 AM · +$40', { grow: true, icon: 'check', bg: C.green }); txt(b, 'I’ll email the receipt and request a refund for the fare difference.', { size: 12, color: C.label2, op: 0.7, align: 'center' });
+  caption(slot, 'B-05', 'Trip rebooking', 'Agents that notice a cancelled flight first, hold a seat, and wait for one tap. Many companies are shipping this now.', TB); }
+{ const { slot, body } = phone('B-18', { dark: true, gradient: ['#141e30', '#243b55', '#4b6a88'], gap: 10 });
+  lockClock(body, '2:17');
+  notif(body, 'shield', C.orange, 'Call Guard', 'now', 'I screened a call for you', 'The caller said he was from Medicare and asked for your ID number. That’s a known scam script. I hung up and blocked (202) 555-0147.', [['Call me back', null, false], ['Details', null, true]]);
+  notif(body, 'users', C.green, 'Family check', '1 min ago', 'Jake is safe', 'You asked “Did you just call Grandma?” Jake’s phone answered: “No, I’m at school.”');
+  notif(body, 'heart', C.blue, 'Call Guard', '1 min ago', 'Told Maria', 'Your daughter gets a note when a call looks like a scam. No call audio leaves the screening service.');
+  caption(slot, 'B-18', 'Scam-call guardian', 'Screening happens off the phone through call forwarding, because iOS gives apps no call audio. The family check is the part nobody ships yet.', TB); }
+{ const { slot, body } = phone('W-01', { gap: 12 });
+  navTitle(body, 'Denial Clock', 'Lumbar MRI · prior authorization');
+  const t = card(body, { gap: 8, radius: 20, pad: 16, bg: '#1c1c1e' });
+  txt(t, 'INSURER MUST DECIDE BY', { size: 12, w: 'Semibold', color: '#fff', op: 0.6, ls: 0.6 }); txt(t, 'Thu, Sep 25 · 5:00 PM', { size: 26, w: 'Bold', color: '#fff' }); bar(t, 338, 270, 'rgba(255,255,255,.18)', '#ff9500'); txt(t, 'Day 6 of the 7-day standard window. Past it, I file a complaint for you.', { size: 13, color: '#fff', op: 0.72 });
+  const s = card(body, { gap: 11, radius: 20, pad: 16 });
+  step(s, 'done', 'Dr. Lee’s office submitted the request', 'Sep 18 · confirmation #PA-58213'); step(s, 'done', 'Insurer asked for PT notes', 'Sent 6 weeks of notes from your portal'); step(s, 'ask', 'Denied: “not medically necessary”', 'Appeal drafted, citing 3 records'); step(s, 'todo', 'Send appeal and call to confirm receipt');
+  spacer(body);
+  const b = row(body, { gap: 8 }); pill(b, 'Review appeal', { grow: true, icon: 'doc' }); pill(b, 'Call for me', { grow: true, bg: '#000000', op: 0.07, color: '#000', icon: 'phone' });
+  txt(body, 'Not medical or legal advice. Nothing is sent without your OK.', { size: 12, color: C.label2, op: 0.6, align: 'center' });
+  caption(slot, 'W-01', 'Denial Clock', 'Times each prior authorization against the 2026 federal deadlines, then drafts and chases the appeal when the insurer says no.', TW); }
+{ const { slot, body } = phone('W-02', { dark: true, gradient: ['#0f0c29', '#302b63', '#6d5b97'], gap: 10 });
+  lockClock(body, '9:00', 'Wednesday, September 23');
+  const c = darkGlass(body, { gap: 10, radius: 26, pad: 16 });
+  const h = row(c); tile(h, 'moon', '#5e5ce6', { size: 30, radius: 8 }); txt(h, 'Night-Before Check', { size: 15, w: 'Semibold', color: '#fff' }); spacer(h); txt(h, '11 of 12 OK', { size: 13, w: 'Medium', color: '#fff', op: 0.6 });
+  txt(c, 'I re-read tomorrow’s plans against the messages they came from.', { size: 15, color: '#fff', op: 0.9 });
+  const s = al(c, 'col', { gap: 9 }); step(s, 'done', 'Maya: dentist 8:40 AM', 'Matches Bright Smiles email, Sep 12', { dark: true }); step(s, 'done', 'Leo: bus 7:15 AM, stop 4', 'Matches district text, Sep 1', { dark: true }); step(s, 'ask', 'Soccer moved to 9:30 AM', 'Coach Dan texted at 4:12 PM. Your calendar says 9:00.', { dark: true, width: 300 });
+  const b = row(c, { gap: 8 }); pill(b, 'Fix calendar', { grow: true, bg: C.green, icon: 'check' }); pill(b, 'Show text', { grow: true, bg: '#ffffff', op: 0.18 });
+  caption(slot, 'W-02', 'Night-Before Check', 'A second agent whose only job is catching the first one’s mistakes. Milo shut down over exactly these errors.', TW); }
+{ const { slot, body } = phone('W-03', { gap: 12 });
+  navTitle(body, 'Your agents', '3 waiting for you · $212 spent this week');
+  for (const [ic, col, name, what, state] of [['plane', C.blue, 'Travel agent', 'Wants to book a hotel: 2 nights, $189', 'ask'], ['mail', C.purple, 'Work agent', 'Drafted 5 replies. Nothing sent.', 'ask'], ['dollar', C.green, 'Money agent', 'Moved $50 to savings, per your rule', 'done'], ['book', C.teal, 'Research agent', 'Wants to pay $4 for a paywalled article', 'ask']]) {
+    const c = card(body, { gap: 8, radius: 18, pad: 14 }); const r1 = row(c); tile(r1, ic, col, { size: 30, radius: 8 }); const cc = al(r1, 'col', { gap: 1 }); txt(cc, name, { size: 15, w: 'Semibold' }); txt(cc, what, { size: 13, color: C.label2, op: 0.7 });
+    const r2 = row(c, { gap: 8 }); if (state === 'ask') { pill(r2, 'Approve', { h: 34, size: 14, grow: true }); pill(r2, 'Deny', { h: 34, size: 14, grow: true, bg: '#000000', op: 0.06, color: '#000' }); } else { txt(r2, 'Done 12 min ago', { size: 13, color: '#248a3d', w: 'Medium' }); spacer(r2); pill(r2, 'Undo', { h: 34, size: 14, bg: '#000000', op: 0.06, color: '#000', icon: 'undo' }); } }
+  spacer(body); pill(body, 'Pause every agent', { bg: C.red, icon: 'pause' });
+  caption(slot, 'W-03', 'Agent Control Tower', 'Everyone will soon have several agents from different companies. This is one place to approve, pause and audit all of them.', TW); }
+{ const { slot, body } = phone('M-01', { dark: true, bg: '#000', gap: 14 });
+  const warn = al(body, 'col', { gap: 6, pad: 20, radius: 28, bg: '#ffd60a' }); warn.style.padding = '22px 20px'; txt(warn, 'STOP', { size: 86, w: 'Heavy', color: '#000', lh: 90 }); txt(warn, 'Car reversing on your left, 4 meters', { size: 26, w: 'Bold', color: '#000', lh: 31 });
+  const g = darkGlass(body, { gap: 8, radius: 22, pad: 16 }); const r = row(g); tile(r, 'pin', C.blue, { size: 30, radius: 8 }); txt(r, 'Guiding to Pine St. Pharmacy', { size: 17, w: 'Semibold', color: '#fff' }); txt(g, '120 m ahead. Next: curb ramp, then crosswalk with audible signal.', { size: 17, color: '#fff', op: 0.85, lh: 23 });
+  const s = row(body, { gap: 8 }); for (const t of ['AirPods: speaking', 'Watch: tapping']) { const chip = al(s, 'row', { padX: 12, padY: 8, radius: 16, bg: 'rgba(255,255,255,.14)' }); txt(chip, t, { size: 14, w: 'Semibold', color: '#fff' }); }
+  spacer(body); txt(body, 'Warns before you ask. Today’s models answer questions well but miss hazards they must predict.', { size: 13, color: '#fff', op: 0.6, align: 'center' });
+  caption(slot, 'M-01', 'Seconds-Ahead Hazard Voice', 'The hardest perception problem on a phone: warn a blind walker about the danger before it arrives, not after the question.', TM); }
+{ const { slot, body } = phone('M-02', { gap: 12 });
+  navTitle(body, 'House rules', 'Every AI agent in this home must follow these at checkout.');
+  const c = card(body, { gap: 0, radius: 18, pad: 0 }); const rules = [['cart', C.green, 'Groceries', 'Up to $150 a week, no need to ask'], ['plane', C.blue, 'Travel', 'Always ask both of us'], ['shield', C.orange, 'New stores', 'Ask first, every time'], ['dollar', C.purple, 'Any single purchase', 'Never over $300'], ['users', C.teal, 'Kids’ agents', 'No spending at all'], ['x', C.red, 'Subscriptions', 'Never sign up for one']];
+  rules.forEach(([ic, col, t, d], i) => { const r = row(c, { padX: 14, padY: 11 }); if (i < rules.length - 1) r.style.borderBottom = '0.5px solid rgba(60,60,67,.2)'; tile(r, ic, col, { size: 30, radius: 8 }); const cc = al(r, 'col', { gap: 1 }); txt(cc, t, { size: 15, w: 'Semibold' }); txt(cc, d, { size: 13, color: C.label2, op: 0.7 }); });
+  const sig = card(body, { dir: 'row', gap: 10, radius: 16, pad: 12, bg: '#e8f6ea', shadow: false }); badge(sig, 'check', C.green, { size: 22 }); txt(sig, 'Signed by Alex and Sam with Face ID · version 4 · Sep 20', { size: 13, w: 'Medium', color: '#1d6b30' });
+  spacer(body); pill(body, 'Propose a change', { bg: '#000000', op: 0.85 });
+  caption(slot, 'M-02', 'Household Spending Constitution', 'Apple Pay has no agent API. If it did, a household could sign one set of spending rules that every agent must obey.', TM); }
+{ const { slot, body } = phone('M-03', { gap: 12 });
+  navTitle(body, 'At the pharmacy', 'Live Spanish practice · week 3');
+  const lvl = card(body, { gap: 8, radius: 18, pad: 14 }); const lr = row(lvl); txt(lr, 'Help level', { size: 15, w: 'Semibold' }); spacer(lr); txt(lr, '40%', { size: 15, w: 'Semibold', color: C.blueL }); bar(lvl, 340, 136, '#e5e5ea', C.blueL); txt(lvl, 'Down from 100% in week 1. It whispers less as you need it less.', { size: 13, color: C.label2, op: 0.7 });
+  const b1 = al(body, 'col', { gap: 4, padX: 14, padY: 10, radius: 18, bg: '#fff' }); b1.style.alignSelf = 'flex-start'; txt(b1, 'Pharmacist', { size: 12, w: 'Semibold', color: C.label2, op: 0.6 }); txt(b1, '¿Tiene la receta?', { size: 17 });
+  const hint = al(body, 'col', { gap: 4, padX: 14, padY: 10, radius: 18, bg: hexA(C.blueL, 0.12) }); const hr = row(hint, { gap: 6 }); svgIcon(hr, 'sparkles', { size: 14, color: C.blueL, sw: 2.2 }); txt(hr, 'Whisper', { size: 12, w: 'Semibold', color: C.blueL }); txt(hint, 'Sí, aquí está…', { size: 17, w: 'Semibold', op: 0.55 }); txt(hint, 'Just the first words this week', { size: 12, color: C.label2, op: 0.6 });
+  const b2 = al(body, 'col', { gap: 4, padX: 14, padY: 10, radius: 18, bg: C.blueL }); b2.style.alignSelf = 'flex-start'; txt(b2, 'You', { size: 12, w: 'Semibold', color: '#fff', op: 0.8 }); txt(b2, 'Sí, aquí está. Y una pregunta…', { size: 17, color: '#fff' });
+  const st = card(body, { dir: 'row', gap: 10, radius: 16, pad: 12, bg: '#e8f6ea', shadow: false }); badge(st, 'check', C.green, { size: 22 }); txt(st, '7 of 9 answers today with no help', { size: 14, w: 'Semibold', color: '#1d6b30' });
+  spacer(body); const lis = glass(body, { dir: 'row', gap: 10, radius: 30, pad: 12 }); svgIcon(lis, 'wave', { size: 22, color: C.blueL, sw: 2.4 }); txt(lis, 'Listening through AirPods', { size: 15, w: 'Semibold' });
+  caption(slot, 'M-03', 'Fading Whisper', 'An earbud prompter for real conversations that gives you less help every week, until you don’t need it.', TM); }
+
+// ---------------- agent UI patterns (mirror the Figma page "Agent UI patterns") ----------------
+const PT = document.getElementById('patterns');
+{ const { slot, body } = phone('pattern-live-activity', { dark: true, gradient: ['#0f2027', '#203a43', '#5b4b8a', '#c9a3b9'], gap: 12, target: PT });
+  lockClock(body);
+  const la = darkGlass(body, { gap: 12, radius: 26, pad: 16 });
+  const h = row(la); tile(h, 'plane', C.blue, { size: 30, radius: 8 }); txt(h, 'Travel agent', { size: 15, w: 'Semibold', color: '#fff' }); spacer(h); txt(h, 'Step 3 of 3', { size: 13, w: 'Medium', color: '#fff', op: 0.6 });
+  txt(la, 'Your 6:05 AM flight was cancelled', { size: 18, w: 'Semibold', color: '#fff' });
+  const st = al(la, 'col', { gap: 9 }); step(st, 'done', 'Found 3 same-day options', null, { dark: true }); step(st, 'done', 'Held seat 14C on the 8:20 AM', 'Hold expires in 18 min', { dark: true }); step(st, 'ask', 'Waiting for your OK', '+$40 fare difference, under your $150 cap', { dark: true });
+  const b = row(la, { gap: 8 }); pill(b, 'Approve', { bg: C.green, grow: true, icon: 'check' }); pill(b, 'Other options', { bg: '#ffffff', op: 0.18, grow: true });
+  spacer(body); txt(body, 'Updated by the agent’s server through push', { size: 12, color: '#fff', op: 0.65, align: 'center' });
+  caption(slot, '1', 'Agent at work', 'A Live Activity shows the plan, what’s done, and the one thing waiting for you. The agent’s server updates it through push.', '#e5e5ea'); }
+{ const { slot, body } = phone('pattern-drafts', { gap: 12, target: PT });
+  navTitle(body, 'Inbox agent', '4 replies drafted. Nothing sent yet.');
+  for (const [from, subj, reply, ok] of [['Dr. Patel’s office', 'Can we move you to Tue 3:30?', 'Yes, Tuesday 3:30 works. Thank you!', true], ['Landlord', 'Water shut-off Friday 9–11', 'Thanks for the heads-up. I’ll plan around it.', true], ['Maya’s school', 'Field trip form due Wed', 'Form filled. It asks for $12. Pay it?', false], ['Unknown sender', 'Your package is on hold', 'Not replying. This looks like a scam, so I moved it to Junk.', true]]) {
+    const c = card(body, { gap: 6, radius: 18, pad: 14 }); const r1 = row(c); txt(r1, from, { size: 15, w: 'Semibold' }); spacer(r1); if (ok) badge(r1, 'check', C.blueL, { size: 20 }); else badge(r1, 'alert', C.orange, { size: 20 });
+    txt(c, subj, { size: 13, color: C.label2, op: 0.6 }); const q = al(c, 'row', { padX: 10, padY: 8, radius: 10, bg: ok ? '#eaf3ff' : '#fff4e5' }); txt(q, reply, { size: 14, lh: 19 }); }
+  spacer(body); const bar2 = glass(body, { dir: 'row', gap: 8, radius: 30, pad: 8 }); pill(bar2, 'Send 3', { grow: true, icon: 'send' }); pill(bar2, 'Review each', { bg: '#000000', op: 0.06, color: '#000', grow: true });
+  caption(slot, '2', 'Drafts, you approve', 'The agent does the work and stops before anything leaves the phone. Items it isn’t sure about are marked, not guessed.', '#e5e5ea'); }
+{ const { slot, body } = phone('pattern-receipt-undo', { dark: true, gradient: ['#1e3c72', '#2a5298', '#7aa6d8', '#dfe9f3'], gap: 10, target: PT });
+  lockClock(body);
+  notif(body, 'plane', C.blue, 'Travel agent', 'now', 'Rebooked: 8:20 AM, seat 14C', 'You were asleep, so I used your rule: same day, under $150. Paid +$40 with your saved card.', [['Undo (23 h left)', 'undo', false], ['Details', null, true]]);
+  notif(body, 'dollar', C.green, 'Money agent', '2 min ago', 'Refund request filed: $62', 'The airline owes you for the cancelled leg. I’ll check back Friday and tell you what happened.');
+  notif(body, 'shield', C.orange, 'Money agent', '1 h ago', 'I did not pay this one', 'A $489 “parking fine” link came by text. It doesn’t match any city portal. Blocked.');
+  caption(slot, '3', 'Acted, here’s the receipt', 'Inside your limits the agent acts, then reports with a receipt and an undo window. It also tells you what it refused to do.', '#e5e5ea'); }
+
+document.fonts.ready.then(() => { window.__ready = true; });
+</script></body></html>

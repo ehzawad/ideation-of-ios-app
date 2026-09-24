@@ -1,0 +1,400 @@
+{
+  "angle": "builders-oss",
+  "summary": "As of September 2026 the builder landscape for agentic iOS apps changed a lot at WWDC26 (June 2026). Apple turned the Foundation Models framework into a provider-neutral agent runtime. A new LanguageModel protocol lets one LanguageModelSession drive the on-device model (4K context), Apple's Private Cloud Compute model (32K context, reasoning, free per-user daily quota for eligible small developers), Core AI and MLX local models, and Claude and Gemini through vendor Swift packages (Anthropic shipped anthropics/ClaudeForFoundationModels with App Attest auth and server-side web search/code execution). Dynamic Profiles, ToolCallingMode, history transforms and Apple's open-source foundation-models-utilities (skills, rolling windows, a chat-completions adapter) give indie developers first-party patterns for multi-agent orchestration (baton-pass, phone-a-friend, skills). App Intents added LongRunningIntent, UndoableIntent, confirmation for sensitive entity actions, and app schemas and View Annotations so Siri can act on app content. The open-source layer underneath is mature: MLX Swift / mlx-swift-lm, llama.cpp, whisper.cpp, Argmax WhisperKit/TTSKit, Cactus, Hugging Face AnyLanguageModel and the official MCP Swift SDK. Swift-native agent frameworks built on top of it (AgentRunKit, SwiftAgent, etc.) are still tiny, with tens of stars.\n\nOn the product side, the most visible startup energy is in two places. The first is 'personal agent on your iPhone' startups (YC S26 Touchy, which claims actions across 1,000+ apps; YC Moonshot, an always-listening assistant) and the self-hosted OpenClaw ecosystem, whose native iOS node app (June 2026) lets a remote agent drive the phone's camera, location, contacts, calendar and reminders with approvals, subject to strict iOS background limits. The second is 'build apps from your phone' tools: Rork Max, which compiles native Swift on cloud Macs, Bitrig, which generates SwiftUI on the iPhone, and Vibecode. Apple enforced Guideline 2.5.2 against these in March 2026, pushing on-device previews out to external browsers and limiting on-phone generation of Apple-platform software. Developer-side agent infrastructure for iOS is booming: Xcode 26.3/27 agentic coding with Claude/Codex and MCP, XcodeBuildMCP, mobile-mcp and AXe. On-device consumer agents that chain third-party App Intents remain structurally blocked. Only Siri can invoke other apps' intents, there is no system-wide MCP on iOS, and third-party apps cannot automate other apps' UI. That leaves the biggest gaps in cross-app orchestration, durable background agents, and reusable approval, eval and observability kits.",
+  "items": [
+    {
+      "name": "Touchy (YC S26)",
+      "kind": "startup",
+      "description": "Voice- and camera-first personal AI assistant for iPhone, launchable from the Lock Screen. It 'sees what you see', keeps one continuous conversation to build memory and preferences, and claims to take action across 1,000+ apps plus iOS capabilities such as contacts and location. The action surface is described as integrations, which probably means server-side connectors rather than on-device UI control; I could not verify the mechanism. Founders are listed as Rohit Agarwal, Andrew Liu and Kevin W, in YC's Summer 2026 batch.",
+      "date": "ongoing",
+      "ios_relevance": "An iPhone-native consumer agent built as a startup, and a direct test of how far a third-party app can go as a 'Siri replacement' within iOS limits.",
+      "sources": [
+        "https://www.ycombinator.com/companies/touchy",
+        "https://www.ycombinator.com/launches/Syt-touchy-voice-first-ai-assistant-for-iphone-that-understands-the-world-around-you",
+        "https://apps.apple.com/us/app/touchy-ai-at-your-fingertips/id6798889392",
+        "https://app.dealroom.co/news/note/touchy-launches-with-yc"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Moonshot (YC 2026)",
+      "kind": "startup",
+      "description": "Listed in YC's AI-assistant directory as 'personal intelligence that lives on your iPhone and listens to you 24/7', continuously building context about the user. It is agentic in the sense of ambient monitoring and memory-building, which could feed proactive actions. I saw only the directory snippet, so batch and product details are unverified.",
+      "date": "ongoing",
+      "ios_relevance": "An always-on listening agent on iPhone runs straight into iOS background audio, microphone indicator and App Review rules. It is a good probe of what Apple will allow.",
+      "sources": [
+        "https://www.ycombinator.com/companies/industry/ai-assistant"
+      ],
+      "confidence": "uncertain"
+    },
+    {
+      "name": "YC Spring 2026 batch: agent infrastructure over consumer apps",
+      "kind": "trend",
+      "description": "Coverage of YC's Spring 2026 batch (194 launched companies) calls it the most agent-heavy cohort yet. The weight falls on infrastructure that treats 'the agent' as an economic actor needing its own bank, lawyer and phone line, rather than on direct consumer apps. For iOS builders this means backend rails for payments, identity and telephony for agents are arriving faster than phone-native agent UX.",
+      "date": "ongoing",
+      "ios_relevance": "Indirect. iPhone agent apps can plug into these rails (agent wallets, phone numbers), but few consumer iOS front-ends exist for them.",
+      "sources": [
+        "https://startground.com/y-combinator-spring-2026-startups/",
+        "https://www.forbes.com/sites/dariashunina/2026/03/16/21-most-promising-startups-from-y-combinators-latest-batch/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "OpenClaw iOS node app",
+      "kind": "open_source",
+      "description": "OpenClaw (github.com/openclaw/openclaw, ~390k stars, created Nov 2025, now run by the nonprofit OpenClaw Foundation) is a self-hosted agent gateway. Its native iOS app, released on the App Store 24 June 2026 for iPhone, iPad and Apple Watch, is a thin 'node': the agent on the remote gateway can invoke node commands on the phone (camera snap/clip, screen record, location, contacts, calendar, reminders, photos, motion, local notifications). The app also offers chat, realtime Talk mode, a Share extension and review of gateway action approvals from the iPhone. Background use is limited to geofence and significant-location events plus presence beacons, and the README does not mention App Intents.",
+      "date": "2026-06",
+      "ios_relevance": "The most prominent open-source example of the phone-as-agent-sensor/actuator pattern with human approvals on iPhone and Watch, and a clear record of the iOS background walls.",
+      "sources": [
+        "https://github.com/openclaw/openclaw",
+        "https://github.com/openclaw/openclaw/blob/main/apps/ios/README.md",
+        "https://www.macrumors.com/2026/06/29/openclaw-ios-app/",
+        "https://www.marktechpost.com/2026/06/29/openclaw-releases-ios-and-android-companion-node-apps-that-connect-a-phone-to-a-self-hosted-ai-agent-gateway/",
+        "https://apps.apple.com/us/app/openclaw/id6780396132"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Rork / Rork Max",
+      "kind": "startup",
+      "description": "An AI app builder. The original Rork generates React Native/Expo apps. Rork Max (launched February 2026) is reported to generate native Swift/SwiftUI from prompts and compile it on a fleet of cloud Macs. It targets iPhone, iPad, Watch, TV, Vision Pro and iMessage and supports widgets, Live Activities, Dynamic Island, Siri Intents, HealthKit and more. The agent plans, writes, builds and submits ('2-click App Store publishing', no local Xcode). Reported price is about $200/month for Max.",
+      "date": "2026-02",
+      "ios_relevance": "A prompt-to-App-Store agent for iOS. Cloud compilation also avoids Apple's 2.5.2 restriction on executing generated code inside the app.",
+      "sources": [
+        "https://rork.com/max",
+        "https://www.therundown.ai/tools/rork-max",
+        "https://www.nocode.mba/articles/rork-max-review"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Bitrig",
+      "kind": "startup",
+      "description": "Built by ex-Apple engineers who co-created SwiftUI. Bitrig launched on the App Store in October 2025 as an iPhone app that turns text or voice prompts into real SwiftUI apps and can push them to TestFlight. A Mac app followed in March 2026. The agentic loop is prompt, code generation, on-device preview and iteration, then distribution.",
+      "date": "2025-10",
+      "ios_relevance": "One of the few tools that generates native Swift on the iPhone itself, and therefore directly exposed to App Store rules on code execution.",
+      "sources": [
+        "https://9to5mac.com/2026/03/06/ai-powered-coding-platform-bitrig-gets-a-mac-app-for-building-iphone-apps/",
+        "https://phandroid.com/2025/10/02/ex-apple-engineers-launch-bitrig-vibe-coding-app-builds-swiftui-apps-on-your-iphone/amp/",
+        "https://apps.apple.com/app/id6747835910",
+        "https://bitrig.com/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Vibecode",
+      "kind": "startup",
+      "description": "An iPhone/iPad app, with a web version, in which an AI agent builds working mobile and web apps from natural-language prompts, with live preview, GitHub sync and sharing. During Apple's March 2026 enforcement, App Review reportedly said it would approve updates if Vibecode dropped the ability to generate software specifically for Apple devices.",
+      "date": "ongoing",
+      "ios_relevance": "A phone-native coding agent, and the clearest case of App Store policy limiting 'agents that build apps on iPhone'.",
+      "sources": [
+        "https://www.vibecodeapp.com/",
+        "https://apps.apple.com/gb/app/vibecode-ai-app-builder/id6742912146",
+        "https://www.macrumors.com/2026/03/18/apple-blocks-updates-for-vibe-coding-apps/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Apple enforces Guideline 2.5.2 on vibe-coding apps (Replit, Vibecode)",
+      "kind": "policy",
+      "description": "In March 2026 Apple blocked App Store updates for vibe-coding apps such as Replit and Vibecode. It cited Guideline 2.5.2, which bars apps from executing code that changes their own or other apps' functionality. Reported fixes: open generated apps in an external browser instead of an in-app web view, and, for Vibecode, stop generating Apple-device software. Apple said the policy does not target vibe coding specifically.",
+      "date": "2026-03",
+      "ios_relevance": "A hard constraint for any agent that generates and runs code or UI inside an iOS app, including generated mini-apps, plugins and agent-written tools.",
+      "sources": [
+        "https://www.macrumors.com/2026/03/18/apple-blocks-updates-for-vibe-coding-apps/",
+        "https://9to5mac.com/2026/03/18/apple-pushing-back-on-vibe-coding-iphone-apps-developers-say/",
+        "https://appleinsider.com/articles/26/03/18/bad-vibes-apple-blocks-updates-for-some-ai-coding-apps-in-the-app-store",
+        "https://www.theinformation.com/articles/apple-cracks-vibe-coding-apps"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Foundation Models LanguageModel protocol + Private Cloud Compute model (iOS 27)",
+      "kind": "platform_api",
+      "description": "At WWDC26 Apple opened Foundation Models to any provider through the LanguageModel and LanguageModelExecutor protocols. The same LanguageModelSession, tools and @Generable guided generation now run against SystemLanguageModel (4K context, offline, unlimited), PrivateCloudComputeLanguageModel (32K context, reasoning levels, per-user daily quota with iCloud+ upsell UI), Core AI and MLX local models, and community providers (Claude, Gemini). Also new: multimodal image prompts, Vision tools the model can call (OCRTool, BarcodeReaderTool), ToolCallingMode (.allowed/.disallowed/.required) and an Evaluations framework. PCC is free of cloud API cost for Small Business Program members with fewer than 2M first-time downloads, under a managed entitlement.",
+      "date": "2026-06",
+      "ios_relevance": "The default agent substrate for iOS 27 apps. Indie developers get a free tier that escalates from on-device to server with one line of code.",
+      "sources": [
+        "https://developer.apple.com/wwdc26/guides/apple-intelligence/",
+        "https://developer.apple.com/videos/play/wwdc2026/339/",
+        "https://developer.apple.com/documentation/foundationmodels/adding-server-side-intelligence-with-private-cloud-compute",
+        "https://developer.apple.com/documentation/updates/foundationmodels"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Foundation Models Dynamic Profiles and agent orchestration patterns",
+      "kind": "platform_api",
+      "description": "WWDC26 session 242, 'Build agentic app experiences', introduces DynamicProfile and DynamicInstructions, which are re-evaluated before every model request so the model, tools, temperature and reasoning level follow app state. It also adds session properties, historyTransform and onResponse modifiers for context engineering, and TranscriptErrorHandlingPolicy. Apple documents three multi-agent patterns: baton-pass (profiles share one transcript), phone-a-friend (a tool spawns an isolated child session) and Skills (just-in-time instructions). Session 243 adds a Foundation Models Instrument that traces tool calls, TTFT and tokens. Human-in-the-loop approvals and background execution were not part of the session.",
+      "date": "2026-06",
+      "ios_relevance": "A first-party way to build sub-agents and routers entirely in Swift, and the reference architecture indie agent apps will copy.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/242/",
+        "https://developer.apple.com/videos/play/wwdc2026/243/",
+        "https://developer.apple.com/documentation/foundationmodels/composing-dynamic-sessions-with-instructions-and-profiles",
+        "https://www.natashatherobot.com/p/ai-agents-apples-foundation-models-tool-calling"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "apple/foundation-models-utilities",
+      "kind": "open_source",
+      "description": "An Apple open-source Swift package (about 507 stars, created June 2026) of 'emerging and experimental patterns' for Foundation Models. It includes ChatCompletionsLanguageModel (point a session at any OpenAI-compatible server or local LLM server), history modifiers (droppingCompletedToolCalls, rollingWindow, summarizeHistory) and a Skills implementation in which the model can deactivate skills to limit context bloat. No MCP support is included.",
+      "date": "2026-06",
+      "ios_relevance": "Lets indie developers wire local or self-hosted models and long-running agent loops into the Apple API without writing a provider.",
+      "sources": [
+        "https://github.com/apple/foundation-models-utilities",
+        "https://developer.apple.com/documentation/updates/foundationmodels"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "App Intents in iOS 27: app schemas, LongRunningIntent, UndoableIntent, sensitive-action confirmation",
+      "kind": "platform_api",
+      "description": "App Intents gained app-schema domains that Siri understands without phrases, View Annotations for on-screen awareness, and SyncableEntity for cross-device task continuation. New protocols: LongRunningIntent with performBackgroundTask and progress reporting, CancellableIntent, UndoableIntent, IntentModes (foreground and/or background) and OwnershipProvidingEntity (confirm before destructive or sensitive actions on shared entities). An App Intents Testing framework validates Siri, Shortcuts and Spotlight paths without UI automation. Secondary sources report SiriKit deprecated in favor of App Intents; I did not verify this on Apple's pages.",
+      "date": "2026-06",
+      "ios_relevance": "The only sanctioned route for a system agent (Siri) to act inside third-party apps. Undo and confirmation primitives are building blocks for safe agent actions.",
+      "sources": [
+        "https://developer.apple.com/documentation/updates/appintents",
+        "https://developer.apple.com/wwdc26/guides/apple-intelligence/",
+        "https://dev.to/malik_chohra/wwdc-2026-app-intents-foundation-models-and-what-rn-devs-should-ship-3o8a"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "anthropics/ClaudeForFoundationModels",
+      "kind": "open_source",
+      "description": "Anthropic's official Swift package (beta, about 303 stars) that conforms Claude to Apple's LanguageModel protocol. Tool calling, streaming, @Generable structured output and images therefore work through LanguageModelSession. Server tools (web search, web fetch, code execution) run in one round trip. Production auth can use App Attest: the device attests, gets a one-hour Messages-only token and ships no API key or backend. Proxied auth and a fallback to SystemLanguageModel on rate limits are also supported. Requires iOS 27 and Xcode 27.",
+      "date": "2026-06",
+      "ios_relevance": "Removes the 'needs a backend to hide the key' barrier for indie developers shipping frontier-model agents on iPhone.",
+      "sources": [
+        "https://github.com/anthropics/ClaudeForFoundationModels",
+        "https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/apple-foundation-models"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Core AI framework + apple/coreai-models",
+      "kind": "platform_api",
+      "description": "Apple announced Core AI at WWDC26 as the successor to Core ML for on-device generative models, with async and streaming inference and large model footprints. Core ML still works. apple/coreai-models (about 2.1k stars) provides export recipes to .aimodel, Python primitives, Swift runtime utilities, a CoreAILanguageModel bridge into Foundation Models, and agent skills for coding agents. Requires iOS/macOS 27 and Xcode 27.",
+      "date": "2026-06",
+      "ios_relevance": "Lets developers ship custom or open-weight local models as first-class Foundation Models providers, including tool calling through the shared session API.",
+      "sources": [
+        "https://github.com/apple/coreai-models",
+        "https://developer.apple.com/documentation/foundationmodels/running-a-core-ai-model-in-a-foundation-models-session",
+        "https://9to5mac.com/2026/03/01/apple-replacing-core-ml-with-modernized-core-ai-framework-for-ios-27-at-wwdc/",
+        "https://www.infoq.com/news/2026/06/apple-core-ai-wwdc/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "apple/python-apple-fm-sdk and fm CLI",
+      "kind": "open_source",
+      "description": "Python bindings (about 1.3k stars, March 2026) for the on-device Apple Intelligence model, plus an 'fm' CLI for AI-powered scripts. Builders can prototype and batch-evaluate prompts, tools and guided generation from Python before porting to Swift.",
+      "date": "2026-03",
+      "ios_relevance": "Supports eval and prompt iteration for iOS agent features, which matters because the on-device model changes with each OS update (26.4, 27).",
+      "sources": [
+        "https://github.com/apple/python-apple-fm-sdk",
+        "https://developer.apple.com/documentation/updates/foundationmodels",
+        "https://developer.apple.com/wwdc26/guides/apple-intelligence/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "MLX Swift / mlx-swift-lm / mlx-swift-examples",
+      "kind": "open_source",
+      "description": "Apple ML Research's Swift API for MLX: mlx-swift (about 2.0k stars), mlx-swift-lm for LLMs and VLMs (about 816 stars, split out October 2025) and mlx-swift-examples (about 2.7k stars). mlx-swift-lm supports iOS 26+ and ships MLXLanguageModel / MLXFoundationModels, which pass Hugging Face MLX-community models into LanguageModelSession, so tools and guided generation work with local open-weight models. Community agents (e.g. SwiftAgent) use it to run Qwen3 with tool calling locally.",
+      "date": "ongoing",
+      "ios_relevance": "The main open path to fully offline, private tool-using agents on iPhone beyond Apple's 3B-class model.",
+      "sources": [
+        "https://github.com/ml-explore/mlx-swift",
+        "https://github.com/ml-explore/mlx-swift-lm",
+        "https://github.com/ml-explore/mlx-swift-examples"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "huggingface/AnyLanguageModel",
+      "kind": "open_source",
+      "description": "A Hugging Face Swift package (about 942 stars, created October 2025) that is an API-compatible drop-in replacement for Apple's Foundation Models. It supports Apple FM/PCC, Core ML, MLX, llama.cpp (GGUF), OpenAI (Chat and Responses), Anthropic, Gemini, Ollama and Open Responses, with tool calling across all providers through the Tool protocol and a delegate for observing or controlling tool execution. It predates Apple's own iOS 27 LanguageModel protocol and still offers the same model on older OS versions.",
+      "date": "ongoing",
+      "ios_relevance": "Lets agent apps use the Foundation Models programming model on iOS 26 and earlier, or across many backends, today.",
+      "sources": [
+        "https://github.com/huggingface/AnyLanguageModel"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Official MCP Swift SDK (modelcontextprotocol/swift-sdk)",
+      "kind": "protocol",
+      "description": "The official Swift SDK for MCP clients and servers (about 1.5k stars, spec 2025-11-25, v0.11+). It supports iOS 16+, watchOS, visionOS and Linux. StdioTransport is unavailable on iOS, so iPhone apps act as MCP clients over HTTPClientTransport (with SSE) to remote servers, or use NetworkTransport or InMemoryTransport. A community alternative is DePasqualeOrg/swift-mcp.",
+      "date": "ongoing",
+      "ios_relevance": "The standard way for an iOS agent app to consume remote tool ecosystems (Gmail, Linear, etc.). Serving local on-device tools to external agents needs custom networking.",
+      "sources": [
+        "https://github.com/modelcontextprotocol/swift-sdk",
+        "https://github.com/DePasqualeOrg/swift-mcp"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "llama.cpp and whisper.cpp (ggml-org)",
+      "kind": "open_source",
+      "description": "C/C++ inference engines (llama.cpp about 129k stars, whisper.cpp about 54k stars) with Metal acceleration. Many iOS local-LLM and speech apps and SDKs embed them, for example the llama.cpp backends in AnyLanguageModel, LocalLLMClient and PocketPal. They support GGUF quantized models and tool-call-capable chat templates.",
+      "date": "ongoing",
+      "ios_relevance": "The most portable runtime for shipping open-weight models inside iOS apps when MLX or Core AI is not suitable.",
+      "sources": [
+        "https://github.com/ggml-org/llama.cpp",
+        "https://github.com/ggml-org/whisper.cpp"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Argmax OSS: WhisperKit, TTSKit, SpeakerKit",
+      "kind": "open_source",
+      "description": "Argmax's Swift repo (about 6.4k stars) bundles WhisperKit (on-device streaming speech-to-text), TTSKit (on-device Qwen3-TTS with streaming playback, iOS 18+) and SpeakerKit (Pyannote diarization, iOS 16+). A commercial Pro SDK adds real-time transcription with speakers and custom vocabulary.",
+      "date": "ongoing",
+      "ios_relevance": "The on-device voice I/O layer for private, voice-first agents on iPhone, Watch and AirPods (listen, then act, then speak) without a cloud round trip.",
+      "sources": [
+        "https://github.com/argmaxinc/WhisperKit"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Cactus (YC S25) on-device inference engine",
+      "kind": "startup",
+      "description": "An open-source runtime, kernels and quantization stack (github.com/cactus-compute/cactus, about 6.1k stars) for LLM, VLM and speech models on phones and wearables. It claims 70+ tok/s on iPhone 17-class hardware and sub-100ms latency. Bindings are strongest for React Native, Flutter and Kotlin Multiplatform, and native Swift support is reported as less mature.",
+      "date": "ongoing",
+      "ios_relevance": "A cross-platform alternative for startups shipping local agents on iOS and Android from one codebase.",
+      "sources": [
+        "https://github.com/cactus-compute/cactus",
+        "https://docs.cactuscompute.com/v1.9/",
+        "https://infoq.com/news/2025/12/cactus-on-device-inference/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Community Swift LLM API SDKs (MacPaw/OpenAI, SwiftOpenAI, SwiftAnthropic)",
+      "kind": "open_source",
+      "description": "The most-used community Swift clients for cloud LLMs with function and tool calling: MacPaw/OpenAI (about 2.9k stars), jamesrochabrun/SwiftOpenAI (about 664) and jamesrochabrun/SwiftAnthropic (about 252). I found no first-party OpenAI Swift SDK in this research. Most iOS agent apps before iOS 27 built their tool loops on top of these clients.",
+      "date": "ongoing",
+      "ios_relevance": "Low-level building blocks for cloud agent loops on iOS 17 to 26, where Apple's LanguageModel protocol is not available.",
+      "sources": [
+        "https://github.com/MacPaw/OpenAI",
+        "https://github.com/jamesrochabrun/SwiftOpenAI",
+        "https://github.com/jamesrochabrun/SwiftAnthropic"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Indie Swift agent SDKs (AgentRunKit, SwiftAgent, LocalLLMClient)",
+      "kind": "open_source",
+      "description": "Small community frameworks for building agents in Swift. Tom-Ryder/AgentRunKit (Swift 6, type-safe tools, streaming, MCP, cloud plus MLX; about 32 stars, January 2026). mzbac/SwiftAgent (MCP integration, Qwen3 on MLX with prompt caching; about 15 stars). tattn/LocalLLMClient (llama.cpp, MLX and Foundation Models behind one API; about 219 stars). Adoption is very low compared with Python and TypeScript agent frameworks.",
+      "date": "ongoing",
+      "ios_relevance": "Shows that no dominant Swift-native 'agent kit' exists yet, which is a whitespace signal.",
+      "sources": [
+        "https://github.com/Tom-Ryder/AgentRunKit",
+        "https://github.com/mzbac/SwiftAgent",
+        "https://github.com/tattn/LocalLLMClient"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Foundation-Models-Framework-Lab (rudrankriyam)",
+      "kind": "open_source",
+      "description": "A practical lab app (about 1.2k stars) for building, testing and evaluating Foundation Models features. It covers tool calling (HealthKit and others), RAG, speech recognition and TTS, and multilingual prompts. It is widely used as sample code beyond Apple's own samples, which include 'Generate dynamic game content with guided generation and tools' and 'Origami' for agentic profiles.",
+      "date": "ongoing",
+      "ios_relevance": "A reference for real on-device tool implementations against iOS frameworks.",
+      "sources": [
+        "https://github.com/rudrankriyam/Foundation-Models-Framework-Lab",
+        "https://developer.apple.com/documentation/foundationmodels/generate-dynamic-game-content-with-guided-generation-and-tools",
+        "https://developer.apple.com/documentation/foundationmodels/origami-crafting-a-dynamic-tutorial-for-apple-intelligence"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Open-source local LLM iPhone apps (PocketPal AI, fullmoon)",
+      "kind": "open_source",
+      "description": "PocketPal AI (a-ghorbani/pocketpal-ai, about 8.4k stars, React Native/TypeScript) and fullmoon (mainframecomputer/fullmoon-ios, about 2.3k stars, Swift and MLX) are the most-starred open-source iPhone apps for running local models. They are mostly chat. Tool use, App Intents actions and background tasks are largely absent, so they are forkable bases for local agents rather than agents themselves.",
+      "date": "ongoing",
+      "ios_relevance": "Proven UX and packaging for multi-GB local models on iPhone that an agentic layer could be added to.",
+      "sources": [
+        "https://github.com/a-ghorbani/pocketpal-ai",
+        "https://github.com/mainframecomputer/fullmoon-ios"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "mobile-mcp and mobilecli (mobile-next)",
+      "kind": "open_source",
+      "description": "An MCP server (about 6.8k stars) that lets agents drive iOS simulators and USB-connected real iPhones, plus Android. It reads the native accessibility tree first and falls back to screenshots and coordinates. Tools cover taps, swipes, typing, app launch/install, GPS override, clipboard and logs. It is used for agent-run QA, form filling and multi-step app journeys. mobilecli (about 275 stars) is the companion device CLI.",
+      "date": "ongoing",
+      "ios_relevance": "The only practical way today for an agent to operate arbitrary iPhone app UIs, and only from a tethered Mac host, never from inside iOS.",
+      "sources": [
+        "https://github.com/mobile-next/mobile-mcp",
+        "https://github.com/mobile-next/mobilecli"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Agentic iOS dev loop: Xcode 26.3/27 agents, XcodeBuildMCP, AXe",
+      "kind": "platform_api",
+      "description": "Xcode 26.3 (February 2026) let developers pick agentic coding tools from OpenAI and Anthropic that build and test apps autonomously, and exposed Xcode capabilities to other agents through an MCP service. Xcode 27 (June 2026) added multi-conversation agents, plan mode, skills and plug-ins; secondary sources say it also supports Agent Client Protocol (ACP) agents. Community tools fill the gaps: getsentry's XcodeBuildMCP (about 6.4k stars; build, run and test on simulators and devices) and cameroncooke/AXe (about 2.2k stars; simulator UI automation through accessibility APIs).",
+      "date": "2026-06",
+      "ios_relevance": "Collapses the time to build agentic iOS apps. Phone-based app builders compete with or wrap this loop.",
+      "sources": [
+        "https://developer.apple.com/documentation/updates/xcode",
+        "https://github.com/getsentry/XcodeBuildMCP",
+        "https://github.com/cameroncooke/AXe",
+        "https://blakecrosley.com/blog/xcode-27-coding-agents"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "React Native AI (callstackincubator/ai) with Apple Foundation Models provider",
+      "kind": "open_source",
+      "description": "A Callstack library (about 1.4k stars) that brings on-device LLMs to React Native with Vercel AI SDK compatibility. Providers are Apple Foundation Models (iOS 26+, no model download), llama.rn (GGUF) and MLC LLM, plus embeddings, transcription and speech. It lets Expo and RN teams, including many app builders that generate RN code, reach Apple's on-device model. The README does not document tool calling, and MLC needs the increased-memory entitlement.",
+      "date": "ongoing",
+      "ios_relevance": "Links the JavaScript app-builder ecosystem (Rork classic, Expo-based tools) to on-device Apple Intelligence.",
+      "sources": [
+        "https://github.com/callstackincubator/ai",
+        "https://github.com/expo/expo"
+      ],
+      "confidence": "verified"
+    }
+  ],
+  "constraints_or_walls": [
+    "The on-device SystemLanguageModel context is 4,096 tokens per session, including instructions, tool schemas, tool I/O and @Generable schemas. Multi-step agents must split work across sessions (phone-a-friend) or escalate to PCC.",
+    "The PCC model (32K context, reasoning) needs iOS/macOS/watchOS/visionOS 27+, a network connection and an Apple Intelligence-capable device and region. It has a per-user daily quota (iCloud+ upsell) and a managed entitlement. Cost is free only for Small Business Program apps with under 2M first-time downloads.",
+    "The on-device model changes with OS updates (26.4 in February 2026, 27 in June 2026), so prompts and tool-calling behavior must be re-evaluated each release.",
+    "Guideline 2.5.2: apps may not execute code that changes their own or other apps' functionality. In March 2026 Apple used it to block updates for Replit and Vibecode until previews moved to external browsers or on-device generation of Apple-platform apps was removed.",
+    "No system-wide MCP on iOS 27. Apple's MCP support is in Xcode only. Third-party apps cannot invoke other apps' App Intents; only Siri, Shortcuts and Spotlight can. There is no sanctioned cross-app UI automation on device.",
+    "iOS background limits: OpenClaw documents camera, screen and talk commands as blocked when backgrounded and sockets suspended, with only geofence/significant-location events and presence beacons running in the background. LongRunningIntent extends runtime but is still bounded.",
+    "The MCP Swift SDK has no StdioTransport on iOS, so iPhone apps can only reach remote HTTP MCP servers or in-process transports.",
+    "Shipping API keys in apps is unsafe (keys are extractable). Claude offers App Attest device tokens, but they last one hour, carry no end-user identity and do not work through Bedrock, Vertex or Foundry.",
+    "ClaudeForFoundationModels cannot express prompt-caching controls, stop sequences, the Files API, batch or token counting, because Apple's provider protocol has no representation for them.",
+    "Dynamic Profiles trade-off: changing tools or instructions, or rewriting history, invalidates KV caches (higher latency), and retroactive history edits can confuse the model. Apple says to measure with Instruments and the Evaluations framework.",
+    "Large local models (MLC, MLX, llama.cpp) need the increased-memory-limit entitlement and 1 to 8 GB of RAM. Cactus's native Swift bindings are reported as immature.",
+    "Consumer Siri AI features were reported unavailable in the EU and China at launch, while developer APIs ship there. This comes from secondary sources and is unverified."
+  ],
+  "whitespace_signals": [
+    "There is no dominant Swift-native agent runtime with durable runs, checkpoints, approvals, retries and background resumption. The existing Swift agent SDKs have 15 to 250 stars, compared with Python and TypeScript frameworks that have tens of thousands.",
+    "An App Intents to MCP bridge: exposing an app's App Intents or entities as MCP tools to remote agents (OpenClaw-style gateways, Claude) with on-phone approval. Apple shipped MCP only for Xcode.",
+    "A reusable human-in-the-loop approval UI kit for SwiftUI, Live Activities, Watch and notifications. OpenClaw has approvals, and App Intents now has OwnershipProvidingEntity and UndoableIntent, but no shared component library exists.",
+    "Production observability and evals for on-device agents. Instruments and the Evaluations framework are development-time tools, and no Sentry-style field telemetry for tool-call failures exists for Foundation Models apps.",
+    "A quota- and cost-aware router that goes from on-device to PCC to Claude or Gemini, honoring PCC daily limits and falling back gracefully. The building blocks exist in iOS 27 but no packaged library does.",
+    "Local-first agentic apps: the most-starred open-source local LLM iPhone apps (PocketPal, fullmoon) are chat-only. A private agent that acts on EventKit, HealthKit, Reminders, Photos and Files with MLX or Core AI models is largely unbuilt.",
+    "Voice-first Watch and AirPods agents using on-device ASR/TTS (WhisperKit/TTSKit) plus App Intents are rare. OpenClaw's Watch 'Talk' is one of few.",
+    "Phone-based app builders that generate agent-ready apps (App Intents schemas, Foundation Models tools and profiles) by default. Rork Max mentions Siri Intents, but agent capability is not the headline anywhere.",
+    "Consumer iOS front-ends for the agent-economy infrastructure appearing in YC S26 (agent wallets, phone lines, legal): users need a phone-native place to fund, supervise and audit their agents."
+  ],
+  "open_questions": [
+    "Will Apple let third-party agents (not just Siri) discover and invoke other apps' App Intents or schemas, or add MCP at the OS level, in iOS 27.x or 28?",
+    "How will App Review treat apps whose LLM composes and runs Shortcuts or chains of App Intents on the fly? Does that count as 'changing functionality' under 2.5.2?",
+    "How does Touchy actually 'take action across 1,000+ apps': server-side OAuth connectors, Shortcuts, or something else? This could not be verified because the YC pages were not fetchable from this environment.",
+    "Has OpenAI or Google shipped official Swift packages conforming to Apple's LanguageModel protocol as Anthropic did? Google was reported as a day-one provider, but I did not verify its package.",
+    "What are the actual PCC daily quotas per user, and does the iCloud+ upsell make PCC viable as the default backend for indie agent apps?",
+    "Did Replit and Vibecode fully regain update approval after March 2026, and what exact preview architecture does Apple accept?",
+    "a0.dev, Bolt+Expo, Lovable mobile, Replit mobile and 'Anything' were in scope but not verified in this pass (search budget exhausted). Their 2026 iOS status is unknown.",
+    "Are there notable hackathon or community projects combining App Intents with LLM tool loops? GitHub topic search failed during this research, so this is under-sampled."
+  ]
+}

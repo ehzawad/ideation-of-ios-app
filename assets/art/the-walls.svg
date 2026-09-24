@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 780" width="1280" height="780" role="img" aria-labelledby="title desc">
+  <title id="title">The walls: what an iPhone agent can and can't reach</title>
+  <desc id="desc">An agent app sits in its sandbox. On the left, eight doors Apple provides lead in: Siri AI calling your App Intents, user-built Shortcuts, share extensions, Calendar, Contacts and Photos with possibly partial access, HealthKit for health services only, Visual Intelligence with one image, notifications and Live Activities, and Apple Pay with Face ID on every payment. On the right, behind a wall: other apps' screens, other apps' App Intents, the SMS and iMessage inbox, the Mail inbox, cellular call audio, an always-on background loop, running downloaded code, and Screen Time data leaving the device. Below, the detour most agents take: a cloud agent runs the long loop, handles calls, email, websites and payments, and uses the phone for approvals through push and Live Activities.</desc>
+  <style>
+    svg { --bg:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --line:#d6d5ce; --box:#ffffff; --box2:#f4f7fb;
+          --good:#0a7d0a; --good-bg:#eaf6ea; --bad:#c43232; --bad-bg:#fbeaea; --blue:#2a78d6; --brick:#e6c9c0; --brick2:#d9b3a8; --cloud:#f3effa; --violet:#4a3aa7; }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#111113; --ink:#ffffff; --ink2:#c3c2b7; --muted:#8e8e93; --line:#3a3a3c; --box:#1c1c1e; --box2:#18202b;
+            --good:#3fc43f; --good-bg:#16301a; --bad:#ff6b6b; --bad-bg:#3a1c1c; --blue:#3987e5; --brick:#5a3a34; --brick2:#6e463e; --cloud:#221e33; --violet:#9085e9; }
+    }
+    text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .bg { fill: var(--bg); }
+    .title { fill: var(--ink); font-size: 24px; font-weight: 700; }
+    .sub { fill: var(--ink2); font-size: 14px; }
+    .colh { fill: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 1.4px; }
+    .chip-good { fill: var(--good-bg); stroke: var(--good); stroke-width: 1; }
+    .chip-bad { fill: var(--bad-bg); stroke: var(--bad); stroke-width: 1; }
+    .t { fill: var(--ink); font-size: 14px; }
+    .tb { fill: var(--ink); font-size: 16px; font-weight: 700; }
+    .ts { fill: var(--ink2); font-size: 13px; }
+    .good { fill: var(--good); }
+    .bad { fill: var(--bad); }
+    .arrow-good { stroke: var(--good); stroke-width: 1.5; fill: none; }
+    .arrow-v { stroke: var(--violet); stroke-width: 1.5; fill: none; }
+    .box { fill: var(--box); stroke: var(--blue); stroke-width: 2; }
+    .inner { fill: var(--box2); }
+    .cloud { fill: var(--cloud); stroke: var(--violet); stroke-width: 2; }
+    .brick { fill: var(--brick); }
+    .brick2 { fill: var(--brick2); }
+    .lbl { fill: var(--ink2); font-size: 12px; }
+  </style>
+  <rect class="bg" width="1280" height="780" rx="12"/>
+  <text x="40" y="50" class="title">The walls: what an iPhone agent can and can't reach</text>
+  <text x="40" y="74" class="sub">Status as of iOS 27 (September 2026). Details and sources are in docs/the-walls.md.</text>
+
+  <text x="40" y="112" class="colh">DOORS APPLE PROVIDES</text>
+  <text x="470" y="112" class="colh">YOUR APP'S SANDBOX</text>
+  <text x="880" y="112" class="colh">BEHIND THE WALL</text>
+
+  <!-- doors (left) -->
+  <g>
+    <g transform="translate(40 126)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">Siri AI calls your App Intents</text></g>
+    <g transform="translate(40 168)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">Shortcuts the user builds and runs</text></g>
+    <g transform="translate(40 210)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">Share sheet and action extensions</text></g>
+    <g transform="translate(40 252)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">Calendar, Contacts, Photos (can be partial)</text></g>
+    <g transform="translate(40 294)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">HealthKit (health services only)</text></g>
+    <g transform="translate(40 336)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">Visual Intelligence (one image in)</text></g>
+    <g transform="translate(40 378)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">Notifications, Live Activities (8 h max)</text></g>
+    <g transform="translate(40 420)"><rect class="chip-good" width="370" height="34" rx="8"/><text x="14" y="22" class="good" font-weight="700">✓</text><text x="34" y="22" class="t">Apple Pay (Face ID on every payment)</text></g>
+  </g>
+  <g class="arrow-good">
+    <path d="M410 143 C 440 143, 440 200, 470 210"/>
+    <path d="M410 185 C 440 185, 440 225, 470 230"/>
+    <path d="M410 227 C 440 227, 445 250, 470 252"/>
+    <path d="M410 269 C 440 269, 445 272, 470 274"/>
+    <path d="M410 311 C 440 311, 445 298, 470 296"/>
+    <path d="M410 353 C 440 353, 445 322, 470 318"/>
+    <path d="M410 395 C 440 395, 440 345, 470 340"/>
+    <path d="M410 437 C 440 437, 440 368, 470 362"/>
+  </g>
+
+  <!-- sandbox box -->
+  <rect class="box" x="470" y="126" width="340" height="328" rx="22"/>
+  <text x="494" y="162" class="tb">Your agent app</text>
+  <text x="494" y="182" class="ts">Plans, remembers, asks, acts through doors</text>
+  <g transform="translate(494 200)">
+    <rect class="inner" width="292" height="44" rx="10"/><text x="14" y="20" class="t" font-weight="600">On-device model</text><text x="14" y="36" class="lbl">Foundation Models · small context · free</text>
+  </g>
+  <g transform="translate(494 252)">
+    <rect class="inner" width="292" height="44" rx="10"/><text x="14" y="20" class="t" font-weight="600">Apple's cloud model</text><text x="14" y="36" class="lbl">Private Cloud Compute · 32K · daily quota</text>
+  </g>
+  <g transform="translate(494 304)">
+    <rect class="inner" width="292" height="44" rx="10"/><text x="14" y="20" class="t" font-weight="600">Your own data and memory</text><text x="14" y="36" class="lbl">Only what the user gave you</text>
+  </g>
+  <g transform="translate(494 356)">
+    <rect class="inner" width="292" height="44" rx="10"/><text x="14" y="20" class="t" font-weight="600">Background time</text><text x="14" y="36" class="lbl">User-started, visible, can be killed</text>
+  </g>
+  <text x="494" y="430" class="lbl">Sending personal data to third-party AI needs</text>
+  <text x="494" y="445" class="lbl">explicit consent first (App Review 5.1.2(i)).</text>
+
+  <!-- the wall -->
+  <g>
+    <rect class="brick" x="832" y="126" width="26" height="328"/>
+    <g class="brick2">
+      <rect x="832" y="126" width="12" height="14"/><rect x="846" y="142" width="12" height="14"/><rect x="832" y="158" width="12" height="14"/><rect x="846" y="174" width="12" height="14"/>
+      <rect x="832" y="190" width="12" height="14"/><rect x="846" y="206" width="12" height="14"/><rect x="832" y="222" width="12" height="14"/><rect x="846" y="238" width="12" height="14"/>
+      <rect x="832" y="254" width="12" height="14"/><rect x="846" y="270" width="12" height="14"/><rect x="832" y="286" width="12" height="14"/><rect x="846" y="302" width="12" height="14"/>
+      <rect x="832" y="318" width="12" height="14"/><rect x="846" y="334" width="12" height="14"/><rect x="832" y="350" width="12" height="14"/><rect x="846" y="366" width="12" height="14"/>
+      <rect x="832" y="382" width="12" height="14"/><rect x="846" y="398" width="12" height="14"/><rect x="832" y="414" width="12" height="14"/><rect x="846" y="430" width="12" height="14"/>
+    </g>
+  </g>
+
+  <!-- behind the wall (right) -->
+  <g>
+    <g transform="translate(880 126)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">Other apps' screens and buttons</text></g>
+    <g transform="translate(880 168)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">Other apps' App Intents (only Siri calls them)</text></g>
+    <g transform="translate(880 210)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">SMS and iMessage inbox</text></g>
+    <g transform="translate(880 252)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">The Mail app's inbox</text></g>
+    <g transform="translate(880 294)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">Audio of cellular calls</text></g>
+    <g transform="translate(880 336)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">An always-on background loop</text></g>
+    <g transform="translate(880 378)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">Running code it downloads (guideline 2.5.2)</text></g>
+    <g transform="translate(880 420)"><rect class="chip-bad" width="360" height="34" rx="8"/><text x="14" y="22" class="bad" font-weight="700">✕</text><text x="34" y="22" class="t">Screen Time data leaving the device</text></g>
+  </g>
+
+  <!-- the detour -->
+  <text x="40" y="520" class="colh">THE DETOUR MOST SHIPPING AGENTS TAKE</text>
+  <rect class="cloud" x="470" y="540" width="340" height="150" rx="22"/>
+  <text x="494" y="576" class="tb">Your cloud agent</text>
+  <text x="494" y="598" class="ts">Runs the long loop, waits on hold,</text>
+  <text x="494" y="616" class="ts">watches inboxes, retries for days.</text>
+  <text x="494" y="646" class="lbl">The iPhone becomes the place where</text>
+  <text x="494" y="662" class="lbl">you brief it, watch it, and approve.</text>
+
+  <g class="arrow-v">
+    <path d="M600 540 L 600 462"/><path d="M594 470 L600 460 L606 470"/>
+    <path d="M680 462 L 680 540"/><path d="M674 532 L680 542 L686 532"/>
+  </g>
+  <text x="520" y="505" class="lbl" text-anchor="end">push, Live Activity</text>
+  <text x="520" y="520" class="lbl" text-anchor="end">updates</text>
+  <text x="692" y="505" class="lbl">approvals,</text>
+  <text x="692" y="520" class="lbl">briefs</text>
+
+  <g>
+    <g transform="translate(880 546)"><rect class="chip-good" width="360" height="30" rx="8"/><text x="14" y="20" class="t">Phone calls through cloud telephony</text></g>
+    <g transform="translate(880 582)"><rect class="chip-good" width="360" height="30" rx="8"/><text x="14" y="20" class="t">Email through Gmail or Microsoft Graph OAuth</text></g>
+    <g transform="translate(880 618)"><rect class="chip-good" width="360" height="30" rx="8"/><text x="14" y="20" class="t">Websites through a cloud browser</text></g>
+    <g transform="translate(880 654)"><rect class="chip-good" width="360" height="30" rx="8"/><text x="14" y="20" class="t">Payments through agent or merchant tokens</text></g>
+  </g>
+  <g class="arrow-v">
+    <path d="M810 590 C 845 590, 845 561, 880 561"/>
+    <path d="M810 605 C 845 605, 845 597, 880 597"/>
+    <path d="M810 620 C 845 620, 845 633, 880 633"/>
+    <path d="M810 635 C 845 635, 845 669, 880 669"/>
+  </g>
+
+  <text x="40" y="566" class="ts">Muse, ChatGPT agent, Gemini Spark, Perplexity</text>
+  <text x="40" y="584" class="ts">Computer, Pine and Grok Bot all work this way:</text>
+  <text x="40" y="602" class="ts">the thinking and the doing happen off the phone.</text>
+  <text x="40" y="634" class="ts">The cost: a server bill, a privacy promise to keep,</text>
+  <text x="40" y="652" class="ts">and terms of service to respect (guideline 5.2.2).</text>
+  <text x="40" y="740" class="lbl">EU-only exceptions (DMA): default SMS/RCS app with message access, default dialer, notification forwarding to accessories.</text>
+  <text x="40" y="758" class="lbl">Japan-only: a third-party voice assistant on the side button. See docs/the-walls.md.</text>
+</svg>

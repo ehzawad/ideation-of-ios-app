@@ -1,0 +1,475 @@
+{
+  "angle": "walls-policy",
+  "summary": "iOS is the most walled platform for agentic apps, and the walls are both technical and contractual. Technically, the sandbox (2.5.2) and the lack of any AccessibilityService-style API mean no third-party app can see or drive other apps. Android meanwhile is formalising agent control through AppFunctions (Android 16, MCP-style tools) and an OEM-assistant Computer Control API. On iOS, the only sanctioned cross-app agent is Apple's own Siri AI (iOS 27), and third-party apps take part as typed tools through App Intents and App Schemas, with system confirmations for side effects. Background execution stays opportunistic (silent push about 2-3 per hour, 30-second windows). New long-running APIs (BGContinuedProcessingTask in iOS 26; LongRunningIntent and a Background Inference entitlement in iOS 27) must be started by the user. Access to communications data is the hardest wall: no SMS or iMessage reading, no Mail API, no cellular call audio. On the policy side, 5.1.2(i) (Nov 2025) requires explicit named-provider consent before personal data reaches third-party AI. 2.5.2 and 4.2.6 block agents that generate and run code (enforced against vibe-coding apps in March 2026), and 4.7 puts heavy duties on agent skill and plug-in stores. HealthKit, Screen Time and FinanceKit are gated by entitlements and sandboxes that keep raw data away from cloud LLMs.\n\nThe workarounds follow a clear pattern: a cloud agent loop with the phone as the approval and notification surface; typed App Intents so Siri can call your app; user-started batch jobs for on-device work; and merchant tokens plus explicit confirmations for payments. Regulation is opening region-specific doors rather than a global one. The EU (DMA) now allows a default SMS/RCS app with message access, a default dialer without call confirmations, notification forwarding to third-party wearables (iOS 26.5), and single business terms with a 5% Core Technology Commission from Oct 1, 2026. Japan (MSCA, iOS 26.2) lets a third-party voice app take the side button, and Brazil follows with alternative distribution and payments. Cost walls are easing for small developers through iOS 27 Private Cloud Compute access (32K context, free under 2M downloads, with a per-user daily quota and a 6-month migration cliff). The still-unsolved risks are prompt injection and data exfiltration (EchoLeak; 64-74% attack success on a poisoned OpenClaw), unsettled liability for agent payments, age-assurance laws (Texas from June 4, 2026), EU AI Act transparency duties from Aug 2026, and state AI laws whose timelines keep moving.",
+  "items": [
+    {
+      "name": "Guideline 5.1.2(i): explicit consent before sending personal data to third-party AI",
+      "kind": "policy",
+      "description": "On Nov 13, 2025 Apple amended 5.1.2(i) to read: 'You must clearly disclose where personal data will be shared with third parties, including with third-party AI, and obtain explicit permission before doing so.' Every agent that ships user context (email, calendar, photos, messages, location) to OpenAI/Anthropic/Gemini or a self-hosted model now needs an in-app, pre-transmission consent flow; developer-forum threads show rejections citing it. Workaround: a named-provider consent sheet shown before the first call (not just a privacy-policy link), per-feature toggles, PII redaction/minimisation before upload, and routing sensitive steps to on-device Foundation Models or Apple's Private Cloud Compute so no third-party AI receives the data.",
+      "date": "2025-11",
+      "ios_relevance": "Applies to every App Store agent that calls a cloud LLM with personal data; the most common new rejection reason for AI apps.",
+      "sources": [
+        "https://developer.apple.com/news/?id=ey6d8onl",
+        "https://developer.apple.com/app-store/review/guidelines/",
+        "https://developer.apple.com/forums/thread/815109",
+        "https://developer.apple.com/forums/thread/816140",
+        "https://techcrunch.com/2025/11/13/apples-new-app-review-guidelines-clamp-down-on-apps-sharing-personal-data-with-third-party-ai"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Guideline 2.5.2 (no downloaded code that changes functionality) and the 2026 vibe-coding crackdown",
+      "kind": "policy",
+      "description": "2.5.2 says apps 'may not download, install, or execute code which introduces or changes features or functionality of the app, including other apps', and 4.2.6 rejects apps produced by app-generation services unless the content provider submits them. In March 2026 Apple reportedly blocked updates to the Replit and Vibecode iOS apps under 2.5.2. The reported fixes were to open generated previews in an external browser (Replit) and to stop building Apple-platform apps (Vibecode). For agents, this means an LLM may pick and fill parameters for native tools that are already compiled in, but it may not generate and run new app logic. Workaround: ship a fixed, typed tool catalogue (App Intents / Swift functions), treat model output as data rather than code, and render any generated software in Safari or on a server.",
+      "date": "2026-03",
+      "ios_relevance": "Rules out 'agent writes and runs its own mini-app on device' and limits on-device code-interpreter agents; shapes how coding agents ship on iPhone.",
+      "sources": [
+        "https://developer.apple.com/app-store/review/guidelines/",
+        "https://www.macrumors.com/2026/03/18/apple-blocks-updates-for-vibe-coding-apps/",
+        "https://the-decoder.com/apple-reportedly-blocks-vibe-coding-apps-from-publishing-updates/",
+        "https://redwerk.com/blog/apple-is-blocking-vibe-coding-apps-what-that-means-for-your-project/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Guideline 4.7 (mini apps, chatbots, plug-ins) governs agent 'skill' and plug-in marketplaces",
+      "kind": "policy",
+      "description": "4.7 lets apps offer software outside the binary: HTML5/JS mini apps, chatbots and plug-ins. In return, 4.7.1 requires content filtering, reporting and blocking, and IAP for digital goods. 4.7.2 says you 'may not extend or expose native platform APIs or technologies to the software without prior permission from Apple', 4.7.3 requires 'explicit user consent in each instance' before sharing data or permissions with any individual piece of software, 4.7.4 requires an index of all offered software, and 4.7.5 requires age gating (clarified Nov 2025). An OpenClaw-style skills store or an MCP-connector catalogue inside an iOS app therefore carries all of these duties. Workaround: a curated connector list with a per-connector consent prompt, cloud-side tool execution, and the Mini Apps Partner Program, which gives 15% commission if the app adopts the Declared Age Range and Advanced Commerce APIs.",
+      "date": "2025-11",
+      "ios_relevance": "Any iOS agent that lets users add third-party tools, skills or MCP servers.",
+      "sources": [
+        "https://developer.apple.com/app-store/review/guidelines/",
+        "https://developer.apple.com/news/?id=ey6d8onl",
+        "https://developer.apple.com/news/?id=xcz1s7cz"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "No cross-app UI automation on iOS (Android now has Computer Control and AppFunctions)",
+      "kind": "platform_api",
+      "description": "iOS apps are sandboxed (2.5.2: they may not 'read or write data outside the designated container area') and have no equivalent of Android's AccessibilityService, which can 'inspect screen content and interact with apps on the user's behalf'. Android is formalising agent control: AppFunctions (Android 16) turns apps into on-device MCP-style tool servers (Gemini integration was a trusted-tester preview as of May 2026), and the upcoming Computer Control API lets OEM-preloaded assistants drive the UIs of up to six target apps per session in a virtual display, with no opt-in needed from those apps. On iOS, only Apple's Siri can act across apps. Workarounds: universal links and URL schemes, share and action extensions, user-built Shortcuts started from your app via the shortcuts:// URL scheme, server-side API or MCP integrations, and automating websites inside your own WKWebView.",
+      "date": "ongoing",
+      "ios_relevance": "The single biggest structural difference from Android; a 'do anything in any app' agent is impossible for third parties on iOS.",
+      "sources": [
+        "https://developer.android.com/guide/topics/ui/accessibility/service",
+        "https://developer.android.com/ai/appfunctions",
+        "https://developer.android.com/ai/computer-control",
+        "https://developer.android.com/ai/intelligence-system",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "App Intents + App Schemas + 'Siri AI' (iOS 27): the sanctioned agent surface, with Siri as orchestrator",
+      "kind": "platform_api",
+      "description": "At WWDC26 Apple positioned App Intents as the way 'Siri AI' reads app entities, runs app actions and understands what is on screen. Apps adopt schemas in domains such as mail, messages, calendar, photos, notes, reminders, phone, maps, clock, camera and audio, plus Shortcuts-only domains (browser, files, spreadsheet, word processor, whiteboard, journaling). New APIs include OwnershipProvidingEntity, which auto-triggers confirmation 'for intents with meaningful side effects', UndoableIntent, SyncableEntity and view annotations for onscreen awareness. The wall is that Apple's model is the planner and third-party apps are only tools: there is no public API for one app's agent to call another app's intents. The docs say SiriKit/Intents 'continue to provide legacy support'; some press reports call it formally deprecated. Workaround: adopt schemas so Siri routes tasks to your app, and donate interactions so Siri learns your app.",
+      "date": "2026-06",
+      "ios_relevance": "Determines whether your app is reachable by the OS agent; non-adopters become invisible to voice or agentic use.",
+      "sources": [
+        "https://developer.apple.com/videos/play/wwdc2026/240/",
+        "https://developer.apple.com/videos/play/wwdc2026/343/",
+        "https://developer.apple.com/documentation/updates/appintents",
+        "https://developer.apple.com/documentation/appintents/app-schema-domains",
+        "https://developer.apple.com/documentation/appintents/apple-intelligence-and-siri-ai",
+        "https://developer.apple.com/documentation/sirikit",
+        "https://dracode.dev/blog/2026-06-08-09-wwdc-2026-siri-2-app-intents/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Classic background limits: opportunistic BG tasks, throttled silent push, 30-second windows, 2.5.4",
+      "kind": "platform_api",
+      "description": "iOS gives no always-on agent loop. BGAppRefreshTask and BGProcessingTask run when the system decides. Background pushes are low priority, not guaranteed and throttled: Apple says 'don't try to send more than two or three per hour', and each wake gets up to 30 seconds. Guideline 2.5.4 allows background modes 'only for their intended purposes' (VoIP, audio playback, location and so on), so keeping an agent alive with silent audio or fake location updates gets the app rejected. Workaround: run the agent loop on your server and use the phone for approvals and notifications; use a Notification Service Extension to enrich alerts; use visible push notifications to hand control back to the user.",
+      "date": "ongoing",
+      "ios_relevance": "Forces a 'cloud brain, phone as remote control' architecture for long-running or scheduled agents.",
+      "sources": [
+        "https://developer.apple.com/documentation/backgroundtasks/choosing-background-strategies-for-your-app",
+        "https://developer.apple.com/documentation/usernotifications/pushing-background-updates-to-your-app",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "New long-running escape hatches: BGContinuedProcessingTask (iOS 26), LongRunningIntent and Background Inference (iOS 27)",
+      "kind": "platform_api",
+      "description": "BGContinuedProcessingTask (iOS 26) lets work that 'starts in the foreground' after 'a person's action, such as tapping a button' continue in the background. It shows progress in a system Live Activity, the user can cancel it, and it can be killed under resource pressure; background GPU needs an entitlement. iOS 27 adds LongRunningIntent.performBackgroundTask, which extends an App Intent past the 'up to 30 seconds' limit if progress is reported regularly. It also adds a Background Inference entitlement, which is required for 'any Neural Engine access while your app is in the background'. None of these can be scheduled without the user starting them. Workaround: design agent jobs as user-started batches (for example 'organise my library', 'process these PDFs') with honest progress reporting.",
+      "date": "2026-06",
+      "ios_relevance": "Makes on-device batch agents (photo, document or ML processing) viable but still user-initiated.",
+      "sources": [
+        "https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtask",
+        "https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtaskrequest",
+        "https://developer.apple.com/documentation/backgroundtasks/performing-long-running-tasks-on-ios-and-ipados",
+        "https://developer.apple.com/documentation/appintents/longrunningintent",
+        "https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.background-tasks.continued-processing.inference"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Live Activities as the agent status surface: 8-hour cap and anti-spam rule (4.5.3, June 2026)",
+      "kind": "platform_api",
+      "description": "A Live Activity can be active for at most eight hours and stays on the Lock Screen for at most 12. Devices cap the number of concurrent and scheduled activities, so starting one can fail. The June 8, 2026 guidelines update 4.5.3 to say Live Activities may not be used 'to spam, phish, or send unsolicited messages to customers'. Workaround: use Live Activities and ActivityKit push for bounded, user-requested tasks (a booking in progress, an agent run), start a new activity for multi-day tasks, and fall back to notifications.",
+      "date": "2026-06",
+      "ios_relevance": "The best 'agent is working' UI on iPhone, but not a persistent assistant surface.",
+      "sources": [
+        "https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities",
+        "https://developer.apple.com/news/?id=a233fmpw",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "No SMS/iMessage read access; EU-only default carrier messaging app (TelephonyMessagingKit)",
+      "kind": "platform_api",
+      "description": "Third-party apps cannot read the user's SMS or iMessage threads. MFMessageComposeViewController only prefills a draft that the person must approve and send. SMS filter extensions triage messages from unknown senders but cannot act on them. iMessage app extensions see only their own interactive messages. Since iOS 18.2 users can choose a default messaging app (im: URL scheme), but the app only gets its own service's messages. iOS 26 TelephonyMessagingKit lets a default carrier-messaging app send and receive SMS, MMS and RCS, but customers need an EU account and a device located in the EU. Workarounds: be the messaging service yourself (plus the iOS 27 Suggested Actions framework and the Messages app schema), or run the agent in the EU as the default SMS/RCS app.",
+      "date": "ongoing",
+      "ios_relevance": "Blocks 'agent reads and replies to my texts' outside the EU; a distinctive opening for EU users.",
+      "sources": [
+        "https://developer.apple.com/documentation/messageui/mfmessagecomposeviewcontroller",
+        "https://developer.apple.com/documentation/identitylookup",
+        "https://developer.apple.com/documentation/messages",
+        "https://developer.apple.com/documentation/messages/preparing-your-app-to-be-the-default-messaging-app",
+        "https://developer.apple.com/documentation/telephonymessagingkit",
+        "https://developer.apple.com/documentation/suggestedactions"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Calls: no access to cellular call audio; recording needs visible consent; EU default dialer; LiveAssistance (iOS 27.1 beta)",
+      "kind": "platform_api",
+      "description": "CallKit and LiveCommunicationKit cover your own VoIP calls. There is no public API to record, transcribe or screen cellular calls, and built-in call recording, Call Screening and Hold Assist appear to be Apple-only features. Guideline 2.5.14 requires explicit consent and a clear visual or audible indicator whenever an app records. In the EU, the com.apple.developer.dialing-app entitlement lets a default dialer start cellular calls without a confirmation prompt and read call history from the time it became default. iOS 27.1 beta adds LiveAssistance extensions so third-party interpreter or captioning services can join FaceTime calls. Workaround: server-side telephony, where the agent phones businesses from a cloud number, or VoIP apps that own the audio path.",
+      "date": "ongoing",
+      "ios_relevance": "'Agent listens to or handles my phone calls' is Apple-only on iOS; 'agent makes calls for me' has to run in the cloud.",
+      "sources": [
+        "https://developer.apple.com/documentation/callkit",
+        "https://developer.apple.com/documentation/livecommunicationkit",
+        "https://developer.apple.com/documentation/livecommunicationkit/preparing-your-app-to-be-the-default-dialer-app",
+        "https://developer.apple.com/documentation/livecommunicationkit/liveassistanceextension",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Mail: no iOS Mail API (MailKit is macOS-only)",
+      "kind": "platform_api",
+      "description": "iOS has no API for reading the user's Mail.app inbox. MailKit extensions are macOS-only, and MFMailComposeViewController only presents a draft for the user to send. Email agents therefore connect directly to the provider over OAuth (Gmail API, Microsoft Graph, IMAP), which brings provider security reviews for restricted scopes and the 5.1.2(i) consent duty if mail content reaches an LLM. The iOS 27 mail app-schema domain (for example createDraft) matters only to apps that are themselves mail clients, which users can set as default. Workaround: become the mail client, or run a server-side connector with draft-for-approval sending.",
+      "date": "ongoing",
+      "ios_relevance": "Inbox agents on iOS are really cloud agents with an iOS front end, and inherit email prompt-injection risk.",
+      "sources": [
+        "https://developer.apple.com/documentation/mailkit",
+        "https://developer.apple.com/documentation/appintents/app-schema-domains",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "HealthKit: no ads or data mining, third-party sharing only to health services, store encrypted while locked",
+      "kind": "policy",
+      "description": "HealthKit rules forbid using or selling health data for advertising or data mining (5.1.2(vi), 5.1.3(i)) and forbid storing personal health information in iCloud (5.1.3(ii)). Apple's HealthKit privacy doc adds: 'Even with permission, you can only share information to a third party if they also provide a health or fitness service to the user'. That makes piping HealthKit data to a general-purpose LLM API legally and contractually risky. The store is encrypted while the device is locked, so background agents may be unable to read it. Since March 2026, Health & Fitness and Medical apps must declare regulated-medical-device status in the EEA, UK and US. Workaround: on-device inference (Foundation Models or Core AI) or an AI vendor that is itself a health service under a BAA, plus 1.4.1 disclaimers.",
+      "date": "ongoing",
+      "ios_relevance": "Health and fitness coaching agents, the most-requested agent category, face the strictest data rules.",
+      "sources": [
+        "https://developer.apple.com/documentation/healthkit/protecting-user-privacy",
+        "https://developer.apple.com/app-store/review/guidelines/",
+        "https://developer.apple.com/news/?id=nyqbfz1y"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Granular personal-data permissions: limited Contacts (iOS 18), limited Photos, write-only Calendar",
+      "kind": "platform_api",
+      "description": "Users can give an agent only a hand-picked subset of contacts (CNAuthorizationStatus.limited, managed with ContactAccessButton or contactAccessPicker) or photos (PHAuthorizationStatus.limited). EventKit offers write-only calendar access, where the app 'can't access any of the existing calendars and events'. Guideline 5.1.2(iv)-(v) bans building contact databases and bans contacting people from Contacts except 'at the explicit initiative of that user on an individualized basis', with no 'Select All'. Agents that 'know everything about me' will often run with partial data. Workaround: ask for access progressively at the moment it is needed, use EKEventEditViewController (no permission required), and design agents that work well with incomplete context.",
+      "date": "2024-09",
+      "ios_relevance": "Directly affects scheduling, CRM and outreach agents.",
+      "sources": [
+        "https://developer.apple.com/documentation/contacts/cnauthorizationstatus/limited",
+        "https://developer.apple.com/documentation/photos/phauthorizationstatus/limited",
+        "https://developer.apple.com/documentation/eventkit/ekeventstore/requestwriteonlyaccesstoevents(completion:)",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Screen Time APIs (FamilyControls / DeviceActivity / ManagedSettings): gated and sandboxed",
+      "kind": "platform_api",
+      "description": "The Family Controls entitlement requires a separate distribution request, and individual (non-child) authorization needs biometric approval. Device activity reports run in an extension sandbox 'that prevents your extension from making network requests or moving sensitive content outside the extension's address space', and app, category and domain identities arrive as opaque tokens. The DPLA added Family Controls usage requirements on Mar 30, 2026, and iOS 27 adds Apple's own Time Allowances. A 'digital wellbeing agent' cannot send usage data to an LLM. Workaround: rule-based shields and schedules on device, with coaching driven by what the user reports rather than raw telemetry.",
+      "date": "2026-03",
+      "ios_relevance": "Focus, anti-doomscroll and parental-control agents.",
+      "sources": [
+        "https://developer.apple.com/documentation/familycontrols",
+        "https://developer.apple.com/documentation/deviceactivity/deviceactivityreport",
+        "https://developer.apple.com/news/?id=fwswmjcn",
+        "https://developer.apple.com/news/?id=0d2gpmml"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "FinanceKit: managed entitlement, Apple Card/Cash-centric, background delivery in iOS 26",
+      "kind": "platform_api",
+      "description": "FinanceKit reads on-device financial data (Apple Card, Apple Cash and Wallet orders), but access requires meeting Apple's criteria, an organisation-level developer account, the Account Holder applying for a managed entitlement, and Apple's per-app review. iOS 26 added a Background Delivery Extension that runs when FinanceStore data changes, which suits proactive budgeting agents. Coverage is largely limited to Apple's own card products and regions; exact country availability was not verified. Workaround: server-side open-banking or aggregator APIs for other banks, with FinanceKit as a premium path for Apple Card users.",
+      "date": "ongoing",
+      "ios_relevance": "Personal-finance agents; one of the few Apple APIs that gives background triggers on data changes.",
+      "sources": [
+        "https://developer.apple.com/documentation/financekit",
+        "https://developer.apple.com/documentation/financekit/implementing-a-background-delivery-extension"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "Apple Pay and agent payments: per-transaction user authentication; merchant tokens as the pre-authorisation route",
+      "kind": "platform_api",
+      "description": "Apple Pay payments need the user to authenticate on the payment sheet, so an agent cannot silently pay. PassKit's PKRecurringPaymentRequest, PKDeferredPaymentRequest ('hotel booking or a pre-order') and PKAutomaticReloadPaymentRequest can issue Apple Pay Merchant Tokens with a billing agreement. The merchant, which could be your agent service, can then charge later within agreed terms. 3.1.3(e) requires non-IAP payment for physical goods and services, and 5.1.2(vii) limits sharing Apple Pay data to facilitating delivery. Who is liable when an agent books or pays wrongly is unsettled; mandate protocols such as Google's AP2 have already been red-teamed with prompt-injection attacks that steer purchases. Workaround: explicit spend caps and itemised confirmation, merchant-token billing agreements, and cancel/undo flows (UndoableIntent).",
+      "date": "ongoing",
+      "ios_relevance": "Any booking or shopping agent; payments are where agent mistakes turn into money.",
+      "sources": [
+        "https://developer.apple.com/documentation/passkit/pkrecurringpaymentrequest",
+        "https://developer.apple.com/documentation/passkit/pkdeferredpaymentrequest",
+        "https://developer.apple.com/documentation/passkit/pkautomaticreloadpaymentrequest",
+        "https://developer.apple.com/app-store/review/guidelines/",
+        "https://huggingface.co/papers/2601.22569",
+        "https://huggingface.co/papers/2602.06345",
+        "https://huggingface.co/papers/2504.03255"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "IAP for agent subscriptions vs. US anti-steering relief (Epic v. Apple, 2025)",
+      "kind": "policy",
+      "description": "Unlocking digital features, including an AI agent subscription, still requires in-app purchase under 3.1.1, while physical goods and services bought through the agent must not use IAP (3.1.3(e)). After the April 2025 US court decision in Epic v. Apple, Apple updated 3.1.1, 3.1.1(a), 3.1.3 and 3.1.3(a) on May 1, 2025. As of the June 8, 2026 guidelines, entitlements 'are not required for developers to include buttons, external links, or other calls to action in their United States storefront apps'. The status of Apple's appeal and any future commission on US link-outs was not verified. iOS 27 adds Bundles/Suites and multiseat subscriptions. Workaround: pair IAP with a US web-checkout link to protect LLM-cost margins, and use credit-based IAP consumables for metered agent runs.",
+      "date": "2025-05",
+      "ios_relevance": "Pricing of agents with high per-user inference cost depends on the 15-30% vs. web-checkout gap.",
+      "sources": [
+        "https://developer.apple.com/news/?id=9txfddzf",
+        "https://developer.apple.com/app-store/review/guidelines/",
+        "https://developer.apple.com/news/?id=likeohx4"
+      ],
+      "confidence": "likely"
+    },
+    {
+      "name": "EU DMA business terms: alternative distribution and payments; single EU terms from Oct 1, 2026",
+      "kind": "policy",
+      "description": "From Oct 1, 2026, Apple moves all EU developers to one set of terms (DPLA Attachment 14). The Core Technology Fee is replaced by a 5% Core Technology Commission on alternatively distributed apps, and App Store rates become 26% (15% for small business and similar programs) with IAP, 20% (10%) with alternative in-app payments, and 15% (10%) for out-of-app offers. Eligibility for web distribution and alternative marketplaces widens (for example, 1M first-year installs or a $1M standby letter of credit), and all apps still need notarization. Agents distributed outside the App Store remain subject to notarization and the 2.5.2-style baseline, not full App Review. Workaround: EU-only builds with alternative payments to offset LLM costs, or web distribution for agent features App Review would reject (subject to notarization).",
+      "date": "2026-10",
+      "ios_relevance": "The EU is the only large market where an iOS agent can skip App Review content rules and IAP economics.",
+      "sources": [
+        "https://developer.apple.com/news/?id=gmws0jgp",
+        "https://developer.apple.com/news/?id=0cgo95n6",
+        "https://developer.apple.com/support/apps-in-the-eu/",
+        "https://developer.apple.com/news/?id=awedznci"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "EU interoperability: notification forwarding to third-party accessories (iOS 26.5), defaults, Article 6(7) requests",
+      "kind": "policy",
+      "description": "The Accessory Notifications and Accessory Live Activities frameworks (iOS 26.5, with DPLA terms from Mar 30, 2026) let accessory companion apps receive forwarded iOS system notifications and Live Activities and send replies. Customer use is limited to iPhones located in the EU and signed in with an EU Apple Account. EU users can also change defaults for browser, mail, phone, messaging, navigation, translation, keyboards, password managers, call-spam filters and contactless apps. Developers can file DMA Article 6(7) interoperability requests, which Apple commits to deliver in 6, 12 or 18 months depending on effort. Workaround and opportunity: an AI wearable or pendant whose agent sees all notifications is feasible only in the EU; elsewhere, use ANCS-style accessory notification access (limited).",
+      "date": "2026-03",
+      "ios_relevance": "The only legal route to a notification-aware ambient agent on iPhone; region-locked.",
+      "sources": [
+        "https://developer.apple.com/documentation/accessorynotifications",
+        "https://developer.apple.com/documentation/accessoryliveactivities",
+        "https://developer.apple.com/news/?id=fwswmjcn",
+        "https://developer.apple.com/support/apps-in-the-eu/",
+        "https://developer.apple.com/support/ios-interoperability/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Japan MSCA (iOS 26.2): side button can launch third-party voice assistants; Brazil CADE changes (iOS 26.5)",
+      "kind": "policy",
+      "description": "Under Japan's Mobile Software Competition Act, 'In iOS 26.2 and later, users in Japan can configure the side button of iPhone to launch a voice-based conversational app'. Apps enable this by adopting App Intents and App Shortcuts, with DPLA 3.3.3(J) requirements added Dec 17, 2025. Japan also gets alternative marketplaces, alternative payments and default-app choices. Brazil gets alternative marketplaces and payments from iOS 26.5 under a CADE agreement. Nothing verified shows EU or US side-button access for third-party assistants. Workaround and opportunity: a hardware-button voice agent is possible today only in Japan; elsewhere use the Action button with App Shortcuts or Controls.",
+      "date": "2025-12",
+      "ios_relevance": "First crack in Siri's exclusive hardware entry point: a real 'Siri replacement' launch path in one country.",
+      "sources": [
+        "https://developer.apple.com/news/?id=074b3wzz",
+        "https://developer.apple.com/news/?id=76371du6",
+        "https://developer.apple.com/support/app-distribution-in-japan/",
+        "https://developer.apple.com/news/?id=dhwadr2x"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "On-device Foundation Models: ~3B params, 4,096-token context, guardrails, OS-versioned behavior",
+      "kind": "platform_api",
+      "description": "Apple's on-device model (~3B parameters with 2-bit quantization-aware training, per Apple's 2025 tech report) has 'a context window of 4096 tokens per LanguageModelSession'. Instructions, tool schemas, tool outputs and responses all count toward that limit, and exceeding it throws exceededContextWindowSize. The model needs an Apple Intelligence-eligible device and region, has built-in guardrails, and changes with OS updates (three model versions across 26.0-26.3, 26.4 and 27.0), which can shift agent behavior. Workaround: split tasks across sessions, use RAG and deterministic pre-tool calls, run Evaluations on each OS model version, and escalate to PCC or a cloud model for long-horizon planning.",
+      "date": "ongoing",
+      "ios_relevance": "Free, private and offline, but too small in context for multi-step agents without careful orchestration.",
+      "sources": [
+        "https://developer.apple.com/documentation/foundationmodels",
+        "https://developer.apple.com/documentation/foundationmodels/systemlanguagemodel",
+        "https://developer.apple.com/documentation/technotes/tn3193-managing-the-on-device-foundation-model-s-context-window",
+        "https://developer.apple.com/documentation/foundationmodels/improving-the-safety-of-generative-model-output",
+        "https://huggingface.co/papers/2507.13575"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Private Cloud Compute for third parties (iOS 27): 32K context, reasoning, per-user daily quota, small-developer eligibility",
+      "kind": "platform_api",
+      "description": "iOS 27's PrivateCloudComputeLanguageModel gives apps Apple's server model with 'a larger 32K-token context size', light/moderate/deep reasoning levels, and no API keys. Each user gets a daily request limit that surfaces quotaLimitReached, and the system can upsell iCloud+ for more. Access is a managed entitlement for developers in the App Store Small Business Program with fewer than 2 million first-time downloads, 'with no cloud API cost'. A developer who crosses that threshold must 'migrate to an alternative solution within 6 months'. Workaround: use PCC to launch cheaply, and design a provider abstraction (the Foundation Models LanguageModel protocol supports custom providers) so you can switch to paid APIs at scale.",
+      "date": "2026-06",
+      "ios_relevance": "Removes the per-user cloud LLM cost wall for indie agent apps, with a cliff at scale.",
+      "sources": [
+        "https://developer.apple.com/documentation/foundationmodels/adding-server-side-intelligence-with-private-cloud-compute",
+        "https://developer.apple.com/documentation/foundationmodels/privatecloudcomputelanguagemodel",
+        "https://developer.apple.com/private-cloud-compute/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "On-device inference limits: memory ceilings, thermals, battery, model download size",
+      "kind": "hardware",
+      "description": "Apps run under per-process memory limits. The increased-memory-limit entitlement 'is only available on some device models', and apps must query os_proc_available_memory. Sustained LLM inference heats iPhones and slows down over time, as measured in on-device benchmarks, and drains battery. Background Neural Engine use now needs its own entitlement. Guideline 4.2.3(ii) requires disclosing download size before fetching large resources on first launch. Workaround: ship models through Background Assets (including Apple-hosted asset packs), use Core AI (iOS 27) or Foundation Models adapters instead of bundling multi-GB weights, check ProcessInfo thermal state, and offload heavy planning to PCC or the cloud.",
+      "date": "ongoing",
+      "ios_relevance": "Caps how much of an agent can run locally, especially on older or non-Pro iPhones.",
+      "sources": [
+        "https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.kernel.increased-memory-limit",
+        "https://developer.apple.com/documentation/backgroundassets",
+        "https://developer.apple.com/documentation/coreai",
+        "https://huggingface.co/papers/2312.12472",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Kids and age-assurance laws: Texas SB 2420 (June 4, 2026), Utah, Louisiana, AU/BR/SG 18+ gating, COPPA",
+      "kind": "policy",
+      "description": "After a court lifted the injunction, Texas SB 2420 age assurance and parental consent for downloads, IAP and 'significant changes' apply to new Texas accounts from June 4, 2026. Utah (May 6, 2026) and Louisiana (July 1, 2026) follow, and apps rated 18+ are age-gated in Australia, Brazil and Singapore from Feb 24, 2026. Apple's tools are the Declared Age Range API, PermissionKit's Significant Change API and App Store Server Notifications for revoked consent. From September 2026, submissions must declare social-media capabilities, which carry a minimum 13+ rating. Guideline 5.1.4 points to COPPA and GDPR, and the amended FTC COPPA Rule's compliance date is believed to be April 2026. Workaround: build age-aware agent modes and treat adding a new agent capability as a possible 'significant change' needing parental consent.",
+      "date": "2026-06",
+      "ios_relevance": "Agent features for teens or families now carry state-by-state consent plumbing.",
+      "sources": [
+        "https://developer.apple.com/news/?id=sg176nne",
+        "https://developer.apple.com/news/?id=8jzbigf4",
+        "https://developer.apple.com/news/?id=f5zj08ey",
+        "https://developer.apple.com/news/?id=0d2gpmml",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "EU AI Act and GDPR obligations on consumer agents",
+      "kind": "policy",
+      "description": "The EU AI Act's general-purpose AI model obligations have applied since Aug 2, 2025. Most other provisions, including Article 50 transparency (telling users they are talking to AI, labelling synthetic content), apply from Aug 2, 2026. The Commission's Nov 2025 'Digital Omnibus' proposed pushing high-risk (Annex III) obligations to as late as Dec 2027; final adoption was not verified here. Most iOS consumer agents are limited-risk, unless they make decisions in employment, credit, education or essential services, which are high-risk. GDPR adds a lawful basis, DPIAs for profiling, Art. 22 limits on solely automated decisions, and transfer rules for sending memory or context to US LLM providers. Workaround: an AI-disclosure UI, human-in-the-loop for consequential decisions, EU data residency or on-device processing, and data-processing agreements with model vendors.",
+      "date": "2026-08",
+      "ios_relevance": "EU users of any iOS agent; high-risk classification would bring conformity assessments.",
+      "sources": [],
+      "confidence": "likely"
+    },
+    {
+      "name": "US state AI and chatbot laws: Colorado AI Act delay, California companion-chatbot and ADMT rules",
+      "kind": "policy",
+      "description": "Colorado's AI Act (SB 24-205) on high-risk automated decisions was delayed by an Aug 2025 special session to June 30, 2026. Whether it was amended again in 2026 was not verified. California's SB 243 on companion chatbots (disclosure, self-harm protocols, protections for minors) took effect Jan 1, 2026, and the CPPA's automated decision-making technology rules phase in from 2026-2027. A December 2025 federal executive order sought to challenge state AI laws, and its effect is unresolved. Workaround: keep consequential-decision features (credit, housing, employment) out of consumer agents, or add notices, appeal paths and impact assessments; add chatbot disclosures and crisis routing for companion-like agents.",
+      "date": "2026-06",
+      "ios_relevance": "US-distributed iOS agents that make or assist consequential decisions, or act as companions.",
+      "sources": [],
+      "confidence": "uncertain"
+    },
+    {
+      "name": "Indirect prompt injection via email and web: EchoLeak (CVE-2025-32711) and browser-agent attack rates",
+      "kind": "research",
+      "description": "In June 2025 Aim Security disclosed EchoLeak, a zero-click flaw in which one crafted email made Microsoft 365 Copilot exfiltrate internal data. It chained a classifier bypass, reference-style Markdown links, auto-fetched images and a CSP-allowed proxy. Anthropic reported that browser-use agents without mitigations had a 23.6% attack success rate, cut to 11.2% with mitigations (Aug 2025), and later wrote that even '1% attack success rate... still represents meaningful risk'. Any iOS agent that reads inbound email, web pages or notifications and can also act or send has this exposure. Workaround: least-privilege tools, no auto-rendered remote images or links in agent output, provenance tagging of untrusted content, confirmation gates on sends and payments (OwnershipProvidingEntity), and egress allowlists.",
+      "date": "2025-06",
+      "ios_relevance": "Inbox, browser and messaging agents on iPhone; the risk regulators and App Review will increasingly probe.",
+      "sources": [
+        "https://huggingface.co/papers/2509.10540",
+        "https://www.anthropic.com/news/claude-for-chrome",
+        "https://www.anthropic.com/research/prompt-injection-defenses",
+        "https://huggingface.co/papers/2511.20597"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Personal and mobile agent attacks: OpenClaw state poisoning, mobile 'environmental injection', payment steering",
+      "kind": "research",
+      "description": "A 2026 real-world study of OpenClaw ('the most widely deployed personal AI agent in early 2026') found that poisoning its capability, identity or knowledge state raised average attack success from 24.6% to 64-74%. The best defense still let 63.8% of capability-targeted attacks through. GhostEI-Bench shows mobile GUI agents can be derailed by spoofed notifications and deceptive overlays, which leads to 'privacy leakage, financial loss'. Red-teaming of Google's AP2 showed prompt injection can steer product ranking and extract user data. Workaround: signed, read-only skill manifests, isolation between memory and tools, OS-rendered confirmations (not model-rendered), and per-action scopes. iOS's lack of UI automation incidentally shrinks this attack surface.",
+      "date": "2026-04",
+      "ios_relevance": "Agents that keep persistent memory or skills, or read notifications, including iOS companions to desktop agents.",
+      "sources": [
+        "https://huggingface.co/papers/2604.04759",
+        "https://huggingface.co/papers/2603.13151",
+        "https://huggingface.co/papers/2510.20333",
+        "https://huggingface.co/papers/2601.22569"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Acting on third-party services: 5.2.2 terms-of-service permission, WebKit mandate, regulated-field entities",
+      "kind": "policy",
+      "description": "Guideline 5.2.2 says an app that 'uses, accesses... or displays content from a third-party service' must be 'specifically permitted to do so under the service's terms of use', and Apple may ask for proof. Agents that scrape or drive airline, retail or bank sites through a WebView risk rejection. 2.5.6 requires WebKit for web browsing except with alternative-engine entitlements in the EU and Japan. Under 5.1.1(ix), apps in highly regulated fields (banking, healthcare, air travel, crypto) must be submitted by the legal entity that provides the service. Workaround: official partner APIs and affiliate or booking programs, user-driven in-app web sessions, Safari Web Extensions scoped to specific sites (4.4.2), and submitting through a licensed entity for finance or health agents.",
+      "date": "ongoing",
+      "ios_relevance": "Booking, shopping and banking agents that act on websites rather than APIs.",
+      "sources": [
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "verified"
+    },
+    {
+      "name": "Reported Apple framework to admit AI agents to the App Store (2026)",
+      "kind": "trend",
+      "description": "Several 2026 trade reports claim Apple is drafting App Store policy for AI agents. Under it, apps would declare every action up front, typed and reviewable, instead of letting AI operate the screen, which matches the App Intents and App Schemas direction shown at WWDC26. None of this is in the June 8, 2026 guidelines, which still have no section on 'agents' (AI is mentioned only in 4.7 chatbots and 5.1.2(i)). Treat it as a signal, not a rule. Workaround: build on typed App Intents now so you are ready if agent-specific review rules arrive.",
+      "date": "2026-06",
+      "ios_relevance": "May define how autonomous agent apps are reviewed in 2027.",
+      "sources": [
+        "https://aintelligencehub.com/articles/apple-app-store-agents",
+        "https://perplexityaimagazine.com/ai-news/apple-app-store-ai-agents-policy-wwdc-2026/",
+        "https://memeburn.com/apple-ai-agent-app-store-2026/",
+        "https://developer.apple.com/app-store/review/guidelines/"
+      ],
+      "confidence": "uncertain"
+    }
+  ],
+  "constraints_or_walls": [
+    "5.1.2(i) (Nov 2025): explicit, named-provider consent before any personal data reaches third-party AI. Workaround: a pre-transmission consent sheet, redaction, and on-device or PCC routing.",
+    "2.5.2 + 4.2.6: an agent may not download or execute code that changes app functionality (vibe-coding apps blocked Mar 2026). Workaround: a fixed typed tool catalogue; generated software runs in Safari or on a server.",
+    "4.7.1-4.7.5: agent skill or plug-in stores need filtering, an index, age gating, per-instance data consent and no native-API exposure without permission. Workaround: a curated connector list and the Mini Apps Partner Program.",
+    "No cross-app UI automation or AccessibilityService equivalent on iOS. Workaround: App Intents, URL schemes, share extensions, user-built Shortcuts, server APIs, in-app WKWebView.",
+    "Siri AI is the only cross-app planner; third-party apps are its tools and cannot call other apps' intents. Workaround: adopt App Schemas and donations so Siri routes tasks to you.",
+    "No persistent background agent loop; silent push is capped at about 2-3 per hour with 30 s per wake. Workaround: cloud agent loop, with the phone for approvals and notifications.",
+    "Long-running work must be user-initiated (BGContinuedProcessingTask, LongRunningIntent), and background Neural Engine use needs an entitlement. Workaround: user-started batch jobs with honest progress.",
+    "Live Activities last at most 8 h (12 h on the Lock Screen) and may not be used for spam (4.5.3). Workaround: bounded task Live Activities plus notifications.",
+    "No SMS or iMessage read access; sending needs user approval. Workaround: become the messaging service; in the EU, become the default SMS/RCS app (TelephonyMessagingKit).",
+    "No cellular call audio access; recording, screening and hold assist are Apple-only. Workaround: cloud telephony agents, VoIP apps, EU default dialer, LiveAssistance for FaceTime (27.1 beta).",
+    "No iOS Mail API. Workaround: provider OAuth (Gmail, Graph, IMAP) server-side, or become the default mail client.",
+    "HealthKit data cannot feed ads or data mining or go to non-health third parties, and is unreadable while locked. Workaround: on-device inference or a health-service vendor under a BAA.",
+    "Contacts, Photos and Calendar can be partial or write-only, and bulk contacting is banned (5.1.2(v)). Workaround: progressive permission requests and system pickers or editors.",
+    "Screen Time data stays in a no-network extension sandbox, and the entitlement needs approval. Workaround: on-device rules and shields.",
+    "FinanceKit needs a managed entitlement and an org account and covers mainly Apple Card/Cash. Workaround: open-banking aggregators server-side.",
+    "Apple Pay needs user authentication per payment, and agent-payment liability is unsettled. Workaround: merchant-token recurring, deferred or auto-reload agreements, spend caps and confirmations.",
+    "Digital agent subscriptions need IAP outside the US; US storefront apps may link to web checkout. Workaround: IAP plus US web checkout; EU alternative payments.",
+    "Ambient notification-aware agents need notification forwarding, which works only on EU iPhones with EU accounts (iOS 26.5). Workaround: build for the EU; ANCS elsewhere.",
+    "A side-button voice assistant replacement is possible only in Japan (iOS 26.2). Workaround: Action button, App Shortcuts and Controls elsewhere.",
+    "The on-device LLM has a 4,096-token context and changes with the OS. Workaround: session chunking, RAG, per-OS evaluations, escalation to PCC or the cloud.",
+    "PCC is free only for Small Business Program developers under 2M downloads, with a per-user daily quota. Workaround: a provider abstraction that can move to paid APIs within 6 months.",
+    "Memory, thermal and battery limits and model size constrain local agents. Workaround: Background Assets, Core AI, the increased-memory entitlement where available, cloud offload.",
+    "Age-assurance laws (TX, UT, LA; AU, BR, SG) and COPPA require age signals and parental consent for significant changes. Workaround: Declared Age Range and PermissionKit APIs.",
+    "EU AI Act transparency from Aug 2026 plus GDPR; high-risk use cases bring heavy duties. Workaround: AI disclosure, human-in-the-loop, EU data residency or on-device processing.",
+    "Prompt injection from email, web, notifications and skills is unsolved (EchoLeak; OpenClaw 64-74% success after state poisoning). Workaround: least privilege, OS-level confirmations, provenance tags, egress allowlists.",
+    "5.2.2 requires permission under third-party terms of service; WebKit is mandatory outside the EU and Japan; regulated-field apps must come from licensed entities. Workaround: partner APIs and a licensed submitting entity."
+  ],
+  "whitespace_signals": [
+    "EU-only agentic SMS/RCS client: TelephonyMessagingKit lets a default carrier-messaging app read and send SMS, MMS and RCS; an AI triage and auto-reply texting app for EU users has almost no competition.",
+    "EU-only AI dialer: the default-dialer entitlement allows starting calls without confirmation and reading call history from the point it became default, a base for a call-agent or CRM dialer.",
+    "EU-only ambient AI wearable or pendant: Accessory Notifications and Accessory Live Activities (iOS 26.5) forward all system notifications and allow replies, so an agent can triage and act on them.",
+    "Japan-only 'Siri replacement': a voice agent launched from the side button (iOS 26.2), built on App Intents and App Shortcuts.",
+    "Zero-cloud-cost indie agents: PCC (iOS 27) gives free 32K-context reasoning to Small Business Program developers under 2M downloads; agent apps priced below LLM-API-backed competitors.",
+    "Third-party live interpreter or captioning agents inside FaceTime calls through the LiveAssistance extension (iOS 27.1 beta).",
+    "Being the best Siri tool in thin App Schema domains (spreadsheet, word processor, whiteboard, journaling, reader, browser) as Siri AI routes work to schema-adopting apps.",
+    "User-started on-device batch agents (photo library curation, document or receipt processing) built on BGContinuedProcessingTask, LongRunningIntent and Background Inference.",
+    "Bounded-autonomy purchasing through Apple Pay merchant tokens (recurring, deferred, auto-reload): 'agent can spend up to $X on groceries or top-ups' without a sheet each time.",
+    "Developer tooling: a drop-in 5.1.2(i) consent and PII-redaction SDK, and a prompt-injection firewall or provenance layer for iOS agent apps.",
+    "Proactive Apple Card budgeting agent using the FinanceKit Background Delivery Extension (few builders have the managed entitlement).",
+    "Messaging apps adding iOS 27 Suggested Actions and the Messages App Schema so Siri can send and draft through them."
+  ],
+  "open_questions": [
+    "Will Apple ever let a third-party agent invoke other apps' App Intents directly (agent-to-app on iOS), or allow a third-party default assistant outside Japan (e.g. under EU DMA pressure)?",
+    "Does Apple treat Private Cloud Compute as 'third-party AI' under 5.1.2(i)? It is Apple-operated, so presumably not, but this is unconfirmed.",
+    "Is SiriKit formally deprecated? Press reports say so after WWDC26; Apple's docs say it 'continues to provide legacy support'.",
+    "What is the current state of the Epic v. Apple appeal, and can Apple charge a commission on US link-out purchases made through agent apps?",
+    "Was the EU Digital Omnibus delay of AI Act high-risk obligations formally adopted, and on what dates? Do Article 50 transparency duties still bind consumer agents from Aug 2, 2026?",
+    "Was Colorado's AI Act amended again or delayed past June 30, 2026, and how does the Dec 2025 federal order on state AI laws play out?",
+    "Who bears liability when an agent makes a wrong purchase (card-network agent-token rules, Reg E and chargebacks, EU payment services rules)? Will Apple Pay add an agent-mandate primitive?",
+    "How large is the PCC per-user daily quota? It is not disclosed, which matters for agent loops that make many calls.",
+    "Can DeviceActivityReport or other sandboxed extensions run Foundation Models on device, enabling private 'wellbeing agents'?",
+    "Will the reported Apple App Store agent framework materialize as explicit guideline sections in 2026-2027?",
+    "FinanceKit country availability beyond the US (e.g. UK connected cards) was not verified."
+  ]
+}

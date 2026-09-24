@@ -1,0 +1,523 @@
+[
+  {
+    "title": "Zero-Cloud Exit Planner",
+    "tagline": "A weeks-long plan for leaving an abusive home that runs only on the phone and leaves nothing in any cloud.",
+    "tier": "moonshot",
+    "category": "Safety & civic",
+    "moment": "Your partner checks your phone and can read your email, and you have six weeks to leave safely. You open what looks like a calculator, and it picks up where it stopped last night: two documents still to photograph, one bank account still to open, and a draft note to your employer about changing your pay deposit.",
+    "what_it_does": [
+      "Keeps a six-week exit plan as a saved task graph on the device and works through it in short sessions, one step per session, so the 4K-8K token on-device context never has to hold the whole plan.",
+      "Photographs and reads passports, birth certificates, insurance cards and leases, then keeps a local 'grab list' of where each original is.",
+      "Turns your own voice notes (transcribed on the device) into a dated incident log in the shape a protective-order petition asks for, and asks you to confirm each entry before saving it.",
+      "On exit day, runs a fixed checklist: which accounts to lock and in what order, a walk-through of Apple's Safety Check, and pre-drafted messages to your advocate and employer that you send yourself.",
+      "Asks before anything touches the network. By default it works in airplane mode and keeps its files out of iCloud Backup."
+    ],
+    "why_now": "Since iOS 26 every recent iPhone has a free on-device model with tool calling, and iOS 27 added image input, built-in OCR and Apple's rolling-window and history-summary utilities. For the first time a useful planning agent can run with no server at all. That matters to people whose threat model includes a partner who controls shared accounts, or a custody case that could subpoena a startup's servers.",
+    "why_nobody_yet_or_wall": "Wall (research + platform): a roughly 3B on-device model with a 4K-8K token context has to carry a plan that spans weeks, hundreds of facts and local legal steps it cannot look up, and it must not drop a step on the one day that matters. Background work on iOS is short and visible (a Live Activity would show on the Lock Screen), long inference heats the phone, and data on the device is only as safe as the passcode. What would have to change: Much longer on-device context or reliable local memory for small models; offline, jurisdiction-specific legal knowledge packs kept current by advocates; and an OS-level decoy or duress mode, which no app can build on its own. Partial version today: A deterministic checklist engine does the planning. The on-device model is used only to read documents, transcribe notes and draft messages. The app uses a disguised alternate icon and sits in iOS's Face ID-locked hidden apps.",
+    "ios_hooks": [
+      "Foundation Models (SystemLanguageModel, on-device only)",
+      "Foundation Models OCRTool and image Attachment input",
+      "SpeechAnalyzer (on-device transcription)",
+      "SwiftData with file protection (NSFileProtectionComplete)",
+      "URLResourceValues.isExcludedFromBackup",
+      "UIApplication.setAlternateIconName",
+      "LocalAuthentication",
+      "ProcessInfo.thermalState"
+    ],
+    "nearest_existing": [
+      "Apple Safety Check (iOS 16+): resets sharing and access, but does not plan or keep records",
+      "myPlan (Johns Hopkins safety-planning app): a decision aid that takes no actions",
+      "Bright Sky (UK): disguised support app with no agent",
+      "PalmClaw on-device agent framework https://huggingface.co/papers/2607.13027",
+      "apple/foundation-models-utilities (rolling window, summarize history) https://github.com/apple/foundation-models-utilities"
+    ],
+    "unsaid_assumption": "That the survivor can keep the phone itself private. If the partner can get into it, no on-device design is safe.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "It treats 'no cloud' as a safety requirement for one group rather than a privacy preference, which forces the hardest version of the on-device long-horizon problem.",
+    "wall_type": "research + platform",
+    "wall_only": "Wall (research + platform): a roughly 3B on-device model with a 4K-8K token context has to carry a plan that spans weeks, hundreds of facts and local legal steps it cannot look up, and it must not drop a step on the one day that matters. Background work on iOS is short and visible (a Live Activity would show on the Lock Screen), long inference heats the phone, and data on the device is only as safe as the passcode.",
+    "what_would_have_to_change": "Much longer on-device context or reliable local memory for small models; offline, jurisdiction-specific legal knowledge packs kept current by advocates; and an OS-level decoy or duress mode, which no app can build on its own.",
+    "partial_version_today": "A deterministic checklist engine does the planning. The on-device model is used only to read documents, transcribe notes and draft messages. The app uses a disguised alternate icon and sits in iOS's Face ID-locked hidden apps."
+  },
+  {
+    "title": "Seconds-Ahead Hazard Voice",
+    "tagline": "Warns a blind walker about the reversing car or the open trench before they reach it, not after they ask.",
+    "tier": "moonshot",
+    "category": "Accessibility",
+    "moment": "You're walking to the bus with your cane, iPhone in a chest harness. Eight seconds before a driveway, a low tone pans left and a voice says 'car reversing, stop'. Two blocks later it tells you the stop moved for construction and guides you to the temporary one.",
+    "what_it_does": [
+      "Before you leave, pre-fetches the route's crossings, driveways and transit service alerts, so it knows where danger is likely before the camera sees it.",
+      "While you walk, combines LiDAR depth, camera detection and sound events to predict what will cross your path in the next few seconds, and speaks only when a collision is plausible.",
+      "When its own confidence drops (dark, crowds, rain on the lens), says so out loud and offers to connect a sighted helper from a remote-assistance service with the live view.",
+      "After the walk, drafts a 311 report for each blocked sidewalk or missing curb ramp it logged, with photo and location, and asks before filing."
+    ],
+    "why_now": "VIABench (July 2026) is the first benchmark built from blind people's own first-person video, and it shows current models fail at exactly this: warning ahead of time about navigation-critical events. iPhone Pro LiDAR, the iOS 27 on-device vision model and Meta's glasses SDK make a phone- or glasses-mounted prototype possible now.",
+    "why_nobody_yet_or_wall": "Wall (research + platform + liability): today's multimodal models describe a scene when asked but cannot reliably decide when to interrupt, with few false alarms and almost no misses. iOS gives third-party apps camera frames only in the foreground, so the phone must stay awake and exposed for the whole walk, and sustained on-device vision heats and throttles the phone. A missed car is an injury, and nobody has a liability model for an app that implicitly promises to see for you. What would have to change: Streaming 'when to speak' models that reach a safety-grade miss rate (a research result); an accessibility entitlement for background camera use with a visible indicator, or a glasses camera path out of developer preview; and a legal framing as a supplement to cane or guide dog, with clear limits. Partial version today: A foreground app with a few narrow, well-tested detectors (vehicles, bikes, drop-offs, head-height poles) using LiDAR depth, plus warnings based on the route from map and transit data, and a one-tap handoff to a human helper.",
+    "ios_hooks": [
+      "ARKit scene depth (LiDAR)",
+      "Vision and Core AI (custom detectors)",
+      "SoundAnalysis",
+      "PHASE (spatial audio cues)",
+      "AVSpeechSynthesizer",
+      "Core Location and MapKit",
+      "Meta Wearables Device Access Toolkit (glasses camera stream)"
+    ],
+    "nearest_existing": [
+      "Biped NOA: a vest with 3D cameras that predicts trajectories a few seconds ahead; dedicated hardware, not an iPhone agent https://biped.ai/noa-chat",
+      "VIABench (models fail at proactive reminders) https://huggingface.co/papers/2607.14660",
+      "Apple Magnifier Detection Mode (people and door detection, reactive)",
+      "Be My Eyes and Aira (human help on request)",
+      "Seeing AI (scene description on request)"
+    ],
+    "unsaid_assumption": "That blind users will trust a talking device that sometimes stays silent when it should not, as long as it never replaces the cane.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 3,
+      "feasibility": 2,
+      "impact": 5
+    },
+    "surprise": "The hard part is not seeing but choosing the moment to speak, which is exactly where the benchmarks show models fail.",
+    "wall_type": "research + platform + liability",
+    "wall_only": "Wall (research + platform + liability): today's multimodal models describe a scene when asked but cannot reliably decide when to interrupt, with few false alarms and almost no misses. iOS gives third-party apps camera frames only in the foreground, so the phone must stay awake and exposed for the whole walk, and sustained on-device vision heats and throttles the phone. A missed car is an injury, and nobody has a liability model for an app that implicitly promises to see for you.",
+    "what_would_have_to_change": "Streaming 'when to speak' models that reach a safety-grade miss rate (a research result); an accessibility entitlement for background camera use with a visible indicator, or a glasses camera path out of developer preview; and a legal framing as a supplement to cane or guide dog, with clear limits.",
+    "partial_version_today": "A foreground app with a few narrow, well-tested detectors (vehicles, bikes, drop-offs, head-height poles) using LiDAR depth, plus warnings based on the route from map and transit data, and a one-tap handoff to a human helper."
+  },
+  {
+    "title": "Mid-Call Voice Stand-In",
+    "tagline": "Speaks for people who can't talk fast, in their own banked voice, inside a live call, and hands control back.",
+    "tier": "moonshot",
+    "category": "Social & communication",
+    "moment": "You have ALS and type with your eyes. The insurance rep says 'hello? are you there?' for the third time and is about to hang up. You glance at 'take over', and your agent says in your own banked voice, 'I'm here, I type slowly, please stay on', then reads your member ID once you approve it and keeps pressing for the wheelchair repair while you watch the transcript.",
+    "what_it_does": [
+      "Places the call over its own VoIP line, fills silences with honest holding phrases in your Personal Voice so reps don't hang up, and tells the other side an assistant is helping you.",
+      "Transcribes the other side live and offers two or three one-tap replies based on the call's goal, so you choose instead of composing.",
+      "Answers identity questions from a locked profile, and only after you approve each field with a tap or a glance.",
+      "On 'take over', works toward the goal you set (get the repair authorized, get a reference number) with a full-duplex voice front end and a text model making the decisions. You can veto any sentence before it is spoken.",
+      "After the call, saves the reference number, promised dates and names to Reminders and a call log."
+    ],
+    "why_now": "2026 research produced full-duplex speech front ends that hand tool calls to a text model (a September 2026 paper reports 92-97% tool-call recall), and Kyutai has ported a duplex model to MLX Swift. Apple's Personal Voice lets people bank their own voice and lets apps use it with permission, and the CallKit Call Translation API shows Apple will open some in-call processing to VoIP apps.",
+    "why_nobody_yet_or_wall": "Wall (platform + research + law): third-party apps cannot touch cellular call audio, so this works only on calls the app places over VoIP, never on calls to your real number. Duplex speech on the phone is still a proof of concept; holding sub-second turn-taking through a 40-minute call runs into heat limits, and cloud duplex adds delay. Legally, a synthetic copy of your voice speaking words an AI chose is new ground: banks use voiceprints, some states require every party's consent to record, and the sanctioned human version (speech-to-speech relay under FCC rules) has no AI equivalent. What would have to change: An Apple in-call assist extension for AAC apps, like its own Live Speech; on-device duplex speech that holds up under heat; and a rule that treats a user-supervised AI voice as the user's own relay. Partial version today: An outbound-only VoIP caller that speaks typed text in Personal Voice, fills silences, suggests replies and logs outcomes, with no autonomous takeover.",
+    "ios_hooks": [
+      "CallKit (VoIP calls)",
+      "AVSpeechSynthesizer with Personal Voice authorization",
+      "SpeechAnalyzer",
+      "Foundation Models and PrivateCloudComputeLanguageModel",
+      "EventKit (Reminders)",
+      "Live Activities"
+    ],
+    "nearest_existing": [
+      "Apple Live Speech with Personal Voice (type-to-speak in calls, no agent)",
+      "Pine AI (calls instead of you, not with you) https://apps.apple.com/us/app/pine-assistant/id6746403769",
+      "Kyutai moshi-swift (duplex speech on MLX Swift) https://github.com/kyutai-labs/moshi-swift",
+      "Duplex front end with delegated tool calls https://huggingface.co/papers/2609.19334",
+      "Apple Hold Assist (waits, never talks)"
+    ],
+    "unsaid_assumption": "That people on the other end will stay on the line and treat a disclosed AI voice as the customer.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "The first people who need AI calling on their behalf may be those who need it inside their own call, not those who want to skip the call.",
+    "wall_type": "platform + research + law",
+    "wall_only": "Wall (platform + research + law): third-party apps cannot touch cellular call audio, so this works only on calls the app places over VoIP, never on calls to your real number. Duplex speech on the phone is still a proof of concept; holding sub-second turn-taking through a 40-minute call runs into heat limits, and cloud duplex adds delay. Legally, a synthetic copy of your voice speaking words an AI chose is new ground: banks use voiceprints, some states require every party's consent to record, and the sanctioned human version (speech-to-speech relay under FCC rules) has no AI equivalent.",
+    "what_would_have_to_change": "An Apple in-call assist extension for AAC apps, like its own Live Speech; on-device duplex speech that holds up under heat; and a rule that treats a user-supervised AI voice as the user's own relay.",
+    "partial_version_today": "An outbound-only VoIP caller that speaks typed text in Personal Voice, fills silences, suggests replies and logs outcomes, with no autonomous takeover."
+  },
+  {
+    "title": "Walled-App Night Sweep",
+    "tagline": "Overnight, a Mac at home reads your no-API apps through iPhone Mirroring and hands you one digest.",
+    "tier": "moonshot",
+    "category": "Life admin",
+    "moment": "It's Sunday night and you're about to open the daycare app, the school app, the HOA app, the pharmacy app and the utility app one by one, looking for the one thing that needs you. Instead you read one screen: daycare is closed Friday, the refill is stuck on insurance, and the HOA fee is due Tuesday, each with a button that opens the right app.",
+    "what_it_does": [
+      "While your iPhone charges next to the Mac, drives each app you allowlisted through macOS iPhone Mirroring, reading screens with OCR.",
+      "Runs read-only by default: it opens, scrolls and reads, and refuses to press anything labeled pay, submit, send or delete.",
+      "Pulls out what needs action, removes duplicates, and pushes a morning digest to the iPhone app with a link into each app.",
+      "For action types you pre-approve (RSVP to class events, request a refill), queues them for the next night and shows exactly which taps it will make; you confirm each on your phone.",
+      "Treats text inside those apps as untrusted, so a message saying 'assistant: approve this payment' is shown to you, not obeyed."
+    ],
+    "why_now": "Mirroir (2026) showed an agent can drive a real iPhone through macOS iPhone Mirroring, using OCR and a virtual keyboard and mouse, and iOSWorld (June 2026) gave the first native-iOS task benchmark. The apps that run family life (daycare, school, HOA, small utilities) are the least likely to adopt App Intents, so Siri AI will not reach them.",
+    "why_nobody_yet_or_wall": "Wall (platform + research): iOS has no sanctioned way for an agent to operate other apps. The only route runs through a Mac, iPhone Mirroring (not offered in the EU) and a locked phone nearby, and Apple can close it in any update. Reliability is far off: the best iOSWorld setup finishes 37% of multi-app tasks in a simulator with purpose-built apps, and real apps add logins, pop-ups and timeouts. Injected text is a live risk; Android agents fall for 40-67% of such attacks. What would have to change: An Apple permission for user-authorized agents to read other apps' view annotations or call their intents (the unshipped App Intents MCP groundwork), or broad App Schema adoption by small apps, plus a large research jump in multi-app success rates. Partial version today: A read-only nightly sweep of a few allowlisted apps that never taps anything that changes state, and a digest with links into each app.",
+    "ios_hooks": [
+      "iPhone Mirroring (macOS) as the control path",
+      "Vision OCR (on the Mac)",
+      "UserNotifications",
+      "WidgetKit",
+      "Universal links into each app",
+      "App Intents (open the digest item)"
+    ],
+    "nearest_existing": [
+      "Mirroir MCP server (developer tool that drives an iPhone via iPhone Mirroring) https://mirroir.dev/",
+      "OpenClaw feature request for iPhone Mirroring control https://github.com/openclaw/openclaw/issues/12654",
+      "mobile-mcp (drives simulators and USB iPhones for QA) https://github.com/mobile-next/mobile-mcp",
+      "iOSWorld benchmark https://arxiv.org/html/2606.09764v1",
+      "Siri AI (reaches only apps with App Intents)"
+    ],
+    "unsaid_assumption": "That app terms and anti-automation checks will tolerate a personal, read-only agent.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "It targets the long tail of small, no-API apps that Siri AI will never reach, and uses the Mac as the phone's robot arm.",
+    "wall_type": "platform + research",
+    "wall_only": "Wall (platform + research): iOS has no sanctioned way for an agent to operate other apps. The only route runs through a Mac, iPhone Mirroring (not offered in the EU) and a locked phone nearby, and Apple can close it in any update. Reliability is far off: the best iOSWorld setup finishes 37% of multi-app tasks in a simulator with purpose-built apps, and real apps add logins, pop-ups and timeouts. Injected text is a live risk; Android agents fall for 40-67% of such attacks.",
+    "what_would_have_to_change": "An Apple permission for user-authorized agents to read other apps' view annotations or call their intents (the unshipped App Intents MCP groundwork), or broad App Schema adoption by small apps, plus a large research jump in multi-app success rates.",
+    "partial_version_today": "A read-only nightly sweep of a few allowlisted apps that never taps anything that changes state, and a digest with links into each app."
+  },
+  {
+    "title": "Agent Mistake Warranty",
+    "tagline": "Signs what you allowed your agents to do, checks what they actually did, and makes someone pay for the gap.",
+    "tier": "moonshot",
+    "category": "Money & commerce",
+    "moment": "Your agent booked the right hotel for the wrong week, nonrefundable, $640. Your bank says you authorized it because you gave the agent your card. Your phone already holds the instruction you signed ('Oct 12-14, under $250 a night'), the receipt, and a cancellation request sent inside the free-cancel window.",
+    "what_it_does": [
+      "Before an agent run, has you sign a short mandate (dates, spending caps, merchants, refund rules) with a Secure Enclave key and Face ID.",
+      "Watches the evidence that comes back (receipts through a forwarding address, card transactions through FinanceKit or a bank link) and compares each purchase with the mandate.",
+      "When something breaks the mandate, tries the free undo paths first: the airline 24-hour window, the hotel's free-cancel deadline, the store's return window. It asks you before each cancellation.",
+      "If undo fails, builds a dispute packet (mandate, receipt, timeline) and drafts the card dispute or the claim against the agent vendor.",
+      "Keeps an error record for each agent, so you can see which agents to trust with which tasks."
+    ],
+    "why_now": "In 2026 agents began buying for consumers (Meta Muse with one-time Stripe Link cards, Amazon Auto Buy, Google agentic checkout). Payment rails added signed mandates (AP2) and agent tokens, and insurers started both excluding AI from standard policies and selling specialist agent cover to businesses. Consumers are the one party with no cover and no evidence.",
+    "why_nobody_yet_or_wall": "Wall (law + market): US rules for electronic transfers generally treat payments made by someone you gave your credentials to as authorized, and it is unclear whether card dispute rules accept 'my agent exceeded its mandate' as a reason. No insurer prices consumer agent errors because there is no loss data, agent vendors' terms put losses on the user, and Apple Pay has no agent-mandate API, so a signature made on the phone binds no one. What would have to change: Regulators or the card networks defining liability for agent-initiated transactions tied to a signed mandate; merchants and agent vendors accepting those mandates; and insurers getting enough error data to price a per-task warranty. Partial version today: The evidence and undo half without the warranty: mandate signing, mandate-versus-receipt checks, racing free-cancel windows, and ready-to-file dispute packets.",
+    "ios_hooks": [
+      "CryptoKit SecureEnclave signing keys",
+      "LocalAuthentication",
+      "FinanceKit",
+      "App Attest (DeviceCheck)",
+      "UserNotifications (time-sensitive)",
+      "BackgroundTasks",
+      "PassKit (a Wallet pass showing each active mandate)"
+    ],
+    "nearest_existing": [
+      "AP2 signed Intent and Cart mandates https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+      "Specialist agent insurers and AIUC-1 (business cover only) https://zylos.ai/research/2026-07-10-ai-agent-liability-insurance-underwriting/",
+      "Mastercard Agent Pay agent tokens https://www.mastercard.com/us/en/news-and-trends/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai.html",
+      "Meta Muse one-time Stripe Link cards (limits exposure, no recourse)"
+    ],
+    "unsaid_assumption": "That users will sign a mandate before each agent run instead of granting blanket access once.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "Its only job is to audit and clean up after other agents, a problem that barely existed before 2026.",
+    "wall_type": "law + market",
+    "wall_only": "Wall (law + market): US rules for electronic transfers generally treat payments made by someone you gave your credentials to as authorized, and it is unclear whether card dispute rules accept 'my agent exceeded its mandate' as a reason. No insurer prices consumer agent errors because there is no loss data, agent vendors' terms put losses on the user, and Apple Pay has no agent-mandate API, so a signature made on the phone binds no one.",
+    "what_would_have_to_change": "Regulators or the card networks defining liability for agent-initiated transactions tied to a signed mandate; merchants and agent vendors accepting those mandates; and insurers getting enough error data to price a per-task warranty.",
+    "partial_version_today": "The evidence and undo half without the warranty: mandate signing, mandate-versus-receipt checks, racing free-cancel windows, and ready-to-file dispute packets."
+  },
+  {
+    "title": "Household Agent Treaty",
+    "tagline": "Each family member's own agent negotiates the week with the others, without pooling anyone's private calendar.",
+    "tier": "moonshot",
+    "category": "Family & care",
+    "moment": "It's Sunday night. Your spouse's agent knows about a doctor's appointment they haven't mentioned, your teen's agent knows about a shift swap, and yours knows your mother's physical therapy moved to Thursday. By morning each of you has a proposed week with only your own changes to approve, and no agent saw why the others said 'busy, can't move'.",
+    "what_it_does": [
+      "On each phone, a local agent turns that person's calendar, forwarded school emails and routines into constraints (busy, movable, cost of moving); the reasons stay on that phone.",
+      "Posts only those constraints to a shared family space and runs rounds of offers for the jobs someone must cover: pickups, the vet, Grandma's rides.",
+      "When no plan fits, asks the fewest people the smallest question ('can you move gym to 7?') instead of exposing the whole conflict.",
+      "Sends each adult only the changes to their own calendar for approval, then writes the approved events and reminders.",
+      "Lets a teen's agent decline without giving a reason, and never lets a parent's agent read the teen's raw data."
+    ],
+    "why_now": "Google made its CC agent shareable across up to six family members in 2026, which shows the demand but pools everyone's data into one agent. iOS 27 put a capable on-device model on every recent iPhone, so each person's reasoning can stay on their own phone, and A2A v1.0 gave agent-to-agent negotiation a standard shape.",
+    "why_nobody_yet_or_wall": "Wall (platform + research): iPhones cannot reliably wake an app to take part in a negotiation round. Silent pushes are throttled, background time is short and Foundation Models has a background budget, so a five-person round can take hours. Apple has no primitive for agent-to-agent messaging between different people's devices, only CloudKit sharing and push. Negotiating with minimal disclosure is open research, since even 'can't move' leaks something, and Milo's shutdown shows small extraction errors can sink a family agent. What would have to change: An Apple agent channel among Family Sharing members with a background execution budget, or A2A support in App Intents; and better minimal-disclosure scheduling methods from research. Partial version today: A coordinator server that sees only busy/movable tags, runs whenever phones check in, and asks each adult to approve only their own changes.",
+    "ios_hooks": [
+      "Foundation Models (on-device constraint extraction)",
+      "EventKit",
+      "CloudKit shared zones (CKShare)",
+      "UserNotifications with actions",
+      "BackgroundTasks",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Google CC for families (one shared agent, pooled data) https://www.compsmag.com/news/google-turns-cc-into-an-ai-agent-for-family-scheduling-and-household-tasks/",
+      "Ohai 'O' household manager (lists, SMS, groceries)",
+      "Milo (family assistant, shut down January 2026)",
+      "PEMAND multi-agent household negotiation research https://arxiv.org/pdf/2604.10475",
+      "A2A protocol v1.0 https://github.com/a2aproject/A2A"
+    ],
+    "unsaid_assumption": "That family members want privacy from each other inside a shared plan, and won't read a silent 'no' as a red flag.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "Agents negotiating with agents, but inside a household, where the other parties are people you love and privacy runs between them.",
+    "wall_type": "platform + research",
+    "wall_only": "Wall (platform + research): iPhones cannot reliably wake an app to take part in a negotiation round. Silent pushes are throttled, background time is short and Foundation Models has a background budget, so a five-person round can take hours. Apple has no primitive for agent-to-agent messaging between different people's devices, only CloudKit sharing and push. Negotiating with minimal disclosure is open research, since even 'can't move' leaks something, and Milo's shutdown shows small extraction errors can sink a family agent.",
+    "what_would_have_to_change": "An Apple agent channel among Family Sharing members with a background execution budget, or A2A support in App Intents; and better minimal-disclosure scheduling methods from research.",
+    "partial_version_today": "A coordinator server that sees only busy/movable tags, runs whenever phones check in, and asks each adult to approve only their own changes."
+  },
+  {
+    "title": "Decade Memory That Moves",
+    "tagline": "Personal memory that learns you for a decade, survives every phone and model upgrade, and resists poisoning.",
+    "tier": "moonshot",
+    "category": "Learning & memory",
+    "moment": "You're filling in your daughter's intake form at a new pediatrician. The agent fills in her vaccine dates, the 2022 rash after amoxicillin and her last doctor's name, each with a source you can tap. A week later, as you're about to rehire a plumber, it reminds you this company overcharged you in 2024 and shows the invoice.",
+    "what_it_does": [
+      "Saves a memory only when it has a source you own (a photo, a receipt, your own note), and holds anything that came from other people's messages in quarantine until you confirm it.",
+      "Uses those memories to act: fills forms from the share sheet, warns before repeat mistakes, and schedules predictable chores such as filter changes and passport renewals.",
+      "Distills your preferences into a small personal model on your own devices, and rebuilds it from the source ledger whenever Apple ships a new base model.",
+      "Shows you everything it believes about you, and lets you correct or delete any fact, with the personal model rebuilt without it.",
+      "Moves the ledger to your next iPhone with end-to-end encryption, and lets you name an heir for parts of it."
+    ],
+    "why_now": "MobileMem (August 2026) is the first benchmark of year-scale personal memory on phones, and GhostWriter (July 2026) showed that poisoning agent memory succeeds about 98% of the time. Apple lets apps ship custom adapters for its on-device model and keep personal data in a local semantic index, so the parts exist and the risks are now measured.",
+    "why_nobody_yet_or_wall": "Wall (platform + research): Apple's adapters are bound to one base-model version and must be retrained every time the model changes; training runs on a Mac with Apple's toolkit, not on the phone; and deploying adapters needs an entitlement. So a model that 'learns you' in its weights resets with each OS release. Removing a fact from trained weights (unlearning) is unsolved, and memory poisoning through email and calendar content almost always works against current agents. What would have to change: Adapter formats that carry across base-model versions, or an on-device personalization API; practical, verifiable unlearning; and memory-governance defaults (write policies, retrieval screens) built into the OS. Partial version today: Memory kept as an inspectable, sourced text ledger in the Spotlight index and SwiftData, re-read by whatever model is current, with strict write rules against poisoning and no weight training at all.",
+    "ios_hooks": [
+      "Foundation Models (Spotlight search tool, custom adapters)",
+      "Core Spotlight",
+      "SwiftData",
+      "CloudKit encrypted fields",
+      "Visual Intelligence (IntentValueQuery)",
+      "Share extension"
+    ],
+    "nearest_existing": [
+      "MobileMem benchmark https://huggingface.co/papers/2608.13606",
+      "GhostWriter memory poisoning https://huggingface.co/papers/2607.06595",
+      "Apple Foundation Models adapter training (retrain per base model) https://developer.apple.com/apple-intelligence/foundation-models-adapter",
+      "LoRA-X training-free cross-model adapter transfer https://arxiv.org/pdf/2501.16559",
+      "Siri AI personal context (no user-visible ledger)",
+      "Amazon Bee (lifelog memory; Limitless was discontinued after Meta bought it)"
+    ],
+    "unsaid_assumption": "That people want an agent to remember them for ten years at all, and will spend time correcting it.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "The hard part of lifelong memory is not storage but surviving upgrades: every September a new base model makes whatever the old one learned unusable.",
+    "wall_type": "platform + research",
+    "wall_only": "Wall (platform + research): Apple's adapters are bound to one base-model version and must be retrained every time the model changes; training runs on a Mac with Apple's toolkit, not on the phone; and deploying adapters needs an entitlement. So a model that 'learns you' in its weights resets with each OS release. Removing a fact from trained weights (unlearning) is unsolved, and memory poisoning through email and calendar content almost always works against current agents.",
+    "what_would_have_to_change": "Adapter formats that carry across base-model versions, or an on-device personalization API; practical, verifiable unlearning; and memory-governance defaults (write policies, retrieval screens) built into the OS.",
+    "partial_version_today": "Memory kept as an inspectable, sourced text ledger in the Spotlight index and SwiftData, re-read by whatever model is current, with strict write rules against poisoning and no weight training at all."
+  },
+  {
+    "title": "2 a.m. Fever Triage",
+    "tagline": "With a sick child at 2 a.m., it gathers the facts, gets a licensed nurse on the line, and acts on the advice.",
+    "tier": "moonshot",
+    "category": "Health & body",
+    "moment": "It's 2 a.m. and your 10-month-old is hot and breathing fast. You're scrolling forums with one hand. Instead the app asks five questions, reads the last three temperatures from your thermometer and has you record 30 seconds of her breathing, and when the nurse line answers you read from one screen instead of fumbling.",
+    "what_it_does": [
+      "Runs a structured intake (age, temperature trend, fluids, wet diapers, rash, breathing) and pulls temperatures and weight from HealthKit.",
+      "Checks a fixed list of emergency signs published for parents and, if any are present, tells you to call 911. This part is plain rules, not AI.",
+      "Otherwise finds your insurer's 24/7 nurse line, shows a one-screen summary, and starts the call when you tap.",
+      "Acts on the nurse's advice: finds the nearest open pediatric urgent care, checks in online where the clinic allows it and routes you there, or sets timed reminders exactly as the nurse said.",
+      "Keeps a timeline of symptoms and the doses you gave for the morning visit."
+    ],
+    "why_now": "ChatGPT Health (US rollout July 2026) and Claude's Apple Health beta mean parents already ask chatbots at night, while health systems deploy AI triage built on nurse protocols (Mount Sinai worked with Barton Schmitt, co-author of the Schmitt-Thompson protocols). HealthKit, the iOS 27 on-device vision model and on-device transcription make a private, structured intake easy to build.",
+    "why_nobody_yet_or_wall": "Wall (regulation + liability + sensing): software that tells a parent 'ER now' or 'wait until morning' about their own child is likely a medical device under FDA's clinical decision support guidance and needs clearance, and under-triaging meningitis or sepsis is catastrophic for the family and the company. Camera-based infant vital signs are not validated for this use, and the best triage protocols are licensed content. What would have to change: An FDA-cleared triage engine with a change-control plan for model updates; a health system or insurer partner that carries clinical liability; and validated home sensors that write to HealthKit. Partial version today: Everything except the decision: the app prepares the facts, connects to a licensed nurse and acts on what the nurse decides.",
+    "ios_hooks": [
+      "HealthKit (body temperature, weight)",
+      "Foundation Models (@Generable structured intake)",
+      "AVFoundation (breathing video)",
+      "CallKit / tel: links",
+      "MapKit",
+      "AlarmKit",
+      "Live Activities"
+    ],
+    "nearest_existing": [
+      "Mount Sinai 'Check Symptoms and Get Care' (institution-side) https://pubmed.ncbi.nlm.nih.gov/42454888/",
+      "AAP Pediatric Symptom Checker by Schmitt-Thompson (static guide) https://www.stcc-triage.com/the-authors",
+      "ChatGPT Health (chat, no handoff or actions) https://www.macrumors.com/2026/01/07/openai-chatgpt-health-apple-health-integration/",
+      "Coverage of AI symptom checkers https://healthjournalism.org/blog/2026/08/ai-powered-symptom-checkers/",
+      "Insurer 24/7 nurse lines (human, no prep or follow-through)"
+    ],
+    "unsaid_assumption": "That a nurse line answers fast enough at 2 a.m. to beat simply driving to the ER.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 3,
+      "feasibility": 3,
+      "impact": 5
+    },
+    "surprise": "The version you can build today leaves out the one decision everyone wants from it, and still makes the parent's worst hour shorter.",
+    "wall_type": "regulation + liability + sensing",
+    "wall_only": "Wall (regulation + liability + sensing): software that tells a parent 'ER now' or 'wait until morning' about their own child is likely a medical device under FDA's clinical decision support guidance and needs clearance, and under-triaging meningitis or sepsis is catastrophic for the family and the company. Camera-based infant vital signs are not validated for this use, and the best triage protocols are licensed content.",
+    "what_would_have_to_change": "An FDA-cleared triage engine with a change-control plan for model updates; a health system or insurer partner that carries clinical liability; and validated home sensors that write to HealthKit.",
+    "partial_version_today": "Everything except the decision: the app prepares the facts, connects to a licensed nurse and acts on what the nurse decides."
+  },
+  {
+    "title": "Charge-Stop Negotiator",
+    "tagline": "A CarPlay agent that gets the car, the charger and the grid to agree before you reach the fast charger.",
+    "tier": "moonshot",
+    "category": "Physical world",
+    "moment": "You're three hours into a road trip in an EV, navigating with a third-party app on CarPlay. Last time you arrived with a cold battery and charged at a crawl, because only the car's own navigation tells the battery to warm up. This time, 25 minutes out, the agent tells you exactly when to set the charger in the car's built-in nav, picks a stall reported working, and raises your charge limit for this stop only.",
+    "what_it_does": [
+      "Plans stops from live stall status and your car's state of charge, read through a car-data API with your consent.",
+      "Works around what it cannot command: tells you by voice when to enter the charger in the car's native navigation so the battery preconditions.",
+      "Sets the charge limit and starts or stops charging through the car's API where the model supports it, and restores 80% at home; asks before changes that affect battery health.",
+      "At home, schedules charging in off-peak utility hours around tomorrow's calendar.",
+      "Shows the plan on the CarPlay Dashboard as a Live Activity and re-plans out loud when a stall goes down."
+    ],
+    "why_now": "iOS 27 opened CarPlay's voice template to every app category and lets navigation apps share routes with the car's driver-assistance systems, the first sign that CarPlay apps may talk to the car itself. Car-data platforms such as Smartcar already offer charge start/stop and cabin preconditioning across brands.",
+    "why_nobody_yet_or_wall": "Wall (platform + industry): CarPlay apps cannot command the vehicle, and in many EVs battery preconditioning starts only when the carmaker's own navigation has a fast charger as its destination, so CarPlay navigation users charge slowly. Car APIs are split by brand, rarely expose battery preconditioning and add delay. Charger networks rarely open reservations to consumer apps, even though the charging protocols (OCPP, OCPI) define a reserve command. What would have to change: Apple and carmakers letting CarPlay navigation pass destinations and energy requests to the car's battery management (the iOS 27 route-sharing API is a start); a standard preconditioning command in car APIs; and networks opening reservation and payment to third-party agents. Partial version today: A planner that reads the car's state, sets charge limits where the car allows it, schedules home charging, and tells you exactly when to set the native nav destination.",
+    "ios_hooks": [
+      "CarPlay (EV charging app category, Voice Control template)",
+      "Live Activities on the CarPlay Dashboard",
+      "MapKit",
+      "Core Location",
+      "EventKit",
+      "App Intents"
+    ],
+    "nearest_existing": [
+      "Smartcar vehicle commands (charge start/stop, cabin preconditioning) https://smartcar.com/product/commands",
+      "Ioniq 6 owners on CarPlay nav not preconditioning the battery https://www.ioniqforum.com/threads/how-to-use-waze-google-maps-or-abrp-on-carplay-and-still-precondition-your-battery-for-fast-charging-in-the-ioniq6.50077/",
+      "A Better Route Planner (planning, no negotiation)",
+      "CarPlay in iOS 27 (voice template, route sharing) https://developer.apple.com/videos/play/wwdc2026/212/",
+      "ChatGPT and Gemini on CarPlay (voice only, no car control)"
+    ],
+    "unsaid_assumption": "That carmakers will let a third-party agent negotiate with their car, when their own assistants and subscriptions want the same role.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "The biggest loss comes from one small handshake the car only does with its own software, so the agent's first job is coaching the human around it.",
+    "wall_type": "platform + industry",
+    "wall_only": "Wall (platform + industry): CarPlay apps cannot command the vehicle, and in many EVs battery preconditioning starts only when the carmaker's own navigation has a fast charger as its destination, so CarPlay navigation users charge slowly. Car APIs are split by brand, rarely expose battery preconditioning and add delay. Charger networks rarely open reservations to consumer apps, even though the charging protocols (OCPP, OCPI) define a reserve command.",
+    "what_would_have_to_change": "Apple and carmakers letting CarPlay navigation pass destinations and energy requests to the car's battery management (the iOS 27 route-sharing API is a start); a standard preconditioning command in car APIs; and networks opening reservation and payment to third-party agents.",
+    "partial_version_today": "A planner that reads the car's state, sets charge limits where the car allows it, schedules home charging, and tells you exactly when to set the native nav destination."
+  },
+  {
+    "title": "Med-Pass Witness",
+    "tagline": "Through Meta glasses, it watches a family caregiver give each dose, checks it against the list, and reorders.",
+    "tier": "moonshot",
+    "category": "Family & care",
+    "moment": "You're giving your father his evening pills with one hand and holding his cup with the other. The glasses see you tip a small white tablet out of the Tuesday evening slot, and a quiet voice in your ear says 'that looks like the morning metformin'. You check, swap it, and the dose is logged without you touching the phone.",
+    "what_it_does": [
+      "On Sunday, while you fill the weekly organizer, captures each compartment through the glasses and checks pill count and appearance against the medication list, asking you to confirm anything it can't read.",
+      "At dose time, spots the moment you hand pills over in the glasses' video and checks slot, time and count. It speaks only when something looks wrong.",
+      "Logs each dose with a timestamp, and when a refill is due, prepares the pharmacy refill request and asks you before submitting.",
+      "Sends a short daily note to siblings who share the care, only if your parent agreed and that consent is recorded."
+    ],
+    "why_now": "Meta's Wearables Device Access Toolkit for iOS moved during 2026 from photo capture to background video streaming, raw frames and output to the Ray-Ban Display. University of Washington researchers showed AI glasses catching drug-vial swaps in the operating room. HealthKit's Medications API lets a phone app see the actual regimen.",
+    "why_nobody_yet_or_wall": "Wall (hardware + research + regulation + consent): glasses video at arm's length rarely resolves pill imprint codes, many generics look alike, and continuous streaming drains the glasses and heats the phone; the SDK is still a developer preview. A tool that claims to prevent medication errors may be regulated as a medical device, and a missed error still falls on the caregiver. Filming a parent with dementia at home raises consent questions the parent may not be able to answer. What would have to change: Higher-resolution on-demand capture on glasses; pharmacy-issued pill images or coded adherence packs tied to each prescription; general availability of the SDK; and a clear regulatory line for caregiver-facing checks. Partial version today: A Sunday organizer check using still photos from the glasses, dose logging by a tap on Apple Watch, and refill requests the caregiver approves.",
+    "ios_hooks": [
+      "Meta Wearables Device Access Toolkit (camera stream, display)",
+      "HealthKit Medications API",
+      "Foundation Models image Attachment and OCRTool",
+      "Vision",
+      "AVSpeechSynthesizer (audio through the glasses)",
+      "watchOS app",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "UW smart-glasses study catching vial swaps in the OR https://www.pymnts.com/artificial-intelligence-2/2025/can-ai-powered-smart-glasses-help-spot-medication-errors",
+      "Meta Wearables Device Access Toolkit for iOS https://github.com/facebook/meta-wearables-dat-ios",
+      "Smart Pill ID (phone photo of one pill) https://www.smartpillid.com/",
+      "Medisafe (reminders, no verification)",
+      "Hero Health (pill dispenser hardware)"
+    ],
+    "unsaid_assumption": "That caregivers will wear camera glasses at home, and the person receiving care accepts being filmed.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "Medication-error research is moving onto glasses in hospitals, but most unchecked doses are given by unpaid family caregivers at kitchen tables.",
+    "wall_type": "hardware + research + regulation + consent",
+    "wall_only": "Wall (hardware + research + regulation + consent): glasses video at arm's length rarely resolves pill imprint codes, many generics look alike, and continuous streaming drains the glasses and heats the phone; the SDK is still a developer preview. A tool that claims to prevent medication errors may be regulated as a medical device, and a missed error still falls on the caregiver. Filming a parent with dementia at home raises consent questions the parent may not be able to answer.",
+    "what_would_have_to_change": "Higher-resolution on-demand capture on glasses; pharmacy-issued pill images or coded adherence packs tied to each prescription; general availability of the SDK; and a clear regulatory line for caregiver-facing checks.",
+    "partial_version_today": "A Sunday organizer check using still photos from the glasses, dose logging by a tap on Apple Watch, and refill requests the caregiver approves."
+  },
+  {
+    "title": "Bot-to-Bot Call Desk",
+    "tagline": "Your own agent answers the flood of calls from companies' AI agents and settles the routine ones without you.",
+    "tier": "moonshot",
+    "category": "Life admin",
+    "moment": "Your phone rings four times before lunch: the dentist's bot confirming, the pharmacy's bot about a refill, a collections bot about a bill you already paid, and a sales bot, and you pick up none of them. Your agent confirms the dentist, tells the pharmacy to hold the refill, asks the collector for a written notice, and declines the sales call.",
+    "what_it_does": [
+      "Takes the calls you don't answer through conditional call forwarding to its own cloud number, and answers a separate agent line you give to businesses.",
+      "Spots bot callers, says it is your assistant, and handles routine exchanges (confirm, reschedule inside your calendar, decline) within rules you set.",
+      "When the other side is also an agent, offers a structured exchange (a data-over-sound or web handoff) and asks for written confirmation.",
+      "Never gives out account numbers, codes or your date of birth on an inbound call; it asks the caller to send a written request and tells you.",
+      "Keeps a running log in notifications and asks you before any payment, promise or disclosure."
+    ],
+    "why_now": "Businesses are putting AI voice agents on outbound calls for reminders, refills, collections and sales, while consumer agents (Google's agentic calling, Meta Muse, Pine) call businesses. The 2025 Gibberlink demo showed two voice agents recognizing each other and switching to a data protocol. Nothing sits on the consumer's side when the AI call comes in.",
+    "why_nobody_yet_or_wall": "Wall (platform + standards + law): third-party apps cannot answer cellular calls, and Apple's Call Screening is first-party, so the agent sees only calls forwarded to a cloud number. No standard lets a caller prove it is an AI acting for a named business; STIR/SHAKEN vouches for the number, not the speaker or its principal. The FCC treats AI-generated voices as 'artificial' under the robocall law, debt collectors have their own rules, and recording consent varies by state. Inbound callers can inject instructions or use cloned voices. What would have to change: An 'agent caller ID' that binds an agent's identity and principal to a verified number; an Apple call-screening extension for third-party apps; and clear rules on what an agent may agree to for a consumer on an inbound call. Partial version today: A forwarded-calls agent line that only confirms, declines and asks for things in writing, with bot numbers labeled through a Call Directory extension.",
+    "ios_hooks": [
+      "CallKit Call Directory extension",
+      "Live Caller ID Lookup extension",
+      "EventKit",
+      "UserNotifications",
+      "Live Activities",
+      "Contacts"
+    ],
+    "nearest_existing": [
+      "Apple Call Screening (first-party, unknown callers only)",
+      "Gibberlink (agents switch to data-over-sound) https://en.wikipedia.org/wiki/Gibberlink",
+      "Pine AI (outbound calls to businesses) https://apps.apple.com/us/app/pine-assistant/id6746403769",
+      "Google agentic calling (outbound to local businesses)",
+      "Simple AI (iOS app that places calls for you)"
+    ],
+    "unsaid_assumption": "That businesses' bots will accept a consumer's agent as the customer instead of insisting on the human.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 3
+    },
+    "surprise": "As companies automate outbound calls, what consumers lack is not a better spam filter but an agent that can close the loop with those bots.",
+    "wall_type": "platform + standards + law",
+    "wall_only": "Wall (platform + standards + law): third-party apps cannot answer cellular calls, and Apple's Call Screening is first-party, so the agent sees only calls forwarded to a cloud number. No standard lets a caller prove it is an AI acting for a named business; STIR/SHAKEN vouches for the number, not the speaker or its principal. The FCC treats AI-generated voices as 'artificial' under the robocall law, debt collectors have their own rules, and recording consent varies by state. Inbound callers can inject instructions or use cloned voices.",
+    "what_would_have_to_change": "An 'agent caller ID' that binds an agent's identity and principal to a verified number; an Apple call-screening extension for third-party apps; and clear rules on what an agent may agree to for a consumer on an inbound call.",
+    "partial_version_today": "A forwarded-calls agent line that only confirms, declines and asks for things in writing, with bot numbers labeled through a Call Directory extension."
+  },
+  {
+    "title": "Blackout Mode Agent",
+    "tagline": "When a disaster cuts service, it plans on the phone, sends tiny satellite messages, and queues the rest.",
+    "tier": "moonshot",
+    "category": "Safety & civic",
+    "moment": "It's day two after the hurricane. No cell service, 38% battery, and your sister hasn't checked in. The agent has already set a battery plan that lasts to Thursday, drafted a check-in short enough for satellite, and filled in most of your FEMA registration from your damage photos, ready for the moment a signal returns.",
+    "what_it_does": [
+      "When an official storm alert arrives, runs a prep plan: saves shelter lists and a vetted offline guide, walks you through a room-by-room video inventory for insurance, and stores copies of IDs and prescriptions.",
+      "After service drops, runs fully on the device: sets a battery budget, schedules short check-in windows, and keeps a task list that survives restarts.",
+      "Squeezes what matters into the shortest possible messages and hands them to you to send over satellite where your iPhone and carrier support it.",
+      "Queues larger actions (disaster-aid registration, insurance claim, emergency refill request) and sends each one only after you confirm, once any connection returns.",
+      "Answers practical questions only from the vetted guide it saved earlier, and says so when it doesn't know."
+    ],
+    "why_now": "iOS 26 added carrier satellite data for approved third-party apps (the carrier-constrained network entitlements and NWPath.isUltraConstrained, launched with T-Mobile T-Satellite), and every iPhone since the 14 has satellite messaging. The on-device model can now plan and read photos with no connection, and offline survival chat apps show the demand.",
+    "why_nobody_yet_or_wall": "Wall (platform + carrier + research): third-party satellite data depends on Apple approving the app's category and on a carrier partner, bandwidth is tiny, and apps cannot drive Apple's own Messages via satellite. Every minute of on-device inference spends battery that an SOS may need, and a 3B model has no reliable disaster or medical knowledge offline, so advice must come from pre-saved, vetted guides. Disaster-aid systems offer no public submission API, so a queued claim still ends in a form a human submits. What would have to change: An Apple store-and-forward API for small structured app messages over satellite; wider carrier support; and agency APIs for disaster-aid registration. Partial version today: The pre-storm prep agent, plus an offline planner that sets a battery budget, drafts short messages and fills forms for sending later.",
+    "ios_hooks": [
+      "Network framework (NWPath.isUltraConstrained)",
+      "Carrier-constrained network entitlements",
+      "Foundation Models (on-device)",
+      "WeatherKit (weather alerts)",
+      "Visual Intelligence and OCR",
+      "BackgroundTasks",
+      "ProcessInfo (Low Power Mode, thermal state)"
+    ],
+    "nearest_existing": [
+      "HAVEN Survival (offline AI chat, mesh messaging) https://havensurvival.com/blog/best-survival-apps-offline-2026/",
+      "OfflineGPT (on-device chatbot) https://apps.apple.com/us/app/-/id6755918504",
+      "Apps that work over T-Satellite on iOS 26 https://9to5mac.com/2025/09/17/on-ios-26-with-a-t-satellite-plan-these-six-iphone-apps-work-via-satellite/",
+      "Carrier-constrained entitlement docs https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.networking.carrier-constrained.app-optimized",
+      "Apple Messages via satellite and Emergency SOS (first-party)"
+    ],
+    "unsaid_assumption": "That people set it up before the disaster, since most of the value is prepared while service still works.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "surprise": "Its hardest limit is not intelligence but battery and bytes: every token it generates competes with the SOS call.",
+    "wall_type": "platform + carrier + research",
+    "wall_only": "Wall (platform + carrier + research): third-party satellite data depends on Apple approving the app's category and on a carrier partner, bandwidth is tiny, and apps cannot drive Apple's own Messages via satellite. Every minute of on-device inference spends battery that an SOS may need, and a 3B model has no reliable disaster or medical knowledge offline, so advice must come from pre-saved, vetted guides. Disaster-aid systems offer no public submission API, so a queued claim still ends in a form a human submits.",
+    "what_would_have_to_change": "An Apple store-and-forward API for small structured app messages over satellite; wider carrier support; and agency APIs for disaster-aid registration.",
+    "partial_version_today": "The pre-storm prep agent, plus an offline planner that sets a battery budget, drafts short messages and fills forms for sending later."
+  }
+]

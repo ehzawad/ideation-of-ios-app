@@ -1,0 +1,477 @@
+[
+  {
+    "title": "Errand Immersion",
+    "tagline": "Turns errands you already have into target-language practice, preps the phrases, then debriefs you.",
+    "tier": "whitespace",
+    "category": "Learning & memory",
+    "moment": "You have a 140-day Speak streak in Portuguese, but you still freeze with real people. On Sunday the agent sees you need a haircut and a birthday cake this week and finds a Brazilian barber and bakery on your commute. On Thursday, as you walk up to the bakery, your Watch shows the six phrases you rehearsed that morning.",
+    "what_it_does": [
+      "Reads your Calendar and Reminders and proposes 3-4 'practice errands' for the week: things you would do anyway, moved to places or people that use your target language (a bakery, a barber, a call to your Lisbon hotel about next month's booking). It asks you to accept, swap or skip each one.",
+      "Finds candidate places from MapKit search, spots you tagged yourself and review-language signals, then asks you to confirm the place really serves in that language before planning around it.",
+      "Writes a 5-minute pre-brief for each errand (the exact phrases, likely replies, one 'please repeat' repair line), schedules it into a calendar gap, and sets a geofence that puts the phrase card on your Lock Screen and Watch as a Live Activity when you arrive.",
+      "Afterwards it asks for a 30-second voice debrief in your own voice only (it never records the other person), transcribes it on-device and pulls out the words you were missing.",
+      "Rebuilds next week's plan: a harder errand if it went well, an AI role-play rehearsal if you froze, and a draft booking with a human tutor or exchange partner when you stall. You approve any booking."
+    ],
+    "why_now": "AI speaking practice went mainstream: Duolingo's Video Call moved into Super in February 2026 and Speak competes to replace human tutors. iOS 26's SpeechAnalyzer and the on-device Foundation Models make private debriefs free, and CLMonitor plus Live Activities on the Watch make just-in-time cue cards practical.",
+    "why_nobody_yet_or_wall": "Tutor apps are content products measured by minutes and streaks inside the app. Planning practice in the real world is messy: knowing where a language is spoken, dealing with safety, and having no way to verify the outcome. None of it adds in-app engagement, so the incumbents stop at the edge of their own app.",
+    "ios_hooks": [
+      "EventKit",
+      "MapKit (MKLocalSearch)",
+      "Core Location (CLMonitor geofences)",
+      "ActivityKit Live Activities (Watch Smart Stack)",
+      "Speech (SpeechAnalyzer / SpeechTranscriber)",
+      "Foundation Models",
+      "App Intents (\"brief me for the bakery\")",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Duolingo Video Call (https://blog.duolingo.com/video-call/)",
+      "Speak (https://www.speak.com/)",
+      "Gliglish role-play (https://gliglish.com/)",
+      "Tandem / HelloTalk language exchange"
+    ],
+    "unsaid_assumption": "That target-language speakers or businesses fit into the learner's normal week. That holds in big cities and fails in many towns, where the fallback is real calls abroad and exchanges.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The curriculum is your to-do list: the tutor stops teaching phrases in the abstract and starts arranging real moments where you have to use them."
+  },
+  {
+    "title": "Plateau Broker",
+    "tagline": "Tracks your practice videos, notices when you stop improving, and books a short human review.",
+    "tier": "whitespace",
+    "category": "Learning & memory",
+    "moment": "You are 41, teaching yourself a tennis serve from YouTube and filming on a tripod twice a week. For three weeks your toss has drifted right and nothing fixes it. The agent spots the plateau in your clips, finds a coach who does async video reviews for $25, and shows you the 60-second clip and the two questions it wants to send.",
+    "what_it_does": [
+      "After each session it analyzes the clips you filmed (Vision body and hand pose, image input to the on-device model, tempo and pitch for instruments) against 2-3 measures you chose. The analysis runs as a background task, so it finishes after you put the phone away.",
+      "Plans the next sessions: picks drills, puts 20-minute blocks into calendar gaps, and gives you a camera-angle checklist so clips stay comparable from week to week.",
+      "Detects a plateau (no change in any measure over N sessions) or a movement pattern that could cause injury. At that point it stops coaching you itself and proposes a human review instead.",
+      "Finds coaches who do async video review, cuts a short clip with timestamps and two precise questions, and asks you to approve the coach and the price. You pay through the coach's own checkout.",
+      "Turns the coach's reply into scheduled drills and updated measures, and tells you two weeks later whether the advice actually moved the numbers."
+    ],
+    "why_now": "iOS 27's on-device model takes image attachments, Vision offers 3D body pose, and BGContinuedProcessingTask lets heavy video analysis finish in the background. The free PCC tier covers the reasoning. Paid async video review from coaches and teachers is now common in sports and music.",
+    "why_nobody_yet_or_wall": "Camera coaching apps are built for one sport or instrument and pitch themselves as a replacement for the coach. Coach platforms and lesson assistants are sold to teachers. Nobody works for the adult hobbyist with no teacher and decides when the AI is enough and when a human is worth paying.",
+    "ios_hooks": [
+      "AVFoundation",
+      "Vision (body / hand pose)",
+      "Foundation Models (image Attachment)",
+      "BackgroundTasks (BGContinuedProcessingTask)",
+      "PhotoKit",
+      "EventKit",
+      "ActivityKit",
+      "HealthKit (workouts, training load)"
+    ],
+    "nearest_existing": [
+      "Arco, AI assistant for music lessons (https://www.arco.app/)",
+      "Better Practice (https://betterpracticeapp.com/)",
+      "SwingVision (tennis)",
+      "HomeCourt (basketball)",
+      "CoachNow (coach-side video review)"
+    ],
+    "unsaid_assumption": "That a plateau shows up in something a phone camera can measure. Many skill problems, such as tone, touch and feel, do not.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The agent's best move is knowing its own limit: it treats a human expert's time as scarce and spends it at the exact moment AI coaching stops working."
+  },
+  {
+    "title": "Dread Opener",
+    "tagline": "Reads the letter you've avoided for weeks, tells you how bad it really is, and does all but the last tap.",
+    "tier": "whitespace",
+    "category": "Mind & focus",
+    "moment": "The envelope from the county has sat on your counter for three weeks. You photograph it without reading it. Ten seconds later: 'Not scary. It's a $38 late fee on the dog license. I've done the rest; you have two minutes left.'",
+    "what_it_does": [
+      "Takes the dreaded thing in any form (a scanned letter, a forwarded email, a shared PDF or a voicemail transcript) and reads it for you first. It replies with one calm line: what it is, the worst realistic consequence, the deadline, and how many minutes of your time it needs.",
+      "Does every step it can: fills the PDF form, drafts the email or appeal, books the appointment, and calls the office through cloud telephony to ask the one open question. You approve the call script first.",
+      "Shrinks what's left to one kernel (sign, Face ID, say yes) and shows it as a Live Activity with a 3-minute timer. For those minutes it blocks the distraction apps you picked using ManagedSettings.",
+      "Watches for avoidance. If you snooze the kernel twice it changes tactics: splits the step smaller, moves it to your usual good hour, or drafts a FaceTime body-double invite to a friend you chose.",
+      "Keeps a 'dread pile' with a running total of human minutes left, and asks before anything leaves the phone."
+    ],
+    "why_now": "VisionKit plus the on-device model can read sensitive mail privately. Cloud calling agents (Pine, Google's calling) have shown businesses will take AI calls. FamilyControls shields and LiveActivityIntent buttons let the final step happen from the Lock Screen.",
+    "why_nobody_yet_or_wall": "ADHD apps (Shelpful, Saner, planners) break tasks down and remind. Admin agents (alfred_, Marblism) target inbox-heavy professionals. Neither treats the emotional first step, opening the thing, as the actual job, and neither measures success in human minutes left.",
+    "ios_hooks": [
+      "VisionKit (VNDocumentCameraViewController)",
+      "Foundation Models",
+      "PDFKit",
+      "FamilyControls / ManagedSettings / DeviceActivity",
+      "ActivityKit + LiveActivityIntent",
+      "App Intents",
+      "Share extension",
+      "LocalAuthentication"
+    ],
+    "nearest_existing": [
+      "Shelpful (https://apps.apple.com/py/app/shelpful-ai-for-adhd-tasks/id6741499362)",
+      "alfred_ (https://get-alfred.ai/blog/ai-agent-for-adhd)",
+      "Saner.AI (https://www.saner.ai/)",
+      "Marblism (https://www.marblism.com/blog/best-ai-tools-for-adhd)",
+      "Goblin Tools"
+    ],
+    "unsaid_assumption": "That avoidance is mostly about dreading an unclear first step, not the work itself. When the last step is itself the dreaded part (a hard conversation), shrinking the task does not help.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "surprise": "For many people the hardest step is opening the envelope, so the agent's first job is to read your mail before you do."
+  },
+  {
+    "title": "Accommodations Autopilot",
+    "tagline": "Finds every exam in your syllabi and books your extended-time seat before the testing center's deadline.",
+    "tier": "whitespace",
+    "category": "Accessibility",
+    "moment": "You have ADHD and approved 1.5x exam time, but last term you missed the testing center's 5-business-day window twice and sat a midterm without accommodations. This term you share your five syllabi once, and by Friday a Live Activity reads: '3 exams booked, 1 needs your tap by Wednesday.'",
+    "what_it_does": [
+      "Pulls every exam, quiz and final from your syllabi (share sheet or document scanner) and your Canvas calendar feed, on-device, and asks you to confirm any date it is unsure of.",
+      "Works out each booking deadline from your school's testing-center rules (read once from the policy page and confirmed by you) and schedules a request task for every exam.",
+      "Prefills each request (course, section, date, time, approved accommodations) and deep-links you into the school's portal (AIM, Accommodate), so booking takes one tap. It drafts the email that sends your accommodation letter to each professor, and you approve every send.",
+      "Watches for confirmation emails and for date changes in Canvas. If an exam moves, or a confirmation is still missing 48 hours before the deadline, it asks you to re-book or escalates to the testing center.",
+      "Blocks study time before each booked exam and adds the testing-center room and check-in rules to the calendar event."
+    ],
+    "why_now": "The on-device Foundation Models can read syllabi without sending your disability status to any cloud. Testing centers enforce fixed request windows (5 business days is common). Canvas calendar feeds, Live Activities and App Intents make a hands-off tracker possible.",
+    "why_nobody_yet_or_wall": "Accommodation software is sold to universities (AIM, Accommodate) and built around staff workflows. Student planners don't know accommodations exist. Each school has its own portal and rules, and no portal offers an API, so booking stays a one-tap handoff to the student.",
+    "ios_hooks": [
+      "VisionKit",
+      "PDFKit",
+      "Foundation Models (on-device only)",
+      "EventKit",
+      "ActivityKit",
+      "App Intents",
+      "AuthenticationServices (email OAuth)",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "AIM and Accommodate school portals",
+      "Canvas Student app",
+      "UIC accommodated testing rules (https://drc.uic.edu/drc-testing/accommodatedtesting/)",
+      "Purdue DRC reminders (https://www.purdue.edu/drc/news/01_28_22.php)"
+    ],
+    "unsaid_assumption": "That students will trust an app with their disability status, and that schools won't object to a student-side tool prefilling their portals.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "Students get extra time because of executive-function challenges, then have to win a recurring paperwork race to use it; the agent runs that race for them."
+  },
+  {
+    "title": "Submission Desk",
+    "tagline": "Sends your stories to literary magazines, tracks replies, and withdraws everywhere within an hour of a yes.",
+    "tier": "whitespace",
+    "category": "Creativity & media",
+    "moment": "You have nine short stories out at 31 magazines. At 11pm an acceptance arrives for 'Salt Year'. Before you've finished celebrating, your phone shows six withdrawal notes, one for each magazine still holding that story, ready to send with a single approval.",
+    "what_it_does": [
+      "Keeps a ledger of every piece, market, date, fee and response. It reads each market's guidelines (reading period, simultaneous-submission policy, word limit, blind-reading rules) and warns you before you break one.",
+      "Proposes where each returned story should go next, based on your tiers, response times and fees. It formats the manuscript to each market's guidelines (standard format, name removed for blind reads) and drafts the cover letter.",
+      "Sends to email-submission markets from your Gmail with your approval. For portal markets (Submittable and others) it prepares a ready packet and opens the page so you can submit.",
+      "Reads replies arriving at a forwarding address and sorts them into form rejections, personal or 'send more' rejections, and acceptances. On an acceptance it drafts withdrawals for every other market holding that piece, including the steps to withdraw on Submittable.",
+      "Records which rights you sold and when they revert, and tells you when a piece can go to reprint markets."
+    ],
+    "why_now": "Gmail and Outlook APIs plus cheap on-device classification make it possible to read replies and match them to the right submission reliably. The free PCC tier covers the drafting at no cost to an indie developer.",
+    "why_nobody_yet_or_wall": "Duotrope and Chill Subs are databases and trackers, and Submittable serves the magazines, not the writers. The one automatic cross-journal withdrawal (Tell It Slant) only worked among its member journals. Writers are a small, price-sensitive market, and Submittable offers submitters no API.",
+    "ios_hooks": [
+      "Share extension",
+      "PDFKit",
+      "Foundation Models",
+      "AuthenticationServices (Gmail OAuth)",
+      "App Intents",
+      "UserNotifications (Time Sensitive)",
+      "Files"
+    ],
+    "nearest_existing": [
+      "Duotrope (https://duotrope.com/guides/simultaneous-submissions.aspx)",
+      "Tell It Slant and other submission managers (https://www.pw.org/content/tracking_submission_managers)",
+      "Submittable",
+      "Chill Subs",
+      "QueryTracker"
+    ],
+    "unsaid_assumption": "That editors won't treat agent-prepared submissions as spam, which means the agent must never mass-submit and every send stays human-approved.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 2
+    },
+    "surprise": "The risky moment is the acceptance, not the submission: a slow withdrawal can burn your relationship with an editor, so that is where the agent earns its keep."
+  },
+  {
+    "title": "Delegation Recall",
+    "tagline": "Keeps you briefed on what your AI agents promised in your name, before someone brings it up.",
+    "tier": "whitespace",
+    "category": "Mind & focus",
+    "moment": "On Tuesday your scheduling agent emailed Priya that you'd bring the signed lease to Saturday's walkthrough, and you never read the thread. On Friday evening, before the calendar event, your Lock Screen shows: 'Your agent told Priya you'd bring the signed lease. It's in Files > Housing.'",
+    "what_it_does": [
+      "Collects what your agents did in your name: sent mail and new calendar events (via Gmail or Outlook OAuth), a ledger address you BCC in each agent's standing instructions, and a remote MCP 'log_action' tool for agents that accept connectors.",
+      "Pulls out each commitment (who, what, by when, how much money) and tags which agent made it and on whose instruction.",
+      "Briefs you just before it matters (a calendar event with that person, a deadline, a place via geofence) with one line and the file you'll need. A 20-second daily recall of new promises helps you actually remember them.",
+      "Flags promises you never asked for, especially when the wording traces back to an incoming email rather than your own request, as possible injected actions. It drafts a correction or walk-back email for your approval.",
+      "Once a week it asks you to confirm, cancel or renegotiate each open promise, and passes the decision back to the agent that made it."
+    ],
+    "why_now": "In September 2026 personal agents (Muse, ChatGPT agent, Gemini Spark, Poke, Howie) send email and book things from people's own accounts. Research on memory and action poisoning (GhostWriter, July 2026) shows that injected actions are a real risk.",
+    "why_nobody_yet_or_wall": "Each agent vendor logs its own actions inside its own app. Audit logs exist for developers (Nylas CLI) but not for the person whose name is on the email. The problem only appears once someone uses several agents, which is just starting to happen.",
+    "ios_hooks": [
+      "AuthenticationServices (mail and calendar OAuth)",
+      "EventKit",
+      "Core Location (CLMonitor)",
+      "ActivityKit",
+      "WidgetKit",
+      "Foundation Models / PrivateCloudComputeLanguageModel",
+      "App Intents (\"what did my agents promise this week?\")",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Nylas CLI agent audit (https://cli.nylas.com/guides/audit-ai-agent-activity)",
+      "Audit-log every email your AI agent sends (https://dev.to/mqasimca/audit-log-every-email-your-ai-agent-sends-57bl)",
+      "Commitment Log (manual app)",
+      "alfred_ follow-up memory"
+    ],
+    "unsaid_assumption": "That agents act through accounts the user can read, or will honor a BCC instruction. Agents with their own mailboxes or phone lines (such as calls placed by Muse) may leave no trail the app can see.",
+    "rough_scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 3
+    },
+    "surprise": "Delegation creates a new kind of forgetting: you can't remember a promise you never made yourself."
+  },
+  {
+    "title": "Authorship Defense",
+    "tagline": "When an AI detector flags your essay, it gathers your real writing history and prepares your appeal.",
+    "tier": "whitespace",
+    "category": "Learning & memory",
+    "moment": "Your professor emails: Turnitin rated your history paper 84% AI, and there's an integrity meeting on Monday. You wrote it over three nights in Google Docs. Before panic sets in, the agent shows a timeline: 212 saved revisions, a photo of your outline, two emails with your tutor, and the deadline for your written response.",
+    "what_it_does": [
+      "Reads the notice and your school's integrity policy, then puts every response deadline and meeting in your calendar.",
+      "With your OAuth consent it gathers only evidence that already exists: Google Drive revision history, Canvas submission timestamps, notes and outline photos you choose, and emails with tutors. It hashes each item and builds a dated timeline exhibit as a PDF.",
+      "Drafts a FERPA records request for the detection report and related records, plus a response letter citing the policy and the detector vendor's own guidance on its limits. You edit and approve every send.",
+      "Runs a mock oral defense that quizzes you on your own argument, sources and word choices, so you can show authorship live.",
+      "Tracks the case to its outcome and reminds you of appeal windows. It never writes, edits or backdates evidence, and if the history shows pasted-in text it tells you so privately."
+    ],
+    "why_now": "Detector false positives have become a legal fight: a federal case, Newby v. Adelphi, was reported decided for the student in February 2026. Students write in cloud docs whose revision history is reachable by API, and iPhone models can draft the paperwork with consent.",
+    "why_nobody_yet_or_wall": "Current help is static guides and letter templates, and some come from AI 'humanizer' sites that sell to the very students detectors target. Universities buy detection, not defense. Builders also fear looking like they help cheaters, which is why this tool has to be strict about using real records only.",
+    "ios_hooks": [
+      "AuthenticationServices (Google OAuth)",
+      "PDFKit",
+      "CryptoKit (evidence hashing)",
+      "PhotosUI picker",
+      "EventKit",
+      "Foundation Models / PCC",
+      "Speech (SpeechAnalyzer) for mock defense",
+      "UserNotifications"
+    ],
+    "nearest_existing": [
+      "Grammarly Authorship (tracks the writing process up front)",
+      "ToHuman AI Accusation Defense Kit (https://tohuman.io/ai-accusation-defense-kit)",
+      "Mentafy evidence playbook (https://mentafy.com/2026/05/falsely-accused-of-using-ai-a-students-evidence-playbook-for-clearing-your-name/)",
+      "Turnitin false-positive cases (https://www.popularai.org/p/these-turnitin-false-positives-in)"
+    ],
+    "unsaid_assumption": "That the student really wrote it, and that a school's process will weigh process evidence at all. Some committees ignore it, as the reported Adelphi appeal did.",
+    "rough_scores": {
+      "difficulty": 2,
+      "novelty": 3,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "surprise": "The institution's AI makes the accusation; the student's agent answers with records, not rhetoric, and it refuses to become one more humanizer."
+  },
+  {
+    "title": "Over-the-Shoulder Coach",
+    "tagline": "Watches your hands through glasses while you cook, sew or solder, and corrects technique mid-motion.",
+    "tier": "moonshot",
+    "category": "Physical world",
+    "moment": "You're learning knife skills. Mid-dice, a voice in your ear says 'fingertips curled, your thumb is out', and the knife stops before your thumb is in the way. After four weeks the agent shows a clip of your first dice next to today's, and moves you on to julienne.",
+    "what_it_does": [
+      "Streams first-person video from smart glasses (or an iPhone on a stand) to an on-device vision model that watches technique continuously, not just the scene.",
+      "Speaks short corrections through AirPods at the moment of error and stays quiet when you are getting it right.",
+      "Refuses to coach and says so when the setup is unsafe or the view is poor (blade out of frame, hot iron, power tool), instead of guessing.",
+      "Plans a multi-week curriculum, schedules short sessions and saves before/after clips to show progress.",
+      "Hands a clip to a human teacher when the same error repeats across three sessions."
+    ],
+    "why_now": "Meta's iOS Wearables Device Access Toolkit streams glasses video to iPhone apps, Core AI and MLX run vision models on the phone, and research on proactive first-person assistants moved fast in 2025-2026.",
+    "why_nobody_yet_or_wall": "Research wall: vision models are good at naming objects but not at judging fine-motor technique in real time, and VIABench shows proactive real-time warnings are exactly where models fail. Platform wall: third-party iPhone apps get the camera only in the foreground, Visual Intelligence hands apps a single frame, Meta's SDK is a developer preview, Vision Pro camera access is enterprise-only, and phones throttle under sustained inference. Liability wall: a wrong 'all clear' near a blade or soldering iron can injure. It needs skill-specific technique datasets, sub-300ms on-device vision models, and a glasses camera API out of preview.",
+    "ios_hooks": [
+      "Meta Wearables Device Access Toolkit (iOS)",
+      "AVFoundation",
+      "Vision (hand pose)",
+      "Core AI / MLX Swift",
+      "Foundation Models (image Attachment)",
+      "AVAudioSession (AirPods output)",
+      "EventKit",
+      "ActivityKit"
+    ],
+    "nearest_existing": [
+      "Meta Wearables DAT SDK (https://github.com/facebook/meta-wearables-dat-ios)",
+      "CrossSense 'Wispy' step-by-step glasses guidance (https://www.saga.co.uk/magazine/health-and-wellbeing/dementia-ai-glasses)",
+      "VIABench (https://huggingface.co/papers/2607.14660)",
+      "SwingVision (sport-specific camera coaching)"
+    ],
+    "unsaid_assumption": "That good technique can be seen from a first-person camera angle; for many skills, pressure and feel matter more than what's visible.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 3,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "The hard part isn't seeing the knife; it's knowing the difference between a harmless style quirk and the mistake that costs you a fingertip."
+  },
+  {
+    "title": "Fading Whisper",
+    "tagline": "An earbud prompter for real conversations in a new language that gives you less help every week.",
+    "tier": "moonshot",
+    "category": "Learning & memory",
+    "moment": "You're at the pharmacy in Seville and stall on the word for 'drowsy'. After a two-second pause your AirPods whisper 'somnolencia', and nothing more. By month three it only whispers when you've been stuck for five seconds, and most weeks it says nothing.",
+    "what_it_does": [
+      "Listens to the live conversation on-device and tells a productive pause apart from being truly stuck.",
+      "Whispers only the missing word or a short phrase, never a full translation, and fades the help on a schedule as your stats improve.",
+      "Never stores the other person's audio. It keeps only your own stalls as short text notes.",
+      "Turns this week's stalls into next week's drills and practice errands, scheduled into your calendar.",
+      "Asks before activating in a new place, and shows a visible 'listening' Live Activity the whole time."
+    ],
+    "why_now": "Full-duplex speech models (Kyutai's moshi-swift on MLX), proactive in-ear assistants (LlamaPIE) and AirPods Live Translation show the pieces exist. Language learners already use translation earbuds, but those replace speaking rather than build it.",
+    "why_nobody_yet_or_wall": "Latency and research wall: it must understand another speaker and your hesitation in under a second, and nobody has a validated model of when help teaches versus when it becomes a crutch. Legal wall: continuously processing a stranger's speech runs into two-party-consent recording laws and GDPR, even if nothing is stored. Platform wall: Apple's Live Translation pipeline is not open for in-person conversations (the Call Translation API is only for VoIP calls), and background listening needs an active, visible audio session. It needs clear legal treatment of transient, unstored processing and fast on-device duplex models.",
+    "ios_hooks": [
+      "AVAudioEngine / AVAudioSession",
+      "Speech (SpeechAnalyzer)",
+      "Translation framework",
+      "Core AI / MLX Swift",
+      "ActivityKit",
+      "EventKit",
+      "Core Location (CLMonitor)"
+    ],
+    "nearest_existing": [
+      "LlamaPIE proactive in-ear assistant (https://arxiv.org/pdf/2505.04066)",
+      "moshi-swift (https://github.com/kyutai-labs/moshi-swift)",
+      "Timekettle translation earbuds in classrooms (https://wmich.edu/x/news/2025/05/ai-powered-earbuds)",
+      "AirPods Live Translation"
+    ],
+    "unsaid_assumption": "That a whisper at the right moment builds fluency rather than dependence. This is the scaffolding hypothesis, and it is untested for live conversation.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "It is a translation device designed to make itself unnecessary: its success measure is how rarely it speaks."
+  },
+  {
+    "title": "Memory Chain of Custody",
+    "tagline": "An agent memory where every belief about you shows its source, and untrusted memories can't trigger actions.",
+    "tier": "moonshot",
+    "category": "Learning & memory",
+    "moment": "Your agent suddenly suggests moving your dentist appointment. You ask 'why do you think it moved?' and see the chain: the belief came from an email that claimed to be from the clinic, it was never corroborated, and it was blocked from acting. One tap marks it false in every agent that copied it.",
+    "what_it_does": [
+      "Tags every memory with its source (you said it, you did it, a document said it, an email claimed it, the agent inferred it), plus a confidence level and an expiry date.",
+      "Keeps memories from untrusted channels quarantined: they can be recalled, but they cannot drive an action until you or a trusted source confirms them.",
+      "Answers 'why do you believe X?' with the full chain, even through later summaries that merged several memories.",
+      "Pushes one correction to every connected agent's memory (ChatGPT, Claude, the bank's agent) and checks that they took it.",
+      "Runs a monthly memory review of stale, conflicting or high-impact beliefs, asking you before it deletes anything."
+    ],
+    "why_now": "GhostWriter (July 2026) showed that hidden payloads in email and calendar entries get written into personal-agent memory about 98% of the time. MobileMem framed year-long, on-device personal memory as a benchmark. Apple's Spotlight semantic index and OwnershipProvidingEntity give a starting point on-device.",
+    "why_nobody_yet_or_wall": "Research wall: once a model summarizes or merges memories, provenance is lost, and defenses like AM-Sentry only partly stop poisoning. Platform wall: iOS gives third-party apps no access to Messages or other apps' data, so the memory is always partial, and the 4K-8K on-device context can't hold year-scale history without retrieval. Ecosystem wall: every vendor keeps a private memory of you with no standard for provenance or corrections. It needs a cross-agent memory provenance standard (for example an MCP extension) and models trained to keep attribution through consolidation.",
+    "ios_hooks": [
+      "Core Spotlight (IndexedEntity, semantic index)",
+      "Foundation Models (historyTransform, onToolCall)",
+      "App Intents (OwnershipProvidingEntity)",
+      "SwiftData",
+      "CryptoKit",
+      "MCP Swift SDK (remote HTTP transport)"
+    ],
+    "nearest_existing": [
+      "GhostWriter memory poisoning (https://huggingface.co/papers/2607.06595)",
+      "MobileMem (https://huggingface.co/papers/2608.13606)",
+      "Mem0 OpenMemory (https://mem0.ai/openmemory)",
+      "OpenMemory research prototype with cited evidence (https://github.com/Raethexn-Technologies/OpenMemory)"
+    ],
+    "unsaid_assumption": "That people want to audit what their agents believe about them. Most may prefer a convenient memory to an accurate one, until the day it is wrong.",
+    "rough_scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "surprise": "The risk is not that agents forget you but that they remember things about you that someone else planted."
+  },
+  {
+    "title": "Agent Attention Firewall",
+    "tagline": "One gatekeeper between you and all your AI agents that batches, dedupes and pre-answers their interruptions.",
+    "tier": "moonshot",
+    "category": "Mind & focus",
+    "moment": "You run five agents, and by 10am three have pinged you about the same flight change while two want approvals. During your writing block the firewall answers all five: 'she'll review at 4pm'. At 4pm you clear eleven items in one 90-second pass on your Watch.",
+    "what_it_does": [
+      "Receives every approval request and status update from your agents in one place.",
+      "Merges duplicate requests (three agents asking about the same flight) and ranks them by deadline and how reversible they are.",
+      "Answers low-risk approvals itself under a policy you wrote ('approve reschedules within the same day, never spend over $50') and logs each decision with undo.",
+      "Tells agents when to come back during Focus time, and only interrupts you for items that are truly time-critical.",
+      "Shows a daily attention bill: how many interruptions each agent caused and how many it had to escalate."
+    ],
+    "why_now": "September 2026 put several personal agents on one iPhone at once (Muse, ChatGPT's Work tab, Claude Cowork, Poke, Grok Bot), each with its own approval flow. A2A 1.0 and MCP elicitation now define machine-readable 'input required' states.",
+    "why_nobody_yet_or_wall": "Platform wall: iOS apps cannot read or act on other apps' notifications, and Focus filters only let an app filter its own content. Ecosystem wall: consumer agents don't route approvals to a third-party approver, and vendors want the engagement for themselves. Trust wall: auto-approving on a user's behalf needs a user-level policy language that, per the 2026 permission-systems survey, no commercial agent offers. It needs agents to adopt a standard, routable approval request (A2A input-required / MCP elicitation) or an OS-level Approvals center with third-party approvers. A partial version works today for agents that email their approvals.",
+    "ios_hooks": [
+      "App Intents (SetFocusFilterIntent)",
+      "UserNotifications (own notifications only)",
+      "ActivityKit (Watch Smart Stack)",
+      "WidgetKit",
+      "LocalAuthentication",
+      "Server-side A2A / MCP client with push"
+    ],
+    "nearest_existing": [
+      "A2A protocol (https://github.com/a2aproject/A2A)",
+      "How Agents Ask for Permission survey (https://huggingface.co/papers/2607.13718)",
+      "OpenClaw approvals (https://github.com/openclaw/openclaw)",
+      "Microsoft Copilot Cowork approve/reject"
+    ],
+    "unsaid_assumption": "That agent makers will let an outside gatekeeper decide when users see their requests, which cuts against their own engagement numbers.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "Agents were supposed to save attention; with five of them, interruptions become the new screen-time problem, and the fix is an agent that manages the other agents."
+  },
+  {
+    "title": "Trial Lives",
+    "tagline": "For career changers: arranges paid half-day trials of a new job by working with employers' hiring agents.",
+    "tier": "moonshot",
+    "category": "Work & business",
+    "moment": "You're a 38-year-old accountant wondering about nursing, UX research or electrical work. Over six weekends the agent sets up a paid hospital shadow shift, a scoped UX mini-project for a startup, and a day with an electrician, all around your current job. After each one it asks you five debrief questions and updates which path fits.",
+    "what_it_does": [
+      "Suggests 2-3 candidate careers from your skills, money limits and hours, and designs a cheap real-world test for each.",
+      "Negotiates trial slots with employers' scheduling or hiring agents: date, scope, pay, and what you'll actually do.",
+      "Handles the paperwork: NDA, liability waiver, background check, immunization proof for clinical settings. It asks you before sharing any record.",
+      "Schedules trials around your current job and prepares a one-page brief so you know what to watch for.",
+      "Runs a structured voice debrief after each trial, updates a fit score, and suggests the next trial or a course."
+    ],
+    "why_now": "Employers now run AI agents for hiring and scheduling, A2A reached 1.0, and Verify with Wallet can carry verified ID. Job-shadowing marketplaces exist but are manual and aimed at students.",
+    "why_nobody_yet_or_wall": "Market and trust wall: employers have no incentive or insurance to host strangers for a day. Regulatory wall: unpaid trial work can break wage law, paid trials need payroll and workers' comp, and clinical shadowing needs credentialing and privacy training. Agent-to-agent wall: employer hiring agents screen applicants but expose no way to negotiate a trial. It needs an insured, standard 'trial shift' contract (like gig platforms' accident cover), employer agent cards that list trial availability, and portable verified credentials in Wallet.",
+    "ios_hooks": [
+      "EventKit",
+      "Wallet / Verify with Wallet (entitlement)",
+      "Speech (SpeechAnalyzer) for debriefs",
+      "Foundation Models / PCC",
+      "AuthenticationServices",
+      "Server-side A2A client with push"
+    ],
+    "nearest_existing": [
+      "JobShadowMe (https://jobshadowme.com/)",
+      "Betagig job shadowing (https://builtin.com/articles/betagig-becomes-leading-job-shadowing-platform-los-angeles)",
+      "Virtual Job Shadow",
+      "A2A protocol (https://github.com/a2aproject/A2A)"
+    ],
+    "unsaid_assumption": "That a half-day trial tells you enough about a career to be worth the employer's trouble; it may show you only the job's best or worst day.",
+    "rough_scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "surprise": "Employers' AI screens out career changers with unusual résumés; the changer's own agent gets around that by negotiating a chance to show up, not by sending more applications."
+  }
+]

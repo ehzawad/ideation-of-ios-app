@@ -1,0 +1,998 @@
+[
+  {
+    "id": "M-10",
+    "slug": "agent-mistake-warranty",
+    "title": "Agent Mistake Warranty",
+    "tagline": "Signs what your agents may do, checks what they actually did, and chases the refund when they overstep.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "Your travel agent booked the right hotel for the wrong week: nonrefundable, $640. Your bank says the charge is authorized because you gave the agent your card. But your phone holds the instruction you signed with Face ID ('Oct 12-14, under $250 a night'), the receipt it matched against that instruction, and a cancellation request you approved while the free-cancel window was still open.",
+    "problem": "People now let agents spend money: price-triggered auto-buy, booking agents, shopping agents with one-time cards. When an agent buys the wrong thing, the loss usually lands on the user, because bank and card rules were written for people and agent vendors' terms push losses to users. Banking apps show the charge after the fact. None of them compares it with what you actually allowed.",
+    "loop": {
+      "trigger": "You hand an agent a task that spends money",
+      "senses": "Receipts, card transactions, agent logs",
+      "decides": "Does each charge match the signed mandate?",
+      "checks_with_you": "Before each cancel, dispute or claim",
+      "acts": "Cancels in free windows, drafts disputes",
+      "remembers": "Mandates, evidence, error record per agent"
+    },
+    "ios_blocks": [
+      {
+        "name": "CryptoKit (SecureEnclave.P256.Signing)",
+        "why": "signs each mandate with a key that never leaves the phone"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID before signing a mandate or approving a cancellation"
+      },
+      {
+        "name": "FinanceKit",
+        "why": "reads Apple Card and other supported account transactions to match against mandates"
+      },
+      {
+        "name": "DeviceCheck (DCAppAttestService)",
+        "why": "shows a mandate came from a genuine copy of the app"
+      },
+      {
+        "name": "UserNotifications (time-sensitive interruption level)",
+        "why": "warns you before a free-cancel window closes"
+      },
+      {
+        "name": "PassKit (Wallet pass)",
+        "why": "shows each active mandate and its limits as a pass"
+      },
+      {
+        "name": "BackgroundTasks",
+        "why": "re-checks new transactions against open mandates"
+      }
+    ],
+    "hard_parts": [
+      "The wall (law + market): US rules for electronic transfers (Regulation E) generally treat a payment made by someone you gave your card or login to as authorized, and card networks have no dispute reason for 'my agent went beyond its instructions'. No insurer sells consumer cover for agent errors because there is no loss data. A mandate signed on your phone binds no merchant or agent vendor, and Apple Pay has no agent or mandate API.",
+      "Getting the evidence without reading your inbox: receipts arrive through a forwarding address or Gmail/Outlook OAuth on a server, and card data comes from FinanceKit (only for accounts it supports) or a bank link. Matching a receipt to a mandate across taxes, currencies, split charges and fees is messy.",
+      "Racing undo windows: the US 24-hour cancel rule for flights booked a week or more ahead, hotel free-cancel deadlines and store return windows all run on different clocks with different fine print. The app has to read each one right and warn you in time.",
+      "What would have to change: regulators or card networks defining who is liable for agent-initiated payments tied to a signed mandate (AP2 mandates and card agent tokens are a start); merchants and agent vendors accepting those mandates as binding; and enough error data for an insurer to price per-task cover."
+    ],
+    "risks": [
+      "False confidence: people may hand agents more because they think they're covered, when today the app can only help them undo or dispute. It must say plainly what it can and can't get back.",
+      "Wrong disputes: disputing a charge you did authorize can be treated as friendly fraud and hurt your standing with the bank or merchant. Every dispute is drafted for you to review, never filed on its own.",
+      "A rich target: transaction feeds, receipts and signed mandates in one place attract attackers. Match on the device where possible and keep only what a dispute needs."
+    ],
+    "assumptions": [
+      "People will sign a short mandate before each agent run instead of granting blanket access once.",
+      "Agents and merchants leave enough of a trail (receipts, order emails, agent logs) to prove what happened.",
+      "Most agent mistakes are caught inside some undo window, so the free fix works more often than a dispute."
+    ],
+    "unknowns": [
+      "Will card networks accept 'exceeded a signed mandate' as a dispute reason, and who pays: the merchant, the agent vendor or the user?",
+      "What are real agent error rates per kind of task? Nobody publishes them, so per-task cover can't be priced yet.",
+      "Does a Secure Enclave signature made in a consumer app carry any legal weight in a dispute?"
+    ],
+    "prior_art": [
+      {
+        "name": "AP2 (Agent Payments Protocol)",
+        "url": "https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol",
+        "note": "Signed Intent and Cart mandates as an audit trail. It defines the evidence, not who pays when an agent breaks the mandate, and it has no Apple Pay integration."
+      },
+      {
+        "name": "Mastercard Agent Pay",
+        "url": "https://www.mastercard.com/us/en/news-and-trends/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai.html",
+        "note": "Agent tokens tie a card to one agent and scope. They limit exposure but give consumers no claim process."
+      },
+      {
+        "name": "AI agent liability insurance and underwriting (Zylos Research)",
+        "url": "https://zylos.ai/research/2026-07-10-ai-agent-liability-insurance-underwriting/",
+        "note": "Overview of specialist agent insurance. The cover is sold to businesses only."
+      },
+      {
+        "name": "Underwriting the Agent Economy (paper)",
+        "url": "https://arxiv.org/pdf/2607.11999",
+        "note": "Research on pricing agent risk. No consumer product."
+      },
+      {
+        "name": "Chargeflow on AI agent chargeback liability",
+        "url": "https://www.chargeflow.io/blog/ai-agent-chargeback-liability",
+        "note": "The merchant-side view of the same dispute gap."
+      },
+      {
+        "name": "Meta Muse one-time Stripe Link cards",
+        "note": "Limit how much an agent can spend per task, but offer no recourse when it spends wrong."
+      }
+    ],
+    "first_version": "Ship the evidence-and-undo half with no warranty. You sign a mandate with Face ID before an agent run. The app matches forwarded receipts and FinanceKit transactions against it, warns you before free-cancel windows close, drafts the cancellation for you to send, and builds a ready-to-file dispute packet (mandate, receipt, timeline) when undo fails.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Merged 'Agent Error Cover' (per-task cover priced from each agent's track record; the per-agent error record and the warranty goal come from it). The Regulation E point is a plain summary, not legal advice; how it applies to agent-initiated transfers is untested. FinanceKit account coverage outside Apple Card, Apple Cash and Savings varies by region and was not re-checked.",
+    "related": [
+      "W-03",
+      "M-02",
+      "B-08"
+    ]
+  },
+  {
+    "id": "M-11",
+    "slug": "agent-will",
+    "title": "Agent Will",
+    "tagline": "Tells every agent acting in your name what to do after you die: stop buying, hand off, say goodbye.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Life admin",
+    "moment": "Three weeks after your father's funeral, a package arrives in his name. His price watch is still auto-buying, a research task still runs every Monday, and a bill-negotiation agent keeps calling his cable company. With the agent will he set up a year ago, the app would have revoked every grant it could reach once you and your sister confirmed his death, and handed you a short list of the three agents it couldn't reach.",
+    "problem": "Personal agents now act unattended for weeks: auto-buy rules, scheduled tasks, money autopilots, calling agents with calls in progress. When the owner dies, nothing tells them to stop, and families often don't know they exist. Estate apps help executors close accounts, but none of them knows about agents, and no agent platform has a signal for 'the person I work for has died'.",
+    "loop": {
+      "trigger": "Two trustees report a death, with proof",
+      "senses": "Agent list, OAuth grants, certificate",
+      "decides": "What each agent gets: stop, hand off, run",
+      "checks_with_you": "Executor approves each batch of actions",
+      "acts": "Revokes grants, sends stop requests",
+      "remembers": "Your wishes per agent; what it can't reach"
+    },
+    "ios_blocks": [
+      {
+        "name": "CryptoKit (Secure Enclave keys)",
+        "why": "signs your per-agent instructions so they can be shown to be yours"
+      },
+      {
+        "name": "AuthenticationServices (passkeys)",
+        "why": "trustees and the executor sign in to the trustee service without passwords"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans the death certificate"
+      },
+      {
+        "name": "CloudKit (CKShare)",
+        "why": "shares the will and inventory with named trustees"
+      },
+      {
+        "name": "FinanceKit",
+        "why": "finds recurring charges that point to agents and standing orders"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "yearly prompts to review the inventory, and loud notices to your own devices if a death is reported"
+      }
+    ],
+    "hard_parts": [
+      "The wall (platform + law): no agent platform has an API for 'the principal has died'. A power of attorney ends at death, and until a court appoints an executor nobody has authority to act for the estate. Fiduciary-access laws (RUFADAA, adopted in most US states) give executors rights to digital assets, but not to autonomous agents, and logging in as the dead person can breach terms of service. Apple's Digital Legacy gives a Legacy Contact data, but not Keychain passwords or app tokens.",
+      "Finding the agents: people won't keep an inventory current, so the app has to discover most agents from OAuth grants, receipt emails and recurring charges. It will still miss some.",
+      "Confirming a death without false triggers: two trustees plus a certificate scan plus a waiting period is slow, and a false trigger that cuts off a living person's accounts does real harm. A scanned certificate proves little without a check against vital records.",
+      "What would have to change: agent protocols (A2A, MCP) adding a 'principal status' signal that platforms honor; platforms accepting signed instructions written before death, the way Google's Inactive Account Manager does for Google accounts; and Apple extending Digital Legacy to agent grants and app-held tokens."
+    ],
+    "risks": [
+      "False or malicious triggers: a relative or an abuser could report a death to shut down someone's accounts. Require two independent trustees, a waiting period with loud notices to the owner's devices, and a one-tap cancel.",
+      "Handing an agent's memory to a named person can expose private conversations the person never meant to share. Default to delete, and show exactly what would be handed over when the will is written.",
+      "Grief and paperwork: the executor gets a queue of actions at a hard time. Batch them, explain each in plain words, and never act on legal matters without the executor's signature."
+    ],
+    "assumptions": [
+      "People will do the uncomfortable setup while healthy, and review it once a year.",
+      "Platforms will honor a stop request from a trustee service even without a formal API.",
+      "Executors will trust software to act in their parent's name."
+    ],
+    "unknowns": [
+      "Can instructions signed before death carry weight with platforms that never agreed to honor them?",
+      "What is agent memory after death: an estate asset, personal data, or something new?",
+      "Who pays to run a trustee service that may sit idle for 30 years?"
+    ],
+    "prior_art": [
+      {
+        "name": "Google Inactive Account Manager",
+        "note": "Per-account instructions for Google data after inactivity. Nothing for agents or other platforms."
+      },
+      {
+        "name": "Apple Digital Legacy (Legacy Contact)",
+        "note": "Lets a named contact request iCloud data after death. Leaves out Keychain and doesn't touch agent grants."
+      },
+      {
+        "name": "Sunset",
+        "url": "https://learn.hellosunset.com/sunset-vs-empathy-vs-goodtrust-closing-accounts",
+        "note": "Finds and closes accounts on the executor's authority after death. It works from what the family knows, not from instructions the person left for their agents."
+      },
+      {
+        "name": "EstateExec",
+        "url": "https://www.estateexec.com/",
+        "note": "Task app for executors. No agent inventory or automatic revocation."
+      },
+      {
+        "name": "TechPolicy.Press: platforms as executors of the dead",
+        "url": "https://www.techpolicy.press/big-tech-is-becoming-the-executor-of-the-dead/",
+        "note": "Analysis of how platforms, not families, end up deciding what happens to a dead user's data."
+      },
+      {
+        "name": "Dark Reading on AI agent lifecycles",
+        "url": "https://www.darkreading.com/identity-access-management-security/the-lifecycle-crisis-managing-the-birth-life-and-death-of-ai-agents",
+        "note": "Frames agent retirement as an unsolved identity problem, from the enterprise side."
+      }
+    ],
+    "first_version": "An inventory-and-instructions app plus a small trustee service. It finds agents and standing orders from OAuth grants, forwarded receipts and recurring charges, and lets you write wishes per agent. On a confirmed death it gives the executor a pre-filled queue: revocation links, stop requests, each company's bereavement process, and the final notes you left.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 3
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Merged 'Posthumous Admin Agent' (account map built from email and bank feeds, executor approval queue, dated final notes). The candidate listed Afterlife AI Executor Lock as prior art; left out because I could not check what it does. Apple Digital Legacy's Keychain exclusion and RUFADAA adoption are stated from general knowledge, not re-checked.",
+    "related": [
+      "W-12",
+      "W-03",
+      "M-09"
+    ]
+  },
+  {
+    "id": "M-12",
+    "slug": "household-agent-treaty",
+    "title": "Household Agent Treaty",
+    "tagline": "Each family member's own agent negotiates the week with the others, without pooling private calendars.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Family & care",
+    "moment": "It's Sunday night. Your spouse's agent knows about a doctor's appointment they haven't mentioned, your teen's knows about a shift swap, and yours knows your mother's physical therapy moved to Thursday. By morning each of you has a proposed week with only your own changes to approve, and no agent saw why the others said 'busy, can't move'.",
+    "problem": "Family scheduling needs everyone's constraints, but pooling everyone's calendar and email into one agent means each person gives up privacy from the others. One shared family assistant also breaks when it misreads a single email, which is why Milo shut down. Nobody offers per-person agents that negotiate with each other and reveal only 'busy' or 'movable'.",
+    "loop": {
+      "trigger": "Sunday planning, or a change mid-week",
+      "senses": "Your calendar, school emails, routines",
+      "decides": "Who covers each job with the least shuffle",
+      "checks_with_you": "Each adult approves only their own changes",
+      "acts": "Writes approved events and reminders",
+      "remembers": "Your fixed vs movable habits, on-device"
+    },
+    "ios_blocks": [
+      {
+        "name": "Foundation Models (SystemLanguageModel)",
+        "why": "turns each person's calendar and forwarded emails into busy/movable constraints on their own phone"
+      },
+      {
+        "name": "EventKit",
+        "why": "reads your calendar and writes approved events and reminders"
+      },
+      {
+        "name": "CloudKit (CKShare)",
+        "why": "a shared family zone that holds only constraints and offers, never reasons"
+      },
+      {
+        "name": "UserNotifications (UNNotificationAction)",
+        "why": "approve or decline a proposed change from the notification"
+      },
+      {
+        "name": "BackgroundTasks",
+        "why": "joins a negotiation round when the system grants time"
+      },
+      {
+        "name": "CryptoKit (Secure Enclave keys)",
+        "why": "signs offers from each person's agent and checks signed updates from other households"
+      }
+    ],
+    "hard_parts": [
+      "The wall (platform + research): iPhones can't reliably wake an app to take part in a negotiation round. Apple suggests no more than two or three silent pushes an hour, background time is short, and Foundation Models has a background budget, so a five-person round can take hours. Apple has no way for agents on different people's devices to message each other, only CloudKit sharing and push.",
+      "Minimal disclosure is open research: even 'can't move Tuesday' leaks something, and repeated rounds can reveal a pattern. Asking the fewest people the smallest question ('can you move gym to 7?') is an unsolved scheduling problem.",
+      "Extraction errors: a small model misreading one school email ('early release Friday') puts a wrong constraint into every plan. Structured feeds would help, but schools, clubs and other families mostly send prose.",
+      "What would have to change: an Apple channel for agent messages among Family Sharing members with its own background budget, or agent-to-agent (A2A) support in App Intents; better minimal-disclosure negotiation methods; and schools or their messaging vendors publishing signed, structured event feeds."
+    ],
+    "risks": [
+      "Silence as a signal: letting a teen's agent decline without a reason is the point, but a controlling parent may read repeated 'no's as a red flag. No adult's agent may ever read another person's raw data, including a teen's.",
+      "Cross-household injection: once carpool families' and schools' agents can send offers, one poisoned message could write false events into many calendars. Act only on typed, signed fields, never on instructions inside message text.",
+      "Unequal load: the planner may keep giving pickups to whoever has the most 'movable' time, often the same parent. Show who is carrying what each week."
+    ],
+    "assumptions": [
+      "Family members want privacy from each other inside a shared plan.",
+      "Everyone in the household has a recent iPhone that runs the on-device model.",
+      "People approve their own changes fast enough for the plan to settle by Monday morning."
+    ],
+    "unknowns": [
+      "How much time does this save compared with one shared calendar and a group chat?",
+      "Can minimal-disclosure negotiation settle in a few rounds with five people and messy, real constraints?",
+      "Will schools publish signed structured feeds once enough parents' agents ask for them?"
+    ],
+    "prior_art": [
+      {
+        "name": "Google CC for families",
+        "url": "https://www.compsmag.com/news/google-turns-cc-into-an-ai-agent-for-family-scheduling-and-household-tasks/",
+        "note": "One shared agent for up to six family members. It pools everyone's data into one place."
+      },
+      {
+        "name": "Ohai 'O' household manager",
+        "note": "Lists, SMS and grocery orders for the household. One assistant, not an agent per person."
+      },
+      {
+        "name": "Milo",
+        "note": "SMS family assistant that shut down in January 2026, saying the technology was too early."
+      },
+      {
+        "name": "PEMAND multi-agent household negotiation (paper)",
+        "url": "https://arxiv.org/pdf/2604.10475",
+        "note": "Research on agents negotiating household tasks. Not a product."
+      },
+      {
+        "name": "A2A protocol v1.0",
+        "url": "https://github.com/a2aproject/A2A",
+        "note": "Standard format for agent-to-agent tasks. No iOS or Family Sharing support."
+      },
+      {
+        "name": "School messaging apps (ParentSquare, ClassDojo)",
+        "note": "Send prose announcements. No signed, structured event feeds for agents."
+      }
+    ],
+    "first_version": "A coordinator server that sees only busy/movable tags, never reasons. Each phone extracts its own constraints on the device and posts tags whenever the app runs; the server proposes a week. Each adult approves only their own changes from a notification, and households outside the app get a normal drafted message instead.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Merged 'Village Protocol' (signed structured messages between households, school event feeds, carpool swaps, treating other households' messages as untrusted, drafted fallback messages for non-users). PEMAND is described from the candidate's summary; I did not open the paper.",
+    "related": [
+      "B-12",
+      "B-04",
+      "W-15"
+    ]
+  },
+  {
+    "id": "M-13",
+    "slug": "blackout-mode-agent",
+    "title": "Blackout Mode Agent",
+    "tagline": "When a disaster cuts service, it plans on the phone, drafts tiny satellite messages, and queues the rest.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Safety & civic",
+    "moment": "It's day two after the hurricane. You have no cell service, 38% battery, and your sister hasn't checked in. The agent has already set a battery plan that lasts to Thursday, drafted a check-in short enough for you to send over satellite, and filled in most of your disaster-aid registration from the room-by-room video you took before the storm. It sends nothing until a signal returns and you say yes.",
+    "problem": "Disaster apps assume a network. When towers go down, people are left with a phone, a shrinking battery and paperwork that has to wait. Offline chatbots answer questions but don't plan, and satellite messaging on iPhone is built for short texts you type yourself. Nothing prepares the paperwork before the storm and queues it for the moment service comes back.",
+    "loop": {
+      "trigger": "Official alert, or the network drops",
+      "senses": "Battery, signal, saved guides, your photos",
+      "decides": "Battery budget; what must be sent first",
+      "checks_with_you": "Before any message, claim or refill goes",
+      "acts": "Drafts tiny messages, fills aid forms",
+      "remembers": "Send queue, check-ins, saved guides"
+    },
+    "ios_blocks": [
+      {
+        "name": "WeatherKit (WeatherAlert)",
+        "why": "starts the prep plan when an official severe-weather alert covers your area"
+      },
+      {
+        "name": "Network (NWPathMonitor, NWPath.isUltraConstrained)",
+        "why": "notices when service drops or only a satellite link is left"
+      },
+      {
+        "name": "Carrier-constrained network entitlement (com.apple.developer.networking.carrier-constrained.app-optimized)",
+        "why": "marks the app as built for a carrier satellite network, so approved apps can send small payloads over it"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel)",
+        "why": "plans, drafts and fills forms with no connection"
+      },
+      {
+        "name": "Vision (OCRTool) and VisionKit document camera",
+        "why": "reads IDs, prescriptions and policy pages into the offline file"
+      },
+      {
+        "name": "ProcessInfo (isLowPowerModeEnabled, thermalState)",
+        "why": "keeps the agent's own power use inside the budget"
+      },
+      {
+        "name": "Multipeer Connectivity",
+        "why": "passes block roll-call status between nearby phones while the app is open"
+      }
+    ],
+    "hard_parts": [
+      "The wall (platform + carrier + research): third-party satellite data needs Apple's approval and a carrier plan (T-Mobile's T-Satellite was first), bandwidth is tiny, and apps can't send through Apple's own Messages via satellite. iOS allows no background phone-to-phone mesh, so relaying between neighbors works only with the app open. Disaster-aid agencies offer no public API for survivors' applications, so a queued claim still ends in a form a person submits.",
+      "Battery versus thinking: every minute of on-device inference spends charge an SOS may need. The agent needs a hard energy budget and must do most of its work before the storm, while the phone is charging.",
+      "Offline knowledge: a small on-device model has no reliable disaster or medical knowledge. Answers must come only from a vetted guide saved in advance, and the app has to say 'I don't know' otherwise.",
+      "What would have to change: an Apple store-and-forward API for small, structured app messages over satellite; wider carrier support; an emergency mode that lets public-safety apps relay in the background; and agency APIs for disaster-aid registration."
+    ],
+    "risks": [
+      "Wrong advice when lives are at stake: the agent never improvises medical or evacuation advice. It quotes the saved guide, points to 911 or Emergency SOS via satellite, and says when it has nothing.",
+      "The app itself could drain the battery someone needs for an SOS. Cap its energy use and show the budget on screen.",
+      "Neighbors' needs cards (oxygen, insulin, mobility, who has a spare key) are sensitive. Encrypt them and open them to the block only when an emergency is declared."
+    ],
+    "assumptions": [
+      "People set it up before the disaster, while service works; most of the value is prepared in advance.",
+      "Enough neighbors opt in that a block roll call covers more than a few houses.",
+      "Official alerts arrive before service fails, so the prep plan has time to run."
+    ],
+    "unknowns": [
+      "Will Apple approve disaster-prep apps for carrier satellite data, and will carriers besides T-Mobile follow?",
+      "How much battery does an on-device plan really cost on a hot, throttled phone?",
+      "Would aid agencies accept a pre-filled registration from an app, or only through their own site?"
+    ],
+    "prior_art": [
+      {
+        "name": "HAVEN Survival",
+        "url": "https://havensurvival.com/blog/best-survival-apps-offline-2026/",
+        "note": "Offline AI chat and mesh messaging. Answers questions but doesn't plan or queue paperwork."
+      },
+      {
+        "name": "OfflineGPT",
+        "url": "https://apps.apple.com/us/app/-/id6755918504",
+        "note": "An on-device chatbot. No disaster workflow."
+      },
+      {
+        "name": "iPhone apps that work over T-Satellite on iOS 26 (9to5Mac)",
+        "url": "https://9to5mac.com/2025/09/17/on-ios-26-with-a-t-satellite-plan-these-six-iphone-apps-work-via-satellite/",
+        "note": "The first apps using carrier satellite data. None is a disaster agent."
+      },
+      {
+        "name": "Apple carrier-constrained entitlement",
+        "url": "https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.networking.carrier-constrained.app-optimized",
+        "note": "The door for third-party satellite data, gated by Apple and the carrier."
+      },
+      {
+        "name": "Facebook Crisis Response (Safety Check)",
+        "note": "Marks people safe after a disaster. Needs a network and does no planning."
+      },
+      {
+        "name": "Bridgefy",
+        "note": "Bluetooth mesh messaging. No agent and no paperwork."
+      },
+      {
+        "name": "Map Your Neighborhood (Washington State)",
+        "note": "Paper program for neighbors to check on each other. Shows the roll-call idea works; nothing is automated."
+      }
+    ],
+    "first_version": "The pre-storm prep agent plus an offline planner. When an official alert arrives, it saves shelter lists and a vetted guide, walks you through a video inventory, and stores copies of IDs and prescriptions. After service drops, it sets a battery budget, drafts short check-ins for you to send yourself through Messages via satellite (iPhone 14 or later, where offered), and fills aid forms to submit when a connection returns.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Merged 'Blackout Block Roll-Call' (neighbor needs cards, roll call, nearest-neighbor checks, phone-to-phone relay, syncing with city CERT teams). The claim that disaster-aid systems have no public submission API comes from the candidate; not verified. A roll call that breaks through Focus would need Apple's Critical Alerts entitlement, which Apple grants rarely.",
+    "related": [
+      "B-26",
+      "M-15"
+    ]
+  },
+  {
+    "id": "M-14",
+    "slug": "sextortion-first-responder",
+    "title": "Sextortion First Responder",
+    "tagline": "A private guide for a teen facing sextortion at 1 a.m.: don't pay, keep proof, report, find an adult.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Safety & civic",
+    "moment": "It's 1:14 a.m. Someone who seemed to be a student at a nearby school now demands $300 in gift cards within 30 minutes, or the photos go to all your followers. You open the app instead of paying, and it tells you this is a crime against you, not your fault, and that paying usually brings more demands. Then it walks you through the next ten minutes, one step at a time, and never asks to see the images.",
+    "problem": "Financial sextortion is scripted, fast and aimed at teens: NCMEC received more than 100 sextortion reports a day in 2025. The first hour decides whether a teen pays, deletes the evidence or tells no one. The help exists (NCMEC's Take It Down, the CyberTipline, platform reporting, crisis lines), but a panicking teen has to find it and chain it together alone, at night, on the same phone the threats arrive on.",
+    "loop": {
+      "trigger": "A teen opens it during a threat",
+      "senses": "Only what the teen types: names, demands",
+      "decides": "Next safe step; any sign of self-harm",
+      "checks_with_you": "Teen reviews every report and message",
+      "acts": "Opens Take It Down, prefills reports",
+      "remembers": "Text-only evidence log, locked on device"
+    },
+    "ios_blocks": [
+      {
+        "name": "SafariServices (SFSafariViewController)",
+        "why": "opens Take It Down and the CyberTipline; Apple's docs say the app can't see what happens in that view"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel, on-device, text only)",
+        "why": "turns what the teen types into the fields each report asks for; it is never given images"
+      },
+      {
+        "name": "Foundation (FileProtectionType.complete)",
+        "why": "keeps the text-only evidence log unreadable while the phone is locked"
+      },
+      {
+        "name": "MessageUI (MFMessageComposeViewController)",
+        "why": "drafts the first message to a trusted adult; the teen taps Send"
+      },
+      {
+        "name": "App Intents",
+        "why": "a neutral Siri phrase or Shortcut that opens the app straight to step one"
+      }
+    ],
+    "hard_parts": [
+      "The wall (law + trust + platform): any copy of the images is child sexual abuse material, so the agent must never see, store, send or analyze them, not even with an on-device model. US federal law (18 U.S.C. 2258A) requires online service providers that learn of such material to report it to the CyberTipline, one more reason the app must never hold it. Platforms have no victim-side reporting API and NCMEC has no report-intake API, so today the agent can only prepare text and hand off to each website and app.",
+      "Evidence without images: screenshots of the chat often include the image itself. The app has to guide the teen to record usernames, profile links, payment handles and the demand as typed or pasted text, and to keep the conversation rather than delete it.",
+      "Being there in the first minute: a teen won't install an app mid-crisis if it needs a parent's approval (Ask to Buy) or an age check they fear, and Apple's Declared Age Range API lets a parent decide whether a child's age is shared. Distribution through schools, counselors and platform help pages, with a neutral name and icon, matters as much as the software.",
+      "What would have to change: NCMEC offering an on-device hashing SDK and a report-intake API; platforms accepting structured victim reports; and a clear safe harbor for crisis tools that follow a protocol written with NCMEC and child-safety experts."
+    ],
+    "risks": [
+      "False reassurance: Take It Down only helps on participating platforms' public or unencrypted services and can't stop uploads elsewhere. The app never says 'you're safe now' or 'it's deleted'. It says what each step does and doesn't do, and it never advises paying, replying or negotiating.",
+      "Mandatory reporting: many adults a teen might pick (teachers, school counselors, coaches, doctors) are mandated reporters under state law and may have to report what they're told. The app says so before the teen chooses. Lawyers must also decide whether text a teen types creates any reporting duty for the company.",
+      "Danger at home and self-harm: the extorter may be someone the teen knows, even in the home, so the trusted-adult step never defaults to a parent. Any mention of self-harm puts the 988 Suicide & Crisis Lifeline one tap away at once; financial sextortion has been linked to teen suicides."
+    ],
+    "assumptions": [
+      "A teen in crisis will open an app instead of paying, so it has to be installed already or findable in seconds.",
+      "A calm, step-by-step script helps more than a page of links, even though every step ends on someone else's website.",
+      "Schools and platforms are willing to point teens to a third-party tool."
+    ],
+    "unknowns": [
+      "Does guided help in the first hour lower payment and self-harm rates, and how would anyone measure that without collecting sensitive data?",
+      "Who should publish it: a startup, NCMEC, or a platform? Trust may matter more than features.",
+      "Should self-harm detection be a plain keyword rule plus an always-visible button, rather than a model judgment?"
+    ],
+    "prior_art": [
+      {
+        "name": "NCMEC Take It Down",
+        "url": "https://takeitdown.ncmec.org/",
+        "note": "Hashes explicit images of under-18s on the user's own device so participating platforms can find copies. Doesn't work on encrypted services or stop uploads elsewhere, and a teen has to find it alone."
+      },
+      {
+        "name": "NCMEC sextortion resources and CyberTipline",
+        "url": "https://ncmec.org/sextortion",
+        "note": "Guidance and a reporting form. Static pages, no guided flow."
+      },
+      {
+        "name": "NCMEC 2025 sextortion data",
+        "url": "https://www.missingkids.org/blog/2026/ncmec-releases-new-sextortion-data-2025",
+        "note": "Over 100 sextortion reports a day in 2025."
+      },
+      {
+        "name": "Meta teen sextortion protections",
+        "url": "https://about.fb.com/news/2024/02/helping-teens-avoid-sextortion-scams/",
+        "note": "Protections inside Meta's own apps. They don't help once a threat arrives elsewhere."
+      },
+      {
+        "name": "Thorn's NoFiltr",
+        "note": "Youth resources on sextortion. Information, not a step-by-step guide."
+      }
+    ],
+    "first_version": "A guided, mostly rule-based crisis flow with no image handling at all: don't pay, don't reply, keep the chat, record usernames and demands as text. It opens Take It Down and the CyberTipline, gives per-platform reporting steps, drafts a message to a trusted adult for the teen to send, and keeps 988 one tap away throughout. It is written and tested with child-safety experts before launch.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Checked by web search: NCMEC's 2026 post is titled 'Over 100 Reports Received Daily in 2025' (more than 50,000 financial sextortion reports, about 137 a day), and Take It Down's hashing happens on the user's device, excludes encrypted services, and only reaches participating platforms. Raised the candidate's feasibility from 2 to 3: the handoff version needs no blocked API; the wall is law, trust and liability. Mandated-reporter duties vary by state and were not checked state by state. The 18 U.S.C. 2258A description is a summary and needs a lawyer's reading. Declared Age Range was dropped from ios_blocks on purpose: the flow asks 'were you under 18 when the images were taken?' instead.",
+    "related": [
+      "M-15",
+      "B-18"
+    ]
+  },
+  {
+    "id": "M-15",
+    "slug": "zero-cloud-exit-planner",
+    "title": "Zero-Cloud Exit Planner",
+    "tagline": "A plan for safely leaving an abusive home that lives only on your phone and works alongside an advocate.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Safety & civic",
+    "moment": "Your partner knows your email and iCloud passwords, but after a call with a hotline advocate you changed your phone's passcode and reset Face ID so only your face opens it. You open what looks like a calculator, and it picks up where you stopped last night: two documents still to photograph, one bank account still to open, and a draft note to your employer about your pay deposit. Nothing it holds is in any cloud.",
+    "problem": "Leaving an abusive partner takes weeks of quiet preparation: documents, money, evidence, a place to go, and a day when everything happens in the right order. Planning tools store plans in accounts a controlling partner may be able to read, and they don't help carry out the steps. Trained advocates do this work well, but they aren't in the room at 11 p.m. when there are ten safe minutes to scan a birth certificate.",
+    "loop": {
+      "trigger": "You open it in a private moment",
+      "senses": "Your notes, document scans, the plan",
+      "decides": "Next step now; what can wait",
+      "checks_with_you": "Each log entry, draft and network use",
+      "acts": "Scans papers, logs incidents, drafts notes",
+      "remembers": "Plan, grab list, dated log; device only"
+    },
+    "ios_blocks": [
+      {
+        "name": "Foundation Models (SystemLanguageModel, on-device only)",
+        "why": "drafts messages and turns notes into log entries with no server"
+      },
+      {
+        "name": "Vision (OCRTool) with Foundation Models Attachment",
+        "why": "reads passports, leases and insurance cards on the device"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans documents straight into the app, not the Photos library"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer)",
+        "why": "transcribes voice notes on the device"
+      },
+      {
+        "name": "SwiftData with FileProtectionType.complete",
+        "why": "keeps the plan and log encrypted whenever the phone is locked"
+      },
+      {
+        "name": "Foundation (URLResourceValues.isExcludedFromBackup)",
+        "why": "keeps its files out of iCloud and computer backups"
+      },
+      {
+        "name": "UIKit (setAlternateIconName)",
+        "why": "a disguised icon"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "its own lock, separate from the phone's"
+      }
+    ],
+    "hard_parts": [
+      "The wall (research + platform): a roughly 3B on-device model with a context of a few thousand tokens has to support a plan that spans weeks, hundreds of facts and local legal steps it can't look up, and it must not drop a step on the day that matters. iOS background work is short and visible (a Live Activity would show on the Lock Screen), long inference heats the phone, and data on the device is only as safe as the passcode and Face ID enrollment.",
+      "Leaks through the system: the app must stay out of Spotlight, Siri suggestions, widgets, notifications and the Photos library, blank its App Switcher snapshot, and never donate intents. App Store purchase history, Screen Time and the battery-usage list can still show it was installed or used, and iOS's hidden-apps folder is itself visible.",
+      "Keeping local knowledge right: protective-order steps, shelter rules and benefits differ by state and county. That content has to come from advocates as dated offline packs, not from the model.",
+      "What would have to change: much longer on-device context or reliable local memory for small models; offline, jurisdiction-specific legal packs kept current by advocacy groups; and an OS-level duress or decoy mode (for example, a second passcode that opens a clean profile), which no app can build alone."
+    ],
+    "risks": [
+      "Discovery can raise the danger: if a partner finds a disguised safety app, abuse can escalate. At setup the app says this plainly, suggests a safer device if this phone may be monitored, and urges talking with an advocate about whether to use it at all. Every screen has a quick exit to a working calculator.",
+      "Stalkerware and shared access: if the partner knows the passcode, has their face enrolled, has installed monitoring software or a configuration profile, or signs in to the same Apple Account, the app can't protect anything. Removing monitoring tools can alert the abuser, so the app points to Apple's Safety Check and an advocate before any changes.",
+      "Not a replacement for people: the app never presents itself as an advocate or lawyer. It routes to the National Domestic Violence Hotline (1-800-799-7233, text START to 88788, or chat) and local programs, and to 911 in immediate danger. An incident log can also be demanded in a custody case, so an advocate or lawyer should advise what to record."
+    ],
+    "assumptions": [
+      "The survivor can keep the phone itself private. If the partner can get into it, no on-device design is safe.",
+      "Survivors will use it in short private windows, one step at a time.",
+      "Advocates will help write and maintain the plan templates and local packs."
+    ],
+    "unknowns": [
+      "Do disguised apps protect more people than they endanger when found?",
+      "Will courts give weight to a log kept in an app, and does keeping it on the phone help or hurt in a custody case?",
+      "Can a small model draft messages without slipping plan details into text meant for an employer or landlord?"
+    ],
+    "prior_art": [
+      {
+        "name": "Apple Safety Check",
+        "url": "https://support.apple.com/guide/personal-safety/safety-check-iphone-ios-16-ips2aad835e1/web",
+        "note": "Reviews and resets what you share with people and apps, with Quick Exit and Emergency Reset. Doesn't plan or keep records."
+      },
+      {
+        "name": "NNEDV Safety Net resources for survivors",
+        "url": "https://www.techsafety.org/resources-survivors",
+        "note": "Tech-safety guides written by advocates. Information, not a tool that holds a plan."
+      },
+      {
+        "name": "FTC: Stalkerware, what to know",
+        "url": "https://consumer.ftc.gov/articles/stalkerware-what-know",
+        "note": "Explains monitoring apps and the need to plan before removing them."
+      },
+      {
+        "name": "myPlan (Johns Hopkins)",
+        "note": "Safety-planning decision aid. Helps decide; takes no actions."
+      },
+      {
+        "name": "Bright Sky (UK)",
+        "note": "Disguised support app with resources. No agent."
+      },
+      {
+        "name": "apple/foundation-models-utilities",
+        "url": "https://github.com/apple/foundation-models-utilities",
+        "note": "Apple's rolling-window and history-summary helpers for working inside a small context."
+      }
+    ],
+    "first_version": "A fixed checklist engine does the planning; the on-device model only reads documents, transcribes notes and drafts messages. It works in airplane mode by default, keeps files out of backups, uses a disguised icon and sits in iOS's Face ID-locked hidden apps. Every screen has a quick exit and a one-tap link to the National Domestic Violence Hotline, and the plan templates are written with advocates.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Hotline contact details (1-800-799-SAFE (7233), text START to 88788, chat) and Safety Check's Quick Exit and Emergency Reset were checked by web search. Context size is given loosely because Apple's docs cite 4,096 tokens while WWDC26 coverage cites 8,192 for the iOS 27 model. Anyone building this should work with DV tech-safety advocates (for example NNEDV's Safety Net team) from day one.",
+    "related": [
+      "M-14",
+      "B-26",
+      "M-13"
+    ]
+  },
+  {
+    "id": "M-16",
+    "slug": "mid-call-voice-stand-in",
+    "title": "Mid-Call Voice Stand-In",
+    "tagline": "Speaks for people who can't talk fast, in their own banked voice, inside a live call, then hands back.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Accessibility",
+    "moment": "You have ALS and type with your eyes. The insurance rep says 'hello? are you there?' for the third time and is about to hang up. You glance at 'Hold the line', and your own banked voice says 'I'm here. I type slowly, please stay on.' Later you glance at 'Take over', and the agent keeps pressing for the wheelchair repair while you watch the transcript and veto any sentence before it's spoken.",
+    "problem": "Phone calls punish anyone who can't speak quickly: people with ALS, aphasia, a severe stutter or after a stroke. Type-to-speak is too slow for reps who hang up after a few seconds of silence. AI calling agents call instead of you, not with you, and the human service that exists (speech-to-speech relay) has no AI version. Nothing helps you stay in charge of your own call at conversation speed.",
+    "loop": {
+      "trigger": "You start a call the app places",
+      "senses": "Live transcript, your goal, your profile",
+      "decides": "Holding phrase, reply options, next step",
+      "checks_with_you": "Each ID field; you can veto any line",
+      "acts": "Speaks in your Personal Voice on the call",
+      "remembers": "Reference numbers, names, promised dates"
+    },
+    "ios_blocks": [
+      {
+        "name": "CallKit",
+        "why": "runs the app's own VoIP calls with the system call interface"
+      },
+      {
+        "name": "AVFoundation (AVSpeechSynthesizer, requestPersonalVoiceAuthorization)",
+        "why": "speaks in your Personal Voice once you allow it"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer)",
+        "why": "live on-device transcript of the other side"
+      },
+      {
+        "name": "Foundation Models (PrivateCloudComputeLanguageModel)",
+        "why": "suggests replies and plans the next step with a larger context"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows the call goal and status on the Lock Screen"
+      },
+      {
+        "name": "EventKit",
+        "why": "saves reference numbers and promised dates as reminders"
+      }
+    ],
+    "hard_parts": [
+      "The wall (platform + research + law): third-party apps can't touch cellular call audio, so this works only on calls the app places over VoIP, never on calls to your real number. Duplex speech on a phone is a proof of concept, and keeping sub-second turn-taking through a 40-minute call runs into heat limits, while cloud duplex adds delay. Legally, a synthetic copy of your voice saying words an AI chose is new ground: some institutions use voiceprints, some states require every party's consent to record, and FCC relay rules cover human speech-to-speech relay, not AI.",
+      "Speed of choice: someone typing with eye gaze may manage a few words a minute. Suggested replies must be right often enough that picking beats composing, and every control has to work with iOS Eye Tracking, Switch Control and AAC hardware.",
+      "Safe takeover: in 'take over' mode, the agent must stay inside the goal, never agree to new charges or share unapproved data, and hand back instantly. A text model steering a voice front end needs hard rules on what it may say.",
+      "What would have to change: an Apple in-call assist extension for AAC apps, like its own Live Speech; on-device duplex speech that holds up under heat; and a rule that treats a user-supervised AI voice as the user's own relay."
+    ],
+    "risks": [
+      "Voice misuse: a banked voice an agent can drive is a fraud tool if the phone is stolen or the app compromised. Require the user's presence for every call, keep the voice on the device, and keep a full log.",
+      "Honesty with the other side: the app says at the start of each call that an assistant is helping, even though some reps may hang up.",
+      "Wrong commitments: anything that changes money, appointments or identity needs the user's tap first, even in takeover mode."
+    ],
+    "assumptions": [
+      "People on the other end will stay on the line and treat a disclosed assistant voice as the customer.",
+      "Most calls that matter can be placed from the app over VoIP rather than received on the user's own number."
+    ],
+    "unknowns": [
+      "Will banks and insurers accept identity answers spoken by a synthetic voice while the customer is present?",
+      "How much delay will reps tolerate before hanging up, and can on-device duplex models meet it?",
+      "Does Apple allow Personal Voice audio in an app's outgoing call stream?"
+    ],
+    "prior_art": [
+      {
+        "name": "Apple Live Speech with Personal Voice",
+        "note": "Type-to-speak in calls. No suggested replies, no agent."
+      },
+      {
+        "name": "Pine AI",
+        "url": "https://apps.apple.com/us/app/pine-assistant/id6746403769",
+        "note": "Calls businesses instead of you. You aren't on the call."
+      },
+      {
+        "name": "Kyutai moshi-swift",
+        "url": "https://github.com/kyutai-labs/moshi-swift",
+        "note": "Full-duplex speech on MLX Swift with an iOS proof of concept. No device performance numbers published."
+      },
+      {
+        "name": "Duplex speech front end with delegated tool calls (paper)",
+        "url": "https://huggingface.co/papers/2609.19334",
+        "note": "September 2026 research reporting 92-97% tool-call recall. Not a product."
+      },
+      {
+        "name": "Apple Hold Assist",
+        "note": "Waits on hold for you. Never talks."
+      }
+    ],
+    "first_version": "An outbound-only VoIP caller for people who use AAC. It speaks typed or chosen text in Personal Voice, fills silences with honest holding phrases, suggests two or three replies from the live transcript, speaks profile fields only after approval, and logs reference numbers and promises. No autonomous takeover yet.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 4,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Category changed from Social & communication to Accessibility. I could not verify whether Apple permits Personal Voice output in an app's outgoing VoIP audio; AVSpeechSynthesizer can render to buffers, but the policy is unclear. Duplex paper figures and moshi-swift details come from the research digest.",
+    "related": [
+      "W-07",
+      "B-02",
+      "M-05"
+    ]
+  },
+  {
+    "id": "M-17",
+    "slug": "2am-fever-triage",
+    "title": "2 a.m. Fever Triage",
+    "tagline": "With a sick child at 2 a.m., it gathers the facts, gets a licensed nurse on the line, and follows through.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Health & body",
+    "moment": "It's 2 a.m. and your 10-month-old is hot and breathing fast, and you're scrolling forums with one hand. Instead, the app checks a short list of emergency signs, asks five questions, reads the last readings from your thermometer and has you record 30 seconds of her breathing for the nurse. When the nurse line answers you read from one screen, and afterwards it sets the recheck timers exactly as the nurse said.",
+    "problem": "At night, parents choose between waiting, calling a nurse line and driving to the ER, usually while scared and searching forums or asking a chatbot. Nurse lines give good advice, but parents arrive unprepared and forget half of it by morning. Chatbots answer but can't take responsibility or act. Nothing collects the facts, gets a licensed person on the line, and then does what that person said.",
+    "loop": {
+      "trigger": "You open it with a sick child at night",
+      "senses": "Your answers, temps, a breathing video",
+      "decides": "Any red-flag rule met? Then call 911",
+      "checks_with_you": "You place each call and confirm each step",
+      "acts": "Preps nurse summary, finds open care",
+      "remembers": "Symptom and dose timeline for the visit"
+    },
+    "ios_blocks": [
+      {
+        "name": "Foundation Models (@Generable)",
+        "why": "turns spoken or typed answers into a fixed intake form"
+      },
+      {
+        "name": "Core Bluetooth",
+        "why": "reads thermometers that use the standard Bluetooth Health Thermometer service"
+      },
+      {
+        "name": "AVFoundation",
+        "why": "records a short breathing video for the nurse; the app doesn't analyze it"
+      },
+      {
+        "name": "MapKit (MKLocalSearch)",
+        "why": "finds open pediatric urgent care nearby"
+      },
+      {
+        "name": "AlarmKit",
+        "why": "sets recheck and dose alarms exactly as the nurse said"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows the next recheck on the Lock Screen"
+      }
+    ],
+    "hard_parts": [
+      "The wall (regulation + liability + sensing): software that tells a parent 'ER now' or 'wait until morning' about their own child is likely a medical device under FDA's clinical decision support guidance and needs clearance. Under-triaging meningitis or sepsis is catastrophic for the family and the company. Camera-based infant vital signs aren't validated for this use, and the best pediatric triage protocols (Schmitt-Thompson) are licensed content.",
+      "The red-flag check must be plain rules from published pediatric guidance (for example, any fever in a baby under 3 months needs prompt medical care), versioned and reviewed by clinicians, with no model anywhere in that path.",
+      "Getting data about a child: HealthKit holds the phone owner's data, so a baby's readings don't belong in a parent's Health. Readings come from manual entry or a Bluetooth thermometer, and weight from the last checkup.",
+      "What would have to change: an FDA-cleared triage engine with a plan for model updates; a health system or insurer partner that carries clinical liability and staffs the nurse line; and validated home sensors."
+    ],
+    "risks": [
+      "Under-triage: a calm summary screen can make a sick child look fine. The app never says 'it's OK to wait'; only the nurse or a doctor decides, and red flags always send the parent to 911.",
+      "Delay: a slow nurse line could hold up care. After a set wait, the app tells parents plainly they can go to urgent care or the ER without waiting.",
+      "Dosing errors: it logs doses given and the times the nurse set, but never calculates a dose."
+    ],
+    "assumptions": [
+      "A nurse line answers fast enough at 2 a.m. to beat simply driving to the ER.",
+      "Scared parents will follow a short structured intake.",
+      "Insurers or pediatric practices will let an app hand a summary to their nurses."
+    ],
+    "unknowns": [
+      "Will nurses use a parent-prepared summary, or re-ask everything anyway?",
+      "Does prep plus follow-through cut needless ER visits without missing serious illness?",
+      "Could a health system run the decision step under its own clearance and licenses?"
+    ],
+    "prior_art": [
+      {
+        "name": "Mount Sinai 'Check Symptoms and Get Care'",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42454888/",
+        "note": "AI triage run by a health system on nurse protocols. Institution-side, not a parent's agent."
+      },
+      {
+        "name": "AAP Pediatric Symptom Checker (Schmitt-Thompson)",
+        "url": "https://www.stcc-triage.com/the-authors",
+        "note": "The standard pediatric protocols. A static guide."
+      },
+      {
+        "name": "ChatGPT Health",
+        "url": "https://www.macrumors.com/2026/01/07/openai-chatgpt-health-apple-health-integration/",
+        "note": "Chat with Apple Health data. No handoff to a nurse and no follow-through."
+      },
+      {
+        "name": "Coverage of AI symptom checkers (Association of Health Care Journalists)",
+        "url": "https://healthjournalism.org/blog/2026/08/ai-powered-symptom-checkers/",
+        "note": "Reporting on where AI symptom checkers help and fail."
+      },
+      {
+        "name": "Insurer 24/7 nurse lines",
+        "note": "Licensed humans. No prep before the call and no follow-through after."
+      }
+    ],
+    "first_version": "Everything except the decision. The app runs rule-based red-flag checks (911 if any), prepares a one-screen summary, and starts the call to your insurer's or pediatrician's after-hours nurse line when you tap. Then it acts on what the nurse decided: finds open urgent care and gives directions, or sets recheck and dose timers.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 3,
+      "feasibility": 3,
+      "impact": 5
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Dropped HealthKit from ios_blocks: a child's readings don't belong in the parent's Health data (flagged in hard_parts). The FDA point reflects the 2022 clinical decision support guidance; I did not check whether 2026 revisions changed it. The under-3-months fever rule is standard AAP guidance, stated from general knowledge.",
+    "related": [
+      "B-09",
+      "W-21",
+      "M-19"
+    ]
+  },
+  {
+    "id": "M-18",
+    "slug": "med-pass-witness",
+    "title": "Med-Pass Witness",
+    "tagline": "Camera glasses watch a family caregiver give each dose, check it against the list, and prep refills.",
+    "tier": "moonshot",
+    "flagship": false,
+    "category": "Family & care",
+    "moment": "You're giving your father his evening pills with one hand and holding his cup with the other. The glasses see you tip a small white tablet out of the Tuesday evening slot, and a quiet voice in your ear says 'that looks like the morning blood-pressure pill'. You check, swap it, and the dose is logged without you touching the phone.",
+    "problem": "Most doses at home are given by unpaid family caregivers who are tired, rushed and have no second check. Hospitals scan barcodes and are testing smart glasses to catch errors; kitchens have pill organizers and reminder apps that only ask 'did you take it?'. Nothing checks that the right pill went out at the right time, then keeps the log and the refills in order.",
+    "loop": {
+      "trigger": "Dose time, or the Sunday organizer fill",
+      "senses": "Glasses camera frames, the med list",
+      "decides": "Right slot, time and pill count?",
+      "checks_with_you": "Speaks only on a mismatch; you confirm",
+      "acts": "Logs doses, drafts refill requests",
+      "remembers": "Dose log, pill looks, refill dates"
+    },
+    "ios_blocks": [
+      {
+        "name": "Meta Wearables Device Access Toolkit (third-party iOS SDK)",
+        "why": "streams frames from Ray-Ban Meta glasses and can show text on Ray-Ban Display"
+      },
+      {
+        "name": "Foundation Models (Attachment image input)",
+        "why": "compares what the camera sees with the list, on the device"
+      },
+      {
+        "name": "Vision (OCRTool)",
+        "why": "reads pharmacy labels to build the med list"
+      },
+      {
+        "name": "HealthKit (HKUserAnnotatedMedicationQueryDescriptor)",
+        "why": "reads the med list from the Health app on the parent's own iPhone, with permission"
+      },
+      {
+        "name": "AVFoundation (AVSpeechSynthesizer)",
+        "why": "the quiet warning, played through the glasses' speakers"
+      },
+      {
+        "name": "App Intents on Apple Watch",
+        "why": "logs a dose with one tap when the glasses are off"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "refill reminders and approval requests"
+      }
+    ],
+    "hard_parts": [
+      "The wall (hardware + research + regulation + consent): glasses video at arm's length rarely resolves pill imprint codes, many generics look alike, and continuous streaming drains the glasses and heats the phone. Meta's SDK is still a developer preview. A tool that claims to prevent medication errors may be regulated as a medical device, a missed error still falls on the caregiver, and filming a parent with dementia raises consent questions the parent may not be able to answer.",
+      "Knowing when to look: spotting the moment pills leave the organizer in continuous first-person video, without streaming all day, is open research. The early version needs an explicit 'dose now' tap or voice cue.",
+      "Whose data: HealthKit's Medications API reads the list the phone's owner added to Health. A parent's list lives on the parent's phone, so the app needs that phone, label scans or manual entry.",
+      "What would have to change: higher-resolution on-demand capture on glasses; pharmacy-issued pill images or coded adherence packs tied to each prescription; general availability of the SDK; and a clear regulatory line for caregiver-facing checks."
+    ],
+    "risks": [
+      "False confidence: if the caregiver reads silence as 'correct', a missed error is worse than no tool. The app says plainly that it checks slot and time well and pill identity only sometimes.",
+      "Consent and dignity: filming someone being cared for at home needs their agreement, or an authorized proxy's, recorded in the app. Frames are processed on the device and not kept, and updates to siblings go out only if the parent agreed.",
+      "Medical changes: it drafts refill requests for the caregiver to approve and never changes a dose or schedule."
+    ],
+    "assumptions": [
+      "Caregivers will wear camera glasses at home, and the person receiving care accepts being filmed.",
+      "The med list is right to begin with; the app checks against the list, not against the prescriber."
+    ],
+    "unknowns": [
+      "What share of home medication errors are wrong-slot or wrong-time mistakes a camera can see, versus wrong pills filled into the organizer?",
+      "Will the FDA treat a caregiver-facing dose check as a device?",
+      "How long can glasses stream each day before battery and heat make it impractical?"
+    ],
+    "prior_art": [
+      {
+        "name": "UW smart-glasses study on medication errors",
+        "url": "https://www.pymnts.com/artificial-intelligence-2/2025/can-ai-powered-smart-glasses-help-spot-medication-errors",
+        "note": "AI glasses caught drug-vial swaps in the operating room. Hospital setting, not a kitchen table."
+      },
+      {
+        "name": "Meta Wearables Device Access Toolkit for iOS",
+        "url": "https://github.com/facebook/meta-wearables-dat-ios",
+        "note": "The glasses-to-iPhone SDK. Developer preview."
+      },
+      {
+        "name": "Smart Pill ID",
+        "url": "https://www.smartpillid.com/",
+        "note": "Identifies one pill from a phone photo. No dose workflow."
+      },
+      {
+        "name": "Medisafe",
+        "note": "Reminders and missed-dose alerts. Takes the user's word for it."
+      },
+      {
+        "name": "Hero Health",
+        "note": "A pill dispenser that controls doses. Needs dedicated hardware and doesn't watch the hand-off."
+      }
+    ],
+    "first_version": "A Sunday organizer check from still photos taken through the glasses, compared with a med list built from pharmacy-label scans. At dose time, a tap on Apple Watch logs the dose, and refill requests are drafted for the caregiver to approve. No continuous video yet.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 5,
+      "feasibility": 2,
+      "impact": 4
+    },
+    "horizon": "3-5y",
+    "autonomy": "draft-approve",
+    "notes_for_editor": "Meta SDK capabilities come from the research digest's reading of its changelog; not re-checked. The UW study and Smart Pill ID are described from the candidate's sources. Changed the moment's example pill from metformin (often taken twice a day) to a morning blood-pressure pill.",
+    "related": [
+      "W-18",
+      "B-19"
+    ]
+  }
+]

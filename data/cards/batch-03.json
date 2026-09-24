@@ -1,0 +1,845 @@
+[
+  {
+    "id": "B-19",
+    "slug": "blind-assist-scene-agents",
+    "title": "Blind-assist scene agents",
+    "tagline": "Point the camera and an AI reads, describes and answers questions, then hands off to a person if needed.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Accessibility",
+    "moment": "You are blind and a thick envelope arrives. You open Be My Eyes, point the camera, and Be My AI tells you it is a jury summons, reads out the date and the court address, and answers when you ask what to bring. Then you open the court's online response form, and the help stops: you are back to guessing at unlabeled buttons.",
+    "problem": "Blind and low-vision people meet print, screens and places that were not designed for them many times a day. Description apps now read letters, labels and scenes well, and they answer follow-up questions. But the job rarely ends at knowing what something says. It ends at a form, a checkout or a support chat that VoiceOver can't get through, and consumer apps stop at describing.",
+    "loop": {
+      "trigger": "You point the camera or share a photo",
+      "senses": "Camera frames, printed text, your question",
+      "decides": "What matters here and what to read first",
+      "checks_with_you": "Nothing: it describes; you decide and act",
+      "acts": "Speaks the answer; can call a volunteer",
+      "remembers": "Faces and labels you taught it, if any"
+    },
+    "ios_blocks": [
+      {
+        "name": "AVFoundation (AVCaptureSession)",
+        "why": "live camera frames for scene and document capture"
+      },
+      {
+        "name": "VisionKit (DataScannerViewController) and Vision (RecognizeDocumentsRequest)",
+        "why": "live text and document reading on the device"
+      },
+      {
+        "name": "Foundation Models (Attachment, iOS 27)",
+        "why": "ask the on-device model questions about an image without uploading it"
+      },
+      {
+        "name": "Visual Intelligence (IntentValueQuery, SemanticContentDescriptor)",
+        "why": "answer when the user points the system camera mode at something"
+      },
+      {
+        "name": "Accessibility (AccessibilityNotification.Announcement)",
+        "why": "speak results through VoiceOver instead of a second voice"
+      },
+      {
+        "name": "Core Haptics",
+        "why": "aiming cues so a user can frame a page they can't see"
+      }
+    ],
+    "hard_parts": [
+      "Aiming comes first. A blind user can't see whether the page is in frame, so the app has to guide the camera with sound or haptics before any model runs.",
+      "Confident mistakes are dangerous. A misread dose, date or amount sounds as sure as a correct one, so apps must say when text is cut off or blurry and offer a human check.",
+      "Acting after the description is the wall. Third-party apps can't drive other apps on iOS, and computer-use agents do worse under assistive-tech conditions: in the A11y-CUA dataset one agent's success fell from 78.3% by default to 28.3% under magnifier conditions.",
+      "Agents make choices silently. In the Morae field study, an agent asked to buy the cheapest sparkling water picked one of several equally priced items without telling the blind user the others existed."
+    ],
+    "risks": [
+      "Photos of mail, medicine and faces (including bystanders) go to cloud models. Guideline 5.1.2(i) requires explicit consent before sending them to a third-party AI; iOS 27's on-device image input avoids that but may read dense print less well.",
+      "Over-trust. The safety line: for medication labels, money and legal deadlines, the app flags uncertainty and suggests a second read or a human volunteer instead of sounding sure.",
+      "The most agentic product here, Service AI, is sold to companies. A company's own support agent answers to the company, and may steer a blind customer toward what is cheapest to support."
+    ],
+    "assumptions": [
+      "That describing the world is still the bottleneck, when more and more it is the inaccessible form or checkout after the description.",
+      "That blind users will keep pointing cameras at private mail and sharing it with a cloud model in exchange for speed and accuracy.",
+      "That companies keep paying for accessible support agents rather than fixing their own apps and websites."
+    ],
+    "unknowns": [
+      "Can an agent that acts (fills a form, finishes a checkout) be made trustworthy for someone who can't glance at the screen to check its work?",
+      "Will Apple ever give third parties anything like VoiceOver's view of other apps, or keep that inside VoiceOver and Siri?",
+      "How well does iOS 27's on-device image model read long, dense documents compared with the cloud models these apps use now?"
+    ],
+    "prior_art": [
+      {
+        "name": "Be My Eyes / Be My AI",
+        "url": "https://apps.apple.com/us/app/be-my-eyes/id905177575",
+        "note": "Free app: AI image description with follow-up questions, plus live sighted volunteers. Describes and explains; doesn't act."
+      },
+      {
+        "name": "Be My Eyes Service AI",
+        "url": "https://www.bemyeyes.com/business/blog/the-future-of-ai-in-accessible-customer-service-for-blind-and-low%E2%80%91vision-customers/",
+        "note": "Sold to businesses such as Microsoft's Disability Answer Desk: reads a customer's screenshots and returns step-by-step accessible guidance for that company's product only."
+      },
+      {
+        "name": "Microsoft Seeing AI (with Be My Eyes compared)",
+        "url": "https://www.brailleinstitute.org/find-services/offerings/explore-the-be-my-eyes-and-seeing-ai-applications/",
+        "note": "Reads short text, documents and products and describes scenes. Strong at describing, no help finishing a task."
+      },
+      {
+        "name": "A11y-CUA dataset (University of Michigan, UC Berkeley)",
+        "url": "https://huggingface.co/papers/2602.09310",
+        "note": "Research: a computer-use agent that succeeded on 78.3% of tasks dropped to 41.67% keyboard-only and 28.3% under magnifier conditions."
+      },
+      {
+        "name": "Morae (CMU, Adobe, Berkeley)",
+        "url": "https://huggingface.co/papers/2508.21456",
+        "note": "Research prototype that pauses a UI agent at decision points so a blind user makes the choice instead of the agent."
+      }
+    ],
+    "first_version": "A document-first app: photograph a letter, get a short spoken summary read on the device, and turn any deadline, amount or phone number into a Calendar event or contact after a read-back. If the text is blurry or cut off, it says so and offers a human check instead of guessing.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "suggest",
+    "related": [
+      "W-09",
+      "M-04",
+      "M-23"
+    ],
+    "notes_for_editor": "Be My AI's 36-language support comes from a web search snippet of Be My Eyes' help pages; I dropped it from the card text to be safe. I used the digest's Service AI blog URL instead of the candidate's /business/bme-service-ai/ page, which I did not see. Envision, Aira and Lazarillo are named in the candidate but left without links. The Braille Institute URL comes from the candidate and I did not open it."
+  },
+  {
+    "id": "B-20",
+    "slug": "voice-home-errands-agents",
+    "title": "Voice home-and-errands agents",
+    "tagline": "Say what you need and a voice assistant books the ride, the table or the repair through partner services.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Physical world",
+    "moment": "Your dishwasher is leaking onto the kitchen floor. You tell Alexa+ to find someone who can fix it this week. It gets quotes through a home-services partner, offers Thursday morning at a stated price, and books it when you say yes. The confirmation shows up in the Alexa app on your iPhone.",
+    "problem": "Household errands are many small bookings spread across many apps: a ride, a table, a plumber, a haircut. Each one means opening an app, comparing options and typing the same details again. Older voice assistants answered questions but stalled at the booking. The new ones book, but only where the assistant's maker has signed a partner deal.",
+    "loop": {
+      "trigger": "You ask by voice, text or tap",
+      "senses": "Your request, home devices, partner offers",
+      "decides": "Which partner, time and price fit",
+      "checks_with_you": "Confirms price and time before booking",
+      "acts": "Books through the partner's API",
+      "remembers": "Household preferences and past orders"
+    },
+    "ios_blocks": [
+      {
+        "name": "App Intents (AppShortcutsProvider)",
+        "why": "start a request from Siri, Spotlight, Shortcuts or the Action button"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer)",
+        "why": "on-device transcription when the user speaks inside the app"
+      },
+      {
+        "name": "HomeKit and MatterSupport",
+        "why": "control and add the smart-home devices the assistant acts on"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "ride, delivery or technician status on the Lock Screen and Dynamic Island"
+      },
+      {
+        "name": "User Notifications",
+        "why": "booking confirmations, changes and follow-ups"
+      }
+    ],
+    "hard_parts": [
+      "Coverage is a business-development job. Each partner (Expedia, Yelp, Angi and Square for Alexa+) is a hand-built integration, so the assistant can only book where a deal exists. That is slower to grow than a cloud browser but far more reliable.",
+      "Voice is a poor place to compare options. Three quotes with different prices and time windows need a screen, so the phone app has to carry the comparison.",
+      "On iPhone the assistant is a guest. Siri owns the side button everywhere except Japan (where iOS 26.2 lets users pick a third-party assistant), so other assistants are reached through App Intents, widgets and Shortcuts, not a wake word.",
+      "The apps are still rough: Consumer Reports' review called the Alexa+ app 'still a mess'."
+    ],
+    "risks": [
+      "Steering: an assistant that sits between you and every business can favor partners that pay it. Show why a provider was picked and what else was available.",
+      "Wrong bookings cost money and time (a no-show fee, a technician at the wrong address). Read back price, time and place before every booking, and make cancelling easy.",
+      "A speaker in the home hears guests and children. Voice history controls and per-person profiles need to be easy to find."
+    ],
+    "assumptions": [
+      "That partners stay willing to let one assistant sit between them and their customers.",
+      "That people trust a spoken 'yes' to spend money on services.",
+      "That the speaker-first habit carries over to the phone, where Siri AI now answers the same requests."
+    ],
+    "unknowns": [
+      "Will Siri AI, which can chain any app's App Intents, make a separate errands assistant unnecessary on iPhone?",
+      "Who pays when a booked job goes wrong: the assistant, the marketplace or the tradesperson?",
+      "Can partner-API coverage ever reach as many businesses as cloud-browser agents and phone-call agents do?"
+    ],
+    "prior_art": [
+      {
+        "name": "Alexa+",
+        "url": "https://www.aboutamazon.com/news/devices/alexa-plus-available-free-prime-members-us",
+        "note": "Orders takeout, reserves tables, books rides and schedules repairs; runs on Amazon Nova and Anthropic models. Free with Prime in the US since February 2026."
+      },
+      {
+        "name": "Alexa+ booking integrations",
+        "url": "https://www.aboutamazon.com/news/devices/alexa-plus-voice-booking-integrations",
+        "note": "Hotels via Expedia, home-service quotes and bookings via Yelp and Angi, salon bookings via Square, rolling out through 2026."
+      },
+      {
+        "name": "Consumer Reports review of Alexa+",
+        "url": "https://www.consumerreports.org/electronics/digital-assistants/amazon-alexa-plus-ai-assistant-review-a1667486499/",
+        "note": "Independent review of Alexa+ in daily use; critical of the app."
+      },
+      {
+        "name": "Google AI Mode agentic booking",
+        "url": "https://9to5google.com/2026/04/10/google-ai-mode-redesign/",
+        "note": "Books restaurants across reservation platforms from Search on iPhone; hotel booking followed in August 2026."
+      },
+      {
+        "name": "Poke",
+        "url": "https://techcrunch.com/2026/06/04/apple-approves-poke-as-the-first-ai-agent-on-its-messages-for-business-platform/",
+        "note": "Text-message agent inside iMessage that also handles smart-home control; no voice-first booking network."
+      }
+    ],
+    "first_version": "Pick one errand with a clean partner API, such as restaurant bookings or rides, and make it work end to end from the iPhone: ask, hear two options, confirm, and follow it in a Live Activity until it's done. Add a second errand only when the first one rarely fails.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 1,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-02",
+      "B-13",
+      "B-21"
+    ],
+    "notes_for_editor": "Raised difficulty from the candidate's 2 to 3 because the category depends on partner deals. The 'still a mess' quote is from the research digest's summary of the Consumer Reports review; I did not open the review. I did not check whether the Expedia, Yelp, Angi and Square integrations have all launched."
+  },
+  {
+    "id": "B-21",
+    "slug": "apple-built-in-agents",
+    "title": "Apple's built-in agents",
+    "tagline": "Siri AI chains app actions, the Phone app waits on hold and screens callers, and Passwords can reset logins.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Life admin",
+    "moment": "You call your airline and land in a long queue. Hold Assist offers to wait, mutes the hold music, and buzzes you when a person picks up. That evening you ask Siri to turn the recipe your sister emailed into a grocery list, and it pulls the ingredients from Mail into Reminders.",
+    "problem": "Many phone chores cross apps or wait on other people: an email holds the details, another app holds the action, and a phone queue holds your afternoon. Classic Siri could run one command in one app. Apple now ships agents for these jobs, but they cover mostly Apple's own apps, run only on newer iPhones, and third-party apps can take part only as tools Siri calls.",
+    "loop": {
+      "trigger": "You ask Siri, tap a prompt, or a call holds",
+      "senses": "Personal context, the screen, App Intents",
+      "decides": "Which app actions to chain, in what order",
+      "checks_with_you": "Confirms side-effect actions first",
+      "acts": "Runs App Intents; waits on hold; screens",
+      "remembers": "Siri conversation history in the Siri app"
+    },
+    "ios_blocks": [
+      {
+        "name": "App Intents (app schema domains, IndexedEntity)",
+        "why": "expose your app's content and actions so Siri AI can find and chain them"
+      },
+      {
+        "name": "App Intents (OwnershipProvidingEntity, iOS 27)",
+        "why": "mark content private, shared or public so Siri asks before side effects"
+      },
+      {
+        "name": "App Intents (IntentAuthenticationPolicy)",
+        "why": "block sensitive actions while the device is locked"
+      },
+      {
+        "name": "Visual Intelligence (IntentValueQuery, SemanticContentDescriptor)",
+        "why": "return your app's matches for what the camera or a screenshot shows"
+      },
+      {
+        "name": "App Intents (AppShortcutsProvider)",
+        "why": "make your actions building blocks in Shortcuts, including shortcuts built from a description"
+      }
+    ],
+    "hard_parts": [
+      "Siri AI reaches third-party apps only through App Intents and app schemas. Apple's named partners were few (WhatsApp, Audible, Outlook, Notability, Tripsy), so anything outside Apple's own apps stays patchy until developers adopt the schemas.",
+      "Access is gated. Siri AI shipped September 14, 2026 as an opt-in beta with a waitlist, English only, on iPhone 15 Pro and later, and not on iPhone in the EU or China. Press reports (AppleInsider, MacRumors) also describe daily usage caps, with a paid higher tier to come.",
+      "The narrow agents are closed. There is no public API to wait on hold, screen a cellular call, or drive Safari through a password change, so third-party call agents place calls from cloud telephony instead.",
+      "Passwords' automatic change needs a supported site's change flow and an Apple Intelligence device. 9to5Mac reported it appeared inconsistently across betas and may arrive in a later 27.x update."
+    ],
+    "risks": [
+      "Prompt injection through what Siri reads (mail, messages, web pages). Apple's WWDC26 security session names indirect prompt injection and action poisoning, and asks apps to mark side-effecting intents so the system confirms them.",
+      "Over-exposure: security firm NowSecure reported that about 1 in 4 apps it tested exposed functionality to Siri AI, which widens what a hijacked request could do.",
+      "Privacy: EFF and press coverage report that on-screen awareness can't be blocked per app, so a sensitive chat on screen can be read if you invoke Siri over it."
+    ],
+    "assumptions": [
+      "That enough apps adopt App Intents schemas for Siri AI to feel general rather than a demo with a handful of partners.",
+      "That people accept Apple's model as the planner and every other app as a tool it calls.",
+      "That Apple keeps its narrow agents (hold, screening, passwords) closed rather than opening them as APIs."
+    ],
+    "unknowns": [
+      "When will the reported Apple Intelligence 'Extensions' let Claude or Gemini power Siri, and with what access to App Intents? Press reports say only ChatGPT is live so far.",
+      "Will Apple ever let a third-party agent call other apps' App Intents, for example through MCP? So far Apple shipped MCP only as an Xcode 27 developer bridge.",
+      "How much will waitlists, daily caps and the English-only launch slow real use of Siri AI in its first year?"
+    ],
+    "prior_art": [
+      {
+        "name": "Siri AI (Apple Newsroom)",
+        "url": "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+        "note": "Apple's launch post: personal context, on-screen awareness and actions across apps through App Intents, as an opt-in beta."
+      },
+      {
+        "name": "Hold Assist and Call Screening (iOS 26)",
+        "url": "https://www.fastcompany.com/91349248/ios-26s-best-new-feature-iphone-better-phone-hold-contacts-unkown-number-hold-assist-call-screening",
+        "note": "Phone app features: waits on hold and alerts you when a person answers; asks unknown callers who they are and why. Not open to developers."
+      },
+      {
+        "name": "Visual Intelligence integration (WWDC26 session 297)",
+        "url": "https://developer.apple.com/videos/play/wwdc2026/297/",
+        "note": "How apps return results for what the camera or a screenshot shows; in iOS 27 it moved into a Siri mode in the Camera app and can add events, contacts and health readings."
+      },
+      {
+        "name": "Passwords automatic password change (press report)",
+        "url": "https://9to5mac.com/2026/08/27/ios-27s-passwords-app-can-change-your-passwords-for-you-automatically/",
+        "note": "9to5Mac: one tap hands a weak or leaked password to Apple Intelligence and Safari, which sign in, change it and save the new one. Rollout reported as inconsistent."
+      },
+      {
+        "name": "Siri AI waitlist (press report)",
+        "url": "https://9to5mac.com/2026/09/14/ios-27-has-a-waitlist-for-accessing-new-siri-ai/",
+        "note": "9to5Mac on the waitlist that gates Siri AI at launch."
+      }
+    ],
+    "first_version": "For an app developer, the smallest useful step is to adopt one app schema domain that fits your app, index your main entities with IndexedEntity, and mark side-effecting intents so the system confirms them. Test the actions in Shortcuts first, since Siri AI itself is behind a waitlist.",
+    "scores": {
+      "difficulty": 5,
+      "novelty": 1,
+      "feasibility": 2,
+      "impact": 5
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-02",
+      "B-18",
+      "B-20"
+    ],
+    "notes_for_editor": "Scores read this card as 'build this yourself': only Apple can, so difficulty is 5 and feasibility 2. Plugging an app into it with App Intents is easy. Press-reported items are labeled in the text: Passwords auto-change (9to5Mac), daily caps and a paid tier (AppleInsider, MacRumors), the 'Extensions' system (MacRumors), and the EFF claim about on-screen awareness. The press-reported SiriKit deprecation is left out. The 'recipe in email to a Reminders list' example comes from the research digest's summary of Apple's materials. I replaced the candidate's June Newsroom URL with the September launch post that the research and landscape doc cite, and dropped the '18-month delay' framing."
+  },
+  {
+    "id": "B-22",
+    "slug": "safari-shopping-extensions",
+    "title": "Safari shopping-extension agents",
+    "tagline": "A Safari extension checks the product page you're on against new and resale prices, and applies coupons.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "You are about to buy a $260 jacket in Safari on your phone. The shopping extension's panel shows the same jacket, barely worn, for $140 on a resale site, plus a price history for this store. You add it to your watch list instead, and a notification arrives when the price falls.",
+    "problem": "The same item costs different amounts across stores, resale sites and weeks, and coupon codes are scattered and often expired. Checking all of that on a phone, mid-purchase, is too slow, so most people just pay. Browser extensions do the checking on the page where you already shop, but most earn money from the purchase, which bends their incentives.",
+    "loop": {
+      "trigger": "You open a product page in Safari",
+      "senses": "The page's product, price and store",
+      "decides": "Is this price fair; are there cheaper matches",
+      "checks_with_you": "You choose to buy, switch, or watch",
+      "acts": "Applies coupons; alerts on price drops",
+      "remembers": "Watched items and their price history"
+    },
+    "ios_blocks": [
+      {
+        "name": "Safari web extensions (SafariServices)",
+        "why": "read the product page and add a price panel or coupon step on sites the user allows"
+      },
+      {
+        "name": "User Notifications",
+        "why": "price-drop alerts pushed from a server-side watcher"
+      },
+      {
+        "name": "WidgetKit",
+        "why": "a watch-list widget with current prices"
+      },
+      {
+        "name": "Share extension (NSExtensionContext)",
+        "why": "send a product link from any app into the watch list"
+      }
+    ],
+    "hard_parts": [
+      "Matching the exact item across sites (size, color, condition, model year) is the core problem. A wrong match shows a 'cheaper' price for a different product.",
+      "Safari asks users to grant an extension access site by site, and App Review guideline 4.4.2 says extensions should not claim access to more websites than they need. That pulls against a tool that has to work on every store.",
+      "Price history and resale inventory need a large crawling backend. The extension on the phone is the thin part.",
+      "None of these tools buy for you. Agents that do buy at a target price, such as Amazon's Auto Buy, run inside the retailer's own app, and Apple offers no agent payment API."
+    ],
+    "risks": [
+      "Affiliate conflicts are the category's known failure. In July 2026 a Bloomberg investigation, reported by TechCrunch, accused Phia of 'cookie stuffing' (claiming affiliate credit for purchases it did not drive), and it was reportedly suspended from the Impact.com affiliate platform. PayPal Honey faced similar accusations and lawsuits from late 2024.",
+      "Reading every product page you visit is sensitive browsing data. Match on the device where possible and say plainly what leaves the phone.",
+      "A lower resale price can mislead if condition, seller rating and return policy aren't shown next to it."
+    ],
+    "assumptions": [
+      "That the extension's affiliate income never tilts which 'best price' it shows.",
+      "That shoppers will grant a shopping extension access to every store site in Safari.",
+      "That retailers keep tolerating automatic coupon entry rather than blocking it at checkout."
+    ],
+    "unknowns": [
+      "Will agentic browsers on iPhone (Perplexity Comet) or Siri AI reading the screen make a separate shopping extension unnecessary?",
+      "Can an extension take the next step, buying at a target price, without any Apple Pay API for agents?",
+      "How will affiliate networks police attribution after the Honey and Phia cases?"
+    ],
+    "prior_art": [
+      {
+        "name": "Phia",
+        "url": "https://apps.apple.com/us/app/phia-shop-smarter-save-money/id6739351340",
+        "note": "App plus Safari extension from Phoebe Gates and Sophia Kianni: compares new and resale prices across 350M+ products, judges whether a price is fair, applies coupons, watches for drops. Raised a $35M Series A in January 2026 (TechCrunch)."
+      },
+      {
+        "name": "Phia cookie-stuffing report (TechCrunch)",
+        "url": "https://techcrunch.com/2026/07/10/phia-accused-of-cookie-stuffing-taking-affiliate-credit-on-purchases-it-didnt-earn/",
+        "note": "July 2026: accused of taking affiliate credit on purchases it didn't earn. Shows how the business model can work against the shopper and the store."
+      },
+      {
+        "name": "PayPal Honey",
+        "url": "https://www.nerdwallet.com/finance/learn/browser-extensions-online-shopping",
+        "note": "Coupon extension for Safari and other browsers; applies codes at checkout. Leaves price comparison across resale sites to others."
+      },
+      {
+        "name": "Capital One Shopping",
+        "url": "https://www.moneycrashers.com/capital-one-shopping-vs-honey/",
+        "note": "Price comparison and coupons through an extension and app; like the others, it stops before buying."
+      },
+      {
+        "name": "Perplexity Comet for iOS",
+        "url": "https://www.perplexity.ai/hub/blog/meet-comet-for-ios",
+        "note": "Agentic browser on iPhone (March 2026) that can act on pages instead of only annotating them."
+      }
+    ],
+    "first_version": "A Safari extension for one category with a strong resale market, such as designer clothing or cameras, that shows a checked same-item match and a price-history line on the product page. Label affiliate links on the panel and rank results by total price, not commission.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 2
+    },
+    "horizon": "now",
+    "autonomy": "suggest",
+    "related": [
+      "B-06",
+      "W-30",
+      "B-01"
+    ],
+    "notes_for_editor": "Web search confirmed Phia's Series A (TechCrunch, Jan 27, 2026, $35M; other outlets say $35.5M) and the July 2026 cookie-stuffing allegations (TechCrunch, July 10 and Aug 11, 2026). The Impact.com suspension comes from a search-result summary and is marked 'reportedly'. The Honey controversy (from December 2024) is from my general knowledge, with no URL on the card. I dropped the candidate's '220K+ sites' because sources disagree, and Capital One's '100K+ stores' because I couldn't verify it. The NerdWallet, MoneyCrashers and Perplexity URLs come from the candidate and I did not open them."
+  },
+  {
+    "id": "B-23",
+    "slug": "adhd-task-breakdown",
+    "title": "ADHD task-breakdown planners",
+    "tagline": "Apps that turn a brain dump or a screenshot into small steps, well-timed reminders and check-ins.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Mind & focus",
+    "moment": "You screenshot a scary insurance letter and share it to your planner. It splits 'deal with this' into five ten-minute steps, puts the first one at 10 a.m. when you usually have energy, and at 4 p.m. a check-in asks whether you made the call. You didn't, so it moves that step to tomorrow and makes it smaller.",
+    "problem": "For many people with ADHD, the hard part is starting: a vague, dreaded task has no obvious first step, and reminders get swiped away. Classic to-do apps store tasks but don't break them down or notice what slipped. AI planners now do both, but they stop at the plan. The call, the form and the email still wait for you.",
+    "loop": {
+      "trigger": "A brain dump, voice note or screenshot",
+      "senses": "Your tasks, calendar and what got done",
+      "decides": "The next small step and when to nudge",
+      "checks_with_you": "You accept or reshape the plan",
+      "acts": "Schedules steps, sends nudges, re-plans",
+      "remembers": "Energy patterns and what tends to slip"
+    },
+    "ios_blocks": [
+      {
+        "name": "Share extension (NSExtensionContext)",
+        "why": "take in screenshots, emails and links from any app"
+      },
+      {
+        "name": "Foundation Models with Vision OCRTool (iOS 27)",
+        "why": "read a screenshot and split a task into steps on the device"
+      },
+      {
+        "name": "EventKit",
+        "why": "place steps in Calendar and Reminders"
+      },
+      {
+        "name": "User Notifications (time-sensitive interruption level)",
+        "why": "nudges that can break through Focus when the user allows it"
+      },
+      {
+        "name": "AlarmKit",
+        "why": "alarm-style reminders for steps that must not be missed"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "a visible timer for the current ten-minute step"
+      }
+    ],
+    "hard_parts": [
+      "Nudge fatigue. Too many reminders get ignored and too few let tasks slip, so the app has to learn per person which nudges work, from very little data.",
+      "Re-planning without shame. When steps slip, the plan has to shrink and move, not pile up as red overdue items.",
+      "Doing the task is the missing half. The dreaded step is often a phone call or a form. Call agents such as Pine and Assindo exist but aren't built for this user, and iOS won't let a planner act inside other apps.",
+      "Energy-aware scheduling needs signals such as sleep and calendar load. HealthKit data is tightly restricted, and many users won't want to share it."
+    ],
+    "risks": [
+      "Health line: these apps must not claim to diagnose or treat ADHD or stand in for clinical care, and should say so.",
+      "Accountability can slide into guilt. Streak pressure and shame copy are dark patterns for this audience; avoid them.",
+      "Screenshots of letters and bills carry private data. Guideline 5.1.2(i) requires explicit consent before sending them to a third-party model; reading them on the device avoids that."
+    ],
+    "assumptions": [
+      "That breaking a task down is the hard part, when for many users it is the phone call at the end.",
+      "That users will keep opening one more app instead of the notes and reminders they already use.",
+      "That AI check-ins keep working after the novelty fades. Shelpful pairing its AI with human coaches suggests they may not work alone."
+    ],
+    "unknowns": [
+      "Does AI task breakdown improve follow-through over months, or only feel helpful in the first week? Little public evidence either way.",
+      "Should the planner hand the dreaded step to a call or email agent, and how much control do users want to give up?",
+      "Could this live inside Reminders and Siri AI through App Intents instead of as a separate app?"
+    ],
+    "prior_art": [
+      {
+        "name": "Shelpful",
+        "url": "https://apps.apple.com/us/app/shelpful-ai-for-adhd-tasks/id6741499362",
+        "note": "AI planner paired with human coaches for follow-through. Coverage says it raised $3M. Organizes and checks in; doesn't do the task."
+      },
+      {
+        "name": "Neurolist",
+        "url": "https://apps.apple.com/us/app/neurolist-ai-planner-for-adhd/id6468689182",
+        "note": "AI planner for ADHD that breaks tasks into steps and schedules them."
+      },
+      {
+        "name": "Saner.AI",
+        "url": "https://www.saner.ai/",
+        "note": "Turns scattered notes, email and meetings into tasks; aimed at ADHD users."
+      },
+      {
+        "name": "ClearMindAI",
+        "url": "https://apps.apple.com/np/app/clearmindai-ai-to-do-tasks/id6744586488",
+        "note": "AI to-do app that breaks tasks down; stops at the plan."
+      }
+    ],
+    "first_version": "A share-sheet action that turns a screenshot or pasted email into three to five small steps, puts the first one on your calendar, and sends one check-in at a time you pick. No streaks, and one tap to shrink or postpone a step.",
+    "scores": {
+      "difficulty": 1,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-05",
+      "B-02",
+      "B-03"
+    ],
+    "notes_for_editor": "Shelpful's $3M raise is 'coverage says' in the digest; I didn't check the investor. Tiimo and Goblin.tools are named in the candidate and left off the card without links. Assindo appears only in the candidate set, with no digest entry. The Neurolist, Saner.AI and ClearMindAI URLs come from the candidate and I did not open them."
+  },
+  {
+    "id": "B-24",
+    "slug": "medical-bill-dispute",
+    "title": "Medical-bill dispute tools",
+    "tagline": "Photograph an itemized bill; the tool flags suspect charges and writes the dispute letter and call script.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Health & body",
+    "moment": "A $4,800 ER bill arrives. You ask the hospital for the itemized version, photograph it, and the tool flags a CT scan billed twice and a code priced far above typical rates. It drafts a letter asking for review and a script for the call to the billing office. You still make the call, and you have to remember to follow up.",
+    "problem": "Medical bills are hard to read, often wrong, and say nothing about what a fair price would be. Checking codes against benchmarks, writing a dispute and chasing the billing office takes hours most people don't have. In one widely covered case a man used Claude to cut a $195,628 hospital bill to about $32,500 by researching Medicare rates. It took hours of hand work that consumer tools only partly cover.",
+    "loop": {
+      "trigger": "A bill photo, PDF or insurer statement",
+      "senses": "Line items, codes, amounts, your EOB",
+      "decides": "Which charges look wrong or overpriced",
+      "checks_with_you": "You review every letter before it goes",
+      "acts": "Drafts letters, scripts and reminders",
+      "remembers": "Case status, deadlines, who you spoke to"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "clean scans of multi-page bills"
+      },
+      {
+        "name": "Vision OCRTool with Foundation Models (iOS 27)",
+        "why": "pull codes and amounts on the device before anything is uploaded"
+      },
+      {
+        "name": "PDFKit",
+        "why": "read bills and insurer statements that arrive as PDFs"
+      },
+      {
+        "name": "HealthKit clinical records (HKClinicalRecord)",
+        "why": "compare billed services with visit records the user chooses to share"
+      },
+      {
+        "name": "MessageUI (MFMailComposeViewController)",
+        "why": "send the letter from the user's own email account"
+      },
+      {
+        "name": "EventKit and User Notifications",
+        "why": "follow-up dates and response deadlines"
+      }
+    ],
+    "hard_parts": [
+      "Telling a real error from a legitimate charge needs coding knowledge and payer context (the explanation of benefits, network status), not just a price lookup.",
+      "Benchmarks disagree. Medicare rates, commercial fair-price data and a hospital's posted prices can differ a lot, and the letter must cite the one that fits the patient: insured, uninsured or out of network.",
+      "Rules depend on the situation. The federal No Surprises Act covers surprise out-of-network bills and lets uninsured patients dispute bills well above a good-faith estimate; most other disputes run through the hospital's own process.",
+      "Follow-through is where tools stop: calls, holds, promised callbacks, and bills sent to collections while a dispute is open. iOS gives apps no access to cellular calls, so the call needs cloud telephony or stays with the patient."
+    ],
+    "risks": [
+      "Safety line: this is not legal or medical advice. Never tell a patient to ignore a bill or stop paying; a missed deadline can send a bill to collections.",
+      "False flags waste the patient's time and can sour the relationship with a provider they still need. Show the evidence and a confidence level for each flag.",
+      "Bills and records are health data. Keep extraction on the device, and get explicit consent (guideline 5.1.2(i)) before sending anything to a third-party model."
+    ],
+    "assumptions": [
+      "That hospitals respond to well-cited letters, not only to persistence on the phone.",
+      "That patients can get an itemized bill and their insurer's explanation of benefits quickly.",
+      "That the biggest savings come from errors and overpricing, rather than from financial assistance programs patients never applied for."
+    ],
+    "unknowns": [
+      "What share of disputes succeed from a letter alone, versus after calls? None of these tools publish it.",
+      "Provider-side billing AI (Insight Health, Develop Health) is better funded. What happens when a patient's tool argues with the hospital's?",
+      "Can a consumer tool act as the patient's representative on calls, and with what written authorization?"
+    ],
+    "prior_art": [
+      {
+        "name": "MyMedBill",
+        "url": "https://mymedbill.co/",
+        "note": "Bill checks and dispute letters; claims 8,000+ users. Leaves the calls and tracking to the patient."
+      },
+      {
+        "name": "Medical Bill Negotiator: IQ (IQBill)",
+        "url": "https://apps.apple.com/us/app/-/id6757212060",
+        "note": "iOS app that reviews bills and prepares negotiation material."
+      },
+      {
+        "name": "CareRoute Bill Defense",
+        "url": "https://www.careroute.ai/bill-defense",
+        "note": "Works on contingency and takes on more of the process than letter-only tools."
+      },
+      {
+        "name": "MediSpute",
+        "url": "https://www.medispute.com/",
+        "note": "Another consumer bill-dispute service in the same mold."
+      },
+      {
+        "name": "The $195k hospital bill case",
+        "url": "https://nationaltoday.com/us/ny/dobbs-ferry/news/2026/02/13/ai-helps-patient-negotiate-163-000-off-hospital-bill/",
+        "note": "Coverage of a man who used a general chatbot and hours of work to cut a hospital bill by about $163,000. The category's best proof point is not a product."
+      }
+    ],
+    "first_version": "Scan an itemized bill, flag duplicates and charges far above Medicare benchmarks with the evidence for each, and draft one letter the patient sends from their own email. Add a simple case timeline with a follow-up reminder and a log of every call.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-01",
+      "B-08",
+      "W-20"
+    ],
+    "notes_for_editor": "The digest describes the $195,628 case as 'a man used Claude'; the candidate said 'a family'. I followed the digest and did not open the article. The No Surprises Act point is from my general knowledge; I left out its dollar threshold and deadlines. The digest does not describe MediSpute's exact offering, so its note is kept vague."
+  },
+  {
+    "id": "B-25",
+    "slug": "pocket-agent-supervision",
+    "title": "Pocket supervision of work agents",
+    "tagline": "Hand a task to a work agent from your phone, watch it run elsewhere, and approve or reject risky steps.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Work & business",
+    "moment": "You're in a cab when a client asks for a revised forecast deck. From the Microsoft 365 Copilot app you hand the task to Cowork, watch it pull the numbers, and reject a step that would email the draft to the whole team. The deck is waiting for review when you reach your desk.",
+    "problem": "Work agents now run for many minutes or hours on cloud machines or your desktop, and they stop to ask before sending mail, writing files or running code. If the only place to answer is your laptop, the agent sits idle while you're away. Phone apps fix that, but each vendor built its own approval inbox, so you juggle several.",
+    "loop": {
+      "trigger": "You assign a task from the phone",
+      "senses": "Run progress and steps waiting on you",
+      "decides": "Which steps need a human yes or no",
+      "checks_with_you": "Approve or reject sends, writes, code runs",
+      "acts": "Runs remotely; delivers docs, code, PRs",
+      "remembers": "Skills, plugins, past runs and settings"
+    },
+    "ios_blocks": [
+      {
+        "name": "User Notifications (UNNotificationAction, authenticationRequired)",
+        "why": "approve or reject from the Lock Screen, requiring Face ID or passcode for risky steps"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "a run's progress on the Lock Screen, Dynamic Island and Apple Watch, updated by push"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID before approving a high-impact step"
+      },
+      {
+        "name": "WidgetKit",
+        "why": "a glance at running and waiting tasks"
+      },
+      {
+        "name": "App Intents",
+        "why": "start or check a task from Siri, Shortcuts or the Action button"
+      }
+    ],
+    "hard_parts": [
+      "Approval fatigue. A stream of small yes-or-no prompts trains people to tap yes, so the agent must batch low-risk steps and stop only for ones that send, spend, delete or publish.",
+      "A phone screen can't show a whole diff or spreadsheet. Each approval needs a short, honest summary of what will happen, plus a way to open the full detail.",
+      "Nothing runs on the phone. iOS background limits put the agent in the cloud or on a desktop; Claude's Dispatch, for example, needs the desktop awake with the app open.",
+      "Every vendor has its own inbox and notifications. No shared approval layer exists across Copilot, Claude, ChatGPT and Grok."
+    ],
+    "risks": [
+      "Prompt injection. An agent reading email or web pages can be steered into a harmful step, and the phone approval is the last check, so it must show the real action and recipients, not the agent's own description.",
+      "Work data on personal phones: approval prompts can put confidential content on the Lock Screen. Hide previews by default.",
+      "Accountability blurs. When someone taps approve on a step they didn't read, it's unclear who owns the mistake."
+    ],
+    "assumptions": [
+      "That approving a step on a six-inch screen is a real review and not a reflex tap.",
+      "That the risky steps are the ones the agent asks about.",
+      "That employers allow work agents to be steered from personal devices."
+    ],
+    "unknowns": [
+      "What approval rate means real oversight rather than rubber-stamping? No vendor publishes it.",
+      "Will a cross-vendor approval standard appear, or will each suite keep its own inbox?",
+      "How much should an agent do before it checks in, and should that be set per task, per person or per company?"
+    ],
+    "prior_art": [
+      {
+        "name": "Microsoft Copilot Cowork",
+        "url": "https://www.microsoft.com/en-us/copilot/blog/2026/05/05/copilot-cowork-from-conversation-to-action-across-skills-integrations-and-devices/",
+        "note": "Hand off tasks and approve or reject agent actions from the Microsoft 365 Copilot iOS app; plugins include HubSpot, Moody's and Notion."
+      },
+      {
+        "name": "Claude Cowork on mobile and Dispatch",
+        "url": "https://support.claude.com/en/articles/13947068-assign-tasks-from-anywhere-in-claude-cowork",
+        "note": "Cowork reached iOS in beta in July 2026; Dispatch sends tasks from the phone to a desktop that must stay awake, with push notifications for approvals."
+      },
+      {
+        "name": "Claude Code on mobile",
+        "url": "https://code.claude.com/docs/en/mobile",
+        "note": "The phone starts and steers cloud, remote or desktop coding sessions."
+      },
+      {
+        "name": "ChatGPT Work tab",
+        "url": "https://techcrunch.com/2026/09/23/chatgpt-mobile-app-gets-voice-based-agentic-features/",
+        "note": "Voice-started agentic work in the mobile app for Plus and Pro users (September 23, 2026)."
+      },
+      {
+        "name": "Grok Bot",
+        "url": "https://www.macrumors.com/2026/08/11/grok-bot-macos-ios/",
+        "note": "Always-on cloud agents with their own computers, controlled from an iPhone and Mac app."
+      }
+    ],
+    "first_version": "For one agent platform, a phone client that shows each run as a Live Activity and turns each pending step into an actionable notification: what it will do, to whom, with Approve, Reject and Open. Ask for Face ID only on steps that send, spend or delete.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-03",
+      "B-14",
+      "W-12"
+    ],
+    "notes_for_editor": "The candidate names CCC and CodeAgents Mobile (indie coding-agent clients). I couldn't verify them, so they're left out. The Claude Code mobile doc URL comes from the candidate and I did not open it. The Copilot Cowork mobile details are 'likely' in the digest."
+  },
+  {
+    "id": "B-26",
+    "slug": "offline-on-device-llm",
+    "title": "Offline on-device LLM apps",
+    "tagline": "Run open models entirely on your iPhone; a few now add tool calling, Shortcuts actions and local APIs.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Learning & memory",
+    "moment": "You're on a flight with no Wi-Fi and need to rewrite a tense email to your landlord. You open a local model app, load a 4B model you downloaded last week, and it redrafts the email offline. Nothing leaves the phone, though the phone gets warm.",
+    "problem": "Cloud assistants need a connection and see everything you type. Some people want a model that works offline and keeps private text on the device. Local model apps deliver that, but most are chat windows. They rarely touch Calendar, Reminders, Files or other apps, so they aren't agents yet.",
+    "loop": {
+      "trigger": "You open the app or run a Shortcut",
+      "senses": "Your prompt, shared files, device info",
+      "decides": "Reply directly or call a local tool",
+      "checks_with_you": "Nothing: current tools are read-only",
+      "acts": "Writes text; runs search or calculator",
+      "remembers": "Chats and downloaded models, on device"
+    },
+    "ios_blocks": [
+      {
+        "name": "Foundation Models (SystemLanguageModel, LanguageModel protocol)",
+        "why": "Apple's free on-device model, or a local open model behind the same session and tool API"
+      },
+      {
+        "name": "Core AI (iOS 27)",
+        "why": "run exported open models on the Neural Engine and GPU"
+      },
+      {
+        "name": "MLX Swift (mlx-swift-lm, open-source package)",
+        "why": "load Hugging Face MLX models, including into Foundation Models sessions"
+      },
+      {
+        "name": "Increased Memory Limit entitlement (com.apple.developer.kernel.increased-memory-limit)",
+        "why": "room for multi-GB weights on the devices that support it"
+      },
+      {
+        "name": "Background Assets",
+        "why": "download large model files outside the app's first launch"
+      },
+      {
+        "name": "BGContinuedProcessingTask with the Background Inference entitlement",
+        "why": "finish a long job on the Neural Engine after the user leaves the app"
+      },
+      {
+        "name": "App Intents",
+        "why": "expose rewrite or summarize actions to Shortcuts and Siri"
+      }
+    ],
+    "hard_parts": [
+      "Memory. 4B-class models need several GB of RAM. The increased-memory entitlement works only on some devices, and apps must check os_proc_available_memory before loading.",
+      "Heat and battery. Long sessions throttle, so speed drops and the phone heats up. Agent loops with many tool calls make it worse.",
+      "Downloads of 1-8 GB per model. App Review requires disclosing download size, and many users leave before the first answer.",
+      "Small models are brittle at tool calling: they pick the wrong tool or malform arguments more often than cloud models. Agent features need strict schemas (guided generation) and only a few tools."
+    ],
+    "risks": [
+      "Open models often ship with lighter safety tuning than hosted ones, and an offline app has no server-side filter. The app owns its outputs, including answers to health or legal questions.",
+      "'Private' claims have to be true. Analytics, crash logs or a silent cloud fallback can send prompts off the device.",
+      "Apple's free on-device model and Private Cloud Compute tier may undercut paid local-model apps and leave them a hobbyist niche."
+    ],
+    "assumptions": [
+      "That privacy-minded users will accept a weaker model to keep their data on the phone.",
+      "That iPhones keep gaining enough RAM for useful models, instead of vendors pushing everything to the cloud.",
+      "That open-weight licenses (Gemma 4 is Apache 2.0) stay permissive enough to ship inside paid apps."
+    ],
+    "unknowns": [
+      "Can a 2-4B local model run a reliable multi-step tool loop over Calendar, Reminders and Files, or only single calls?",
+      "Will Core AI and the LanguageModel protocol make 'bring your own model' a feature of every app rather than its own app category?",
+      "How long can a phone sustain agent-style inference before thermal limits make it unusable?"
+    ],
+    "prior_art": [
+      {
+        "name": "PocketPal AI",
+        "url": "https://github.com/a-ghorbani/pocketpal-ai",
+        "note": "Open-source local model app (about 8.4k GitHub stars). Mostly chat; no App Intents actions or background tasks."
+      },
+      {
+        "name": "fullmoon",
+        "url": "https://github.com/mainframecomputer/fullmoon-ios",
+        "note": "Swift and MLX local chat app (about 2.3k stars). A clean base, not an agent."
+      },
+      {
+        "name": "Private LLM",
+        "url": "https://privatellm.app/blog/run-local-gpt-on-ios-complete-guide",
+        "note": "Paid app with many on-device models and Siri and Shortcuts actions, one of the few that reach beyond chat."
+      },
+      {
+        "name": "Off Grid and other offline apps",
+        "url": "https://dev.to/alichherawalla/how-to-run-llms-locally-on-your-iphone-in-2026-completely-offline-no-subscription-4b3a",
+        "note": "2026 guide to offline iPhone model apps, including ones that added tool calling."
+      },
+      {
+        "name": "Gemma 4 E2B",
+        "url": "https://huggingface.co/google/gemma-4-E2B-it",
+        "note": "Open model sized for phones, with image and audio input and native function calling."
+      }
+    ],
+    "first_version": "Take an open-source local chat app and add three App Intents: rewrite, summarize, and pull dates into Calendar with a confirm step. Run them on Apple's on-device model by default and on an open model through the LanguageModel protocol when the user picks one. Everything works in airplane mode.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 5,
+      "impact": 2
+    },
+    "horizon": "now",
+    "autonomy": "suggest",
+    "related": [
+      "M-13",
+      "M-15",
+      "B-14"
+    ],
+    "notes_for_editor": "Star counts are approximate figures from the digest. I left out Private LLM's '140+ models' claim because I didn't open its page. On-phone speed figures for Gemma 4 are unverified, so none are given. The Off Grid details come from a dev.to article in the candidate that I did not open. Locally AI and MLC Chat are named in the candidate and left off the card without links."
+  }
+]
