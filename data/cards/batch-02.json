@@ -1,0 +1,933 @@
+[
+  {
+    "id": "B-10",
+    "slug": "wearable-training-coaches",
+    "title": "Wearable-driven training coaches",
+    "tagline": "Coaches that rewrite today's workout from last night's sleep, HRV and strain, then nudge you on the wrist.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Health & body",
+    "moment": "You slept five hours and your HRV is well below your normal. At 6:30am your coach swaps the interval run for an easy 30 minutes, moves the hard session to Thursday, and tells you why in two lines. The easy run is already on your Watch when you lace up.",
+    "problem": "Training plans are written weeks ahead. They don't know you slept badly, caught a cold or had a brutal week at work. Wearables collect the signals but mostly hand you a score and leave the decision to you. The job is turning last night's data into today's session and moving the rest of the week around it, without you rebuilding the plan by hand.",
+    "loop": {
+      "trigger": "Morning sync of overnight sleep and HRV",
+      "senses": "Sleep, HRV, resting HR, recent load",
+      "decides": "Train hard, go easy, or rest; what to move",
+      "checks_with_you": "Asks before moving key sessions",
+      "acts": "Rewrites today's session, syncs it to Watch",
+      "remembers": "How you felt after past low-HRV days"
+    },
+    "ios_blocks": [
+      {
+        "name": "HealthKit (HKObserverQuery, background delivery)",
+        "why": "wakes the app when new sleep, HRV and resting heart rate samples arrive"
+      },
+      {
+        "name": "HealthKit workout zones (HKWorkoutZoneGroup, iOS 27)",
+        "why": "reads time in each heart-rate zone to measure real training load"
+      },
+      {
+        "name": "WorkoutKit (WorkoutScheduler)",
+        "why": "puts the rewritten interval or easy session on Apple Watch"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel, PrivateCloudComputeLanguageModel)",
+        "why": "writes the two-line reason and answers questions, on watchOS 27 too"
+      },
+      {
+        "name": "WidgetKit (Smart Stack widget)",
+        "why": "shows today's outlook on the wrist and Lock Screen"
+      },
+      {
+        "name": "EventKit",
+        "why": "finds a free slot when a hard session moves to another day"
+      }
+    ],
+    "hard_parts": [
+      "Readiness data is noisy. HRV moves with alcohol, a late meal, illness or a loose band, so the coach needs weeks of your own baseline and must take 'I feel fine' seriously.",
+      "HealthKit encrypts its store while the phone is locked, and background delivery for some data types is capped at hourly. The 6:30am decision has to cope with data that arrives late or not at all.",
+      "Hardware-neutral is harder than it sounds. Oura, WHOOP, Garmin and Apple Watch each write different subsets of their data to Apple Health, with different delays and sleep staging.",
+      "The plan needs real coaching rules underneath (build, taper, coming back from injury). A language model that improvises the plan week to week will drift."
+    ],
+    "risks": [
+      "Safety line: it is a training coach, not a doctor. Chest pain, fainting or a resting heart rate far above normal must stop the plan and point to medical care, never just an easier workout.",
+      "Health data rules: App Review 5.1.3 bars using HealthKit data for ads and storing personal health data in iCloud, and 5.1.2(i) requires explicit consent before sending it to a third-party model.",
+      "People may hand their judgment to a score: skipping sessions they could do, or pushing through pain because the number looks good."
+    ],
+    "assumptions": [
+      "That a readiness score reflects how you actually feel well enough to justify changing your plan.",
+      "That people wear the device to bed every night, so the morning decision has data.",
+      "That a two-line explanation is enough for people to trust a skipped workout."
+    ],
+    "unknowns": [
+      "Does adjusting daily training from HRV actually improve results for recreational athletes, or does it just feel smarter?",
+      "If Apple ships the Readiness score and coaching it is testing for the Health app, is there room left for a third-party coach?",
+      "Can a hardware-neutral coach make money when Google, Oura and WHOOP bundle a coach with the device subscription?"
+    ],
+    "prior_art": [
+      {
+        "name": "Google Health / Fitbit Gemini coach",
+        "url": "https://www.macrumors.com/2026/02/10/google-fitbit-ai-health-coach-ios/",
+        "note": "Builds training plans that adapt to sleep, heart rate and readiness. Reached iOS in February 2026; the Fitbit app became Google Health in May 2026."
+      },
+      {
+        "name": "Oura Advisor",
+        "url": "https://www.androidcentral.com/wearables/oura-ring/oura-rolls-out-its-ai-powered-personal-trainer",
+        "note": "Sleep- and readiness-focused coach with memories of your patterns. Needs the ring."
+      },
+      {
+        "name": "WHOOP Coach",
+        "url": "https://wwd.com/beauty-industry-news/wellness/wearable-wellness-devices-oura-whoop-artificial-intelligence-coaching-1236562338/",
+        "note": "Recovery- and strain-based coaching tied to the WHOOP strap and membership."
+      },
+      {
+        "name": "Apple's delayed Health coach",
+        "url": "https://9to5mac.com/2026/05/24/apple-improving-heart-rate-tracking-in-watchos-27-mulberry-health-coach-delays/",
+        "note": "Apple's own AI coach (Mulberry) was delayed and reportedly scaled back, leaving Watch owners without a first-party coach."
+      }
+    ],
+    "first_version": "An iPhone and Watch app that reads HealthKit each morning and compares HRV and sleep to your own 30-day baseline. It picks one of three versions of today's planned session (as written, easier, rest), sends it to the Watch with WorkoutKit, and explains the choice in two lines. You can override with one tap, and it asks how you felt afterwards.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-09",
+      "B-21"
+    ],
+    "notes_for_editor": "Apple's scaled-back coach and the Readiness score in the iOS 27.2 beta come from press reports (9to5Mac), not Apple. The candidate's WHOOP quote ('someone to tell me what to do') was not independently verified, so it is left out of the card."
+  },
+  {
+    "id": "B-11",
+    "slug": "meeting-memory-capture",
+    "title": "Meeting and memory capture",
+    "tagline": "Your phone, Watch or a pendant records the conversation; the agent writes notes, to-dos and follow-ups.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Learning & memory",
+    "moment": "You walk out of a hallway meeting with a supplier. You tapped record on your Watch when it started, and by the elevator the notes sit under the calendar event with three action items and a drafted follow-up email. You fix one date and send it.",
+    "problem": "Notes from in-person meetings, site visits and phone calls get lost or never written. Meeting bots only join video calls, so the hallway, the job site and the doctor's office go uncaptured. The job isn't a transcript. It's the decisions, the to-dos and the follow-up email that should exist ten minutes after the meeting ends.",
+    "loop": {
+      "trigger": "You tap record on phone, Watch or pendant",
+      "senses": "Audio, calendar event, attendee names",
+      "decides": "Who said what; decisions, to-dos, owners",
+      "checks_with_you": "Before any follow-up or task is sent",
+      "acts": "Writes notes, drafts email, files tasks",
+      "remembers": "Searchable history of past conversations"
+    },
+    "ios_blocks": [
+      {
+        "name": "App Intents (AudioRecordingIntent)",
+        "why": "starts capture from the Action button or Control Center with the system recording indicator"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "required while an AudioRecordingIntent records; shows elapsed time on the Lock Screen"
+      },
+      {
+        "name": "AVFAudio (AVAudioSession)",
+        "why": "keeps recording after the screen locks"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer, SpeechTranscriber)",
+        "why": "on-device transcription, iOS 26 and later"
+      },
+      {
+        "name": "BackgroundTasks (BGContinuedProcessingTask)",
+        "why": "finishes processing a long recording after you leave the app"
+      },
+      {
+        "name": "Foundation Models (@Generable)",
+        "why": "pulls decisions, to-dos and owners into structured fields"
+      },
+      {
+        "name": "EventKit",
+        "why": "files notes under the matching calendar event and its attendees"
+      },
+      {
+        "name": "WatchConnectivity",
+        "why": "moves Watch recordings to the phone"
+      }
+    ],
+    "hard_parts": [
+      "Consent: many US states and countries require everyone's permission to record, and App Review 2.5.14 requires consent plus a visible or audible indicator. An all-day pendant runs straight into this.",
+      "Telling speakers apart in a noisy hallway, or when people talk over each other, still fails often. A to-do given to the wrong person is worse than none.",
+      "An hour of transcript is too long for the on-device model's context, so summaries need chunking or a server model. A third-party model also needs explicit consent under App Review 5.1.2(i).",
+      "Acting on the notes means OAuth into each task tool and email account plus a reliable review step. That is why most products stop at suggested to-dos."
+    ],
+    "risks": [
+      "Recording people who didn't agree, especially with always-on pendants. It needs a clear indicator and a one-tap 'off the record'.",
+      "A searchable archive of every conversation is a target for breaches, subpoenas and workplace disputes.",
+      "Vendor churn: Meta stopped selling Limitless after buying it, so users need a real export or they can lose their archive."
+    ],
+    "assumptions": [
+      "That everyone else in the room is fine with being recorded.",
+      "That people review and send the drafted follow-ups instead of letting them pile up.",
+      "That transcripts get names, numbers and dates right, which is where errors hurt most."
+    ],
+    "unknowns": [
+      "Does a lifetime conversation memory get used after the first month, or is the value only in same-day follow-ups?",
+      "How will courts and employers treat AI meeting summaries as records?",
+      "Will Apple grow its own recording and summary features into follow-up actions and squeeze the independents?"
+    ],
+    "prior_art": [
+      {
+        "name": "Granola",
+        "url": "https://apps.apple.com/us/app/granola-ai-meeting-notes/id6739429409",
+        "note": "Bot-free meeting notes. The iPhone app captures in-person meetings and links notes to calendar events; one-tap Apple Watch capture since July 2026."
+      },
+      {
+        "name": "Plaud NotePin S",
+        "url": "https://www.plaud.ai/blogs/news/plaud-unveils-notepins-and-desktop",
+        "note": "Clip-on recorder (January 2026) with an iPhone app and desktop capture; Plaud reports more than 2.5M users."
+      },
+      {
+        "name": "Amazon Bee",
+        "url": "https://www.layer3labs.io/gear/reviews/bee-ai-pendant",
+        "note": "Pendant or wristband that records all day, extracts to-dos and builds a searchable memory; free to use since Amazon bought it."
+      },
+      {
+        "name": "Otter Meeting Agent",
+        "url": "https://otter.ai/blog/otter-meeting-agent-your-new-collaborative-teammate",
+        "note": "Otter's agent pitched as a teammate inside meetings, not only a transcriber."
+      },
+      {
+        "name": "Limitless (discontinued)",
+        "url": "https://legendmemory.ai/blogs/the-archive/limitless-pendant-discontinued-the-best-alternatives-in-2026",
+        "note": "Memory pendant whose sales stopped after Meta bought the company in December 2025; shows the archive risk."
+      }
+    ],
+    "first_version": "An iPhone and Watch app that starts recording from the Action button, transcribes on device, and files notes under the matching calendar event. It pulls out decisions and to-dos with owners, and drafts one follow-up email that you edit and send from your own mail app.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-03",
+      "M-09"
+    ],
+    "notes_for_editor": "Plaud user counts, Bee pricing and the Granola Watch launch date come from company pages and press summarized in the research digest. Otter Meeting Agent's feature set is described only from the blog title."
+  },
+  {
+    "id": "B-12",
+    "slug": "family-logistics-agents",
+    "title": "Family logistics agents",
+    "tagline": "A household agent that turns school emails, flyers and texts into shared calendars, chores and grocery orders.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Family & care",
+    "moment": "The school sends a PDF about picture day, a field-trip form and a bake sale. You forward it to the family agent. It puts the dates on both parents' calendars, assigns the form to your partner, adds eggs to the grocery order, and asks you one thing: 'The flyer says the bake sale is Friday the 14th and Thursday the 13th. Which is it?'",
+    "problem": "Family plans arrive as school emails, PDFs, group texts and paper flyers, and one parent usually carries the job of turning them into a schedule. Calendar and list apps store plans but don't read the mess. Chatbots can read it but make small date errors, and one missed pickup costs more trust than months of saved minutes.",
+    "loop": {
+      "trigger": "You forward an email, text or flyer photo",
+      "senses": "Dates, deadlines, asks, who is involved",
+      "decides": "What goes where, who owns it, what's unclear",
+      "checks_with_you": "Unclear dates and anything that costs money",
+      "acts": "Adds events, assigns tasks, fills the cart",
+      "remembers": "Kids' schedules, school quirks, past errors"
+    },
+    "ios_blocks": [
+      {
+        "name": "Share extension (NSExtensionContext)",
+        "why": "takes a forwarded email, PDF or screenshot from any app"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans paper flyers and permission slips"
+      },
+      {
+        "name": "Foundation Models (@Generable)",
+        "why": "extracts dates, places and asks on device, keeping the source sentence"
+      },
+      {
+        "name": "EventKit",
+        "why": "writes events to a shared family calendar and tasks to Reminders"
+      },
+      {
+        "name": "CloudKit (CKShare)",
+        "why": "shares the household's task list and status between parents"
+      },
+      {
+        "name": "User Notifications (UNNotificationAction)",
+        "why": "asks a clarifying question with tap-to-answer buttons"
+      },
+      {
+        "name": "App Intents",
+        "why": "answers 'What's on tomorrow?' from Siri or Shortcuts"
+      }
+    ],
+    "hard_parts": [
+      "Extraction accuracy is the product. School emails say 'next Friday', repeat last year's dates and send corrections in a later thread. Milo shut down in January 2026 because small errors made scheduling more work, not less.",
+      "iOS apps can't read your Mail or Messages, so everything has to be forwarded, shared or photographed, or pulled through Gmail or Outlook OAuth that a parent must set up.",
+      "Split custody, grandparents and carpools mean the agent must know whose week it is and must not leak one household's details to the other.",
+      "Grocery ordering depends on partner integrations (Ohai uses Instacart), and substitutions still need a person."
+    ],
+    "risks": [
+      "A wrong pickup time or a missed permission slip lands on a child. Every date the agent is unsure about must be shown with its source, not guessed.",
+      "School messages hold minors' names, health notes and locations. Keep extraction on device where possible and get explicit consent before sending anything to a third-party model (App Review 5.1.2(i)).",
+      "It can quietly shift the mental load onto whichever parent gets the approval pings."
+    ],
+    "assumptions": [
+      "That one wrong date costs less trust than the agent saves in time. Milo found the opposite.",
+      "That parents will forward things consistently instead of handling them on the spot.",
+      "That both parents accept one shared system."
+    ],
+    "unknowns": [
+      "What error rate will parents tolerate before they stop trusting the calendar?",
+      "Will schools and their messaging vendors ever publish structured event feeds, making extraction unnecessary?",
+      "Can a family agent charge $10 a month when Apple, Google and Amazon bundle household assistants?"
+    ],
+    "prior_art": [
+      {
+        "name": "Ohai 'O'",
+        "url": "https://apps.apple.com/us/app/ohai-ai-household-assistant/id6477802468",
+        "note": "Household manager through an app and SMS: shared lists, tasks, meal plans and Instacart orders for $9.99/month. Mostly lists and groceries so far."
+      },
+      {
+        "name": "Milo (shut down)",
+        "url": "https://getsense.ai/blog/posts/milo-shutting-down-alternative-2026",
+        "note": "SMS family assistant backed by OpenAI and YC; closed in January 2026 after its founder said AI was too early to be reliable for family scheduling."
+      },
+      {
+        "name": "Poke",
+        "url": "https://techcrunch.com/2026/06/04/apple-approves-poke-as-the-first-ai-agent-on-its-messages-for-business-platform/",
+        "note": "General iMessage agent with calendar and email access; not built around family roles or co-parent coordination."
+      }
+    ],
+    "first_version": "A share extension and forwarding address that turns one school email, PDF or flyer photo into proposed calendar events and tasks, each showing the sentence it came from. Nothing lands on the family calendar until a parent taps confirm, and anything ambiguous comes back as a question.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-02",
+      "W-15",
+      "B-13"
+    ],
+    "notes_for_editor": "Ohai's price and founder (Care.com's Sheila Lirio Marcelo) and Milo's shutdown reasons come from the research digest, tagged likely rather than verified."
+  },
+  {
+    "id": "B-13",
+    "slug": "messaging-native-agents",
+    "title": "Messaging-native personal agents",
+    "tagline": "A personal agent you text in iMessage or WhatsApp; it watches your accounts and texts you first.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Social & communication",
+    "moment": "At 6:10am a text arrives from your agent: 'Your 9am moved to 9:30 and check-in for your flight is open. Check you in and tell Sam you'll be late?' You reply 'yes both' and put the phone down. A minute later: 'Done. Boarding pass is in your email, and Sam has your note.'",
+    "problem": "People check their messages hundreds of times a day but open a new app only when they remember to. Most assistants wait to be asked, live in their own app and can't reach the accounts where the work is. The job is an agent that watches mail and calendar, notices what needs doing, and asks in the thread you already read.",
+    "loop": {
+      "trigger": "New mail, calendar change, or your text",
+      "senses": "Gmail, Calendar, Slack, Notion via OAuth",
+      "decides": "What needs you now and what it can handle",
+      "checks_with_you": "Yes/no reply in the thread before acting",
+      "acts": "Runs the steps server-side, replies done",
+      "remembers": "Your preferences, contacts, past answers"
+    },
+    "ios_blocks": [
+      {
+        "name": "Apple Messages for Business",
+        "why": "Apple's registered business-chat channel, so the agent can be the other side of an iMessage thread (a service, not an SDK)"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "connects Gmail, Outlook, Slack and Notion with OAuth in the companion app"
+      },
+      {
+        "name": "App Intents (messages schema: sendMessage, draftMessage)",
+        "why": "lets Siri AI hand a request to the agent's companion app"
+      },
+      {
+        "name": "Suggested Actions (SuggestedActionsView, iOS 27)",
+        "why": "offers Calendar and Reminders actions under the agent's messages in its own app"
+      },
+      {
+        "name": "User Notifications",
+        "why": "fallback alerts for users who don't use a messaging channel"
+      }
+    ],
+    "hard_parts": [
+      "iOS apps can't read your iMessages, so the agent has to be the other side of the conversation: Messages for Business, its own phone number or WhatsApp. Apple approved Poke as the first AI agent on Messages for Business only in June 2026.",
+      "Prompt injection: the agent reads mail and invites written by strangers and then acts. A crafted invite can tell it to forward files, so it must treat that content as data only and confirm anything that sends, shares or pays.",
+      "A text thread is a weak approval screen. 'Yes' to a two-part question is ambiguous, and there is no Face ID step in a chat bubble.",
+      "Watching many accounts means server-side webhooks or polling and a model call per event, which costs money before the user sees any value."
+    ],
+    "risks": [
+      "A spoofed or hijacked thread becomes a remote control for your email and calendar. Forwarded or quoted text must never count as approval.",
+      "An agent that texts first can turn into the notification noise it was meant to cut.",
+      "Platform dependence: Apple or Meta can change what automated business messaging may do."
+    ],
+    "assumptions": [
+      "That Apple keeps Messages for Business open to general-purpose agents, not just airlines and banks.",
+      "That people will give one startup OAuth access to their email, calendar and work tools.",
+      "That short yes/no replies give the agent enough context to act correctly."
+    ],
+    "unknowns": [
+      "How do you add a strong approval step (Face ID, a spend limit) to a chat-only agent without sending people to an app?",
+      "Will Siri AI's cross-app actions make a separate texting agent unnecessary for iPhone owners?",
+      "Who is liable when an agent acts on a 'yes' that was meant for a different question?"
+    ],
+    "prior_art": [
+      {
+        "name": "Poke (The Interaction Company)",
+        "url": "https://techcrunch.com/2026/06/04/apple-approves-poke-as-the-first-ai-agent-on-its-messages-for-business-platform/",
+        "note": "Proactive agent used entirely by text. Watches Gmail, Calendar, Outlook, Notion, Slack and GitHub; first AI agent approved on Messages for Business (June 2026)."
+      },
+      {
+        "name": "Meta Muse in WhatsApp",
+        "url": "https://the-decoder.com/muse-can-shop-write-emails-and-negotiate-prices-for-users-all-through-whatsapp/",
+        "note": "Meta's personal agent, usable inside WhatsApp, that shops, writes email and negotiates."
+      },
+      {
+        "name": "OpenClaw",
+        "url": "https://openclaw.ai/",
+        "note": "Open-source, self-hosted agent reachable from iMessage, WhatsApp, Telegram, Signal and other channels. Setup needs Terminal skills."
+      },
+      {
+        "name": "Howie",
+        "url": "https://howie.com/",
+        "note": "Scheduling assistant with its own email address and number; works over email and iMessage, but only for scheduling."
+      }
+    ],
+    "first_version": "One narrow job done in a text thread: watch Gmail and Google Calendar, text you when a meeting moves or a check-in opens, and make the fix only after you reply yes. Start on its own phone number or WhatsApp while applying for Messages for Business.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-14",
+      "B-03",
+      "W-03"
+    ],
+    "notes_for_editor": "Poke's 'about 100M messages relayed' is a company claim reported by TechCrunch and is left out of the card. Suggested Actions (iOS 27) works in a messaging app's own chat view, not in Apple's Messages app. Messages for Business has no public iOS framework in current docs; it is listed as a service."
+  },
+  {
+    "id": "B-14",
+    "slug": "self-hosted-agent-node",
+    "title": "Self-hosted agents, iPhone as node",
+    "tagline": "Run your own agent on a home server; the iPhone app lends it the camera, location and your approvals.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Life admin",
+    "moment": "Your agent runs on a Mac mini at home. In the store it pings you through the iPhone app: 'Snap the shelf so I can check prices against your list?' You open the app, approve, and take the photo. A minute later it replies in Telegram with what to buy here and what's cheaper online.",
+    "problem": "Some people want a capable agent without handing their email and files to a startup, so they run one on their own machine. But a home server can't see where you are, take a photo or ask you a quick question on the go. The phone has to act as the agent's eyes, location and approval button without becoming a hole into your home network.",
+    "loop": {
+      "trigger": "Remote agent requests a phone capability",
+      "senses": "Camera, location, calendar, contacts",
+      "decides": "Gateway plans; phone enforces allowlist",
+      "checks_with_you": "Approval prompt for each sensitive command",
+      "acts": "Snaps photo, shares location, adds reminder",
+      "remembers": "Pairing keys and per-command permissions"
+    },
+    "ios_blocks": [
+      {
+        "name": "Foundation (URLSessionWebSocketTask)",
+        "why": "holds the link to the self-hosted gateway while the app is open"
+      },
+      {
+        "name": "User Notifications (UNNotificationAction)",
+        "why": "approve or deny a gateway request from the Lock Screen"
+      },
+      {
+        "name": "AVFoundation (AVCapturePhotoOutput)",
+        "why": "takes the photo the agent asked for, in the foreground only"
+      },
+      {
+        "name": "Core Location (CLMonitor, significant-change service)",
+        "why": "geofence and presence events that still run in the background"
+      },
+      {
+        "name": "EventKit, Contacts, PhotoKit",
+        "why": "calendar, reminder, contact and photo commands, each behind its own iOS permission"
+      },
+      {
+        "name": "LocalAuthentication",
+        "why": "Face ID before high-risk commands such as sharing contacts"
+      }
+    ],
+    "hard_parts": [
+      "iOS suspends the app and its socket in the background. OpenClaw documents camera, screen and talk commands as blocked there; only location events and presence keep working. Most requests need a push that brings you back into the app.",
+      "Reaching a home machine from a cellular connection needs a tunnel or VPN, on top of a setup that already needs Terminal skills.",
+      "Memory poisoning is a live threat: the GhostWriter study (2026) got hidden payloads into personal agents' long-term memory about 98% of the time. A phone node adds camera and location to whatever an attacker can steer.",
+      "Approval prompts have to say exactly what and why ('photo of the shelf, for the grocery task'), or people approve blindly."
+    ],
+    "risks": [
+      "A hijacked gateway can ask the phone for photos, location or contacts. Per-command approval, short-lived grants and a visible log are the main defenses.",
+      "Approval fatigue: after fifty prompts a day, people stop reading them.",
+      "No company stands behind the security; fixes depend on volunteers and on each user updating."
+    ],
+    "assumptions": [
+      "That people who self-host an agent also secure it, now that a phone node makes it more powerful.",
+      "That App Review keeps approving a thin client that takes orders from an agent Apple never reviews.",
+      "That users keep a home machine running all the time."
+    ],
+    "unknowns": [
+      "Can a zero-setup version exist (a hosted gateway with the same privacy) without becoming just another cloud agent?",
+      "Will Apple ever let a paired agent call App Intents on the phone, the way Siri can?",
+      "How should approvals scale when an agent needs the phone dozens of times a day?"
+    ],
+    "prior_art": [
+      {
+        "name": "OpenClaw iOS node app",
+        "url": "https://github.com/openclaw/openclaw",
+        "note": "Open-source self-hosted agent gateway (about 390k GitHub stars). Its iPhone, iPad and Watch app (late June 2026) is a node the agent can call, with approvals."
+      },
+      {
+        "name": "OpenClaw mobile nodes coverage",
+        "url": "https://www.marktechpost.com/2026/06/29/openclaw-releases-ios-and-android-companion-node-apps-that-connect-a-phone-to-a-self-hosted-ai-agent-gateway/",
+        "note": "Explains how the phone pairs with the gateway and what it can do in the foreground versus the background."
+      },
+      {
+        "name": "Hermes Agent (Nous Research)",
+        "url": "https://www.truefoundry.com/blog/openclaw-vs-hermes",
+        "note": "Self-hosted alternative used from phone chat apps; compared with OpenClaw here. No dedicated iPhone node."
+      },
+      {
+        "name": "PalmClaw (research)",
+        "url": "https://huggingface.co/papers/2607.13027",
+        "note": "July 2026 framework that exposes phone capabilities as typed tools instead of screen taps; research code, not a consumer app."
+      }
+    ],
+    "first_version": "A node app that pairs with one self-hosted gateway by QR code and offers three commands: current location, a camera snap and adding a reminder. Every call shows an approval notification saying what was asked and why, and the app keeps a log where you can revoke any permission.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 2
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-13",
+      "B-25",
+      "W-03"
+    ],
+    "notes_for_editor": "The candidate cites a 2026 study where poisoning OpenClaw's state raised attack success from 24.6% to 64-74%; no source URL was available, so the card uses the GhostWriter figure from the digest instead. OpenClaw's iOS release date appears as both June 24 and June 29, 2026 in sources; the card says 'late June'."
+  },
+  {
+    "id": "B-15",
+    "slug": "on-phone-app-builders",
+    "title": "On-phone app builders",
+    "tagline": "Describe an app on your iPhone; an agent writes it, builds it on cloud Macs and sends it to TestFlight.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Creativity & media",
+    "moment": "On the train you describe a tip-splitting app for your climbing group. The agent writes SwiftUI, builds it on a cloud Mac, and 20 minutes later a TestFlight invite arrives. You try it, say 'make the buttons bigger', and a new build lands before your stop.",
+    "problem": "People with an idea for a small app can't write Swift, and a Mac with Xcode is a big first step. Chat tools can write code but can't compile, sign or ship it. The job is going from a sentence to an app on your own phone, and later to the App Store, with building, signing and review steps handled for you.",
+    "loop": {
+      "trigger": "You describe an app or ask for a change",
+      "senses": "Your prompt, the codebase, build errors",
+      "decides": "Plan, code changes, how to fix failures",
+      "checks_with_you": "You test each build; you approve any submit",
+      "acts": "Builds on cloud Macs, uploads to TestFlight",
+      "remembers": "Project history, your style, synced repo"
+    },
+    "ios_blocks": [
+      {
+        "name": "SwiftUI",
+        "why": "the UI framework the agent writes for native apps"
+      },
+      {
+        "name": "App Store Connect API",
+        "why": "manages builds, TestFlight testers and submission steps from the cloud"
+      },
+      {
+        "name": "AuthenticationServices (ASWebAuthenticationSession)",
+        "why": "signs in to GitHub for repo sync"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer)",
+        "why": "turns spoken app ideas into prompts"
+      },
+      {
+        "name": "ActivityKit (push-updated Live Activity)",
+        "why": "shows build progress on the Lock Screen while a cloud Mac compiles"
+      },
+      {
+        "name": "User Notifications",
+        "why": "says when a TestFlight build is ready to try"
+      }
+    ],
+    "hard_parts": [
+      "App Review 2.5.2 bans apps that download or run code that changes features. Apple blocked updates for Replit and Vibecode and pulled Anything in March 2026. The builders that survived moved previews to an external browser and compiling to cloud Macs.",
+      "App Review 4.2.6 rejects apps made by an app-generation service unless the content owner submits them, so each app has to ship under the user's own developer account.",
+      "macOS builds must run on Apple hardware, so every build minute costs real Mac time and fleets are slow to scale.",
+      "Generated apps break in quiet ways (state bugs, missing privacy strings, crashes on older phones) that a non-coder can't diagnose."
+    ],
+    "risks": [
+      "A flood of near-identical apps that App Review rejects as spam (4.3), wasting users' time and money.",
+      "Generated apps that touch health, money or kids' data can ship without the privacy handling the rules require, and the user, not the builder, is the developer of record.",
+      "One App Review interpretation can freeze the product, as March 2026 showed."
+    ],
+    "assumptions": [
+      "That Apple keeps tolerating builders as long as the generated code runs anywhere except inside the reviewed app.",
+      "That non-developers will pay Apple's $99 yearly developer fee to ship their app.",
+      "That most people want a personal tool on their own phone more than an App Store listing."
+    ],
+    "unknowns": [
+      "Will Apple ever offer a sanctioned path for personal, unreviewed apps beyond TestFlight?",
+      "Can generated apps be kept working a year later when iOS changes, or do they rot?",
+      "Does agentic coding inside Xcode 27 turn phone-first builders into a niche?"
+    ],
+    "prior_art": [
+      {
+        "name": "Bitrig",
+        "url": "https://9to5mac.com/2026/03/06/ai-powered-coding-platform-bitrig-gets-a-mac-app-for-building-iphone-apps/",
+        "note": "From ex-Apple engineers: prompt-to-SwiftUI on iPhone (October 2025) with TestFlight export; added a Mac app in March 2026."
+      },
+      {
+        "name": "Rork Max",
+        "url": "https://rork.com/max",
+        "note": "Generates native Swift from prompts and compiles it on a fleet of cloud Macs, with a short path to App Store submission."
+      },
+      {
+        "name": "Vibecode",
+        "url": "https://www.vibecodeapp.com/",
+        "note": "Builds mobile and web apps from prompts; during Apple's enforcement it was reportedly told to stop generating software for Apple devices."
+      },
+      {
+        "name": "Apple's 2.5.2 enforcement",
+        "url": "https://www.macrumors.com/2026/03/18/apple-blocks-updates-for-vibe-coding-apps/",
+        "note": "Apple blocked updates for vibe-coding apps, saying it was enforcing a rule against apps changing behavior after review."
+      }
+    ],
+    "first_version": "An iPhone app where you describe a one-screen utility, see a web preview in Safari, and get a native TestFlight build from a cloud Mac under your own developer account. Each change is a chat message, and every build is a Git commit you can roll back.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 2
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-25",
+      "B-01"
+    ],
+    "notes_for_editor": "Rork Max's cloud-Mac compile and quick submission are from Rork's own site. Whether Vibecode still generates Apple-platform apps after the March 2026 dispute is unclear. Guideline numbers 2.5.2, 4.2.6 and 4.3 were checked against the App Review Guidelines text in the scratchpad."
+  },
+  {
+    "id": "B-16",
+    "slug": "carplay-voice-agents",
+    "title": "CarPlay voice agents",
+    "tagline": "Talk to an AI assistant through CarPlay; it answers, drafts and plans, then hands follow-ups to your phone.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Physical world",
+    "moment": "You are 40 minutes from home and remember the dentist form due tomorrow. You tap the assistant on the car screen and ask it to draft the email to the office and remind you to print the form when you get home. The draft is waiting in the app when you park.",
+    "problem": "Drive time is long, hands-busy and full of things you remember but can't act on. Siri handles short commands, and until 2026 other assistants weren't allowed on the car screen. The job is a spoken conversation that turns 'I need to deal with X' into drafts, plans and reminders waiting on your phone when you stop.",
+    "loop": {
+      "trigger": "You tap the assistant on the car screen",
+      "senses": "Your voice, location, calendar",
+      "decides": "Answer now, or queue a task for later",
+      "checks_with_you": "Drafts wait on the phone until you park",
+      "acts": "Answers aloud, drafts, saves follow-ups",
+      "remembers": "Open tasks and trips you've asked about"
+    },
+    "ios_blocks": [
+      {
+        "name": "CarPlay (CPVoiceControlTemplate)",
+        "why": "shows listening and working states on the car screen; voice-conversation apps need a CarPlay entitlement from Apple"
+      },
+      {
+        "name": "AVFAudio (AVAudioSession)",
+        "why": "two-way audio that ducks music and handles call interruptions"
+      },
+      {
+        "name": "ActivityKit (Live Activities on the CarPlay Dashboard)",
+        "why": "a glanceable list of what it queued for later"
+      },
+      {
+        "name": "Core Location",
+        "why": "route- and place-aware answers"
+      },
+      {
+        "name": "EventKit",
+        "why": "turns 'remind me when I get home' into a location-based reminder"
+      },
+      {
+        "name": "App Intents",
+        "why": "picks up a queued draft on the phone after you park"
+      }
+    ],
+    "hard_parts": [
+      "Apple's limits: voice only, no wake word, and no control of the car or iPhone functions. The app can't send a message itself; it has to queue the task for later.",
+      "Answers must be short and interruptible, and anything that needs reading or tapping has to wait until you're parked.",
+      "Tunnels and rural roads drop the cloud model mid-sentence, so it needs a graceful 'I'll finish this when you're back online'.",
+      "ChatGPT, Perplexity, Grok and Meta AI already ship general assistants in CarPlay, so a newcomer needs a specific job: an EV road-trip planner, a field-service log or a trip concierge."
+    ],
+    "risks": [
+      "Driver distraction: long or emotional conversations pull attention off the road even when they're eyes-free.",
+      "Confident wrong answers about roads, closures or local laws at speed.",
+      "The mic hears everyone in the car, so it needs a clear indicator and no silent keeping of passengers' speech (App Review 2.5.14)."
+    ],
+    "assumptions": [
+      "That drivers want a general chatbot more than an agent that knows this particular trip.",
+      "That in-car conversations stay short enough to be safe.",
+      "That Apple keeps widening what CarPlay voice apps may do instead of reserving actions for Siri."
+    ],
+    "unknowns": [
+      "Will Apple allow a wake word or steering-wheel button for third-party assistants?",
+      "Do drivers use these assistants every week, or was it a launch novelty?",
+      "How will regulators treat in-car AI conversations under distracted-driving rules?"
+    ],
+    "prior_art": [
+      {
+        "name": "ChatGPT Voice in CarPlay",
+        "url": "https://www.engadget.com/ai/openai-brings-chatgpts-voice-mode-to-carplay-191422297.html",
+        "note": "First assistant in the CarPlay voice-conversation category (April 2026). Voice only, tap to start, no car or phone control."
+      },
+      {
+        "name": "Apple opening CarPlay to chatbots",
+        "url": "https://techcrunch.com/2026/02/06/apple-is-working-to-make-carplay-compatible-with-ai-chatbots-like-chatgpt",
+        "note": "Early report on the iOS 26.4 change that let conversational AI apps into CarPlay."
+      },
+      {
+        "name": "WWDC26 session 212 (CarPlay)",
+        "url": "https://developer.apple.com/videos/play/wwdc2026/212/",
+        "note": "Apple's session on voice-conversational apps and the Voice Control template for every CarPlay app category in iOS 27."
+      }
+    ],
+    "first_version": "A CarPlay voice app for one job, such as an EV road-trip planner or a field-service log. You tap to talk, get short spoken answers, and every follow-up lands on the phone as a draft or reminder. A Live Activity on the Dashboard shows what's queued.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 2,
+      "feasibility": 4,
+      "impact": 2
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-20",
+      "B-21"
+    ],
+    "notes_for_editor": "Could not confirm the exact entitlement key for CarPlay voice-conversation apps: the CarPlay entitlements page returned by the doc tool predates it. The category and template rules rest on WWDC26 session 212 and press. Gemini and Claude in CarPlay are reported, not confirmed."
+  },
+  {
+    "id": "B-17",
+    "slug": "ai-conversation-tutors",
+    "title": "AI conversation tutors",
+    "tagline": "Speak with an AI character that adapts mid-conversation; strong at talk, weak at planning your practice week.",
+    "tier": "building-now",
+    "flagship": false,
+    "category": "Learning & memory",
+    "moment": "Before your trip to Madrid you do a ten-minute video call with an AI tutor. She notices you avoid the past tense, steers the chat to your weekend, and corrects you gently without stopping the flow. It feels like practice with a patient friend.",
+    "problem": "Speaking is the hardest skill to practice alone, and human tutors cost money and need scheduling. AI tutors now hold a real conversation and adapt within it. But they stop when the call ends: they don't plan your week, tie practice to your trip date, or push you toward real conversations with people.",
+    "loop": {
+      "trigger": "You start a session or a reminder fires",
+      "senses": "Your speech, errors, pace, past sessions",
+      "decides": "Topic, difficulty, which errors to fix now",
+      "checks_with_you": "Nothing: acts within the lesson",
+      "acts": "Talks, corrects, role-plays, sets a drill",
+      "remembers": "Weak spots, vocabulary, goals and dates"
+    },
+    "ios_blocks": [
+      {
+        "name": "AVFAudio (AVAudioEngine, AVAudioSession)",
+        "why": "low-latency two-way voice"
+      },
+      {
+        "name": "Speech (SpeechTranscriber)",
+        "why": "on-device transcripts to mark errors after a session"
+      },
+      {
+        "name": "Translation",
+        "why": "shows a quick translation when you get stuck"
+      },
+      {
+        "name": "Foundation Models (@Generable)",
+        "why": "turns a session transcript into a structured list of errors to drill"
+      },
+      {
+        "name": "EventKit",
+        "why": "books short practice sessions before a trip or exam date"
+      },
+      {
+        "name": "User Notifications",
+        "why": "reminds you of the next session"
+      }
+    ],
+    "hard_parts": [
+      "Latency: a pause of more than a beat breaks the feel of conversation, so most tutors stream audio to cloud speech models, which costs money every minute.",
+      "Correcting without killing flow: too many corrections stop learners talking; too few let errors set in.",
+      "Speech recognition does worse on learners' accented, halting speech, which makes pronunciation feedback hard to trust.",
+      "The agentic step (planning the week, tying practice to a date, setting up real conversations with people) needs calendar access and matching with other people, and none of the leaders has built it."
+    ],
+    "risks": [
+      "Children use these apps. Voice recordings of minors need short retention and parental consent.",
+      "False fluency: learners do well with a patient AI and then freeze with fast, impatient native speakers.",
+      "Streaks and engagement numbers can replace real progress as the thing the product optimizes."
+    ],
+    "assumptions": [
+      "That fluency comes from more minutes of AI conversation rather than from being pushed into real conversations with people.",
+      "That learners are willing to speak aloud to a phone at home or in public.",
+      "That per-minute voice model costs keep falling fast enough for cheap tiers."
+    ],
+    "unknowns": [
+      "Do AI conversation minutes carry over to real conversations, and how would anyone measure it?",
+      "What would an agentic tutor that arranges real-world practice look like without the safety problems of meeting strangers?",
+      "Will on-device speech models get good enough to cut the per-minute cloud cost?"
+    ],
+    "prior_art": [
+      {
+        "name": "Duolingo Video Call",
+        "url": "https://blog.duolingo.com/video-call/",
+        "note": "Real-time AI conversation with the character Lily. Moved from Max to Super in February 2026, reaching about 10x more learners. Adapts inside the call only."
+      },
+      {
+        "name": "Speak",
+        "url": "https://www.forbes.com/sites/rashishrivastava/2025/11/12/this-startup-is-racing-duolingo-to-replace-human-language-tutors-with-ai/",
+        "note": "Structured AI speaking curriculum competing to replace human tutors."
+      },
+      {
+        "name": "Praktika",
+        "url": "https://resources.rework.com/tools/ai-tools/best-ai-tools-for-language-learning-2026",
+        "note": "Avatar-led AI tutors, listed in a 2026 roundup of AI language tools."
+      }
+    ],
+    "first_version": "Add one agentic layer to a conversation tutor. You enter a trip or exam date; it books three short sessions a week on your calendar, aims each at the errors from your last call, and ends the week with a small real-world task (order a coffee, ask for directions) that you report back on.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 1,
+      "feasibility": 5,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "suggest",
+    "related": [
+      "W-22",
+      "B-26"
+    ],
+    "notes_for_editor": "Duolingo's figures (about 10x reach, words spoken more than doubled) are company claims from its blog and May 2026 shareholder letter as summarized in the digest. The Praktika link is a roundup page, not Praktika's own site. This category is conversational more than agentic; the card says so plainly."
+  },
+  {
+    "id": "B-18",
+    "slug": "scam-call-guardians",
+    "title": "Scam-call guardian agents",
+    "tagline": "An AI screens unknown callers, flags scam scripts and cloned voices, and alerts family before money moves.",
+    "tier": "building-now",
+    "flagship": true,
+    "category": "Safety & civic",
+    "moment": "Your mother gets a call from 'her grandson', crying, who needs bail money today. Because unknown calls route through the guardian's screening line, the agent hears the claim and the payment demand before she does. It pings you: 'Did you just call Mom?' You tap No, and her screen says in large type: 'Blocked a likely scam. Jake is safe.'",
+    "problem": "Scam calls now use scripts tuned for panic and, more and more, cloned voices of relatives. Carrier labels and blocklist apps catch known robocall numbers but not a fresh number with a convincing story. Older adults are targeted most, and the family usually hears about the call after the money is gone. The job is to catch the script, not just the number, and pull in someone who can confirm the story fast.",
+    "loop": {
+      "trigger": "Unknown or suspicious call comes in",
+      "senses": "Caller's words, number reputation, voice",
+      "decides": "Scam script? Claimed relative? Pay demand?",
+      "checks_with_you": "Named relative confirms; elder can override",
+      "acts": "Screens, warns, blocks, alerts family",
+      "remembers": "Trusted callers, blocked numbers, scripts"
+    },
+    "ios_blocks": [
+      {
+        "name": "CallKit (CXCallDirectoryProvider)",
+        "why": "labels or blocks known scam numbers on the system incoming-call screen"
+      },
+      {
+        "name": "IdentityLookup (Live Caller ID Lookup)",
+        "why": "real-time caller labels from your server through private information retrieval; needs Apple's approval"
+      },
+      {
+        "name": "IdentityLookup (ILMessageFilterExtension)",
+        "why": "filters the scam texts that set up or follow a call"
+      },
+      {
+        "name": "LiveCommunicationKit, or CallKit with PushKit",
+        "why": "delivers screened calls as VoIP calls so the audio stays on the screening line"
+      },
+      {
+        "name": "User Notifications (Time Sensitive)",
+        "why": "sends 'Did you just call Mom?' to the relative's phone"
+      },
+      {
+        "name": "ActivityKit (push-to-start Live Activity)",
+        "why": "shows the relative that a flagged call is in progress"
+      },
+      {
+        "name": "App Intents",
+        "why": "one press of the Action button asks 'Is this a scam?' during any call"
+      }
+    ],
+    "hard_parts": [
+      "No call audio: iOS gives third-party apps no access to live cellular calls. The agent has to sit in the network (carrier forwarding to a cloud line, or its own VoIP line), which older adults must set up and keep turned on.",
+      "Accuracy on real calls: PreScam (2026) found LLMs track scam escalation only moderately well, and TeleAntiFraud 2.0 saw classifiers drop to 0.65-0.68 macro-F1 against similar legitimate calls. Blocking a real doctor's office once can end trust.",
+      "Spoofed known numbers: a scammer showing a relative's real number skips unknown-caller routing, so the design also needs a check the elder can start herself.",
+      "Apple's free Call Screening (iOS 26) already answers unknown callers and asks their purpose, and Truecaller and RoboKiller already block numbers. A paid guardian has to add what they don't: family in the loop and the whole conversation watched."
+    ],
+    "risks": [
+      "Safety line: it must never block emergency services, hospitals or allowlisted contacts, and it must not decide for the elder. It warns and asks, and she can always take the call.",
+      "Routing calls through a cloud line means processing the other party's speech, which runs into two-party consent laws. The greeting has to disclose it.",
+      "Dignity: an app set up by adult children can slide into monitoring a parent. The elder should see and control every alert rule, and call data must not be reused (App Review 2.5.12)."
+    ],
+    "assumptions": [
+      "That older adults keep call forwarding and permissions turned on even after the app blocks a real doctor's office once.",
+      "That a relative answers a verification ping within a minute or two, day or night.",
+      "That carriers keep allowing conditional forwarding to third-party lines."
+    ],
+    "unknowns": [
+      "Can voice-clone detection over a phone-quality line stay ahead of cloning tools, or is it a losing race?",
+      "Will Apple open call audio or Call Screening results to trusted guardian apps, the way it opened call translation to VoIP apps?",
+      "Who is liable when the guardian lets a scam through, or blocks a real emergency call?"
+    ],
+    "prior_art": [
+      {
+        "name": "Apple Call Screening (iOS 26)",
+        "url": "https://www.fastcompany.com/91349248/ios-26s-best-new-feature-iphone-better-phone-hold-contacts-unkown-number-hold-assist-call-screening",
+        "note": "Answers unknown numbers, asks who is calling and why, and shows a live transcript. Free and built in, but it doesn't alert family or judge the story."
+      },
+      {
+        "name": "Hiya AI Call Assistant",
+        "url": "https://www.hiya.com/newsroom/press-releases/hiya-launches-first-ai-call-assistant-that-stops-live-and-deepfake-scams-in-real-time",
+        "note": "Screens calls and, per Hiya, flags live and deepfake scam calls in real time."
+      },
+      {
+        "name": "SeniorShield.ai",
+        "url": "https://apps.apple.com/us/app/seniorshield-ai-scam-blocker/id6738144273",
+        "note": "Scam-blocking app for older adults on the App Store."
+      },
+      {
+        "name": "Scammer Guardian",
+        "url": "https://www.scammerguardian.com/about/",
+        "note": "Ohio startup (founded 2025) that says it screens scam calls before they reach seniors; reports an iPhone launch in early 2026."
+      },
+      {
+        "name": "ZoraSafe",
+        "url": "https://www.zorasafe.com/for-seniors",
+        "note": "Phishing and QR-code checks with family alerts; focused on texts and links more than live calls."
+      }
+    ],
+    "first_version": "A family-plan app for one elder: guided carrier forwarding so unknown calls reach a cloud screener, a Contacts allowlist, and one rule. If a caller claims to be a relative or asks for money, the named relative gets a Time Sensitive 'Did you just call?' push and the elder gets a plain-language warning. No automatic blocking in the first release.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 2,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "W-04",
+      "W-16",
+      "B-02"
+    ],
+    "notes_for_editor": "Hiya's product details come from its press-release title only; how it reaches iPhone call audio is unverified. Scammer Guardian's iPhone launch is the company's own claim. Truecaller and RoboKiller are named in the candidate but had no URLs in the research, so they appear in text only. Whether iPhone Call Screening and carrier no-answer forwarding interact cleanly on every carrier is untested. Mermaid sequence labels are quoted per the spec; Mermaid shows the quote marks literally in sequence diagrams.",
+    "why_flagship": "Where agents protect instead of act, and where iOS walls hurt the most (no call audio for third parties).",
+    "deep_dive": "## Deep dive\n\nOn iPhone, a third-party app never hears a cellular call, and it can't plug into Apple's Call Screening. Even the EU-only default dialer role in LiveCommunicationKit (iOS 26) lets an app place calls and read call history, not listen. So a guardian has to sit where the audio travels: in the network. The workable design has three layers.\n\n1. **Number layer, no audio.** A Call Directory extension and Live Caller ID Lookup label or block known scam numbers on the system call screen. Cheap and private, but useless against a fresh number.\n2. **Screening line.** With the family's help, the elder turns on Silence Unknown Callers and, on carriers that allow it, points busy and no-answer forwarding at the guardian's cloud number. Unknown callers now reach an agent that asks who they are and why they're calling.\n3. **Bridged call.** If the caller passes, the agent connects them to the elder's app as a VoIP call. The audio still runs through the screening line, so the agent can warn her mid-call.\n\n```mermaid\nsequenceDiagram\n  participant Caller as \"Unknown caller\"\n  participant Carrier as \"Mom's carrier\"\n  participant Agent as \"Cloud screening agent\"\n  participant Mom as \"Mom's iPhone app\"\n  participant You as \"Your iPhone\"\n  Caller->>Carrier: \"Calls Mom from a new number\"\n  Carrier->>Agent: \"Forwards the silenced call\"\n  Agent->>Caller: \"Asks who is calling and why\"\n  Caller->>Agent: \"Says he is her grandson and needs bail money\"\n  Agent->>Agent: \"Scores the claim, the urgency and the payment demand\"\n  Agent->>You: \"Time Sensitive push: did you just call Mom?\"\n  You->>Agent: \"Taps No, I am safe\"\n  alt \"Story fails the check\"\n    Agent->>Caller: \"Ends the call\"\n    Agent->>Mom: \"Blocked a likely scam. Jake is safe.\"\n    Agent->>You: \"Summary with number, time and what was said\"\n  else \"Story checks out\"\n    Agent->>Mom: \"VoIP call with a spoken reason for calling\"\n    Mom->>Agent: \"Answers on the bridged line\"\n    Agent->>Mom: \"Private warning if a payment demand appears\"\n  end\n  Agent->>Agent: \"Adds the number to the shared label list\"\n```\n\n### What the first 90 days look like\n\n- **Weeks 1-4: listen, don't block.** Set-up happens with a family member on a video call. Contacts, doctors and the pharmacy become an allowlist. Every screened call goes through with a one-line summary. The only metric is missed real calls, and it must be zero.\n- **Weeks 5-8: add the family check.** When a caller claims to be a relative, the police or a bank, the named relative gets a Time Sensitive push. Blocking starts only for calls that match a scam script and fail that check.\n- **Weeks 9-13: mid-call warnings.** On bridged calls, the agent gives the elder a short private warning when a payment demand appears (gift cards, wire transfers, crypto, \"don't tell anyone\"). The family gets a weekly summary.\n\n### The hardest engineering problem\n\nTelling a scam from a real emergency while the call is live. Real callers are urgent too: a hospital, or a grandchild who really is stuck. PreScam (2026) found that LLMs track how a scam escalates only moderately well, and TeleAntiFraud 2.0 saw fraud classifiers fall to 0.65-0.68 macro-F1 against similar legitimate calls. Voice-clone detection over a compressed phone line is an arms race, so it counts as one weak signal. The fix is to shrink the model's job. It spots the claim (\"I'm your grandson\") and the demand (\"send money now\"), then hands the claim to the one person who can check it, and all of that has to happen on streaming speech within seconds. Spoofing is the other gap: a scammer showing a relative's real number skips the unknown-caller route, so the elder also needs a one-press \"Is this really Jake?\" check.\n\n### How it makes money\n\nA monthly family subscription, usually paid by an adult child, priced to cover telephony minutes and speech processing. Banks, card issuers and carriers are natural distribution partners because they deal with scam losses and complaints every day. It must never sell call data: App Review 2.5.12 limits call-blocking data to running the service, and trust is the whole product.\n"
+  }
+]
