@@ -402,7 +402,7 @@
     if (plan.clarify) turn.card(renderCard(plan.clarify));
     let say = plan.say || '';
     const errs = results.filter(r => !r.ok && !/said no/.test(r.error || ''));
-    if (errs.length && !say) say = errs[0].error;
+    if (errs.length && !say) say = errs.length === results.length ? 'That didn’t go through. The reason is on the step above.' : 'Part of that didn’t go through; see the steps above.';
     if (plan.unknown.length) {
       const u = plan.unknown.map(x => `“${x}”`).join(' and ');
       say = (say ? say + ' ' : '') + (plan.steps.length ? `I skipped ${u}. Nothing installed on this phone can do that.` : `I can’t do ${u} yet. Nothing installed on this phone offers that capability.`);
