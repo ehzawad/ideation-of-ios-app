@@ -43,7 +43,7 @@ Nobody ships this phone yet, and Apple doesn't have the infrastructure or the AP
 
 ## The simulator
 
-[`prototype/`](prototype/) is a working sketch of the Line in the browser. Open `index.html`; there's nothing to install.
+[`prototype/`](prototype/) is a working sketch of the Line in the browser. Download [`the-line.html`](prototype/the-line.html), one self-contained file, and open it; there's nothing to install.
 
 <p align="center"><img src="assets/simulator.png" alt="The simulator: a phone showing the Line with an alarm set for sleep and a message to Sam waiting for approval, next to an inspector listing the planner's calls and the Gate's decisions" width="100%"></p>
 
