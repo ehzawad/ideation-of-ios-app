@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" width="1280" height="900" role="img" aria-labelledby="title desc">
+  <title id="title">The iOS 27 platform on one page</title>
+  <desc id="desc">A layered map of iOS 27. Bottom: Apple silicon hardware. Above it: Swift 6.4 and Foundation. Then five columns of frameworks: data and sync, services, graphics and media, machine learning, and Apple Intelligence. Above those: the UI layer, SwiftUI with Liquid Glass and UIKit. Above that: system surfaces your app exports to, such as App Intents, widgets, Live Activities and notifications. At the top: the system experiences that call into your app, such as Siri AI, Shortcuts, Spotlight and the Lock Screen. Each layer is labeled with the day of the course that covers it. New in iOS 27: Core AI, Private Cloud Compute for apps, and the LanguageModel protocol.</desc>
+  <style>
+    svg { --bg:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --line:#e1e0d9; --card:#ffffff;
+          --b:#2a78d6; --o:#eb6834; --a:#1baf7a; --y:#eda100; --m:#e87ba4; --v:#4a3aa7; --g:#8a8a93;
+          --b-t:#e8f1fc; --o-t:#fdf0ea; --a-t:#e7f7f1; --y-t:#fdf6e3; --m-t:#fcf0f5; --v-t:#efedf9; --g-t:#f1f1f3; --new:#eb6834; }
+    @media (prefers-color-scheme: dark) {
+      svg { --bg:#111113; --ink:#ffffff; --ink2:#c3c2b7; --muted:#8e8e93; --line:#2c2c2a; --card:#1c1c1e;
+            --b:#3987e5; --o:#d95926; --a:#199e70; --y:#c98500; --m:#d55181; --v:#9085e9; --g:#8e8e93;
+            --b-t:#16243a; --o-t:#33201a; --a-t:#12291f; --y-t:#2e2612; --m-t:#2f1a23; --v-t:#221f3a; --g-t:#232326; --new:#ff8a5c; }
+    }
+    text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .bg { fill: var(--bg); }
+    .title { fill: var(--ink); font-size: 26px; font-weight: 700; }
+    .sub { fill: var(--ink2); font-size: 14px; }
+    .lh { font-size: 12px; font-weight: 700; letter-spacing: 1.2px; }
+    .fw { fill: var(--ink); font-size: 14px; font-weight: 600; }
+    .fs { fill: var(--ink2); font-size: 12px; }
+    .day { fill: var(--ink2); font-size: 12px; font-weight: 700; }
+    .newt { fill: #ffffff; font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px; }
+  </style>
+  <rect class="bg" width="1280" height="900" rx="12"/>
+  <text x="40" y="52" class="title">The iOS 27 platform on one page</text>
+  <text x="40" y="76" class="sub">Read it bottom to top: the machine, the language, the frameworks, your UI, the surfaces you export, and the system experiences that call you.</text>
+
+  <!-- day rail -->
+  <g transform="translate(1160 0)">
+    <text x="40" y="112" class="lh" fill="var(--muted)" text-anchor="middle">DAY</text>
+    <g><rect x="16" y="128" width="48" height="26" rx="13" fill="var(--g-t)"/><text x="40" y="146" class="day" text-anchor="middle">4</text></g>
+    <g><rect x="16" y="226" width="48" height="26" rx="13" fill="var(--g-t)"/><text x="40" y="244" class="day" text-anchor="middle">4</text></g>
+    <g><rect x="16" y="330" width="48" height="26" rx="13" fill="var(--g-t)"/><text x="40" y="348" class="day" text-anchor="middle">2</text></g>
+    <g><rect x="2" y="500" width="76" height="26" rx="13" fill="var(--g-t)"/><text x="40" y="518" class="day" text-anchor="middle">3 · 5 · 6</text></g>
+    <g><rect x="16" y="712" width="48" height="26" rx="13" fill="var(--g-t)"/><text x="40" y="730" class="day" text-anchor="middle">1</text></g>
+    <g><rect x="16" y="796" width="48" height="26" rx="13" fill="var(--g-t)"/><text x="40" y="814" class="day" text-anchor="middle">6</text></g>
+  </g>
+
+  <!-- 6: system experiences -->
+  <g transform="translate(40 100)">
+    <rect width="1100" height="82" rx="14" fill="var(--v-t)"/>
+    <rect width="6" height="82" rx="3" fill="var(--v)"/>
+    <text x="22" y="26" class="lh" fill="var(--v)">THE SYSTEM CALLS YOU</text>
+    <text x="22" y="52" class="fw">Siri AI · Shortcuts · Spotlight · Visual Intelligence · Lock Screen · Control Center · Dynamic Island · CarPlay · Apple Watch</text>
+    <text x="22" y="71" class="fs">Apple's own agent and surfaces. They can only use what your app explicitly exports below.</text>
+  </g>
+
+  <!-- 5: surfaces your app exports -->
+  <g transform="translate(40 196)">
+    <rect width="1100" height="90" rx="14" fill="var(--a-t)"/>
+    <rect width="6" height="90" rx="3" fill="var(--a)"/>
+    <text x="22" y="26" class="lh" fill="var(--a)">WHAT YOUR APP EXPORTS</text>
+    <g transform="translate(22 38)">
+      <text x="0" y="16" class="fw">App Intents</text><text x="0" y="34" class="fs">verbs, entities, schemas</text>
+      <text x="190" y="16" class="fw">WidgetKit</text><text x="190" y="34" class="fs">widgets and Controls</text>
+      <text x="370" y="16" class="fw">ActivityKit</text><text x="370" y="34" class="fs">Live Activities</text>
+      <text x="530" y="16" class="fw">UserNotifications</text><text x="530" y="34" class="fs">alerts with actions</text>
+      <text x="720" y="16" class="fw">BackgroundTasks</text><text x="720" y="34" class="fs">user-started jobs</text>
+      <text x="890" y="16" class="fw">Core Spotlight</text><text x="890" y="34" class="fs">indexed content</text>
+    </g>
+  </g>
+
+  <!-- 4: UI -->
+  <g transform="translate(40 300)">
+    <rect width="1100" height="84" rx="14" fill="var(--b-t)"/>
+    <rect width="6" height="84" rx="3" fill="var(--b)"/>
+    <text x="22" y="26" class="lh" fill="var(--b)">YOUR UI</text>
+    <g transform="translate(22 36)">
+      <text x="0" y="16" class="fw">SwiftUI</text><text x="0" y="34" class="fs">declarative views, the default</text>
+      <text x="260" y="16" class="fw">Liquid Glass</text><text x="260" y="34" class="fs">the iOS 26+ design language</text>
+      <text x="520" y="16" class="fw">UIKit</text><text x="520" y="34" class="fs">still underneath; interop when needed</text>
+      <text x="820" y="16" class="fw">SF Symbols · Dynamic Type</text><text x="820" y="34" class="fs">accessibility is part of the UI</text>
+    </g>
+  </g>
+
+  <!-- 3: framework columns -->
+  <g transform="translate(40 398)">
+    <text x="0" y="16" class="lh" fill="var(--muted)">FRAMEWORKS YOU CALL</text>
+    <!-- data -->
+    <g transform="translate(0 28)">
+      <rect width="208" height="268" rx="14" fill="var(--y-t)"/><rect width="208" height="5" rx="2.5" fill="var(--y)"/>
+      <text x="16" y="30" class="lh" fill="var(--y)">DATA AND SYNC</text>
+      <text x="16" y="60" class="fw">SwiftData</text><text x="16" y="77" class="fs">models, queries, history</text>
+      <text x="16" y="106" class="fw">CloudKit</text><text x="16" y="123" class="fs">sync across devices</text>
+      <text x="16" y="152" class="fw">Keychain (Security)</text><text x="16" y="169" class="fs">secrets and passkeys</text>
+      <text x="16" y="198" class="fw">Files and URLSession</text><text x="16" y="215" class="fs">documents, networking</text>
+    </g>
+    <!-- services -->
+    <g transform="translate(222 28)">
+      <rect width="208" height="268" rx="14" fill="var(--m-t)"/><rect width="208" height="5" rx="2.5" fill="var(--m)"/>
+      <text x="16" y="30" class="lh" fill="var(--m)">SERVICES</text>
+      <text x="16" y="60" class="fw">HealthKit</text><text x="16" y="77" class="fs">health data, with rules</text>
+      <text x="16" y="106" class="fw">EventKit · Contacts</text><text x="16" y="123" class="fs">calendar, reminders, people</text>
+      <text x="16" y="152" class="fw">MapKit · Core Location</text><text x="16" y="169" class="fs">places and position</text>
+      <text x="16" y="198" class="fw">PassKit · StoreKit</text><text x="16" y="215" class="fs">Apple Pay, Wallet, purchases</text>
+      <text x="16" y="244" class="fw">AuthenticationServices</text><text x="16" y="261" class="fs">sign-in, passkeys</text>
+    </g>
+    <!-- graphics -->
+    <g transform="translate(444 28)">
+      <rect width="208" height="268" rx="14" fill="var(--g-t)"/><rect width="208" height="5" rx="2.5" fill="var(--g)"/>
+      <text x="16" y="30" class="lh" fill="var(--ink2)">GRAPHICS AND MEDIA</text>
+      <text x="16" y="60" class="fw">Metal 4</text><text x="16" y="77" class="fs">GPU render, compute, ML passes</text>
+      <text x="16" y="106" class="fw">MetalFX</text><text x="16" y="123" class="fs">upscaling</text>
+      <text x="16" y="152" class="fw">Core Image</text><text x="16" y="169" class="fs">image filters</text>
+      <text x="16" y="198" class="fw">RealityKit · ARKit</text><text x="16" y="215" class="fs">3D and spatial</text>
+      <text x="16" y="244" class="fw">AVFoundation</text><text x="16" y="261" class="fs">camera, audio, video</text>
+    </g>
+    <!-- ML -->
+    <g transform="translate(666 28)">
+      <rect width="208" height="268" rx="14" fill="var(--o-t)"/><rect width="208" height="5" rx="2.5" fill="var(--o)"/>
+      <text x="16" y="30" class="lh" fill="var(--o)">MACHINE LEARNING</text>
+      <text x="16" y="60" class="fw">Core AI</text><rect x="80" y="47" width="36" height="16" rx="8" fill="var(--new)"/><text x="98" y="59" class="newt" text-anchor="middle">NEW</text><text x="16" y="77" class="fs">run your own models</text>
+      <text x="16" y="106" class="fw">Core ML</text><text x="16" y="123" class="fs">the established model runtime</text>
+      <text x="16" y="152" class="fw">Vision · Speech</text><text x="16" y="169" class="fs">text, barcodes, transcription</text>
+      <text x="16" y="198" class="fw">Translation · NL</text><text x="16" y="215" class="fs">languages, text analysis</text>
+      <text x="16" y="244" class="fw">Create ML</text><text x="16" y="261" class="fs">train small models</text>
+    </g>
+    <!-- Apple Intelligence -->
+    <g transform="translate(888 28)">
+      <rect width="212" height="268" rx="14" fill="var(--o-t)"/><rect width="212" height="5" rx="2.5" fill="var(--o)"/>
+      <text x="16" y="30" class="lh" fill="var(--o)">APPLE INTELLIGENCE</text>
+      <text x="16" y="60" class="fw">Foundation Models</text><text x="16" y="77" class="fs">on-device LLM, 4K context</text>
+      <text x="16" y="106" class="fw">Private Cloud Compute</text><rect x="16" y="130" width="0" height="0"/><rect x="170" y="80" width="36" height="16" rx="8" fill="var(--new)"/><text x="188" y="92" class="newt" text-anchor="middle">NEW</text><text x="16" y="123" class="fs">Apple's server model, 32K</text>
+      <text x="16" y="152" class="fw">LanguageModel</text><rect x="130" y="139" width="36" height="16" rx="8" fill="var(--new)"/><text x="148" y="151" class="newt" text-anchor="middle">NEW</text><text x="16" y="169" class="fs">plug in any model</text>
+      <text x="16" y="198" class="fw">Guided generation</text><text x="16" y="215" class="fs">@Generable typed output</text>
+      <text x="16" y="244" class="fw">Tool calling</text><text x="16" y="261" class="fs">the model calls your code</text>
+    </g>
+  </g>
+
+  <!-- 2: Swift -->
+  <g transform="translate(40 706)">
+    <rect width="1100" height="70" rx="14" fill="var(--card)" stroke="var(--line)"/>
+    <text x="22" y="26" class="lh" fill="var(--muted)">THE LANGUAGE</text>
+    <text x="22" y="52" class="fw">Swift 6.4 · strict concurrency (actors, Sendable, MainActor) · Observation · Synchronization · Foundation · Swift Testing</text>
+  </g>
+
+  <!-- 1: hardware -->
+  <g transform="translate(40 790)">
+    <rect width="1100" height="70" rx="14" fill="var(--ink)" opacity="0.92"/>
+    <text x="22" y="26" class="lh" fill="var(--bg)">THE MACHINE</text>
+    <text x="22" y="52" class="fw" fill="var(--bg)" style="fill:var(--bg)">Apple silicon: CPU · GPU (tile-based) · Neural Engine · Secure Enclave · unified memory · sensors · a battery and a thermal budget</text>
+  </g>
+</svg>

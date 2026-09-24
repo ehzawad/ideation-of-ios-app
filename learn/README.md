@@ -16,6 +16,10 @@ Partly. Five years of shipping gives you scar tissue that a week can't. What a w
 
 The hub is built for that. Every chapter starts with **mental models**, then the **APIs that matter** (sorted into everyday, intermediate and advanced), then short **verified code**, then the **pitfalls people learn by shipping**.
 
+## The platform on one page
+
+<p align="center"><img src="assets/platform-map.svg" alt="The iOS 27 platform as layers: Apple silicon, Swift 6.4, five columns of frameworks (data, services, graphics, machine learning, Apple Intelligence), the UI layer, the surfaces your app exports, and the system experiences that call your app" width="100%"></p>
+
 ## The plan
 
 ```mermaid
