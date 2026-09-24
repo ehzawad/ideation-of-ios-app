@@ -333,7 +333,7 @@ extension Trackable {
 }
 
 struct Chore: Trackable { let id: Int; var isFinished: Bool }
-struct Visit: Trackable { let id: String; var isFinished: Bool }
+struct Appointment: Trackable { let id: String; var isFinished: Bool }
 
 // Generic: one concrete type per call, checked and specialized at compile time.
 func openCount<T: Trackable>(_ items: [T]) -> Int {
@@ -346,7 +346,7 @@ func describe(_ item: some Trackable) -> String {
 }
 
 // `any`: a box, so different conforming types can share one array.
-let mixed: [any Trackable] = [Chore(id: 1, isFinished: false), Visit(id: "dentist", isFinished: true)]
+let mixed: [any Trackable] = [Chore(id: 1, isFinished: false), Appointment(id: "dentist", isFinished: true)]
 let stillOpen = mixed.filter { $0.isOpen }.count
 ```
 
@@ -479,7 +479,7 @@ nonisolated enum LinkChecker {
 - `nonisolated` keeps this networking code off the main actor, even in an app target whose default isolation is `MainActor`.
 - For a fixed number of calls, `async let a = f(); async let b = g(); let (x, y) = try await (a, b)` is simpler.
 
-**7. Main actor by default, `@concurrent` for heavy work.** This is the shape most app code takes with approachable concurrency turned on.
+**7. Main actor by default, `@concurrent` for heavy work.** This is the shape most app code takes with approachable concurrency turned on. (`Errand` is the model type you'll write in today's capstone.)
 
 ```swift
 @MainActor                       // inferred under default MainActor isolation
@@ -938,6 +938,7 @@ Foundation, SwiftUI, SwiftData
 - `Date` — iOS 8.0
 - `URL` — iOS 8.0
 - `View` — iOS 13.0
+- `View.task(name:priority:file:line:_:)` — iOS 15.0
 - `ViewBuilder` — iOS 13.0
 - `State` — iOS 13.0
 - `Preview(_:body:)` (`#Preview`) — iOS 13.0 (as reported by the docs)

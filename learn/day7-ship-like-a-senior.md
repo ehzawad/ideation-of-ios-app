@@ -300,7 +300,6 @@ public struct ErrandStep: Identifiable, Hashable, Sendable {
     public let id = UUID()
     public var title: String
     public var hasSideEffect: Bool
-    public var isDone = false
     public init(title: String, hasSideEffect: Bool = false) {
         self.title = title
         self.hasSideEffect = hasSideEffect
@@ -310,7 +309,6 @@ public struct ErrandStep: Identifiable, Hashable, Sendable {
 public protocol ErrandPlanning: Sendable {
     func plan(for request: String) async throws -> [ErrandStep]
 }
-
 public struct StubPlanner: ErrandPlanning {
     let titles: [String]
     public init(titles: [String]) { self.titles = titles }
@@ -353,12 +351,10 @@ public final class ErrandListModel {
     public private(set) var steps: [ErrandStep]
     public private(set) var errorMessage: String?
     private let planner: any ErrandPlanning
-
     public init(planner: any ErrandPlanning, steps: [ErrandStep] = []) {
         self.planner = planner
         self.steps = steps
     }
-
     public func plan(_ request: String) async {
         do { steps = try await planner.plan(for: request) }
         catch { errorMessage = error.localizedDescription }
@@ -544,7 +540,6 @@ struct InstrumentedPlanner: ErrandPlanning {
     let base: any ErrandPlanning
     static let logger = Logger(subsystem: "com.example.errand", category: "planner")
     static let signposter = OSSignposter(logHandle: MetricManager.logHandle(category: "planner"))
-
     func plan(for request: String) async throws -> [ErrandStep] {
         let interval = Self.signposter.beginInterval("plan")
         defer { Self.signposter.endInterval("plan", interval) }
@@ -579,7 +574,7 @@ final class DiagnosticsReporter: Sendable {
 }
 ```
 
-- The decorator adds logging and timing without touching the planner or its callers. It's the same seam from pattern 2, used a second time.
+- The decorator adds logging and timing without touching the planner or its callers. It's the same seam from pattern 2, used a second time. Signposts on a `MetricManager.logHandle(category:)` handle show up in Instruments, and MetricKit aggregates them from the field.
 - `request` is interpolated without a privacy argument, so the system redacts it. The step count and error type are marked `.public` because they're safe and useful.
 - Create one `DiagnosticsReporter` for the app's lifetime and start it from a `.task` on the root view. Apple's docs warn that two managers iterating the same sequence each get only part of the reports.
 

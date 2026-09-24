@@ -131,7 +131,7 @@ TabView(selection: $tab) {
 
 | Need | API |
 |---|---|
-| Rows | `List { ForEach(items) { … } }`, `Section("Title") { … }` (headers render in title case) |
+| Rows | `List { ForEach(items) { … } }`, `Section("Title") { … }` (headers are no longer all caps; write them in title case) |
 | Delete, move | `.onDelete(perform:)`, `.onMove(perform:)` on `ForEach` |
 | Swipe actions | `.swipeActions(edge:allowsFullSwipe:content:)`; outside `List`: `swipeActionsContainer()` (iOS 27) |
 | Drag to reorder anywhere (iOS 27) | `.reorderable()` on `ForEach` + `.reorderContainer(for:isEnabled:move:)` on the container |
@@ -176,7 +176,7 @@ TabView(selection: $tab) {
 | `.distortionEffect(_:maxSampleOffset:isEnabled:)` | `[[ stitchable ]] float2 f(float2 position, args...)` | Move pixels (ripple, wave) |
 | `Shader` as a fill | `[[ stitchable ]] half4 f(float2 position, args...)` | Paint a shape or text |
 
-Arguments: `.float(x)`, `.color(c)`. Shader effects don't render UIKit-backed views.
+Arguments: `.float(x)`, `.color(c)`. Views backed by UIKit may not render into a shader effect.
 
 ## Liquid Glass
 
@@ -244,10 +244,10 @@ Arguments: `.float(x)`, `.color(c)`. Shader effects don't render UIKit-backed vi
 | `ToolbarSpacer(.fixed)` / `.flexible` | Split groups / push apart |
 | `.visibilityPriority(.high or .low)` (iOS 27) | Order in which items move to overflow |
 | `ToolbarOverflowMenu { … }` (iOS 27) | Items that always live in overflow |
-| `.sharedBackgroundVisibility(.hidden)` | Take an item out of the shared glass background |
+| `.sharedBackgroundVisibility(.hidden)` | Drop the shared glass background; the item gets its own grouping |
 | `.hidden(_:)` on toolbar content (26.4) | Hide the whole item, not just its view |
 | `.toolbarVisibility(_:for:)` | Show or hide a bar |
-| Button roles `.confirm`, `.close`, `.cancel`, `.destructive` | Standard meaning and look; `Button(role: .close) { … }` gives the system close button |
+| Button roles `.confirm`, `.close`, `.cancel`, `.destructive` | Standard meaning and look; `Button(role: .close) { dismiss() }` in a sheet's toolbar shows a standard close button |
 
 ## HIG checklist
 

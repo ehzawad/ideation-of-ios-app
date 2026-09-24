@@ -253,7 +253,7 @@ nonisolated struct ErrandQuery: EntityStringQuery {
 }
 ```
 
-- `@ComputedProperty(indexingKey:)` does two jobs: Siri and Shortcuts can read `title`, and Spotlight indexes it under `displayName`. Properties without a macro, like `errand`, stay private to your app.
+- `@ComputedProperty(indexingKey:)` does two jobs: Siri and Shortcuts can read `title`, and Spotlight indexes it under `displayName`. Properties without a macro, like `errand`, aren't exposed to the system.
 - A `UUID` stored in your model is a good `id`: stable across launches, and across devices if the model syncs. That's what `SyncableEntity` needs.
 - `@Dependency` is filled from `AppDependencyManager`. Register the store early in `App.init`, because the system can run intents soon after launch.
 
@@ -399,7 +399,7 @@ func indexErrands(_ errands: [Errand]) async throws {
 struct ErrandDetailView: View {
     let errand: Errand
     var body: some View {
-        StepList(errand: errand)
+        StepList(errand: errand)                 // your Day 2 view
             .navigationTitle(errand.title)
             .appEntityIdentifier(EntityIdentifier(for: ErrandEntity.self, identifier: errand.id))
     }
@@ -611,7 +611,7 @@ nonisolated struct OpenErrandScreenIntent: OpenIntent, TargetContentProvidingInt
 //   .onAppIntentExecution(OpenErrandScreenIntent.self) { intent in router.show(intent.target) }
 ```
 
-   Set `UIApplicationSupportsMultipleScenes` to `YES` in the app's scene manifest so the system can route the intent to your scene.
+Then set `UIApplicationSupportsMultipleScenes` to `YES` in the app's scene manifest so the system can route the intent to your scene.
 
 6. If your SwiftData store syncs through CloudKit and the `UUID` lives in the model, add `SyncableEntity` to both entities. No other change is needed.
 
