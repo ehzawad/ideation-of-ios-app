@@ -73,7 +73,7 @@ function al(parent, dir = 'col', { gap = 0, pad = null, padX = null, padY = null
 function card(parent, { dir = 'col', pad = 16, gap = 10, radius = 22, bg = '#fff', shadow = true, stroke = null } = {}) { const f = el('div', 'card', parent, { flexDirection: dir === 'row' ? 'row' : 'column', padding: pad + 'px', gap: gap + 'px', borderRadius: radius + 'px', background: bg }); if (!shadow) f.style.boxShadow = 'none'; if (stroke) f.style.outline = stroke; if (dir === 'row') f.style.alignItems = 'center'; return f; }
 function glass(parent, o = {}) { const f = card(parent, o); f.classList.add('glass'); f.style.background = ''; return f; }
 function darkGlass(parent, o = {}) { const f = card(parent, o); f.classList.add('dglass'); f.style.background = ''; return f; }
-function pill(parent, label, { bg = C.blueL, color = '#fff', size = 15, h = 44, icon = null, grow = false, op = 1 } = {}) { const b = el('div', 'pill', parent, { height: h + 'px', borderRadius: h / 2 + 'px', color, fontSize: size + 'px' }); b.style.background = op < 1 ? hexA(bg, op) : bg; if (grow) b.style.flex = '1'; if (icon) svgIcon(b, icon, { size: size + 1, color, sw: 2.4 }); el('span', null, b).textContent = label; return b; }
+function pill(parent, label, { bg = C.blueL, color = '#fff', size = 15, h = 44, icon = null, grow = false, op = 1 } = {}) { const b = el('div', 'pill', parent, { height: h + 'px', borderRadius: h / 2 + 'px', color, fontSize: size + 'px' }); b.style.background = op < 1 ? hexA(bg, op) : bg; if (grow) { if (parent.classList.contains('row')) b.style.flex = '1'; else b.style.alignSelf = 'stretch'; } if (icon) svgIcon(b, icon, { size: size + 1, color, sw: 2.4 }); el('span', null, b).textContent = label; return b; }
 function hexA(h, a) { h = h.replace('#', ''); return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`; }
 function row(parent, o = {}) { const r = al(parent, 'row', Object.assign({ gap: 10 }, o)); return r; }
 function spacer(parent) { return el('div', 'grow', parent); }
@@ -102,7 +102,7 @@ function bar(parent, width, fillW, bg, fg) { const b = el('div', null, parent, {
 
 // ---------------- screens (mirror the Figma frames) ----------------
 { const { slot, body } = phone('B-05', { gap: 12 });
-  navTitle(body, 'Rebooking', 'Flight UA 1482 · 6:05 AM was cancelled');
+  navTitle(body, 'Rebooking', 'Flight 1482 · 6:05 AM was cancelled');
   const rule = al(body, 'row', { gap: 6, padX: 12, padY: 6, radius: 14, bg: '#e8f1fc', align: 'center' }); rule.style.alignSelf = 'flex-start'; svgIcon(rule, 'shield', { size: 14, color: '#2a78d6', sw: 2.4 }); txt(rule, 'Your rule: same day, under $150, aisle', { size: 13, w: 'Medium', color: '#1c5cab' });
   for (const [t, d, price, best] of [['8:20 AM · nonstop', 'Seat 14C held for 18 min', '+$40', true], ['11:05 AM · via Denver', 'Arrives 2 h 40 m later', '+$0', false], ['Tomorrow 6:05 AM', 'Airline covers the hotel', '+$0', false]]) {
     const c = card(body, { dir: 'row', gap: 12, radius: 18, pad: 14, stroke: best ? '2px solid #34c759' : null }); if (best) c.style.outlineOffset = '-2px';
