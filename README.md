@@ -1,24 +1,55 @@
-<p align="center"><img src="assets/art/hero.svg" alt="Agentic iOS: an idea atlas. An iPhone Live Activity shows an agent that rebooked a cancelled flight and is waiting for the user's OK." width="100%"></p>
+# Agentic iPhone: three books
 
-# Agentic iOS: an idea atlas
+Three connected books about phones that **plan and act for you**, written in September 2026, a week after iOS 27 shipped Siri AI as a beta. Each one reads as Markdown here on GitHub and as a PDF.
 
-An atlas of iPhone apps that **plan and act for you**, not just chat. It has three parts:
+| | Book | The question it answers | Read |
+|---|---|---|---|
+| 1 | **[Agentic iOS: an idea atlas](#book-1-agentic-ios-an-idea-atlas)** | What agentic apps can you build on today's iPhone, and what stops the rest? 85 ideas in three tiers, the walls they hit, and how to build inside them. | [Online](#book-1-agentic-ios-an-idea-atlas) · [PDF, 325 pages](books/agentic-ios-idea-atlas.pdf) |
+| 2 | **[iOS 27 in 7 Days](learn/README.md)** | How do you get an experienced iOS developer's mental model in a week? Swift 6.4, SwiftUI and Liquid Glass, data, App Intents and Siri AI, Foundation Models, Metal 4 and shipping, with a capstone app. | [Online](learn/README.md) · [PDF, 178 pages](learn/ios27-in-7-days.pdf) |
+| 3 | **[The Agentic Phone](agentic-os/README.md)** | What would a phone look like if it were built for agents from the ground up? A home screen that is one conversation, apps as typed capabilities, and fixed code that decides what needs your OK. With a working simulator. | [Online](agentic-os/README.md) · [PDF, 201 pages](books/the-agentic-phone.pdf) · [Simulator](agentic-os/prototype/) |
+
+Read them in any order. If you're new to iOS, start with book 2. If you want ideas to build, start with book 1. If you want to argue about where phones go next, start with book 3.
+
+## Book 3 at a glance: The Agentic Phone
+
+<p align="center"><img src="agentic-os/assets/grid-to-line.svg" alt="Left: today's home screen, a grid of apps and a path of taps. Right: the Line, where one sentence becomes two typed capability calls, each with a receipt and an Undo" width="100%"></p>
+
+Today, Siri reaches into apps one declared action at a time. The Agentic Phone designs the alternative. Its home screen is **the Line**, one conversation you type or talk into. Apps become **capability packs**: typed actions such as `audio.setVolume` or `alarms.create`, each with an **effect class** (read, reversible, consequential, irreversible). Between the model that plans and every capability sits **the Gate**, deterministic code that allows, asks or denies. The model never approves its own actions. Everything lands in a **ledger** with an Undo where undo is possible, and incoming messages are read in **quarantine**, so instructions hidden inside them are data, not commands.
+
+The [simulator](agentic-os/prototype/) runs in any browser with nothing to install: 26 system capabilities, three autonomy modes, grants, Face ID for payments, spend caps, voice input, and a message that tries to hijack the assistant. Try "Set an alarm for sleep", "Change the headphone level" or "Pay Sam $80". The book has 15 chapters and a manifest appendix, backed by [157 sourced research items](agentic-os/research/).
+
+<p align="center"><img src="agentic-os/assets/simulator.png" alt="The simulator: a phone showing the Line with an alarm set and a message waiting for approval, next to an inspector listing the Gate's decisions" width="100%"></p>
+
+## Book 2 at a glance: iOS 27 in 7 Days
+
+<p align="center"><img src="learn/assets/platform-map.svg" alt="A map of the iOS 27 platform, grouped by the day of the course that teaches each part" width="100%"></p>
+
+A seven-day plan for building the mental model of an iOS developer with five years' experience. It targets iOS 27 only, with no backward compatibility.
+
+| Day | Topic |
+|---|---|
+| 0 | [Mental models](learn/00-mental-models.md): how the platform thinks |
+| 1 | [Swift 6.4 and concurrency](learn/day1-swift-and-concurrency.md) |
+| 2 | [SwiftUI, Liquid Glass and design](learn/day2-swiftui-liquid-glass-design.md) |
+| 3 | [Data, lifecycle and the system](learn/day3-data-lifecycle-system.md) |
+| 4 | [App Intents, Siri AI and system surfaces](learn/day4-app-intents-siri-system-surfaces.md) |
+| 5 | [Apple Intelligence and on-device ML](learn/day5-apple-intelligence-and-ml.md) |
+| 6 | [Metal 4: graphics and compute](learn/day6-metal4-graphics-and-compute.md) |
+| 7 | [Ship like a senior](learn/day7-ship-like-a-senior.md) |
+
+Plus a [capstone app](learn/capstone-errand.md) built across the week, five [cheat sheets](learn/cheatsheets/), and a [glossary](learn/glossary.md) of 219 terms. Every API was checked against Apple's documentation, and each chapter had an independent review.
+
+## Book 1: Agentic iOS, an idea atlas
+
+<p align="center"><img src="assets/art/hero.svg" alt="An iPhone Live Activity shows an agent that rebooked a cancelled flight and is waiting for the user's OK." width="100%"></p>
+
+An atlas of iPhone apps that plan and act for you, not just chat. It has three tiers:
 
 - **B · Being built now**: what companies and indie developers are shipping in 2025–2026, and how it's going.
 - **W · Whitespace**: apps that today's iPhone could run, but almost nobody is building.
 - **M · Moonshots**: apps worth wanting that are still genuinely hard, and the specific wall each one hits.
 
 Every idea gets a card with the moment it helps, how the agent works (with a diagram), which iOS frameworks it would use, what makes it hard, how it could go wrong, the **unsaid assumptions** it depends on, and the **unknown unknowns** nobody has answered yet.
-
-Snapshot date: **September 2026** (iOS 27, a week after Siri AI's beta launch).
-
-## Three books in one repository
-
-| Book | What it is | Read |
-|---|---|---|
-| **Agentic iOS: an idea atlas** | This page and everything under [`ideas/`](ideas/README.md) and [`docs/`](docs/): 85 agentic iPhone app ideas, the walls they hit, and how to build inside them. | [PDF, 325 pages](books/agentic-ios-idea-atlas.pdf) |
-| **[iOS 27 in 7 Days](learn/README.md)** | A seven-day plan for building the mental model of an experienced iOS developer: Swift 6.4, SwiftUI and Liquid Glass, data and lifecycle, App Intents and Siri AI, Foundation Models and on-device ML, Metal 4, and shipping. With a capstone app and a glossary. | [PDF](learn/ios27-in-7-days.pdf) |
-| **[The Agentic Phone](agentic-os/README.md)** | A design for what comes after apps: a phone whose home screen is one conversation, where apps become typed capabilities and fixed code decides what needs your OK. With a working [simulator](agentic-os/prototype/). | [PDF](books/the-agentic-phone.pdf) |
 
 <!-- BEGIN GENERATED:stats -->
 | Tier | Ideas | What it means |
@@ -189,6 +220,17 @@ The full sortable index with scores is in **[ideas/README.md](ideas/README.md)**
 | [iOS 27 in 7 days](learn/README.md) | The learning hub: mental models, APIs and a capstone app, as chapters and a [PDF](learn/ios27-in-7-days.pdf) |
 | [The Agentic Phone](agentic-os/README.md) | The third book: an agentic phone OS designed from the ground up, with a [browser simulator](agentic-os/prototype/) and its own [research](agentic-os/research/) |
 | [Research notes](research/README.md) | The raw findings behind the atlas, with confidence tags and sources |
+
+## Repository layout
+
+| Path | What's there |
+|---|---|
+| [`ideas/`](ideas/README.md), [`docs/`](docs/), [`data/`](data/) | Book 1: generated idea cards, the terrain chapters, and `ideas.json`, the source of truth |
+| [`learn/`](learn/README.md) | Book 2: chapters, cheat sheets, capstone, glossary, PDF |
+| [`agentic-os/`](agentic-os/README.md) | Book 3: chapters, research, assets, and the [simulator](agentic-os/prototype/) |
+| [`books/`](books/) | The PDFs of books 1 and 3 |
+| [`research/`](research/README.md) | The research behind book 1 |
+| [`scripts/`](scripts/) | `build.py` (cards and charts), `pdf/build.mjs` (all three PDFs), `check_mermaid.mjs` (diagram check), `appledoc.py` (Apple docs lookup) |
 
 ## Contributing
 
