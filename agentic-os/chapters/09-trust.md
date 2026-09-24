@@ -198,7 +198,7 @@ A 2026 survey of 21 research permission systems and 5 commercial agents found th
 
 ## The full Gate
 
-The simulator's five rules become a sequence of independent checks. Every one has to pass. The idea of a conjunction comes from Agent libOS, which admits an operation only if the process is live, it holds a typed capability, the call is within the task's authority ceiling, policy or a human approves, the budget allows, and execution goes through a concrete primitive. No single check stands in for another: "a budget never authorizes" ([Agent libOS](https://arxiv.org/abs/2606.03895)).
+The simulator's six rules become a sequence of independent checks. Every one has to pass. The idea of a conjunction comes from Agent libOS, which admits an operation only if the process is live, it holds a typed capability, the call is within the task's authority ceiling, policy or a human approves, the budget allows, and execution goes through a concrete primitive. No single check stands in for another: "a budget never authorizes" ([Agent libOS](https://arxiv.org/abs/2606.03895)).
 
 ```mermaid
 flowchart TD
