@@ -45,8 +45,8 @@ timeline
 
 | Piece | What it gives an agent builder |
 |---|---|
-| [Foundation Models](https://developer.apple.com/documentation/foundationmodels) | The on-device model with tool calling and guided generation. Free and offline, with a 4,096-token context per session. Now on watchOS 27 too. |
-| [`PrivateCloudComputeLanguageModel`](https://developer.apple.com/documentation/foundationmodels/privatecloudcomputelanguagemodel) | Apple's server model, 32K context, reasoning levels, per-user daily quota. [Free for small developers](https://developer.apple.com/documentation/foundationmodels/adding-server-side-intelligence-with-private-cloud-compute) under 2M downloads. |
+| [Foundation Models](https://developer.apple.com/documentation/foundationmodels) | The on-device model with tool calling and guided generation. Free and offline, with a small per-session context (4,096 tokens in Apple's docs; Apple's [WWDC26 sample](https://developer.apple.com/videos/play/wwdc2026/241/) shows the rebuilt iOS 27 model at 8,192). Now on watchOS 27 too. |
+| [`PrivateCloudComputeLanguageModel`](https://developer.apple.com/documentation/foundationmodels/privatecloudcomputelanguagemodel) | Apple's server model, 32K context, reasoning levels, per-user daily quota. [Free for small developers](https://developer.apple.com/private-cloud-compute/) under 2M first-time downloads. |
 | [`LanguageModel` protocol](https://developer.apple.com/documentation/foundationmodels/languagemodel) | Plug other models into the same session API. Anthropic ships [ClaudeForFoundationModels](https://github.com/anthropics/ClaudeForFoundationModels); Google has a Gemini package through Firebase; MLX and Core AI cover local models. |
 | [`LongRunningIntent`](https://developer.apple.com/documentation/appintents/longrunningintent) | Lets an App Intent run past 30 seconds in the background, as long as it keeps reporting progress. |
 | [`UndoableIntent`](https://developer.apple.com/documentation/appintents/undoableintent) | Register undo for actions an intent performed (iOS 26). |
@@ -55,7 +55,7 @@ timeline
 
 **Apple is also shipping its own vertical agents:** Call Screening and Hold Assist in the Phone app (iOS 26), and a Passwords feature that changes compromised passwords for you (iOS 27, reported by [9to5Mac](https://9to5mac.com/2026/08/27/ios-27s-passwords-app-can-change-your-passwords-for-you-automatically/)). None of these is open to third parties.
 
-**What Apple didn't ship:** an agent payments API, MCP support for App Intents (MCP arrived only as an Xcode 27 developer bridge), and a live developer API for third-party model "Extensions" to Siri. Apple's AI health coach was delayed and reportedly scaled back ([9to5Mac](https://9to5mac.com/2026/05/24/apple-improving-heart-rate-tracking-in-watchos-27-mulberry-health-coach-delays/)).
+**What Apple didn't ship:** an agent payments API, MCP support for App Intents (MCP arrived only in Xcode, as a bridge for coding agents, starting with Xcode 26.3), and a live developer API for third-party model "Extensions" to Siri. Apple's AI health coach was delayed and reportedly scaled back ([9to5Mac](https://9to5mac.com/2026/05/24/apple-improving-heart-rate-tracking-in-watchos-27-mulberry-health-coach-delays/)).
 
 ## The general-purpose agents on iPhone
 
@@ -91,7 +91,7 @@ The lesson: **the phone has become the remote control and the approval screen.**
 
 The open-source layer under iOS agents is mature; the agent frameworks on top of it are not.
 
-- **Models on device:** [MLX Swift](https://github.com/ml-explore/mlx-swift), [llama.cpp](https://github.com/ggml-org/llama.cpp), [WhisperKit](https://github.com/argmaxinc/WhisperKit), Core AI (iOS 27).
+- **Models on device:** [MLX Swift](https://github.com/ml-explore/mlx-swift), [llama.cpp](https://github.com/ggml-org/llama.cpp), [WhisperKit](https://github.com/argmaxinc/argmax-oss-swift), Core AI (iOS 27).
 - **Model routing:** Apple's `LanguageModel` protocol, Hugging Face's [AnyLanguageModel](https://github.com/huggingface/AnyLanguageModel), Apple's [foundation-models-utilities](https://github.com/apple/foundation-models-utilities).
 - **Tools:** the official [MCP Swift SDK](https://github.com/modelcontextprotocol/swift-sdk). On iOS an app can be an MCP client over HTTP, not over stdio.
 - **Agent frameworks in Swift:** small projects with tens of GitHub stars. There's no dominant Swift runtime with durable runs, checkpoints, approvals and retries. That gap is itself an idea in this atlas.
@@ -107,7 +107,7 @@ The open problems are safety and memory. Prompt injection through email and noti
 
 ## Demand
 
-- AI use is flat (64% of US adults) while spending tripled, and 41% of AI users have tried an agent ([Menlo Ventures, 2026](https://menlovc.com/perspective/2026-the-state-of-consumer-ai/)).
+- AI use is nearly flat (64% of US adults) while spending tripled, and 41% of AI users have tried an agent ([Menlo Ventures, 2026](https://menlovc.com/perspective/2026-the-state-of-consumer-ai/)).
 - Menlo names money, health care and family logistics as problems people "still haven't handed off to AI" ([2025 report](https://menlovc.com/perspective/2025-the-state-of-consumer-ai/)).
 - Shoppers want approval gates, spend caps and easy returns before an agent buys ([Retail Dive](https://www.retaildive.com/news/retail-shoppers-warm-up-agentic-ai-purchases/827563/)).
 - Half of Americans are more concerned than excited about AI in daily life ([Pew](https://www.pewresearch.org/science/2025/09/17/how-americans-view-ai-and-its-impact-on-people-and-society/)).
@@ -116,6 +116,6 @@ The open problems are safety and memory. Prompt injection through email and noti
 
 1. **Loop in the cloud, controls on the phone.** Briefing, watching and approving happen on the iPhone; the work happens elsewhere.
 2. **Money and passwords go back to the human.** Nearly every agent stops before the final "Pay".
-3. **Messaging is a channel, not just an app.** People would rather text an agent than open another app ([a16z](https://a16z.com/100-gen-ai-apps-6/)).
-4. **Reliability beats capability.** One wrong date in a school email ended Milo. An agent that's right 95% of the time can be worse than no agent.
+3. **Messaging is a channel, not just an app.** On mobile, people mostly reach agents by text message, not through dedicated apps ([a16z](https://a16z.com/100-gen-ai-apps-6/)).
+4. **Reliability beats capability.** Small extraction errors, like a wrong date from a school email, helped end Milo. An agent that's right 95% of the time can be worse than no agent.
 5. **Apple wants agents as typed tools.** App Intents, schemas, confirmations and undo are the shape Apple is pushing, and the App Store rules follow it.

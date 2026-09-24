@@ -19,7 +19,7 @@ flowchart TB
   subgraph Phone["On the iPhone"]
     Intents["Your App Intents<br/>(typed tools)"]
     Router{"Model router"}
-    FM["On-device model<br/>4K context, free, private"]
+    FM["On-device model<br/>4K–8K context, free, private"]
     PCC["Private Cloud Compute<br/>32K, daily quota"]
     Policy["Policy gate<br/>limits, allowlists,<br/>confirmations"]
     Mem[("Memory<br/>local, encrypted")]
@@ -112,7 +112,7 @@ stateDiagram-v2
 ```mermaid
 flowchart TD
   S(["A step needs a model"]) --> Q1{"Personal data the user<br/>hasn't cleared for sharing?"}
-  Q1 -->|"yes"| Q2{"Fits in about 4K tokens?"}
+  Q1 -->|"yes"| Q2{"Fits the on-device context<br/>(4K–8K tokens)?"}
   Q2 -->|"yes"| On["On-device model"]
   Q2 -->|"no"| P["Private Cloud Compute"]
   Q1 -->|"no"| Q3{"Needs web, long reasoning,<br/>or tools on a server?"}
@@ -137,10 +137,10 @@ These come from the research behind this atlas: Apple's WWDC26 security guidance
 3. **Deterministic confirmation for side effects.** Payments, messages to new people, deletions and public posts go through code-level checks and OS-rendered confirmations, not a question the model writes.
 4. **Receipts for everything.** Say what was done, why, with what data, and how to reverse it.
 5. **Undo windows.** A reversible action with a 24-hour undo is often better than an approval prompt.
-6. **Per-user policies.** "Pay utilities under $200. Never message my boss." Surveys of agent permission systems find most products apply the same policy to everyone ([paper](https://huggingface.co/papers/2607.13718)).
+6. **Per-user policies.** "Pay utilities under $200. Never message my boss." A survey of agent permission systems finds most apply the same policy to every user ([paper](https://huggingface.co/papers/2607.13718)).
 7. **Mark untrusted content.** Email bodies, web pages and calendar invites are data, never instructions. Label them as untrusted before they reach the model.
 8. **Don't render remote links or images in agent output.** That's how EchoLeak-style exfiltration works.
 9. **Pause at real choices.** If three options tie, ask. Research with blind users found agents silently picking one ([Morae](https://huggingface.co/papers/2508.21456)).
-10. **Check the recipient.** Agents leak context into the wrong thread in most tests ([Agent CI Bench](https://huggingface.co/papers/2606.23189)). Before anything leaves the phone, check who it's going to.
+10. **Check the recipient.** Agents leak personal context, including to the wrong recipient, in most tests ([Agent CI Bench](https://huggingface.co/papers/2606.23189)). Before anything leaves the phone, check who it's going to.
 11. **A kill switch and an export.** One tap stops everything. The action log can be exported.
-12. **Be boring about reliability.** One wrong date extracted from a school email ended a funded startup. Show your sources, and ask when confidence is low.
+12. **Be boring about reliability.** Small extraction errors, like a wrong date from a school email, helped end a funded startup. Show your sources, and ask when confidence is low.

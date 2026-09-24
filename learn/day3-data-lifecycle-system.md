@@ -504,7 +504,7 @@ nonisolated enum StepBatch {
                     }
                 handle.task.setTaskCompleted(success: finished)
             }
-            task.expirationHandler = { work.cancel() }            // person tapped Stop, or the system needs resources
+            task.expirationHandler = { work.cancel() }            // person cancelled it, or the system needs resources
         }
         guard registered else { return }                          // identifier not permitted in Info.plist
         Task.detached(priority: .userInitiated) {
@@ -699,12 +699,12 @@ nonisolated enum StepBatch {
        }
    }
    ```
-   *Done when:* errands survive a relaunch; a reminder with both actions arrives on a locked device; "Mark next step done" updates the store without opening the app, even after you stopped the app from Xcode first; "Prepare all steps" keeps running with a system progress Live Activity after you go to the Home Screen, and tapping Stop ends it with the finished steps saved. If your list doesn't refresh after the worker saves, drive it with a `ResultsObserver`, which is documented to see changes from other contexts.
+   *Done when:* errands survive a relaunch; a reminder with both actions arrives on a locked device; "Mark next step done" updates the store without opening the app, even after you stopped the app from Xcode first; "Prepare all steps" keeps running with a system progress Live Activity after you go to the Home Screen, and cancelling it from the Live Activity stops it with the finished steps saved. If your list doesn't refresh after the worker saves, drive it with a `ResultsObserver`, which is documented to see changes from other contexts.
 
 ## Check yourself
 
 1. Your app saves its state when `scenePhase` becomes `.background`, yet some people still lose their last edit. Why, and what's the fix?
-   <details><summary>Answer</summary>A suspended app can be removed from memory with no code running, and moving to the background can be cut short. Saving at one transition is a single point of failure. Save when data changes (the main context autosaves), and treat leaving `.active` as the latest point to flush anything pending.</details>
+   <details><summary>Answer</summary>Saving at one transition is a single point of failure. It misses crashes; on iPad the app-level phase stays `.active` while one window closes; and a slow save can be cut off when the app is suspended. Save when data changes (the main context autosaves), treat leaving `.active` as the last point to flush anything pending, and wrap any unavoidable final work in `beginBackgroundTask(withName:expirationHandler:)`.</details>
 
 2. Where should Errand keep: the API refresh token, "has seen onboarding," the selected errand in each iPad window, 3,000 errands, and a downloaded PDF receipt?
    <details><summary>Answer</summary>Keychain (with an accessibility class background code can use); `@AppStorage`/`UserDefaults`; `@SceneStorage`; SwiftData; a file in Application Support or Documents (or an `.externalStorage` attribute), not a regular row.</details>
