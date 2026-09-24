@@ -1,0 +1,944 @@
+[
+  {
+    "id": "W-19",
+    "slug": "ghost-network-buster",
+    "title": "Ghost Network Buster",
+    "tagline": "Calls down your plan's therapist list to find who is really taking patients, and files the gap if nobody is.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Health & body",
+    "moment": "You finally decide to find a therapist. Your plan's directory lists 180 in-network names, and the first eight you call are voicemail, full, or no longer take your plan. You hand the list to the agent with three needs: evenings, telehealth, someone who treats OCD. Two days later you have four real openings and a dated log of every listing that was dead.",
+    "problem": "Insurer directories are full of 'ghost' listings. In a 2023 Senate Finance Committee secret-shopper study, more than 80% of the Medicare Advantage mental-health listings staff tried were unreachable, not taking new patients, or not in network. Therapy marketplaces show only clinicians who joined them, and nothing on the patient's side turns all those failed calls into pressure on the plan.",
+    "loop": {
+      "trigger": "You start a search with your plan and needs",
+      "senses": "Plan directory, call and email replies",
+      "decides": "Who is real, in network, open, and a fit",
+      "checks_with_you": "What it may share; which provider to book",
+      "acts": "Calls practices; drafts exception requests",
+      "remembers": "Dead-listing log with dates and times"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans the insurance card for plan name and member ID"
+      },
+      {
+        "name": "HealthKit (HKClinicalTypeIdentifier.coverageRecord)",
+        "why": "reads plan details from connected health records if you opt in"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows search progress while a calling batch runs"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel)",
+        "why": "turns call outcomes into a structured short list on the phone"
+      },
+      {
+        "name": "EventKit",
+        "why": "adds the intake call you approve to your calendar"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "tells you when a practice with an opening calls back"
+      }
+    ],
+    "hard_parts": [
+      "Getting the list. Medicare Advantage and Medicaid plans must publish a FHIR Provider Directory API under CMS's 2020 interoperability rule, but many employer and marketplace plans offer only a website, so the fallback is a supervised cloud browser or a photo of the list.",
+      "The calls run from cloud telephony on a server, not the phone. Many practices use voicemail or AI receptionists, so the agent needs its own callback number and has to match each callback to the right listing.",
+      "Data minimization on every call: plan, availability and the focus area you chose. It says nothing about your history unless you approve the exact wording.",
+      "The complaint path depends on plan type: the state insurance department for fully insured plans, the Department of Labor for self-funded employer plans, CMS for Medicare Advantage. The agent has to route each draft to the right place."
+    ],
+    "risks": [
+      "Safety line: this is a search tool, not care and not a crisis service. A crisis option (988 in the US) stays on every screen, and any sign of crisis stops the search and shows emergency help instead of a waitlist.",
+      "Not legal advice. Exception requests and regulator complaints are drafts you send yourself. When a plan refuses, the app points you to a patient advocate or your state's consumer assistance program.",
+      "Practices may treat a wave of AI calls as spam. It needs one call per listing per search, a clear 'I am an AI assistant calling for a patient' opening, and per-practice rate limits."
+    ],
+    "assumptions": [
+      "Practices will answer three short questions from an AI caller that says what it is.",
+      "A dated log of dead listings will move a plan to grant an out-of-network exception or a single-case agreement.",
+      "People will trust an app with the fact that they are looking for mental-health care."
+    ],
+    "unknowns": [
+      "How often plans grant network-gap exceptions when shown a call log, and how fast.",
+      "Whether state call-recording and AI-disclosure laws allow recorded agent calls to practices in every state.",
+      "Whether a call log counts as proof under the No Surprises Act rule that limits your costs when you relied on a wrong directory listing."
+    ],
+    "prior_art": [
+      {
+        "name": "Senate Finance Committee secret-shopper study (2023)",
+        "url": "https://www.finance.senate.gov/chairmans-news/wyden-calls-for-action-to-get-rid-of-ghost-networks-releases-secret-shopper-study",
+        "note": "The evidence: staff could book appointments only 18% of the time. A report, not a tool patients can use."
+      },
+      {
+        "name": "NBC News on therapy ghost networks",
+        "url": "https://www.nbcnews.com/health/health-care/ghost-networks-health-insurance-companies-therapy-rcna210591",
+        "note": "Reporting on the problem. Patients still call down the list by hand."
+      },
+      {
+        "name": "Headway",
+        "url": "https://headway.co/",
+        "note": "Filters to in-network therapists and checks benefits, but only for clinicians on Headway, not your plan's full directory. Alma, Rula and Grow Therapy work the same way. None builds an exception case."
+      },
+      {
+        "name": "Zocdoc on ghost networks",
+        "url": "https://www.zocdoc.com/resources/blog/article/ghost-networks-doctor-hard-to-find",
+        "note": "Avoids ghosts by showing only bookable listings, which leaves most of the directory out."
+      },
+      {
+        "name": "Lyra Health",
+        "url": "https://www.lyrahealth.com/blog/ghost-network/",
+        "note": "An employer-paid network that bypasses the insurer directory. Only for covered employees."
+      }
+    ],
+    "first_version": "Start where the data is open: Medicare Advantage directories through the Provider Directory API. The agent calls up to 40 practices over two days, returns a short list with first-available dates, and exports the dead-listing log as a PDF to attach to a plan complaint. No auto-booking at first.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "W-01",
+      "B-02",
+      "B-24"
+    ],
+    "notes_for_editor": "The 80% and 18% figures are from the May 2023 Senate Finance Committee study (120 calls, 12 MA plans, six states; small sample), confirmed via search results. The CMS 2020 interoperability rule (Provider Directory API for MA and Medicaid) and the No Surprises Act directory protections are from memory, not re-verified. Headway's scope is from its site as shown in search results. I found no product that calls down a patient's own directory."
+  },
+  {
+    "id": "W-20",
+    "slug": "chart-check",
+    "title": "Chart Check",
+    "tagline": "Reads the note your doctor's AI scribe wrote about you, flags what's wrong, and drafts the correction.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Health & body",
+    "moment": "Two days after your visit, the note shows up in your patient portal. It says you 'deny chest pain', lists a medication you stopped last year, and puts your knee surgery on the wrong side. You would never have read it. The agent did, and it shows you three flagged quotes with a short correction ready for you to send.",
+    "problem": "Many clinics now use ambient AI scribes that listen to the visit and draft the note, which the clinician then signs. Mistakes, mostly things left out, end up in a record that insurers, specialists and future doctors will rely on. Patients can read their notes, but few read dense notes closely, and almost nobody works through the HIPAA amendment process.",
+    "loop": {
+      "trigger": "A new visit note arrives in Health Records",
+      "senses": "The note, your memo, med and allergy lists",
+      "decides": "Which checkable facts disagree, with quotes",
+      "checks_with_you": "You confirm each flag before anything goes",
+      "acts": "Drafts portal message or amendment request",
+      "remembers": "Corrections filed and the 60-day clock"
+    },
+    "ios_blocks": [
+      {
+        "name": "HealthKit (HKClinicalTypeIdentifier.clinicalNoteRecord, HKAttachment)",
+        "why": "reads new clinical notes and their attached files from participating providers"
+      },
+      {
+        "name": "HealthKit (medicationRecord, allergyRecord)",
+        "why": "checks the note against your recorded medications and allergies"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer, SpeechTranscriber)",
+        "why": "transcribes your own after-visit voice memo on the device"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel)",
+        "why": "compares note and memo on the device so the text stays local"
+      },
+      {
+        "name": "PDFKit",
+        "why": "reads note PDFs you download from the portal and share to the app"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "tells you when a new note has something worth checking"
+      }
+    ],
+    "hard_parts": [
+      "Coverage. Health Records only carries clinical notes from institutions that share them through Apple's connection, and many do not. The fallback is a PDF you download from the portal. Sending the correction also stays manual, because patient portals have no public messaging API.",
+      "Precision beats recall. The agent must flag only facts a patient can judge (side, drug, dose, dates, what you did or didn't say) and stay quiet on clinical reasoning, or clinics will learn to ignore it.",
+      "Long notes don't fit the on-device model in one pass, so it checks section by section. Sending HealthKit data to a general cloud model runs against HealthKit's sharing rules, so the default is on-device only.",
+      "Copy-forward. An error fixed in one note can live on in later notes and in records already sent to other providers. The agent has to re-read later notes and list who received the record."
+    ],
+    "risks": [
+      "Safety line: not medical advice. It never says a diagnosis or treatment is wrong; it only shows where the note disagrees with your own account. Questions about symptoms or care go to your clinician.",
+      "A wrong flag could make you distrust a correct note. Every flag shows the exact quote, the source it conflicts with, and a 'the note may be right' option.",
+      "Your memory can be wrong too. The provider decides on any amendment. If it is denied, HIPAA lets you add a statement of disagreement, and the app drafts that rather than escalating."
+    ],
+    "assumptions": [
+      "For the facts it flags, your memo or memory is more reliable than the scribe's draft.",
+      "Clinicians will fix precise, polite, patient-confirmed corrections rather than resent them.",
+      "Enough providers share notes into Health Records, or patients will download PDFs."
+    ],
+    "unknowns": [
+      "How common patient-checkable errors are in signed AI-scribe notes; published error rates vary widely.",
+      "Whether health systems will build a fast lane for patient corrections once volume grows.",
+      "Whether insurers and later doctors see the corrected note or an older copy."
+    ],
+    "prior_art": [
+      {
+        "name": "OpenNotes",
+        "url": "https://en.wikipedia.org/wiki/OpenNotes",
+        "note": "The movement that got visit notes shared with patients. It gives access; nothing reads the notes for you or files corrections."
+      },
+      {
+        "name": "Ambient AI scribe safety research",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13456971/",
+        "note": "Studies errors in scribe-drafted notes. The quality checks it looks at serve clinics, not patients."
+      },
+      {
+        "name": "Omission blindness in AI clinical notes",
+        "url": "https://arxiv.org/pdf/2608.31016",
+        "note": "Research on why omissions are the hardest scribe errors to catch. No patient-side tool."
+      },
+      {
+        "name": "HealthKit clinical record types",
+        "url": "https://developer.apple.com/documentation/healthkit/hkclinicaltypeidentifier",
+        "note": "The API that makes a patient-side reader possible, including clinical notes since iOS 16.4. No app uses it for this."
+      }
+    ],
+    "first_version": "A note checker for Health Records notes and portal PDFs. You record a 60-second memo after the visit, the app compares it with the note on the device, shows up to three flags with quotes, and drafts a short portal message you copy and send. Formal amendment requests and the 60-day tracking come next.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-09",
+      "M-20",
+      "W-01"
+    ],
+    "notes_for_editor": "The candidate's error-rate range (4.8% to 71% of signed notes) is left out because I could not verify it. The PMC and arXiv URLs come from the candidate; I did not open them, so their titles are as the candidate described them. The HIPAA amendment timeline (act within 60 days, one 30-day extension, statement of disagreement on denial; 45 CFR 164.526) is from memory. clinicalNoteRecord (iOS 16.4) verified in Apple docs."
+  },
+  {
+    "id": "W-21",
+    "slug": "discharge-scramble",
+    "title": "Discharge Scramble",
+    "tagline": "Told to pick a nursing home by tomorrow? It calls every one for a bed and watches Medicare appeal deadlines.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Family & care",
+    "moment": "Your dad has been in the hospital for four days after a fall. At 4 pm the case manager hands you a printed list of 31 nursing homes and says he leaves tomorrow, so pick three. You photograph the list at his bedside. By 7 pm your phone shows five homes with a bed this week that take his plan and can give IV antibiotics, next to their inspection records.",
+    "problem": "Hospital discharge gives families hours to choose post-acute care from a list with no bed, insurance or care-capability data on it. Hospitals, nursing homes and insurers all run software on their side, while the family works from a printout. Later, a notice that Medicare coverage is ending starts a fast-appeal deadline that many families miss.",
+    "loop": {
+      "trigger": "You photograph the discharge list",
+      "senses": "List, notices, call answers, CMS ratings",
+      "decides": "Which homes fit bed, plan and care needs",
+      "checks_with_you": "You pick; you approve each appeal step",
+      "acts": "Calls admissions, sends picks, preps appeal",
+      "remembers": "Shared log of notices, calls and names"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans the facility list and every notice you are handed"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel, Attachment)",
+        "why": "recognizes a notice type and pulls out its dates on the device"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "counts down to the fast-appeal deadline on the Lock Screen and Watch"
+      },
+      {
+        "name": "App Intents (LiveActivityIntent)",
+        "why": "lets you approve a step from a Live Activity button"
+      },
+      {
+        "name": "UserNotifications (time-sensitive)",
+        "why": "alerts you when a facility calls back or a deadline nears"
+      },
+      {
+        "name": "MessageUI (MFMessageComposeViewController)",
+        "why": "prefills updates to siblings that you send yourself"
+      }
+    ],
+    "hard_parts": [
+      "Speed: 30 admissions lines in two hours. A server-side agent runs the calls in parallel from cloud telephony, and many admissions offices want a referral packet or a fax rather than a call, so it needs e-fax too.",
+      "Inpatient or observation status decides whether Original Medicare covers the nursing-home stay (it needs three inpatient midnights). The app cannot see hospital status; it can only prompt you to ask the case manager.",
+      "Consent and proxy authority. Sharing a parent's details with facilities needs their consent or a health-care proxy, captured before the first call.",
+      "Deadlines depend on notice dates the app only knows if someone scans the notice. For the fast appeal, the agent can dial the QIO from the cloud and then call your own number to join you in."
+    ],
+    "risks": [
+      "Safety line: not medical or legal advice. Whether a home can handle dementia care or IV antibiotics is what the facility says on the call; the hospital care team confirms fit. For appeals the app points to the Medicare QIO, your state's SHIP counselors and elder-law attorneys, and you or your parent approve every step.",
+      "Sharing a parent's diagnoses with 30 facilities is a privacy risk. Each call shares only what that question needs.",
+      "Star ratings can mislead. Staffing and quality measures are partly self-reported, so the app shows inspection findings next to the stars."
+    ],
+    "assumptions": [
+      "Admissions staff will give bed and insurance answers to a disclosed AI caller.",
+      "The family can get the parent's consent or proxy authority in time.",
+      "Case managers will accept choices a family sends from an app."
+    ],
+    "unknowns": [
+      "Whether hospitals will let families add their own facility picks, or insist on their referral platform.",
+      "How often a fast appeal succeeds when the family files on time with a clean record.",
+      "How to reach families before the crisis, since this happens rarely to any one person; caregiver groups, employers and hospital social workers are the likely channels."
+    ],
+    "prior_art": [
+      {
+        "name": "ExaCare (nursing homes approving admissions with AI)",
+        "url": "https://www.mcknights.com/news/nursing-homes-greenlighting-admissions-with-ai/",
+        "note": "Facility-side AI that approves referrals within hours. It speeds up the facility, not the family."
+      },
+      {
+        "name": "NYU Langone discharge-need prediction",
+        "url": "https://nyulangone.org/news/ai-tool-helps-predict-which-patients-need-continued-care-after-leaving-hospital",
+        "note": "Hospital-side model that predicts who needs continued care. Helps planners, not families choosing a home."
+      },
+      {
+        "name": "CMS Five-Star Quality Rating System",
+        "url": "https://www.cms.gov/medicare/health-safety-standards/certification-compliance/five-star-quality-rating-system",
+        "note": "Ratings for inspections, staffing and quality. No bed or plan availability, so you still call every home."
+      },
+      {
+        "name": "Medicare fast appeals",
+        "url": "https://www.medicare.gov/providers-services/claims-appeals-complaints/appeals/fast-appeals",
+        "note": "Explains the fast-appeal process and deadline. Nobody tracks it for you."
+      },
+      {
+        "name": "Brevy Care fast-appeal guide",
+        "url": "https://brevy.com/medicare/fast-appeal",
+        "note": "A 2026 consumer guide to fast appeals. Seen only in search results; I could not open it to check whether it does more than explain."
+      }
+    ],
+    "first_version": "A bedside app for one metro area. You scan the list, a server agent calls each admissions line with three questions (bed this week, plan accepted, named care needs), merges CMS data, and returns a ranked short list within two hours. Notice scanning and the fast-appeal countdown come second.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 3,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "W-01",
+      "M-20",
+      "B-12"
+    ],
+    "notes_for_editor": "Fast-appeal deadline (contact the BFCC-QIO by noon the day before services end) confirmed via search results (Medicare.gov, Medicare Interactive). The three-inpatient-midnight rule is from memory. Hospital-side platforms named in the candidate (naviHealth, WellSky CarePort, Olio) and the nH Predict lawsuit against UnitedHealth are left out of prior_art because I had no verified URLs. Brevy Care could be a consumer product in this space; worth a look before final tiering."
+  },
+  {
+    "id": "W-22",
+    "slug": "errand-immersion",
+    "title": "Errand Immersion",
+    "tagline": "Turns errands you already have into target-language practice: preps the phrases, cues you, then debriefs.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Learning & memory",
+    "moment": "You have a 140-day streak in Portuguese, but you still freeze with real people. On Sunday the agent sees you need a haircut and a birthday cake this week and suggests a Brazilian bakery on your commute. On Thursday, as you walk up to the bakery, your Watch shows the six phrases you rehearsed that morning. Afterwards you say a 30-second debrief into your phone.",
+    "problem": "Conversation apps drill you inside the app and count minutes and streaks. The hard step is speaking with real people, and no app plans that part: where to go, what to say, and what to practice next based on how it went.",
+    "loop": {
+      "trigger": "Sunday planning, or arriving at a place",
+      "senses": "Calendar, reminders, places, your debrief",
+      "decides": "Which errands can become practice this week",
+      "checks_with_you": "Accept, swap or skip each practice errand",
+      "acts": "Preps phrases, cues on arrival, replans",
+      "remembers": "Words you missed and what went well"
+    },
+    "ios_blocks": [
+      {
+        "name": "EventKit",
+        "why": "reads the week's events and reminders and schedules 5-minute prep slots"
+      },
+      {
+        "name": "MapKit (MKLocalSearch)",
+        "why": "finds candidate bakeries, barbers and shops near your routes"
+      },
+      {
+        "name": "Core Location (CLMonitor)",
+        "why": "geofences the chosen place to bring up the phrase card"
+      },
+      {
+        "name": "ActivityKit (Live Activities)",
+        "why": "shows the phrase card on the Lock Screen and Watch Smart Stack"
+      },
+      {
+        "name": "Speech (SpeechAnalyzer, SpeechTranscriber)",
+        "why": "transcribes your own debrief on the device"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel)",
+        "why": "writes the pre-brief and pulls missed words from the debrief"
+      },
+      {
+        "name": "App Intents",
+        "why": "lets you say 'brief me for the bakery' to Siri or Shortcuts"
+      }
+    ],
+    "hard_parts": [
+      "Knowing which places really serve in your target language. Map data rarely says so. The agent can guess from names and reviews, but you have to confirm each place.",
+      "Geofences at small radii fire late or not at all on dense city blocks, so the card also needs a manual 'I'm here' button.",
+      "Language coverage. SpeechTranscriber supports a limited set of locales and the on-device model is stronger in some languages than others, so each target language needs testing.",
+      "Small towns may have no fitting places. The fallback is real calls abroad (a hotel, a museum ticket office) and online exchange partners."
+    ],
+    "risks": [
+      "Recording people without consent. The debrief records only your own voice after the errand; the app never records the conversation.",
+      "Treating people as practice props. The plan sticks to errands where you are an ordinary customer and doesn't ask staff for extra time.",
+      "Meeting strangers from exchange apps carries safety risk. The agent suggests public places and never shares your location."
+    ],
+    "assumptions": [
+      "Target-language speakers or businesses fit into a normal week, which holds in big cities and fails in many towns.",
+      "Learners will record an honest debrief right after an awkward moment.",
+      "Short, just-in-time phrase cards help more than longer in-app drills."
+    ],
+    "unknowns": [
+      "Whether real-world errands improve speaking faster than more AI role-play.",
+      "How to measure progress without recording the other person.",
+      "Whether big tutor apps will partner with or copy an app that sends learners outside."
+    ],
+    "prior_art": [
+      {
+        "name": "Duolingo Video Call",
+        "url": "https://blog.duolingo.com/video-call/",
+        "note": "Real-time AI conversation that moved into the Super tier in February 2026. Practice stays inside the app; it never plans a real conversation."
+      },
+      {
+        "name": "Speak",
+        "url": "https://www.speak.com/",
+        "note": "AI speaking tutor aimed at replacing human tutors. Also stays inside the app."
+      },
+      {
+        "name": "Gliglish",
+        "url": "https://gliglish.com/",
+        "note": "AI role-play of everyday scenes like ordering or shopping, not tied to your actual errands or places."
+      }
+    ],
+    "first_version": "One language, one city. Every Sunday it proposes three practice errands from your reminders, you confirm the places, and it builds a phrase card that appears as a Live Activity when you arrive or tap 'I'm here'. A 30-second debrief shapes next week's plan.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-17",
+      "B-11"
+    ],
+    "notes_for_editor": "Tandem and HelloTalk (language-exchange apps) are relevant but left out of prior_art because I had no verified URLs. SpeechTranscriber locale support for Portuguese was not checked; the card treats locale coverage as a hard part."
+  },
+  {
+    "id": "W-23",
+    "slug": "collector-line",
+    "title": "Collector Line",
+    "tagline": "A separate number your AI answers when debt collectors, and their voice bots, call about a debt.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "A collection agency's voice bot has called five times this week about a gym debt you don't recognize. You gave it your Collector Line number, so your agent picks up. It says the call is recorded and that it is an AI, asks for the validation notice, and says to contact you by mail only. By Friday a dispute letter is waiting for your approval, and the app shows how many days are left to dispute.",
+    "problem": "Debt collectors now run cheap AI voice and text agents, so contact is constant. The CFPB's Regulation F gives consumers real rights: a validation notice, a window to dispute, limits on how often and when collectors call, and the right to restrict how they get in touch. Using those rights takes records, dates and letters that stressed people rarely keep.",
+    "loop": {
+      "trigger": "A collector calls or writes to your line",
+      "senses": "Calls, validation notices, letters",
+      "decides": "Deadlines, Reg F limits, old-debt risk",
+      "checks_with_you": "Every letter; anything that admits a debt",
+      "acts": "Answers calls, mails disputes, logs it all",
+      "remembers": "Timeline and contact count per debt"
+    },
+    "ios_blocks": [
+      {
+        "name": "CallKit (Call Directory extension, CXCallDirectoryProvider)",
+        "why": "labels known collector numbers when they call your real phone"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans validation notices and letters"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel, Attachment)",
+        "why": "reads notice fields on the device and flags missing ones"
+      },
+      {
+        "name": "EventKit",
+        "why": "puts the dispute and response deadlines on your calendar"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "server push after the agent takes a call"
+      },
+      {
+        "name": "App Intents",
+        "why": "lets you ask Siri what collectors said today"
+      }
+    ],
+    "hard_parts": [
+      "Getting collectors onto the new number. The agent asks in writing that they use it or the mail, but they may keep calling your old number. The Call Directory extension can label those calls; it cannot answer them.",
+      "Recording and disclosure. Some states require every party's consent to record. The agent announces recording, and if the collector objects it stops recording and keeps written notes.",
+      "Statute-of-limitations estimates differ by state and debt type, and in some states a small payment restarts the clock. The app must say when an estimate is uncertain and send the user to a lawyer.",
+      "Certified mail needs a print-and-mail service with proof of delivery linked to each deadline."
+    ],
+    "risks": [
+      "Safety line: not legal advice. It never agrees to pay, sets up a payment plan, admits a debt or shares bank details. A lawsuit, court papers or a garnishment notice sends you straight to legal aid or a consumer attorney.",
+      "Drafts that cross into legal advice invite unauthorized-practice-of-law claims. Letters stick to the forms the law describes and cite their sources.",
+      "Treating a court summons like a collection letter is the worst failure. Any court paper is flagged as urgent and is never handled by the agent alone."
+    ],
+    "assumptions": [
+      "Collectors will use the number you give them and respect a request to contact you by mail.",
+      "State recording laws allow a disclosed AI to take the call for you.",
+      "People in collections will trust an app with their debts."
+    ],
+    "unknowns": [
+      "Who pays: people in collections rarely buy subscriptions, so legal-aid partners, nonprofits or partner attorneys paid through FDCPA fee-shifting are the likely models.",
+      "Whether regulators with shrinking enforcement staff act on AI-built complaint files.",
+      "How collector bots behave when a consumer bot answers (loops, hang-ups, escalation to humans)."
+    ],
+    "prior_art": [
+      {
+        "name": "Pine AI",
+        "url": "https://apps.apple.com/us/app/pine-ai-assistant-agent/id6746403769",
+        "note": "Consumer calling agent for bills, cancellations and refunds. It places calls for you; it does not answer collectors or track Reg F rights."
+      },
+      {
+        "name": "Skit.ai",
+        "url": "https://skit.ai/",
+        "note": "Collector-side AI voice agents: the other side this app counters."
+      },
+      {
+        "name": "SoloSuit debt validation letter",
+        "url": "https://www.solosuit.com/debt_validation_letter",
+        "note": "Attorney-prepared validation letters and lawsuit answers. One-off documents; nothing answers calls, counts contacts or tracks deadlines."
+      },
+      {
+        "name": "Debt Discipline on AI debt collectors",
+        "url": "https://www.debtdiscipline.com/ai-debt-collectors-rights-2026",
+        "note": "Explains consumer rights against AI collectors. Information only, no tool."
+      }
+    ],
+    "first_version": "A number plus a scanner. The agent answers collector calls with a fixed script (disclose, take details, request the notice, ask for mail only), logs each call, and counts contacts per debt against Reg F's seven-calls-in-seven-days limit. You scan the validation notice, and it drafts a dispute letter you approve before it is mailed.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 4
+    },
+    "horizon": "now",
+    "autonomy": "act-report",
+    "related": [
+      "B-18",
+      "B-08",
+      "M-21"
+    ],
+    "notes_for_editor": "Reg F details are from memory, not re-verified: in force since November 30, 2021; model validation notice; presumed limit of 7 calls in 7 days per debt; calls before 8 am or after 9 pm presumed inconvenient; the consumer can restrict contact media. The SoloSuit URL was seen in search results. The Debt Discipline URL comes from the candidate and was not opened."
+  },
+  {
+    "id": "W-24",
+    "slug": "coverage-clock",
+    "title": "Coverage Clock",
+    "tagline": "When your flight slips, a Live Activity shows which card and airline protections apply, then files the claims.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "Your 6:10 pm flight now leaves at 11:40 pm. Your Lock Screen reads: 'Hour 5 of delay. Your card's trip-delay cover starts at hour 6. Keep meal and hotel receipts.' At midnight the flight is cancelled. The agent reminds you that the airline owes a cash refund if you choose not to fly, and asks whether to request it or rebook.",
+    "problem": "Travelers have several overlapping protections: credit-card trip-delay cover, US DOT refund rules, and EU261 or UK261 compensation. Each has its own thresholds and proof rules. Claims are won or lost in the terminal, when you keep or toss receipts and accept or refuse a voucher, and no app tells you what to do at that moment.",
+    "loop": {
+      "trigger": "A tracked flight is delayed or cancelled",
+      "senses": "Flight status, card terms, your receipts",
+      "decides": "Which thresholds apply and when they hit",
+      "checks_with_you": "Before vouchers, rebooking or any claim",
+      "acts": "Collects proof, pre-fills and tracks claims",
+      "remembers": "Card terms, open claims, what paid out"
+    },
+    "ios_blocks": [
+      {
+        "name": "ActivityKit (Live Activities, push updates)",
+        "why": "runs the delay clock on the Lock Screen, Watch Smart Stack and CarPlay"
+      },
+      {
+        "name": "Foundation Models (Attachment)",
+        "why": "reads receipt photos offline in a terminal with bad Wi-Fi"
+      },
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "captures receipts and the airline's delay letter"
+      },
+      {
+        "name": "FinanceKit",
+        "why": "helps match the fare to the card that paid, where Wallet has that card (managed entitlement)"
+      },
+      {
+        "name": "App Intents",
+        "why": "lets you say 'add this receipt to my delay claim'"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "alerts you when a threshold passes"
+      }
+    ],
+    "hard_parts": [
+      "Card benefit terms live in guide-to-benefits PDFs that differ by card and year. Someone has to keep a current table, and you must confirm which card paid, since FinanceKit sees only some Wallet cards.",
+      "Claims go through benefit-administrator web portals with no API. The first version builds a packet you upload; automating the portals would need a supervised cloud browser.",
+      "A Live Activity stays active for at most 8 hours. A long airport night needs a fresh one started by push, without tipping into spam.",
+      "Timing needs good flight data, and the rules measure different things: EU261 uses arrival delay, card cover usually counts from scheduled departure."
+    ],
+    "risks": [
+      "Not legal or insurance advice. The card's benefit administrator and the airline decide coverage. The app shows its source for every threshold and says when it is unsure.",
+      "Bad advice about vouchers or rebooking can cost you a cash refund. Any step that might waive a right needs your explicit approval and shows the rule it relies on.",
+      "Receipts and travel history are personal. They stay on the device until you submit a claim."
+    ],
+    "assumptions": [
+      "Benefit administrators accept claims an app assembles and the cardholder submits.",
+      "Public flight-status data is accurate enough to time the thresholds.",
+      "People will photograph receipts at 11 pm if the phone prompts them at the right moment."
+    ],
+    "unknowns": [
+      "How often card delay claims pay when documented this way, and how fast.",
+      "Whether US refund rules stay as written; they are agency rules a later DOT can revise.",
+      "Whether card issuers would share their terms, or pay for cleaner claims."
+    ],
+    "prior_art": [
+      {
+        "name": "AirHelp",
+        "url": "https://www.airhelp.com/en/flight-delay-compensation/",
+        "note": "Files airline compensation claims for a 35% fee (50% if it goes to court). Ignores card trip-delay cover and gives no guidance during the delay."
+      },
+      {
+        "name": "Flighty",
+        "url": "https://flighty.com/",
+        "note": "Tracks flights and predicts delays early. It never claims anything."
+      },
+      {
+        "name": "RecoverKit",
+        "url": "https://www.tryrecoverkit.com/blog/credit-card-travel-delay-insurance/",
+        "note": "Publishes guides to card delay claims; unclear whether it files them."
+      },
+      {
+        "name": "Chase trip delay guide",
+        "url": "https://www.chase.com/personal/credit-cards/education/basics/the-comprehensive-guide-to-trip-delay-reimbursement",
+        "note": "An issuer's explainer. You still assemble and file the claim yourself."
+      }
+    ],
+    "first_version": "US domestic flights and the most common premium travel cards. The app tracks your flight, runs a delay clock with your card's threshold and the DOT refund rule, prompts for receipts, and exports a filled claim packet after the trip.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 4,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-05",
+      "W-28",
+      "M-21"
+    ],
+    "notes_for_editor": "AirHelp's fee (35%, plus 15% legal action fee) and Flighty's scope come from search results. The 2024 DOT automatic-refund rule (cancellations and significant changes: 3+ hours domestic, 6+ hours international) is from memory. FinanceKit coverage (Apple Card, Apple Cash, some Wallet accounts) is from Apple's docs; which non-Apple cards it sees varies by region."
+  },
+  {
+    "id": "W-25",
+    "slug": "shadow-file-auditor",
+    "title": "Shadow File Auditor",
+    "tagline": "Pulls the little-known reports that set your rent, insurance and bank access, and disputes the errors.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Money & commerce",
+    "moment": "Your car insurance renewal jumps, and the letter cites 'claims history'. You have never filed a claim. The agent already requested your LexisNexis C.L.U.E. auto report and found a claim that belongs to someone with a similar name. A dispute is drafted with your policy records attached, and the 30-day investigation clock starts when you tap Send.",
+    "problem": "Specialty consumer reporting agencies keep files on your insurance claims, bank account history, rental history, and employment and income. These files quietly set premiums, rental approvals and whether a bank will open an account for you. The FCRA lets you get most of them free, but each bureau has its own request process, and almost nobody checks.",
+    "loop": {
+      "trigger": "Yearly sweep, or a denial or price jump",
+      "senses": "Bureau reports, adverse-action letters",
+      "decides": "Which entries look wrong, and the evidence",
+      "checks_with_you": "You verify ID and approve each dispute",
+      "acts": "Requests reports, files disputes, follows up",
+      "remembers": "Last year's files, open 30-day windows"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans mailed reports and adverse-action letters"
+      },
+      {
+        "name": "PDFKit",
+        "why": "reads reports you download from bureau sites"
+      },
+      {
+        "name": "Foundation Models (SystemLanguageModel)",
+        "why": "explains entries and compares years on the device, so reports stay local"
+      },
+      {
+        "name": "Keychain Services and Data Protection (FileProtectionType.complete)",
+        "why": "keeps reports and account details encrypted at rest"
+      },
+      {
+        "name": "EventKit",
+        "why": "puts reinvestigation deadlines on your calendar"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "reminds you when a report arrives or a window closes"
+      }
+    ],
+    "hard_parts": [
+      "Each bureau has its own request channel (web form, phone or mail) and identity checks. You pass the identity checks yourself; the agent fills in everything else.",
+      "Reports arrive by mail weeks later in layouts that change. The app has to match each letter to its request and parse it reliably.",
+      "Evidence lives in your old emails, past addresses and bank letters. The agent needs those documents, and should keep them on the device.",
+      "There are many tenant-screening bureaus. Knowing which one a landlord used depends on the adverse-action notice, which people often throw away."
+    ],
+    "risks": [
+      "Safety line: not legal advice and not credit repair. It takes no fee for a dispute before the work is done (the Credit Repair Organizations Act bans advance fees), never disputes accurate entries, and sends lawsuits to consumer attorneys.",
+      "Bulk or vague disputes get rejected as frivolous. Each dispute names one specific error with evidence.",
+      "These files are sensitive. Reports stay on the device, and nothing goes to a third-party model without explicit consent."
+    ],
+    "assumptions": [
+      "Specialty bureaus will process requests and disputes an app prepares for the consumer.",
+      "Errors are common enough to make a yearly sweep worth the effort.",
+      "People will do a few identity checks a year for a benefit they can't see yet."
+    ],
+    "unknowns": [
+      "How often specialty files contain errors that change a price or a decision.",
+      "Whether bureaus start blocking or slowing requests that come in through an app.",
+      "Who pays: consumers, insurers who want clean data, or consumer attorneys who take the cases."
+    ],
+    "prior_art": [
+      {
+        "name": "Consumer Action guide to specialty reports",
+        "url": "https://www.consumer-action.org/downloads/english/specialty_report_guide.pdf",
+        "note": "Lists the specialty bureaus and how to request each file. A guide; you do every request and dispute by hand."
+      },
+      {
+        "name": "LexisNexis Consumer Center",
+        "url": "https://supportcenter.lexisnexis.com/app/answers/answer_view/a_id/1127747/~/ensuring-accuracy-in-credit,-insurance,-and-identity-with-the-consumer-center",
+        "note": "Where you request and dispute your LexisNexis file. One bureau among many, with no tracking across bureaus."
+      },
+      {
+        "name": "Consumer attorneys for C.L.U.E. disputes",
+        "url": "https://consumerattorneys.com/lp/clue-report-dispute",
+        "note": "Lawyers who litigate C.L.U.E. errors after the harm. Not self-service or preventive."
+      }
+    ],
+    "first_version": "A yearly sweep of five files: C.L.U.E. auto and home, ChexSystems, one large tenant screener, and The Work Number. The app walks you through each request, reads each report when it arrives, and drafts a dispute for any entry you mark wrong.",
+    "scores": {
+      "difficulty": 3,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-23",
+      "B-08"
+    ],
+    "notes_for_editor": "FCRA points are from memory, not re-verified: free annual disclosure from nationwide specialty consumer reporting agencies, a free report within 60 days of an adverse-action notice, and a 30-day reinvestigation window. Credit Karma and Dovly (big-three credit only) and the 2024 SafeRent settlement are left out for lack of verified URLs. The Menlo 2026 survey (only 20% of agent users have given an agent financial-account access) in the research digest supports keeping reports on the device."
+  },
+  {
+    "id": "W-26",
+    "slug": "benefits-keeper",
+    "title": "Benefits Keeper",
+    "tagline": "Keeps Medicaid and SNAP from lapsing over paperwork: logs hours, reads notices and files proof on time.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Life admin",
+    "moment": "It is March 2027 and your state now checks Medicaid work hours. You drive for two gig apps and care part-time for your disabled mother. The agent has pulled February's gig earnings from your forwarded email, logged 86 hours, noted that your caregiving may qualify you for an exemption, and shows a pre-filled report with one question left for you.",
+    "problem": "The July 2025 federal budget law requires many Medicaid expansion adults to show 80 hours a month of work, school or service, with states checking by January 2027, and moves them to renewals every six months. SNAP work rules widened too. In the 2023-24 Medicaid unwinding, most people who lost coverage lost it over paperwork, not eligibility. Consumer help so far is explainers; the automation being built is on the state's side.",
+    "loop": {
+      "trigger": "A notice, month-end, or a renewal date",
+      "senses": "Pay emails, timesheets, notices you scan",
+      "decides": "Hours met? Exemption? What is due, when?",
+      "checks_with_you": "You confirm hours and exemptions, submit",
+      "acts": "Builds the packet, pre-fills, drafts appeals",
+      "remembers": "Monthly ledger, case dates, what was filed"
+    },
+    "ios_blocks": [
+      {
+        "name": "VisionKit (VNDocumentCameraViewController)",
+        "why": "scans notices, timesheets and volunteer sign-off sheets"
+      },
+      {
+        "name": "Foundation Models with Vision OCRTool",
+        "why": "pulls hours, dates and notice types out of documents on the device where supported"
+      },
+      {
+        "name": "Translation (TranslationSession)",
+        "why": "shows notices and to-dos in your language"
+      },
+      {
+        "name": "EventKit",
+        "why": "puts reporting months and renewal dates on your calendar"
+      },
+      {
+        "name": "App Intents",
+        "why": "lets you say 'log 4 hours at the food bank'"
+      },
+      {
+        "name": "HealthKit (clinical records, opt-in)",
+        "why": "finds records that may support a medical-frailty exemption"
+      },
+      {
+        "name": "UserNotifications",
+        "why": "sends repeated reminders before each deadline"
+      }
+    ],
+    "hard_parts": [
+      "Many users have older iPhones without Apple Intelligence. Every on-device model step needs a server fallback, with explicit consent under guideline 5.1.2(i), and the app must work in several languages.",
+      "Every state has its own portal with identity proofing and no API. Filing stays in your hands: the app pre-fills and walks you through the upload, or you approve and it mails a paper packet and keeps a dated copy.",
+      "Fifty state rollouts of one federal rule, each with its own exemptions, data matches and timelines. Keeping the rules current is a staff job, not a model job.",
+      "Gig income is messy: weekly statements from several apps, tips and expenses. Turning it into hours, or the income alternative ($580 a month, which is 80 hours at the federal minimum wage), has to be shown line by line."
+    ],
+    "risks": [
+      "Safety line: not legal advice, and it never invents or rounds up hours. False statements to a benefits agency are serious, so every number links to a document. For denials and fair hearings it connects you to legal aid.",
+      "A missed deadline costs health coverage. The app sends repeated reminders and says plainly when it cannot help.",
+      "Very sensitive data about low-income people. No ads, no data sales, on-device by default."
+    ],
+    "assumptions": [
+      "States will accept proof from members for hours their data matches miss.",
+      "Users will forward pay emails and scan paper each month.",
+      "A nonprofit, state or Medicaid health plan will pay, because users cannot."
+    ],
+    "unknowns": [
+      "How many states will verify hours through data matches alone, which would make member proof matter less.",
+      "Whether Medicaid managed-care plans will fund this to keep members enrolled.",
+      "How fast Propel and state tools close the gap."
+    ],
+    "prior_art": [
+      {
+        "name": "CMS interim final rule on community engagement",
+        "url": "https://www.cms.gov/newsroom/fact-sheets/medicaid-community-engagement-requirement-certain-individuals-interim-final-rule-comment-period-cms",
+        "note": "The federal rule. It sets what states must check, not how members keep their proof."
+      },
+      {
+        "name": "Minnesota Renewal Lookup",
+        "url": "https://mn.gov/dhs/about-us/legislative-media/media/news/?id=1053-762638",
+        "note": "A state tool for renewal dates ahead of the 2027 requirements. One state, and it does not build your proof."
+      },
+      {
+        "name": "Propel",
+        "url": "https://www.propel.app/insights/ai-to-help-simplified-reporting-reduce-error-rate/",
+        "note": "Popular SNAP app that says it is building AI reporting tools, so this window may close. Today it offers guides such as its work-requirements explainer."
+      },
+      {
+        "name": "OpenMedicaid work-requirements tracker",
+        "url": "https://www.openmedicaid.org/insights/work-requirements-2026",
+        "note": "Tracks what each state is doing. Information, not action."
+      },
+      {
+        "name": "CHCS summary of the requirements",
+        "url": "https://www.chcs.org/resource/a-summary-of-national-medicaid-work-requirements/",
+        "note": "Policy summary written for states and plans."
+      }
+    ],
+    "first_version": "One state, Medicaid only. A monthly hours ledger fed by forwarded pay emails and scanned sign-off sheets, an exemption checklist, and a notice scanner that turns each letter into a dated to-do. Free, in English and Spanish, and it works without Apple Intelligence.",
+    "scores": {
+      "difficulty": 4,
+      "novelty": 4,
+      "feasibility": 3,
+      "impact": 5
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "W-08",
+      "W-01",
+      "W-32"
+    ],
+    "notes_for_editor": "Merged 'Medicaid Hours Keeper' (hours ledger, exemption check, never rounding up hours, fair-hearing drafts). H.R. 1 details (80 hours, start by January 1, 2027, six-month renewals, SNAP changes) come from the two candidates and memory. The CMS rule number (CMS-2454-IFC) from the merge source was not verified, so it is not in the card. The candidate listed HeyMedicaid at heymedicaid.med; I could not verify that URL and left it out. The procedural-disenrollment share in the unwinding is from memory (KFF put it near 70%). Novelty set to 4 (candidate had 3) because Propel's tools are announced, not shipped."
+  },
+  {
+    "id": "W-27",
+    "slug": "leak-bill-detective",
+    "title": "Leak Bill Detective",
+    "tagline": "Turns a shocking water bill into a found leak, a fixed pipe, and the utility's leak credit.",
+    "tier": "whitespace",
+    "flagship": false,
+    "category": "Physical world",
+    "moment": "Your water bill is $412 when it's usually $70, and you can't see water anywhere. You forward the bill. The agent tells you your utility's leak-credit deadline, then asks you to photograph the meter at 11 pm and again at 6 am, before anyone showers. The meter moved overnight, so it walks you through a toilet dye test next.",
+    "problem": "Leak gadgets stop at the alert, and plumbers stop at the fix. Many water utilities offer a leak adjustment on the bill, but each has its own rules, proof and deadline, often on a paper form. Nothing takes you from 'this bill is wrong' to a found leak to the credit.",
+    "loop": {
+      "trigger": "A forwarded or scanned high water bill",
+      "senses": "Bill history, meter photos, utility rules",
+      "decides": "Is water moving? Where? Is a credit owed?",
+      "checks_with_you": "Before calling plumbers, booking, filing",
+      "acts": "Runs meter tests, calls plumbers, files",
+      "remembers": "Normal usage, repairs, credit status"
+    },
+    "ios_blocks": [
+      {
+        "name": "Foundation Models (Attachment) with Vision OCRTool",
+        "why": "reads bills and meter photos on the device"
+      },
+      {
+        "name": "VisionKit (DataScannerViewController)",
+        "why": "reads a digital meter display live through the camera"
+      },
+      {
+        "name": "Visual Intelligence (IntentValueQuery)",
+        "why": "lets you point the Camera at the meter and hand the image to the app"
+      },
+      {
+        "name": "UserNotifications (UNCalendarNotificationTrigger)",
+        "why": "prompts the late-night and early-morning meter photos"
+      },
+      {
+        "name": "EventKit",
+        "why": "books the plumber visit you pick"
+      },
+      {
+        "name": "PDFKit",
+        "why": "fills the utility's PDF leak-adjustment form"
+      },
+      {
+        "name": "App Intents",
+        "why": "lets you say 'log a meter reading'"
+      }
+    ],
+    "hard_parts": [
+      "Meters vary: sweep dials, digital displays, meters in a street box. Reading a low-flow indicator from a photo is error-prone, so you confirm every reading. If the utility offers hourly smart-meter data online, that beats photos.",
+      "Leak-adjustment rules differ by utility, and there are thousands of water utilities. The agent has to find and read each program's page and form, and say so when there is no program.",
+      "Plumber calls run from cloud telephony with clear AI disclosure, and prices quoted by phone are soft.",
+      "Proof rules differ: some utilities want a plumber's invoice, some accept parts receipts for a DIY fix. The packet has to match each program."
+    ],
+    "risks": [
+      "Not a plumber. Water near wiring, a sagging ceiling or anything involving gas goes to a licensed professional right away.",
+      "A false 'no leak' lets damage continue. Results read 'no flow seen overnight', never 'your home is fine'.",
+      "Some meters sit in street boxes or shared basements. The app never pushes you to open a vault or enter a space that is unsafe."
+    ],
+    "assumptions": [
+      "Your utility has a leak-adjustment program and accepts a plumber's invoice plus meter photos as proof.",
+      "You can reach and read your meter.",
+      "The credit is large enough to be worth the paperwork."
+    ],
+    "unknowns": [
+      "What share of US water utilities offer leak adjustments, and how generous they are.",
+      "Whether utilities would take filings from an app, or partner with one.",
+      "Whether home insurers would pay for leak finding to prevent water-damage claims."
+    ],
+    "prior_art": [
+      {
+        "name": "Flume",
+        "url": "https://flumewater.com/",
+        "note": "A sensor on the meter that alerts on leaks. It stops at the alert: no bill relief, no plumber, no utility claim. Phyn and Moen Flo stop at the alert too."
+      },
+      {
+        "name": "SFPUC Leak Allowance",
+        "url": "https://www.sfpuc.gov/accounts-services/bill-relief/leak-allowance",
+        "note": "A real credit program with its own rules and form. You find it and file it yourself."
+      },
+      {
+        "name": "Seattle Public Utilities Leak Adjustments",
+        "url": "https://seattle.gov/utilities/your-services/accounts-and-payments/bills-and-payments/my-bill-seems-too-high/leak-adjustments",
+        "note": "Another program with its own proof rules and deadlines. Nothing connects it to finding and fixing the leak."
+      },
+      {
+        "name": "Google AI Mode agentic calling",
+        "url": "https://9to5google.com/2026/04/10/google-ai-mode-redesign/",
+        "note": "Calls local businesses for prices and availability. Not tied to a leak test, a bill or a credit."
+      }
+    ],
+    "first_version": "Forward a bill and get your utility's leak-credit rules and deadline, a guided two-photo overnight meter test, and a filled leak-adjustment form after the repair. Start with the largest US water utilities and leave plumber calling for later.",
+    "scores": {
+      "difficulty": 2,
+      "novelty": 5,
+      "feasibility": 4,
+      "impact": 3
+    },
+    "horizon": "now",
+    "autonomy": "draft-approve",
+    "related": [
+      "B-08",
+      "W-28",
+      "B-02"
+    ],
+    "notes_for_editor": "Flume's URL and scope come from search results. The Google calling URL is the research digest's source for Google's agentic calling. Phyn and Moen Flo are named in a note without their own URLs. Visual Intelligence hands the app a single captured image, not a live feed, which is enough for a meter photo."
+  }
+]
