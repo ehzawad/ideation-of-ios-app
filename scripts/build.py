@@ -152,7 +152,7 @@ def dots(v: int) -> str:
 
 def mermaid_label(text: str, width: int = 28) -> str:
     """Wrap a label for Mermaid and neutralize characters Mermaid treats as syntax."""
-    text = text.replace('"', "'").replace("#", "no. ").replace(";", ",")
+    text = text.replace('"', "'").replace("#", "no. ").replace(";", ",").replace("<", "").replace(">", "")
     words, lines, cur = text.split(), [], ""
     for w in words:
         if cur and len(cur) + 1 + len(w) > width:
@@ -233,6 +233,9 @@ def render_card(idea: dict, by_id: dict) -> str:
         out.append(f"- {name}{note}")
     out.append("")
     out += ["## Smallest useful first version", "", idea["first_version"], ""]
+    if idea.get("notes_for_editor"):
+        out += ["<details><summary>Research notes: what we could and couldn't verify</summary>", "",
+                idea["notes_for_editor"].strip(), "", "</details>", ""]
     related = [by_id[r] for r in idea.get("related", []) if r in by_id]
     if related:
         out += ["## Related ideas", ""]

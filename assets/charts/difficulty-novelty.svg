@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1085 520" width="1085" height="520" role="img" aria-labelledby="t d">
+<title id="t">Every idea by difficulty and novelty</title>
+<desc id="d">Unit chart of 85 agentic iOS app ideas. Horizontal axis: difficulty 1 to 5. Vertical axis: novelty 1 to 5. Each chip is one idea, colored and prefixed by tier. The full table is in ideas/README.md.</desc>
+<style>
+  svg { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --t-building-now: #2a78d6;--t-whitespace: #eb6834;--t-moonshot: #1baf7a; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --t-building-now: #3987e5;--t-whitespace: #d95926;--t-moonshot: #199e70; }
+  }
+  text { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; }
+  .bg { fill: var(--surface); }
+  .title { fill: var(--ink); font-size: 20px; font-weight: 650; }
+  .sub { fill: var(--ink2); font-size: 13px; }
+  .axis-label { fill: var(--ink2); font-size: 13px; font-weight: 600; }
+  .tick { fill: var(--muted); font-size: 12px; }
+  .grid { stroke: var(--grid); stroke-width: 1; fill: none; }
+  .axis { stroke: var(--axis); stroke-width: 1; }
+  .legend { fill: var(--ink2); font-size: 13px; }
+  .val { fill: var(--ink2); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .chip-text { font-size: 10.5px; font-weight: 650; fill: #0b0b0b; }
+  .fill-building-now { fill: var(--t-building-now); }.fill-whitespace { fill: var(--t-whitespace); }.fill-moonshot { fill: var(--t-moonshot); }
+</style>
+<rect class="bg" x="0" y="0" width="1085" height="520" rx="12"/>
+<text x="24" y="36" class="title">Where the ideas sit: difficulty × novelty</text>
+<text x="24" y="58" class="sub">Each chip is one idea. Look up an ID in the index. Top-right is hard and new; bottom-left is easy and crowded.</text>
+<rect x="24" y="74" width="12" height="12" rx="3" class="fill-building-now"/>
+<text x="42" y="84" class="legend">B  Building now</text>
+<rect x="177" y="74" width="12" height="12" rx="3" class="fill-whitespace"/>
+<text x="195" y="84" class="legend">W  Whitespace</text>
+<rect x="315" y="74" width="12" height="12" rx="3" class="fill-moonshot"/>
+<text x="333" y="84" class="legend">M  Moonshots</text>
+<line class="grid" x1="86" y1="96" x2="1061" y2="96"/>
+<text x="74" y="132" class="tick" text-anchor="end">5</text>
+<line class="grid" x1="86" y1="159" x2="1061" y2="159"/>
+<text x="74" y="218" class="tick" text-anchor="end">4</text>
+<line class="grid" x1="86" y1="268" x2="1061" y2="268"/>
+<text x="74" y="300" class="tick" text-anchor="end">3</text>
+<line class="grid" x1="86" y1="324" x2="1061" y2="324"/>
+<text x="74" y="360" class="tick" text-anchor="end">2</text>
+<line class="grid" x1="86" y1="387" x2="1061" y2="387"/>
+<text x="74" y="422" class="tick" text-anchor="end">1</text>
+<line class="grid" x1="86" y1="96" x2="86" y2="450"/>
+<line class="grid" x1="281" y1="96" x2="281" y2="450"/>
+<line class="grid" x1="476" y1="96" x2="476" y2="450"/>
+<line class="grid" x1="671" y1="96" x2="671" y2="450"/>
+<line class="grid" x1="866" y1="96" x2="866" y2="450"/>
+<line class="grid" x1="1061" y1="96" x2="1061" y2="450"/>
+<line class="axis" x1="86" y1="450" x2="1061" y2="450"/>
+<text x="184" y="470" class="tick" text-anchor="middle">1</text>
+<text x="378" y="470" class="tick" text-anchor="middle">2</text>
+<text x="574" y="470" class="tick" text-anchor="middle">3</text>
+<text x="768" y="470" class="tick" text-anchor="middle">4</text>
+<text x="964" y="470" class="tick" text-anchor="middle">5</text>
+<text x="574" y="496" class="axis-label" text-anchor="middle">Difficulty →</text>
+<text transform="translate(28 273) rotate(-90)" class="axis-label" text-anchor="middle">Novelty →</text>
+<g><title>B-01 · Cloud-computer errand agents</title><rect x="681" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="701.0" y="410.5" text-anchor="middle" class="chip-text">B-01</text></g>
+<g><title>B-02 · Phone-call errand agents</title><rect x="486" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="506.0" y="410.5" text-anchor="middle" class="chip-text">B-02</text></g>
+<g><title>B-08 · Bill-fighting and cancel agents</title><rect x="531" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="551.0" y="410.5" text-anchor="middle" class="chip-text">B-08</text></g>
+<g><title>B-20 · Voice home-and-errands agents</title><rect x="576" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="596.0" y="410.5" text-anchor="middle" class="chip-text">B-20</text></g>
+<g><title>B-03 · Inbox triage-and-draft agents</title><rect x="291" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="311.0" y="410.5" text-anchor="middle" class="chip-text">B-03</text></g>
+<g><title>B-06 · Price-watch auto-buy agents</title><rect x="336" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="356.0" y="410.5" text-anchor="middle" class="chip-text">B-06</text></g>
+<g><title>B-10 · Wearable-driven training coaches</title><rect x="381" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="401.0" y="410.5" text-anchor="middle" class="chip-text">B-10</text></g>
+<g><title>B-11 · Meeting and memory capture</title><rect x="426" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="446.0" y="410.5" text-anchor="middle" class="chip-text">B-11</text></g>
+<g><title>B-17 · AI conversation tutors</title><rect x="291" y="421" width="40" height="18" rx="4" class="fill-building-now"/><text x="311.0" y="433.5" text-anchor="middle" class="chip-text">B-17</text></g>
+<g><title>B-19 · Blind-assist scene agents</title><rect x="336" y="421" width="40" height="18" rx="4" class="fill-building-now"/><text x="356.0" y="433.5" text-anchor="middle" class="chip-text">B-19</text></g>
+<g><title>B-22 · Safari shopping-extension agents</title><rect x="381" y="421" width="40" height="18" rx="4" class="fill-building-now"/><text x="401.0" y="433.5" text-anchor="middle" class="chip-text">B-22</text></g>
+<g><title>B-04 · Scheduling negotiator agents</title><rect x="291" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="311.0" y="347.5" text-anchor="middle" class="chip-text">B-04</text></g>
+<g><title>B-13 · Messaging-native personal agents</title><rect x="336" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="356.0" y="347.5" text-anchor="middle" class="chip-text">B-13</text></g>
+<g><title>B-16 · CarPlay voice agents</title><rect x="381" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="401.0" y="347.5" text-anchor="middle" class="chip-text">B-16</text></g>
+<g><title>B-24 · Medical-bill dispute tools</title><rect x="426" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="446.0" y="347.5" text-anchor="middle" class="chip-text">B-24</text></g>
+<g><title>B-26 · Offline on-device LLM apps</title><rect x="291" y="358" width="40" height="18" rx="4" class="fill-building-now"/><text x="311.0" y="370.5" text-anchor="middle" class="chip-text">B-26</text></g>
+<g><title>B-05 · Trip booking and rebooking agents</title><rect x="486" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="506.0" y="347.5" text-anchor="middle" class="chip-text">B-05</text></g>
+<g><title>B-07 · Money autopilot agents</title><rect x="531" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="551.0" y="347.5" text-anchor="middle" class="chip-text">B-07</text></g>
+<g><title>B-09 · Health-record reading assistants</title><rect x="576" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="596.0" y="347.5" text-anchor="middle" class="chip-text">B-09</text></g>
+<g><title>B-12 · Family logistics agents</title><rect x="621" y="335" width="40" height="18" rx="4" class="fill-building-now"/><text x="641.0" y="347.5" text-anchor="middle" class="chip-text">B-12</text></g>
+<g><title>B-14 · Self-hosted agents, iPhone as node</title><rect x="486" y="358" width="40" height="18" rx="4" class="fill-building-now"/><text x="506.0" y="370.5" text-anchor="middle" class="chip-text">B-14</text></g>
+<g><title>B-15 · On-phone app builders</title><rect x="531" y="358" width="40" height="18" rx="4" class="fill-building-now"/><text x="551.0" y="370.5" text-anchor="middle" class="chip-text">B-15</text></g>
+<g><title>B-18 · Scam-call guardian agents</title><rect x="576" y="358" width="40" height="18" rx="4" class="fill-building-now"/><text x="596.0" y="370.5" text-anchor="middle" class="chip-text">B-18</text></g>
+<g><title>B-25 · Pocket supervision of work agents</title><rect x="621" y="358" width="40" height="18" rx="4" class="fill-building-now"/><text x="641.0" y="370.5" text-anchor="middle" class="chip-text">B-25</text></g>
+<g><title>B-21 · Apple&#x27;s built-in agents</title><rect x="876" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="896.0" y="410.5" text-anchor="middle" class="chip-text">B-21</text></g>
+<g><title>B-23 · ADHD task-breakdown planners</title><rect x="96" y="398" width="40" height="18" rx="4" class="fill-building-now"/><text x="116.0" y="410.5" text-anchor="middle" class="chip-text">B-23</text></g>
+<g><title>W-01 · Denial Clock</title><rect x="486" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="506.0" y="182.5" text-anchor="middle" class="chip-text">W-01</text></g>
+<g><title>W-02 · Night-Before Check</title><rect x="531" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="551.0" y="182.5" text-anchor="middle" class="chip-text">W-02</text></g>
+<g><title>W-03 · Agent Control Tower</title><rect x="576" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="596.0" y="182.5" text-anchor="middle" class="chip-text">W-03</text></g>
+<g><title>W-05 · Dread Opener</title><rect x="621" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="641.0" y="182.5" text-anchor="middle" class="chip-text">W-05</text></g>
+<g><title>W-07 · Deaf-First Call Agent</title><rect x="486" y="193" width="40" height="18" rx="4" class="fill-whitespace"/><text x="506.0" y="205.5" text-anchor="middle" class="chip-text">W-07</text></g>
+<g><title>W-08 · Paper Round-Trip</title><rect x="531" y="193" width="40" height="18" rx="4" class="fill-whitespace"/><text x="551.0" y="205.5" text-anchor="middle" class="chip-text">W-08</text></g>
+<g><title>W-09 · Pause-and-Ask Errands</title><rect x="576" y="193" width="40" height="18" rx="4" class="fill-whitespace"/><text x="596.0" y="205.5" text-anchor="middle" class="chip-text">W-09</text></g>
+<g><title>W-14 · Agent Doorman</title><rect x="621" y="193" width="40" height="18" rx="4" class="fill-whitespace"/><text x="641.0" y="205.5" text-anchor="middle" class="chip-text">W-14</text></g>
+<g><title>W-15 · Two-House Handoff</title><rect x="486" y="216" width="40" height="18" rx="4" class="fill-whitespace"/><text x="506.0" y="228.5" text-anchor="middle" class="chip-text">W-15</text></g>
+<g><title>W-16 · Ulysses Money Pact</title><rect x="531" y="216" width="40" height="18" rx="4" class="fill-whitespace"/><text x="551.0" y="228.5" text-anchor="middle" class="chip-text">W-16</text></g>
+<g><title>W-18 · Refill Runway</title><rect x="576" y="216" width="40" height="18" rx="4" class="fill-whitespace"/><text x="596.0" y="228.5" text-anchor="middle" class="chip-text">W-18</text></g>
+<g><title>W-19 · Ghost Network Buster</title><rect x="621" y="216" width="40" height="18" rx="4" class="fill-whitespace"/><text x="641.0" y="228.5" text-anchor="middle" class="chip-text">W-19</text></g>
+<g><title>W-28 · Should This Be Free?</title><rect x="486" y="239" width="40" height="18" rx="4" class="fill-whitespace"/><text x="506.0" y="251.5" text-anchor="middle" class="chip-text">W-28</text></g>
+<g><title>W-31 · Deactivation Defense File</title><rect x="531" y="239" width="40" height="18" rx="4" class="fill-whitespace"/><text x="551.0" y="251.5" text-anchor="middle" class="chip-text">W-31</text></g>
+<g><title>W-33 · Stuck Invoice Detective</title><rect x="576" y="239" width="40" height="18" rx="4" class="fill-whitespace"/><text x="596.0" y="251.5" text-anchor="middle" class="chip-text">W-33</text></g>
+<g><title>W-04 · Really-You Check</title><rect x="291" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="311.0" y="182.5" text-anchor="middle" class="chip-text">W-04</text></g>
+<g><title>W-22 · Errand Immersion</title><rect x="336" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="356.0" y="182.5" text-anchor="middle" class="chip-text">W-22</text></g>
+<g><title>W-24 · Coverage Clock</title><rect x="381" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="401.0" y="182.5" text-anchor="middle" class="chip-text">W-24</text></g>
+<g><title>W-06 · Accommodations Booked Ahead</title><rect x="291" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="311.0" y="119.5" text-anchor="middle" class="chip-text">W-06</text></g>
+<g><title>W-13 · Canary Garden</title><rect x="336" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="356.0" y="119.5" text-anchor="middle" class="chip-text">W-13</text></g>
+<g><title>W-27 · Leak Bill Detective</title><rect x="381" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="401.0" y="119.5" text-anchor="middle" class="chip-text">W-27</text></g>
+<g><title>W-30 · Shelf Price Witness</title><rect x="426" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="446.0" y="119.5" text-anchor="middle" class="chip-text">W-30</text></g>
+<g><title>W-32 · Between-Clients Wage Check</title><rect x="291" y="130" width="40" height="18" rx="4" class="fill-whitespace"/><text x="311.0" y="142.5" text-anchor="middle" class="chip-text">W-32</text></g>
+<g><title>W-10 · Co-Sign, Not Guardian</title><rect x="486" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="506.0" y="119.5" text-anchor="middle" class="chip-text">W-10</text></g>
+<g><title>W-11 · Paratransit Trip Keeper</title><rect x="531" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="551.0" y="119.5" text-anchor="middle" class="chip-text">W-11</text></g>
+<g><title>W-12 · Agent Janitor</title><rect x="576" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="596.0" y="119.5" text-anchor="middle" class="chip-text">W-12</text></g>
+<g><title>W-17 · Ballot Cure Watch</title><rect x="621" y="107" width="40" height="18" rx="4" class="fill-whitespace"/><text x="641.0" y="119.5" text-anchor="middle" class="chip-text">W-17</text></g>
+<g><title>W-20 · Chart Check</title><rect x="486" y="130" width="40" height="18" rx="4" class="fill-whitespace"/><text x="506.0" y="142.5" text-anchor="middle" class="chip-text">W-20</text></g>
+<g><title>W-21 · Discharge Scramble</title><rect x="531" y="130" width="40" height="18" rx="4" class="fill-whitespace"/><text x="551.0" y="142.5" text-anchor="middle" class="chip-text">W-21</text></g>
+<g><title>W-23 · Collector Line</title><rect x="576" y="130" width="40" height="18" rx="4" class="fill-whitespace"/><text x="596.0" y="142.5" text-anchor="middle" class="chip-text">W-23</text></g>
+<g><title>W-25 · Shadow File Auditor</title><rect x="621" y="130" width="40" height="18" rx="4" class="fill-whitespace"/><text x="641.0" y="142.5" text-anchor="middle" class="chip-text">W-25</text></g>
+<g><title>W-26 · Benefits Keeper</title><rect x="681" y="170" width="40" height="18" rx="4" class="fill-whitespace"/><text x="701.0" y="182.5" text-anchor="middle" class="chip-text">W-26</text></g>
+<g><title>M-12 · Household Agent Treaty</title><rect x="726" y="170" width="40" height="18" rx="4" class="fill-moonshot"/><text x="746.0" y="182.5" text-anchor="middle" class="chip-text">M-12</text></g>
+<g><title>M-13 · Blackout Mode Agent</title><rect x="771" y="170" width="40" height="18" rx="4" class="fill-moonshot"/><text x="791.0" y="182.5" text-anchor="middle" class="chip-text">M-13</text></g>
+<g><title>M-14 · Sextortion First Responder</title><rect x="816" y="170" width="40" height="18" rx="4" class="fill-moonshot"/><text x="836.0" y="182.5" text-anchor="middle" class="chip-text">M-14</text></g>
+<g><title>M-20 · Exam Room Advocate</title><rect x="681" y="193" width="40" height="18" rx="4" class="fill-moonshot"/><text x="701.0" y="205.5" text-anchor="middle" class="chip-text">M-20</text></g>
+<g><title>W-29 · Step-Free Scout</title><rect x="486" y="279" width="40" height="18" rx="4" class="fill-whitespace"/><text x="506.0" y="291.5" text-anchor="middle" class="chip-text">W-29</text></g>
+<g><title>M-01 · Seconds-Ahead Hazard Voice</title><rect x="876" y="279" width="40" height="18" rx="4" class="fill-moonshot"/><text x="896.0" y="291.5" text-anchor="middle" class="chip-text">M-01</text></g>
+<g><title>M-17 · 2 a.m. Fever Triage</title><rect x="921" y="279" width="40" height="18" rx="4" class="fill-moonshot"/><text x="941.0" y="291.5" text-anchor="middle" class="chip-text">M-17</text></g>
+<g><title>M-02 · Household Spending Constitution</title><rect x="876" y="170" width="40" height="18" rx="4" class="fill-moonshot"/><text x="896.0" y="182.5" text-anchor="middle" class="chip-text">M-02</text></g>
+<g><title>M-04 · Agent That Reads VoiceOver&#x27;s Map</title><rect x="921" y="170" width="40" height="18" rx="4" class="fill-moonshot"/><text x="941.0" y="182.5" text-anchor="middle" class="chip-text">M-04</text></g>
+<g><title>M-06 · Proxy Passport</title><rect x="966" y="170" width="40" height="18" rx="4" class="fill-moonshot"/><text x="986.0" y="182.5" text-anchor="middle" class="chip-text">M-06</text></g>
+<g><title>M-09 · Decade Memory That Moves</title><rect x="1011" y="170" width="40" height="18" rx="4" class="fill-moonshot"/><text x="1031.0" y="182.5" text-anchor="middle" class="chip-text">M-09</text></g>
+<g><title>M-16 · Mid-Call Voice Stand-In</title><rect x="876" y="193" width="40" height="18" rx="4" class="fill-moonshot"/><text x="896.0" y="205.5" text-anchor="middle" class="chip-text">M-16</text></g>
+<g><title>M-23 · Kiosk Hands</title><rect x="921" y="193" width="40" height="18" rx="4" class="fill-moonshot"/><text x="941.0" y="205.5" text-anchor="middle" class="chip-text">M-23</text></g>
+<g><title>M-25 · Worker-Side Dispatch Agent</title><rect x="966" y="193" width="40" height="18" rx="4" class="fill-moonshot"/><text x="986.0" y="205.5" text-anchor="middle" class="chip-text">M-25</text></g>
+<g><title>M-03 · Fading Whisper</title><rect x="681" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="701.0" y="119.5" text-anchor="middle" class="chip-text">M-03</text></g>
+<g><title>M-10 · Agent Mistake Warranty</title><rect x="726" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="746.0" y="119.5" text-anchor="middle" class="chip-text">M-10</text></g>
+<g><title>M-15 · Zero-Cloud Exit Planner</title><rect x="771" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="791.0" y="119.5" text-anchor="middle" class="chip-text">M-15</text></g>
+<g><title>M-26 · Scope Creep Catcher</title><rect x="816" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="836.0" y="119.5" text-anchor="middle" class="chip-text">M-26</text></g>
+<g><title>M-05 · Assistive Agent Pass</title><rect x="876" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="896.0" y="119.5" text-anchor="middle" class="chip-text">M-05</text></g>
+<g><title>M-07 · Context Passport</title><rect x="921" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="941.0" y="119.5" text-anchor="middle" class="chip-text">M-07</text></g>
+<g><title>M-08 · Trial Inbox</title><rect x="966" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="986.0" y="119.5" text-anchor="middle" class="chip-text">M-08</text></g>
+<g><title>M-11 · Agent Will</title><rect x="1011" y="107" width="40" height="18" rx="4" class="fill-moonshot"/><text x="1031.0" y="119.5" text-anchor="middle" class="chip-text">M-11</text></g>
+<g><title>M-18 · Med-Pass Witness</title><rect x="876" y="130" width="40" height="18" rx="4" class="fill-moonshot"/><text x="896.0" y="142.5" text-anchor="middle" class="chip-text">M-18</text></g>
+<g><title>M-21 · Bot-to-Bot Dispute Desk</title><rect x="921" y="130" width="40" height="18" rx="4" class="fill-moonshot"/><text x="941.0" y="142.5" text-anchor="middle" class="chip-text">M-21</text></g>
+<g><title>M-22 · Consumer Agent Union</title><rect x="966" y="130" width="40" height="18" rx="4" class="fill-moonshot"/><text x="986.0" y="142.5" text-anchor="middle" class="chip-text">M-22</text></g>
+<g><title>M-19 · Fourth Trimester Sentinel</title><rect x="681" y="279" width="40" height="18" rx="4" class="fill-moonshot"/><text x="701.0" y="291.5" text-anchor="middle" class="chip-text">M-19</text></g>
+<g><title>M-24 · Pocket Public Adjuster</title><rect x="726" y="279" width="40" height="18" rx="4" class="fill-moonshot"/><text x="746.0" y="291.5" text-anchor="middle" class="chip-text">M-24</text></g>
+</svg>
